@@ -1,0 +1,11 @@
+﻿{
+  "stationIdx": 0,
+  "name":      "Meteo stanice Praha-baterie-nový systém",
+  "sheetId":   "1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8",
+  "sheetName": "Hlavni_datovna",
+  "interval":  540,
+  "source":    "sheets",
+  "mqttHost":  "",
+  "mqttPort":  9001,
+  "mqttJson":  "meteo/data"
+}
