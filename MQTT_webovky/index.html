@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meteostanice – Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#1e2a38; --bg2:#253447; --bg3:#2c3e50;
+      --accent:#e67e22; --green:#27ae60; --teal:#16a085;
+      --blue:#2980b9; --red:#e74c3c; --purple:#8e44ad;
+      --yellow:#f39c12; --text:#ecf0f1; --muted:#95a5a6; --border:#34495e;
+    }
+    body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* ── Header ── */
+    header { background:var(--bg3); display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem; height:52px; border-bottom:2px solid var(--border); position:sticky; top:0; z-index:100; overflow:visible; }
+    header .site-title { font-size:1rem; font-weight:600; }
+    .nav-pills { display:flex; gap:.4rem; }
+    .pill { background:var(--bg2); border:1px solid var(--border); color:var(--text); padding:.3rem .8rem; border-radius:4px; font-size:.82rem; cursor:pointer; display:flex; align-items:center; gap:.3rem; }
+    .pill:hover { background:var(--border); }
+
+    /* ── Status bar ── */
+    .status-bar { display:flex; align-items:center; gap:.8rem; font-size:.78rem; color:var(--muted); margin-bottom:.7rem; flex-wrap:wrap; }
+    .dot { width:9px; height:9px; border-radius:50%; background:var(--red); flex-shrink:0; }
+    .dot.ok   { background:var(--green); }
+    .dot.warn { background:var(--yellow); }
+    #gsLastFetch { margin-left:auto; }
+
+    /* ── Config box ── */
+    .config-box { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:1rem 1.2rem; margin-bottom:1rem; }
+    .config-box summary { cursor:pointer; font-weight:700; font-size:.88rem; letter-spacing:.03em; color:var(--accent); }
+    .config-grid { display:grid; grid-template-columns:1fr 1fr; gap:.6rem 1.2rem; margin-top:.8rem; font-size:.84rem; }
+    .config-grid label { display:flex; flex-direction:column; gap:.25rem; color:var(--muted); }
+    .config-grid input, .config-grid select { background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:4px; padding:.35rem .6rem; font-size:.85rem; }
+    .cfg-btn { margin-top:.8rem; background:var(--accent); color:#fff; border:none; border-radius:4px; padding:.45rem 1.2rem; font-size:.85rem; font-weight:700; cursor:pointer; }
+    .cfg-btn:hover { opacity:.85; }
+    .config-hint { font-size:.75rem; color:var(--muted); margin-top:.7rem; line-height:1.6; }
+    .config-hint code { background:var(--bg3); padding:.1rem .3rem; border-radius:3px; font-size:.78rem; }
+    .config-hint a { color:var(--blue); }
+
+    /* ── Layout ── */
+    .page-wrapper { max-width:1300px; margin:0 auto; padding:1rem 1rem 2rem; }
+
+    /* ── Current cards row ── */
+    .top-row { display:grid; grid-template-columns:220px 1fr 1fr; gap:.8rem; margin-bottom:.8rem; }
+
+    .current-card { background:var(--accent); border-radius:8px; padding:1rem 1.2rem; }
+    .current-card .lbl { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; opacity:.85; }
+    .big-val { font-size:3rem; font-weight:700; line-height:1; display:flex; align-items:flex-end; gap:.3rem; margin:.25rem 0; }
+    .big-val .unit  { font-size:1.4rem; font-weight:400; margin-bottom:.2rem; }
+    .big-val .trend { font-size:1.2rem; }
+    .ts { font-size:.72rem; opacity:.75; }
+
+    .sub-cards { display:flex; flex-direction:column; gap:.4rem; margin-top:.4rem; }
+    .sub-card { border-radius:6px; padding:.5rem .8rem; display:flex; align-items:center; justify-content:space-between; }
+    .sc-lbl { font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; opacity:.8; }
+    .sc-val { font-size:1rem; font-weight:700; }
+    .sc-tr  { font-size:.9rem; }
+
+    /* extra sensor row */
+    .sensor-row { display:grid; grid-template-columns:repeat(5,1fr); gap:.6rem; margin-bottom:.8rem; }
+    .sensor-tile { background:var(--bg2); border-radius:8px; padding:.7rem .9rem; text-align:center; border-top:3px solid var(--border); cursor:pointer; transition:border-color .15s, background .15s; }
+    .sensor-tile:hover { background:var(--bg3); border-top-color:var(--accent); }
+    .sensor-tile .st-lbl { font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:.3rem; }
+    .sensor-tile .st-val { font-size:1.5rem; font-weight:700; }
+    .sensor-tile .st-unit { font-size:.75rem; color:var(--muted); }
+
+    /* table cards */
+    .table-card { background:var(--bg2); border-radius:8px; overflow:hidden; }
+    .tc-title { padding:.55rem .9rem; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; }
+    .table-card table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .table-card table tr { border-bottom:1px solid var(--border); }
+    .table-card table tr:last-child { border-bottom:none; }
+    .table-card table td { padding:.38rem .75rem; white-space:nowrap; }
+
+    /* tabs */
+    .tabs { display:flex; border-bottom:2px solid var(--border); margin-bottom:.8rem; overflow-x:auto; }
+    .tab-btn { background:none; border:none; border-bottom:3px solid transparent; color:var(--muted); cursor:pointer; padding:.6rem 1rem; font-size:.86rem; font-weight:600; margin-bottom:-2px; transition:color .2s,border-color .2s; white-space:nowrap; }
+    .tab-btn:hover { color:var(--text); }
+    .tab-btn.active { color:var(--text); border-bottom-color:var(--accent); }
+    .tab-pane { display:none; }
+    .tab-pane.active { display:block; }
+
+    /* day summary */
+    .day-summary { display:flex; gap:1px; background:var(--border); border-radius:6px; overflow:hidden; margin-bottom:.8rem; }
+    .ds-block { background:var(--bg2); padding:.55rem 1rem; flex:1; font-size:.8rem; }
+    .ds-title { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:.2rem; }
+    .ds-vals { color:var(--muted); }
+    .ds-vals span { color:var(--text); font-weight:600; }
+
+    /* charts */
+    .chart-wrapper { background:var(--bg2); border-radius:8px; padding:.8rem; margin-bottom:.8rem; }
+    .chart-title { font-size:.8rem; font-weight:700; text-align:center; color:var(--muted); margin-bottom:.5rem; letter-spacing:.04em; }
+    .chart-canvas-wrap { position:relative; height:260px; }
+
+    /* stats grid */
+    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem; }
+    .stat-tile { background:var(--bg2); border-radius:8px; padding:.9rem 1rem; text-align:center; }
+    .stat-tile .stl { font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:.35rem; }
+    .stat-tile .stv { font-size:1.7rem; font-weight:700; }
+    .stat-tile .stm { font-size:.73rem; color:var(--muted); margin-top:.15rem; }
+
+    /* history table */
+    .history-table-wrap { overflow-x:auto; }
+    .history-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .history-table th { background:var(--bg3); padding:.45rem .7rem; text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+    .history-table td { padding:.4rem .7rem; border-bottom:1px solid var(--border); }
+    .history-table tr:last-child td { border-bottom:none; }
+    .history-table tr:hover td { background:var(--bg3); }
+    /* ── Overview table ── */
+    .ov-table-wrap { overflow-y:auto; max-height:420px; margin-top:.8rem; border-radius:8px; border:1px solid var(--border); }
+    .ov-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+    .ov-table thead th { position:sticky; top:0; z-index:2; background:#1a6b5a; color:#fff; padding:.5rem .8rem; text-align:right; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+    .ov-table thead th:first-child { text-align:left; }
+    .ov-table td { padding:.4rem .8rem; border-bottom:1px solid var(--border); text-align:right; }
+    .ov-table td:first-child { text-align:left; color:var(--muted); }
+    .ov-table tr:hover td { background:var(--bg3); }
+    .ov-table tr.ov-today td { background:rgba(26,107,90,.18); font-weight:600; }
+    .ov-table tr.ov-today td:first-child { color:var(--accent); }
+    .ov-range-btns { display:flex; gap:.4rem; flex-wrap:wrap; }
+    .ov-range-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:4px; padding:.3rem .75rem; font-size:.82rem; cursor:pointer; transition:background .15s; }
+    .ov-range-btn.active, .ov-range-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+    /* ── Graf průzkumník ── */
+    .exp-controls { display:flex; flex-wrap:wrap; gap:.8rem 1.4rem; background:var(--bg2); border-radius:8px; padding:.8rem 1rem; margin-bottom:.2rem; align-items:flex-end; }
+    .exp-group { display:flex; flex-direction:column; gap:.3rem; }
+    .exp-label { font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700; }
+    .exp-controls select { background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:4px; padding:.35rem .6rem; font-size:.84rem; min-width:200px; }
+    .exp-range-btns { display:flex; gap:.35rem; flex-wrap:wrap; }
+    .exp-range-btn { background:var(--bg3); border:1px solid var(--border); color:var(--muted); border-radius:4px; padding:.32rem .75rem; font-size:.82rem; font-weight:600; cursor:pointer; transition:all .15s; }
+    .exp-range-btn:hover { border-color:var(--accent); color:var(--text); }
+    .exp-range-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+    @media(max-width:900px){
+      .top-row { grid-template-columns:1fr 1fr; }
+      .current-card { grid-column:span 2; }
+      .sensor-row { grid-template-columns:repeat(3,1fr); }
+      .stats-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:540px){
+      .top-row { grid-template-columns:1fr; }
+      .current-card { grid-column:span 1; }
+      .sensor-row { grid-template-columns:repeat(2,1fr); }
+      .config-grid { grid-template-columns:1fr; }
+    }
+
+    /* ═══════════════════════════════════
+       MOBIL  (≤ 480 px)
+    ═══════════════════════════════════ */
+    @media(max-width:480px){
+      /* ── Header ── */
+      header { padding:0 .6rem; height:48px; gap:.4rem; }
+      header .site-title { font-size:.82rem; min-width:auto !important; }
+      /* Skryj centrovany název – šetřit místo, zobrazuje se pod tabsy */
+      #headerStationName { display:none !important; }
+      /* Skryj ozdobné pilulky CZ / °C */
+      .nav-pills > .pill:last-child,
+      .nav-pills > .pill:nth-last-child(2) { display:none; }
+      .pill { padding:.25rem .5rem; font-size:.75rem; }
+
+      /* ── Wrapper ── */
+      .page-wrapper { padding:.5rem .55rem 2rem; }
+
+      /* ── Status bar ── */
+      .status-bar { font-size:.72rem; gap:.5rem; }
+      #gsLastFetch { margin-left:0; width:100%; }
+
+      /* ── Current card – velká teplota ── */
+      .big-val { font-size:2.4rem; }
+      .big-val .unit { font-size:1.2rem; }
+
+      /* ── Day summary – stack vertically ── */
+      .day-summary { flex-direction:column; gap:0; }
+      .ds-block { padding:.45rem .8rem; flex:none; }
+
+      /* ── Charts ── */
+      .chart-canvas-wrap { height:200px; }
+      .chart-canvas-wrap[style*="340px"] { height:220px !important; }
+      .chart-canvas-wrap[style*="320px"] { height:200px !important; }
+
+      /* ── Tabs ── */
+      .tab-btn { padding:.5rem .7rem; font-size:.75rem; }
+
+      /* ── Sensor tiles – 2 sloupce ── */
+      .sensor-row { grid-template-columns:repeat(2,1fr); }
+      .sensor-tile .st-val { font-size:1.3rem; }
+
+      /* ── Stat tiles ── */
+      .stats-grid { grid-template-columns:repeat(2,1fr); gap:.5rem; }
+      .stat-tile .stv { font-size:1.4rem; }
+
+      /* ── Explorer controls ── */
+      .exp-controls { padding:.6rem .7rem; gap:.6rem 1rem; }
+      .exp-controls select { min-width:0; width:100%; }
+      .exp-range-btn { padding:.28rem .55rem; font-size:.76rem; }
+
+      /* ── Compare day buttons ── */
+      .cmp-day-btn { padding:.25rem .55rem; font-size:.75rem; }
+
+      /* ── History table – vodorovné scrollování ── */
+      .history-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .history-table { font-size:.75rem; }
+      .history-table th, .history-table td { padding:.32rem .5rem; }
+
+      /* ── Dropdown menu ── */
+      .dd-menu { min-width:170px; font-size:.8rem; }
+
+      /* ── Config box ── */
+      .config-box { padding:.7rem .8rem; }
+    }
+
+    /* Safari iOS – prevent font size inflation */
+    @media(max-width:480px){
+      html { -webkit-text-size-adjust:100%; }
+    }
+
+    /* ── Sun / Moon bar ── */
+    .sun-bar { background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:1.4rem; padding:.28rem 1rem; font-size:.78rem; color:var(--muted); flex-wrap:wrap; position:sticky; top:52px; z-index:99; overflow:visible; }
+    .sun-bar .sb-item { display:flex; align-items:center; gap:.3rem; }
+    .sun-bar .sb-icon { font-size:1rem; }
+    .sun-bar .sb-val  { color:var(--text); font-weight:600; }
+    .sun-bar .sb-sep  { color:var(--border); }
+    @media(max-width:480px){ .sun-bar { top:48px; font-size:.72rem; gap:.8rem; padding:.22rem .6rem; } }
+
+    /* ── Moon detail popup ── */
+    .moon-wrap { position:relative; display:flex; align-items:center; gap:.3rem; cursor:pointer; }
+    .moon-popup {
+      display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+      background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+      min-width:220px; z-index:200; box-shadow:0 10px 36px rgba(0,0,0,.55);
+      padding:.9rem 1rem;
+    }
+    .moon-popup::before {
+      content:""; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+      border:7px solid transparent; border-bottom-color:var(--border);
+    }
+    .moon-wrap:hover .moon-popup,
+    .moon-wrap.popup-open .moon-popup { display:block; }
+    .mp-header { text-align:center; margin-bottom:.75rem; }
+    .mp-big-icon { font-size:2.6rem; line-height:1; }
+    .mp-phase-name { font-size:.95rem; font-weight:700; color:var(--text); margin-top:.15rem; }
+    .mp-date { font-size:.72rem; color:var(--muted); margin-top:.1rem; }
+    .mp-illum-bar-wrap { margin:.5rem 0 .75rem; }
+    .mp-illum-label { display:flex; justify-content:space-between; font-size:.72rem; color:var(--muted); margin-bottom:.3rem; }
+    .mp-illum-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+    .mp-illum-fill { height:100%; background:var(--yellow); border-radius:3px; transition:width .4s; }
+    .mp-rows { display:flex; flex-direction:column; gap:0; }
+    .mp-row { display:flex; justify-content:space-between; align-items:center;
+      padding:.32rem 0; border-bottom:1px solid var(--border); font-size:.82rem; }
+    .mp-row:last-child { border-bottom:none; }
+    .mp-row .mp-key { color:var(--muted); }
+    .mp-row .mp-val { color:var(--text); font-weight:600; }
+    @media(max-width:480px){
+      .moon-popup { left:auto; right:0; transform:none; min-width:190px; }
+    }
+
+    /* ── Rise detail popup ── */
+    .rise-wrap { position:relative; display:flex; align-items:center; gap:.3rem; cursor:pointer; }
+    .rise-popup {
+      display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+      background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+      min-width:280px; z-index:200; box-shadow:0 10px 36px rgba(0,0,0,.55);
+      padding:.9rem 1rem;
+    }
+    .rise-popup::before {
+      content:""; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+      border:7px solid transparent; border-bottom-color:var(--border);
+    }
+    .rise-wrap:hover .rise-popup,
+    .rise-wrap.popup-open .rise-popup { display:block; }
+    @media(max-width:480px){ .rise-popup { left:0; transform:none; min-width:240px; } }
+    /* ── Sun detail popup ── */
+    .sun-wrap { position:relative; display:flex; align-items:center; gap:.3rem; cursor:pointer; }
+    .sun-popup {
+      display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+      background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+      min-width:280px; z-index:200; box-shadow:0 10px 36px rgba(0,0,0,.55);
+      padding:.9rem 1rem;
+    }
+    .sun-popup::before {
+      content:""; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+      border:7px solid transparent; border-bottom-color:var(--border);
+    }
+    .sun-wrap:hover .sun-popup,
+    .sun-wrap.popup-open .sun-popup { display:block; }
+    /* ── UV popup ── */
+    .uv-wrap { position:relative; display:flex; align-items:center; gap:.3rem; cursor:pointer; }
+    .uv-popup {
+      display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+      background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+      min-width:280px; z-index:200; box-shadow:0 10px 36px rgba(0,0,0,.55);
+      padding:.9rem 1rem;
+    }
+    .uv-popup::before {
+      content:""; position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
+      border:7px solid transparent; border-bottom-color:var(--border);
+    }
+    .uv-wrap:hover .uv-popup,
+    .uv-wrap.popup-open .uv-popup { display:block; }
+    .sp-header { margin-bottom:.6rem; }
+    .sp-big-time { font-size:2rem; font-weight:700; line-height:1; }
+    .sp-subtitle { font-size:.75rem; color:var(--muted); margin-top:.2rem; }
+    @media(max-width:480px){
+      .sun-popup, .uv-popup { left:auto; right:0; transform:none; min-width:240px; }
+    }
+
+    /* ── Themes ── */
+    body.theme-light {
+      --bg:#f0f2f5; --bg2:#ffffff; --bg3:#e4e8ed;
+      --text:#1e2a38; --muted:#607080; --border:#c8d0da;
+    }
+    body.theme-light #headerStationName { color: #1e2a38 !important; }
+    body.theme-dark {
+      --bg:#0d1117; --bg2:#161b22; --bg3:#1c2128;
+      --text:#e6edf3; --muted:#8b949e; --border:#30363d;
+    }
+    /* dark-blue = výchozí :root */
+
+    /* ── Dropdown / Popup ── */
+    .dd-wrap { position:relative; }
+    .dd-menu { display:none; position:absolute; top:calc(100% + 6px); right:0;
+      background:var(--bg3); border:1px solid var(--border); border-radius:8px;
+      min-width:190px; z-index:999; box-shadow:0 8px 28px rgba(0,0,0,.45);
+      padding:.4rem 0; font-size:.83rem; }
+    .dd-menu.open { display:block; }
+    .dd-item { padding:.42rem 1rem; cursor:pointer; display:flex; align-items:center; gap:.55rem;
+      color:var(--text); white-space:nowrap; transition:background .12s; }
+    .dd-item:hover { background:var(--border); }
+    .dd-item.active-st { color:var(--accent); font-weight:700; }
+    .dd-sep { border:none; border-top:1px solid var(--border); margin:.3rem 0; }
+    .dd-label { padding:.28rem 1rem .05rem; font-size:.68rem; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); }
+    .gear-section { padding:.35rem 1rem; }
+    .gear-section select { width:100%; background:var(--bg2); border:1px solid var(--border);
+      color:var(--text); border-radius:4px; padding:.3rem .5rem; font-size:.82rem; }
+    .theme-btns { display:flex; gap:.35rem; }
+    .theme-btn { flex:1; padding:.32rem .2rem; border:1px solid var(--border); border-radius:4px;
+      background:var(--bg2); color:var(--text); font-size:.73rem; cursor:pointer;
+      text-align:center; transition:border-color .15s,background .15s,color .15s; }
+    .theme-btn:hover { border-color:var(--accent); }
+    .theme-btn.active { border-color:var(--accent); background:var(--accent); color:#fff; font-weight:700; }
+    .cfg-full-btn { display:block; margin:.45rem .7rem .3rem; background:var(--bg2);
+      border:1px solid var(--border); color:var(--muted); border-radius:4px;
+      padding:.32rem .8rem; font-size:.77rem; cursor:pointer; text-align:center;
+      width:calc(100% - 1.4rem); transition:border-color .15s,color .15s; }
+    .cfg-full-btn:hover { border-color:var(--accent); color:var(--text); }
+
+    /* ── Posuvník rozsahu (sliding window) ── */
+    .exp-slider-wrap { padding:.5rem 0 .1rem; user-select:none; }
+    .exp-slider-track { position:relative; height:28px; display:flex; align-items:center; }
+    .exp-slider-input { position:absolute; left:0; width:100%; height:4px; margin:0;
+      -webkit-appearance:none; appearance:none; background:none; pointer-events:none; outline:none; }
+    .exp-slider-input::-webkit-slider-runnable-track { height:4px; border-radius:2px; background:var(--border); }
+    .exp-slider-input::-moz-range-track { height:4px; border-radius:2px; background:var(--border); }
+    .exp-slider-input::-webkit-slider-thumb { -webkit-appearance:none; pointer-events:auto;
+      width:20px; height:20px; border-radius:50%; background:var(--accent); cursor:grab;
+      border:2px solid var(--bg); box-shadow:0 1px 4px rgba(0,0,0,.4); margin-top:-8px; }
+    .exp-slider-input::-moz-range-thumb { pointer-events:auto; width:18px; height:18px;
+      border-radius:50%; background:var(--accent); cursor:grab; border:2px solid var(--bg); }
+    .exp-slider-input:active::-webkit-slider-thumb { cursor:grabbing; background:var(--blue); }
+    .exp-slider-track-fill { position:absolute; height:4px; background:var(--accent);
+      border-radius:2px; pointer-events:none; opacity:.5; }
+    .exp-slider-labels { display:flex; justify-content:space-between; align-items:center;
+      font-size:.7rem; color:var(--muted); margin-top:.15rem; gap:.5rem; }
+    .exp-slider-lbl { flex:0 0 auto; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .exp-slider-hint { flex:1; text-align:center; font-size:.67rem; color:var(--border); letter-spacing:.03em; }
+
+    /* ── Porovnání dnů ── */
+    .cmp-day-btns { display:flex; gap:.35rem; flex-wrap:wrap; }
+    .cmp-day-btn { background:var(--bg3); border:2px solid var(--border); color:var(--muted);
+      border-radius:4px; padding:.3rem .75rem; font-size:.8rem; font-weight:600; cursor:pointer; transition:all .15s; }
+    .cmp-day-btn:hover { color:var(--text); }
+    .cmp-day-btn.active { background:color-mix(in srgb, var(--day-clr,var(--accent)) 15%, transparent);
+      border-color:var(--day-clr,var(--accent)); color:var(--day-clr,var(--accent)); }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="site-title" style="min-width:140px">🌤 Meteostanice</span>
+  <span id="headerStationName" style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
+  <div class="nav-pills">
+
+    <!-- ▸ Přepínač stanic -->
+    <div class="dd-wrap">
+      <div class="pill" onclick="toggleDD('ddStation')"><span id="pillStationName">–</span> ▾</div>
+      <div class="dd-menu" id="ddStation">
+        <div class="dd-label">Stanice</div>
+        <div class="dd-item" onclick="switchStation(0)"><span id="st0check">✓</span><span id="st0name">Meteo stanice Praha-baterie-nový systém</span></div>
+        <div class="dd-item" onclick="switchStation(1)"><span id="st1check"> </span><span id="st1name">Praha za oknem</span></div>
+        <div class="dd-item" onclick="switchStation(2)"><span id="st2check"> </span><span id="st2name">Mšené lázně</span></div>
+      </div>
+    </div>
+
+    <!-- ▸ Ozubené kolečko – rychlé nastavení -->
+    <div class="dd-wrap">
+      <div class="pill" onclick="toggleDD('ddGear')" title="Nastavení">⚙</div>
+      <div class="dd-menu" id="ddGear" style="min-width:230px">
+        <div class="dd-label">Zdroj dat</div>
+        <div class="gear-section" style="padding-top:.25rem">
+          <select id="gearSource" onchange="applyGearSource()">
+            <option value="sheets">Google Sheets</option>
+            <option value="mqtt">MQTT (live)</option>
+            <option value="both">Obojí (Sheets + MQTT)</option>
+          </select>
+        </div>
+        <hr class="dd-sep">
+        <div class="dd-label">Téma</div>
+        <div class="gear-section" style="padding-top:.25rem">
+          <div class="theme-btns">
+            <div class="theme-btn" data-theme="darkblue" onclick="setTheme('darkblue')">Dark Blue</div>
+            <div class="theme-btn" data-theme="dark"     onclick="setTheme('dark')">Dark</div>
+            <div class="theme-btn" data-theme="light"    onclick="setTheme('light')">Light</div>
+          </div>
+        </div>
+        <hr class="dd-sep">
+        <button class="cfg-full-btn" onclick="toggleFullCfg()">📋 Zdroj dat &amp; nastavení…</button>
+      </div>
+    </div>
+
+    <div class="pill">CZ ▾</div>
+    <div class="pill">°C ▾</div>
+  </div>
+</header>
+
+<!-- ── Sun/Moon bar ── -->
+<div class="sun-bar" id="sunBar">
+  <span class="rise-wrap" id="riseWrap" onclick="toggleRisePopup()">
+    <span class="sb-icon">🌅</span><span>Východ:</span><span class="sb-val" id="sbRise">–</span>
+    <div class="rise-popup" id="risePopup">
+      <div class="sp-header">
+        <div class="sp-big-time" id="rpBigTime">–</div>
+        <div class="sp-subtitle" id="rpSubtitle">–</div>
+      </div>
+      <canvas id="rpCanvas" width="280" height="100" style="width:100%;height:auto;display:block;margin:.4rem 0;border-radius:6px"></canvas>
+      <div class="mp-rows">
+        <div class="mp-row"><span class="mp-key">🌄 První světlo</span><span class="mp-val" id="rpFirstLight">–</span></div>
+        <div class="mp-row"><span class="mp-key">🌅 Východ slunce</span><span class="mp-val" id="rpSunrise">–</span></div>
+        <div class="mp-row"><span class="mp-key">☀️ Délka dne</span><span class="mp-val" id="rpTotalDay">–</span></div>
+      </div>
+    </div>
+  </span>
+  <span class="sb-sep">|</span>
+  <span class="sun-wrap" id="sunWrap" onclick="toggleSunPopup()">
+    <span class="sb-icon">🌇</span><span>Západ:</span><span class="sb-val" id="sbSet">–</span>
+    <div class="sun-popup" id="sunPopup">
+      <div class="sp-header">
+        <div class="sp-big-time" id="spBigTime">–</div>
+        <div class="sp-subtitle" id="spSubtitle">–</div>
+      </div>
+      <canvas id="spCanvas" width="280" height="100" style="width:100%;height:auto;display:block;margin:.4rem 0;border-radius:6px"></canvas>
+      <div class="mp-rows">
+        <div class="mp-row"><span class="mp-key"> Západ slunce</span><span class="mp-val" id="spSunset">–</span></div>
+        <div class="mp-row"><span class="mp-key">🌆 Poslední světlo</span><span class="mp-val" id="spLastLight">–</span></div>
+        <div class="mp-row"><span class="mp-key">☀️ Délka dne</span><span class="mp-val" id="spTotalDay">–</span></div>
+      </div>
+    </div>
+  </span>
+  <span class="sb-sep">|</span>
+  <span class="sb-item"><span class="sb-icon">⏱</span><span>Den:</span><span class="sb-val" id="sbDayLen">–</span></span>
+  <span class="sb-sep">|</span>
+  <span class="uv-wrap" id="uvWrap" onclick="toggleUVPopup()">
+    <span class="sb-icon">🔆</span><span>UV:</span><span class="sb-val" id="sbUV">–</span>
+    <div class="uv-popup" id="uvPopup">
+      <div class="sp-header">
+        <div class="sp-big-time" id="uvBigVal">–</div>
+        <div class="sp-subtitle" id="uvLevel">–</div>
+      </div>
+      <canvas id="uvCanvas" width="280" height="110" style="width:100%;height:auto;display:block;margin:.4rem 0;border-radius:6px"></canvas>
+      <div class="mp-rows">
+        <div class="mp-row"><span class="mp-key">🕐 Max UV dnes</span><span class="mp-val" id="uvMax">–</span></div>
+        <div class="mp-row"><span class="mp-key">🧴 Ochrana</span><span class="mp-val" id="uvProtect">–</span></div>
+      </div>
+    </div>
+  </span>
+  <span class="sb-sep">|</span>
+  <span class="moon-wrap" id="moonWrap" onclick="toggleMoonPopup()">
+    <span class="sb-icon" id="sbMoonIcon">🌙</span><span id="sbMoonName">Fáze Měsíce…</span>
+    <div class="moon-popup" id="moonPopup">
+      <div class="mp-header">
+        <div class="mp-big-icon" id="mpBigIcon">🌙</div>
+        <div class="mp-phase-name" id="mpPhaseName">–</div>
+        <div class="mp-date" id="mpDate">–</div>
+      </div>
+      <div class="mp-illum-bar-wrap">
+        <div class="mp-illum-label"><span>Osvětlení</span><span id="mpIllumPct">–</span></div>
+        <div class="mp-illum-bar"><div class="mp-illum-fill" id="mpIllumFill" style="width:0%"></div></div>
+      </div>
+      <div class="mp-rows">
+        <div class="mp-row"><span class="mp-key">🌕 Další úplňek</span><span class="mp-val" id="mpNextFull">–</span></div>
+        <div class="mp-row"><span class="mp-key">🌝 Východ Měsíce</span><span class="mp-val" id="mpMoonrise">–</span></div>
+        <div class="mp-row"><span class="mp-key">🌑 Západ Měsíce</span><span class="mp-val" id="mpMoonset">–</span></div>
+        <div class="mp-row"><span class="mp-key">📐 Vzdálenost</span><span class="mp-val" id="mpDistance">–</span></div>
+      </div>
+    </div>
+  </span>
+</div>
+
+<!-- Overlay pro zavření dropdownů -->
+<div id="ddOverlay" onclick="closeAllDD()" style="display:none;position:fixed;inset:0;z-index:99"></div>
+
+<div class="page-wrapper">
+
+  <!-- ══ CONFIG ══ -->
+  <div class="config-box" id="cfgDetails" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+      <span style="font-weight:700;font-size:.88rem;color:var(--accent)">⚙ Nastavení zdroje dat – <span id="cfgPanelStName"></span></span>
+      <button onclick="toggleFullCfg()" style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1" title="Zavřít">×</button>
+    </div>
+    <div class="config-grid">
+      <label style="grid-column:span 2">Název stanice
+        <input id="cfgStationName" type="text" placeholder="Mšené lázně">
+      </label>
+      <label>Google Sheets ID
+        <input id="cfgSheetId" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+      </label>
+      <label>Název listu (záložka)
+        <input id="cfgSheetName" type="text" placeholder="List1">
+      </label>
+      <label>Interval obnovy (s)
+        <input id="cfgInterval" type="number" value="60" min="10">
+      </label>
+      <label>Zdroj dat
+        <select id="cfgSource">
+          <option value="sheets">Google Sheets (primární)</option>
+          <option value="mqtt">MQTT (live)</option>
+          <option value="both">Obojí (Sheets + MQTT live)</option>
+        </select>
+      </label>
+      <label>MQTT Host (WebSocket)
+        <input id="cfgMqttHost" type="text" placeholder="192.168.1.100">
+      </label>
+      <label>MQTT Port (8883=WSS, 9001=WS)
+        <input id="cfgMqttPort" type="number" value="9001">
+      </label>
+      <label>MQTT téma JSON (nebo prázdné)
+        <input id="cfgMqttJson" type="text" placeholder="meteo/data">
+      </label>
+      <label>Zeměpisná šířka (°N)
+        <input id="cfgLat" type="number" step="0.01" placeholder="50.08">
+      </label>
+      <label>Zeměpisná délka (°E)
+        <input id="cfgLon" type="number" step="0.01" placeholder="14.42">
+      </label>
+
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;align-items:center">
+      <button class="cfg-btn" style="margin-top:0" onclick="applyConfig()">✓ Použít &amp; načíst</button>
+      <button class="cfg-btn" style="margin-top:0;background:var(--blue)" onclick="fetchSheets()">↺ Obnovit data</button>
+      <label class="cfg-btn" style="margin-top:0;background:#1a7a5a;cursor:pointer" title="Načíst config_N.json ze souboru">
+        📂 Načíst config.json
+        <input type="file" id="cfgFileInput" accept=".json" style="display:none" onchange="loadConfigFromFile(this)">
+      </label>
+      <button class="cfg-btn" style="margin-top:0;background:#2e7d32" onclick="saveConfigToFile()" title="Stáhnout nastavení jako config_N.json">💾 Uložit <span id="cfgSaveName">config_0.json</span></button>
+      <span id="cfgFileStatus" style="font-size:.78rem;color:var(--muted)"></span>
+    </div>
+    <div class="config-hint">
+      <strong>Jak napojit Google Sheets:</strong><br>
+      1. Otevřete tabulku → klikněte <em>Sdílet</em> → nastavte <strong>Kdokoli se odkazem</strong> může zobrazit.<br>
+      2. Z URL zkopírujte část mezi <code>/d/</code> a <code>/edit</code> → to je <strong>Sheet ID</strong>.<br>
+      3. Zadejte přesný název záložky (listu) – např. <code>Hlavni_datovna</code>.<br>
+      <strong>Očekávané sloupce (od A):</strong> Datum | Čas | Teplota | Tlak | Vlhkost | Přírůstek | Déšť | nádrž | Napětí<br>
+      📁 <strong>config_0.json, config_1.json, config_2.json</strong> – každá stanice má vlastní soubor vedle <code>index.html</code>; načítá se automaticky při přepnutí stanice (vyžaduje Live Server).
+      ⚠️ <strong>Při chybě „Failed to fetch":</strong> Použijte rozšíření <strong>Live Server</strong> ve VS Code (tlačítko <em>Go Live</em> vpravo dole).
+      Stránka automaticky zkouší záložní CORS proxy.
+    </div>
+  </div>
+
+  <!-- ══ STATUS BAR ══ -->
+  <div class="status-bar">
+    <div class="dot" id="gsDot"></div>
+    <span id="gsStatusText">Google Sheets: nezadáno</span>
+    <div class="dot" id="mqttDot"></div>
+    <span id="mqttStatusText">MQTT: neaktivní</span>
+    <span id="gsLastFetch"></span>
+    <button onclick="toggleFullCfg()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:.2rem .7rem;font-size:.75rem;cursor:pointer" title="Nastavení zdroje dat">⚙ Nastavení</button>
+  </div>
+
+  <!-- ══ TOP ROW ══ -->
+  <div class="top-row">
+
+    <!-- Teplota + vlhkost + rosný bod -->
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div class="current-card" onclick="openExplorerWith('temp')" title="Zobrazit v grafu" style="cursor:pointer">
+        <div class="lbl">Aktuální teplota</div>
+        <div class="big-val">
+          <span id="curTemp">–</span><span class="unit">°C</span><span class="trend" id="tempTrend">→</span>
+        </div>
+        <div class="ts" id="curTime">–</div>
+      </div>
+      <div class="sub-cards">
+        <div class="sub-card" style="background:var(--teal);cursor:pointer" onclick="openExplorerWith('hum')" title="Zobrazit v grafu">
+          <div><div class="sc-lbl">Vlhkost</div><div class="sc-val"><span id="curHum">–</span> %</div></div>
+          <span class="sc-tr" id="humTrend">→</span>
+        </div>
+        <div class="sub-card" style="background:var(--blue);cursor:pointer" onclick="openExplorerWith('dew')" title="Zobrazit v grafu">
+          <div><div class="sc-lbl">Rosný bod</div><div class="sc-val"><span id="curDew">–</span> °C</div></div>
+          <span class="sc-tr">→</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dříve touto dobou -->
+    <div class="table-card">
+      <div class="tc-title" style="background:var(--green)">Dříve touto dobou</div>
+      <table><tbody id="historyRows">
+        <tr><td colspan="3" style="color:var(--muted);padding:.8rem">Čekám na data…</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- Statistika -->
+    <div class="table-card">
+      <div class="tc-title" style="background:var(--bg3)">Statistika</div>
+      <table><tbody>
+        <tr><td>Umístění</td><td style="text-align:right" id="statLocation">–</td></tr>
+        <tr><td>Počet měření</td><td style="text-align:right;color:var(--accent);font-weight:700" id="statCount">–</td></tr>
+        <tr><td>Měřeno od</td><td style="text-align:right;color:var(--muted)" id="statFrom">–</td></tr>
+        <tr><td>Nejvyšší teplota</td><td style="text-align:right;color:var(--red);font-weight:700" id="statTempMax">–</td></tr>
+        <tr><td>Nejnižší teplota</td><td style="text-align:right;color:var(--blue);font-weight:700" id="statTempMin">–</td></tr>
+        <tr><td>Max. srážky (den)</td><td style="text-align:right;color:var(--blue);font-weight:700" id="statRainMax">–</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ EXTRA SENSORS ══ -->
+  <div class="sensor-row">
+    <div class="sensor-tile" style="border-top-color:var(--yellow)" onclick="openExplorerWith('pressure')" title="Zobrazit v grafu">
+      <div class="st-lbl">⬆ Tlak</div>
+      <div class="st-val" id="curPressure">–</div>
+      <div class="st-unit">hPa</div>
+    </div>
+    <div class="sensor-tile" style="border-top-color:var(--blue)" onclick="openExplorerWith('rainInc')" title="Zobrazit v grafu">
+      <div class="st-lbl">🌧 Přírůstek</div>
+      <div class="st-val" id="curRainInc">–</div>
+      <div class="st-unit">mm</div>
+    </div>
+    <div class="sensor-tile" style="border-top-color:var(--teal)" onclick="openExplorerWith('rain')" title="Zobrazit v grafu">
+      <div class="st-lbl">☔ Celk. déšť</div>
+      <div class="st-val" id="curRainTotal">–</div>
+      <div class="st-unit">mm</div>
+    </div>
+    <div class="sensor-tile" style="border-top-color:var(--teal)">
+      <div class="st-lbl">🪣 Nádrž</div>
+      <div class="st-val" id="curTank">–</div>
+      <div class="st-unit">mm</div>
+    </div>
+    <div class="sensor-tile" style="border-top-color:var(--purple)" onclick="openExplorerWith('voltage')" title="Zobrazit v grafu">
+      <div class="st-lbl">🔋 Napětí</div>
+      <div class="st-val" id="curVoltage">–</div>
+      <div class="st-unit">V</div>
+    </div>
+  </div>
+
+  <!-- ══ TABS ══ -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="now">Aktuálně</button>
+    <button class="tab-btn" data-tab="daily">Denní statistiky</button>
+    <button class="tab-btn" data-tab="rain">Srážky &amp; Baterie</button>
+    <button class="tab-btn" data-tab="explorer">📈 Graf</button>
+    <button class="tab-btn" data-tab="compare">📅 Porovnání</button>
+    <button class="tab-btn" data-tab="overview">📊 Přehled teplot</button>
+    <button class="tab-btn" data-tab="monthly">Měsíční</button>
+    <button class="tab-btn" data-tab="yearly">Roční</button>
+    <button class="tab-btn" data-tab="hist">Historie</button>
+  </div>
+
+  <!-- ══ Aktuálně ══ -->
+  <div class="tab-pane active" id="tab-now">
+    <div class="day-summary">
+      <div class="ds-block"><div class="ds-title">🗓 DNES</div><div class="ds-vals" id="todayDate">–</div></div>
+      <div class="ds-block"><div class="ds-title">🌡 Teplota</div><div class="ds-vals">
+        Min: <span id="dayTempMin">–</span> °C &nbsp;|&nbsp; Prům: <span id="dayTempAvg">–</span> °C &nbsp;|&nbsp; Max: <span id="dayTempMax">–</span> °C
+      </div></div>
+      <div class="ds-block"><div class="ds-title">💧 Vlhkost</div><div class="ds-vals">
+        Min: <span id="dayHumMin">–</span> % &nbsp;|&nbsp; Prům: <span id="dayHumAvg">–</span> % &nbsp;|&nbsp; Max: <span id="dayHumMax">–</span> %
+      </div></div>
+      <div class="ds-block"><div class="ds-title">☔ Déšť dnes</div><div class="ds-vals">
+        Celkem: <span id="dayRain">–</span> mm
+      </div></div>
+    </div>
+    <div class="chart-wrapper">
+      <div class="chart-title">Posledních 24 hodin – Teplota &amp; Vlhkost</div>
+      <div class="chart-canvas-wrap"><canvas id="chart24h"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════ Denní statistiky ════ -->
+  <div class="tab-pane" id="tab-daily">
+    <div class="stats-grid" id="dailyGrid">
+      <p style="color:var(--muted);padding:1rem">Načítám data…</p>
+    </div>
+  </div>
+
+  <!-- ════ Srážky & Baterie ════ -->
+  <div class="tab-pane" id="tab-rain">
+    <div class="chart-wrapper">
+      <div class="chart-title">Denní srážky – posledních 30 dní</div>
+      <div class="chart-canvas-wrap"><canvas id="chartRain"></canvas></div>
+    </div>
+    <div class="chart-wrapper">
+      <div class="chart-title">Napětí baterie v čase</div>
+      <div class="chart-canvas-wrap"><canvas id="chartVoltage"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════ Graf – průzkumník dat ════ -->
+  <div class="tab-pane" id="tab-explorer">
+
+    <div class="exp-controls">
+      <!-- Veličina -->
+      <div class="exp-group">
+        <label class="exp-label">Veličina</label>
+        <select id="expMetric" onchange="buildExplorer()">
+          <option value="temp">🌡 Teplota [°C]</option>
+          <option value="hum">💧 Vlhkost [%]</option>
+          <option value="temp_hum">🌡+💧 Teplota &amp; Vlhkost</option>
+          <option value="pressure">🌬 Tlak [hPa]</option>
+          <option value="dew">🌫 Rosný bod [°C]</option>
+          <option value="rain">☔ Srážky denní [mm]</option>
+          <option value="rainInc">🌧 Srážky přírůstek [mm]</option>
+          <option value="voltage">🔋 Napětí [V]</option>
+        </select>
+      </div>
+
+      <!-- Rychlý rozsah -->
+      <div class="exp-group">
+        <label class="exp-label">Časový rozsah</label>
+        <div class="exp-range-btns">
+          <button class="exp-range-btn active" data-range="24h"  onclick="setExpRange('24h')">24 h</button>
+          <button class="exp-range-btn"        data-range="3d"   onclick="setExpRange('3d')">3 dny</button>
+          <button class="exp-range-btn"        data-range="7d"   onclick="setExpRange('7d')">7 dní</button>
+          <button class="exp-range-btn"        data-range="30d"  onclick="setExpRange('30d')">30 dní</button>
+          <button class="exp-range-btn"        data-range="90d"  onclick="setExpRange('90d')">90 dní</button>
+          <button class="exp-range-btn"        data-range="all"  onclick="setExpRange('all')">Vše</button>
+          <button class="exp-range-btn"        data-range="custom" onclick="setExpRange('custom')">Vlastní rozsah</button>
+          <button class="exp-range-btn"        data-range="oneday" onclick="setExpRange('oneday')">Jeden den</button>
+        </div>
+      </div>
+
+      <!-- Vlastní datum -->
+      <div class="exp-group" id="expCustomWrap" style="display:none">
+        <label class="exp-label">Datum od – do (nebo jeden den)</label>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <input type="date" id="expDateFrom" onchange="buildExplorer()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
+          <span style="color:var(--muted)">–</span>
+          <input type="date" id="expDateTo"   onchange="buildExplorer()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
+          <button onclick="expSetToday()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .6rem;font-size:.8rem;cursor:pointer">Dnes</button>
+        </div>
+      </div>
+
+      <!-- Jeden den -->
+      <div class="exp-group" id="expOneDayWrap" style="display:none">
+        <label class="exp-label">Konkrétní den</label>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <input type="date" id="expDateOne" onchange="expApplyOneDay()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
+          <button onclick="expOneSetToday()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .6rem;font-size:.8rem;cursor:pointer">Dnes</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="expStats" class="day-summary" style="margin-bottom:.5rem;display:none"></div>
+    <div class="chart-wrapper" style="margin-top:.6rem">
+      <div class="chart-title" id="expChartTitle">Graf</div>
+      <div class="chart-canvas-wrap" style="height:320px"><canvas id="chartExplorer"></canvas></div>
+    </div>
+    <div id="expInfo" style="font-size:.78rem;color:var(--muted);margin-top:.3rem;text-align:right"></div>
+
+    <!-- Posuvník zoumu -->
+    <div class="exp-slider-wrap" id="expSliderWrap" style="display:none">
+      <div class="exp-slider-track" id="expSliderTrack">
+        <div class="exp-slider-track-fill" id="expSliderFill"></div>
+        <input type="range" class="exp-slider-input" id="expSliderL" min="0" max="100" value="0" oninput="expSliderUpdate()">
+        <input type="range" class="exp-slider-input" id="expSliderR" min="0" max="100" value="100" oninput="expSliderUpdate()">
+      </div>
+      <div class="exp-slider-labels">
+        <span class="exp-slider-lbl" id="expSliderLbl1">–</span>
+        <span class="exp-slider-hint">⟵ posuvník zoumu ⟶</span>
+        <span class="exp-slider-lbl" style="text-align:right" id="expSliderLbl2">–</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ Porovnání dnů ════ -->
+  <div class="tab-pane" id="tab-compare">
+    <div class="exp-controls">
+      <!-- Veličina -->
+      <div class="exp-group">
+        <label class="exp-label">Veličina</label>
+        <select id="cmpMetric" onchange="buildCompare()">
+          <option value="temp">🌡 Teplota [°C]</option>
+          <option value="hum">💧 Vlhkost [%]</option>
+          <option value="temp_hum">🌡+💧 Teplota &amp; Vlhkost</option>
+          <option value="pressure">🌬 Tlak [hPa]</option>
+        </select>
+      </div>
+      <!-- Rychlé tlačítka dnů (automat. posledních 7 dní) -->
+      <div class="exp-group">
+        <label class="exp-label">Porovnávat dny</label>
+        <div class="cmp-day-btns" id="cmpDayBtns"></div>
+      </div>
+      <!-- Přidat vlastní den -->
+      <div class="exp-group">
+        <label class="exp-label">Přidat vlastní den</label>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <input type="date" id="cmpAddDate" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
+          <button onclick="cmpAddCustomDay()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .7rem;font-size:.82rem;cursor:pointer">+ Přidat</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper" style="margin-top:.6rem">
+      <div class="chart-title" id="cmpChartTitle">Porovnání dnů</div>
+      <div class="chart-canvas-wrap" style="height:340px"><canvas id="chartCompare"></canvas></div>
+    </div>
+    <div id="cmpInfo" style="font-size:.78rem;color:var(--muted);margin-top:.3rem;text-align:right"></div>
+  </div>
+
+  <!-- ════ Přehled teplot ════ -->
+  <div class="tab-pane" id="tab-overview">
+    <div class="exp-controls">
+      <div class="exp-group">
+        <label class="exp-label">Veličina</label>
+        <select id="ovMetric" onchange="buildTempOverview()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
+          <option value="temp">🌡 Teplota [°C]</option>
+          <option value="hum">💧 Vlhkost [%]</option>
+          <option value="pressure">🌬 Tlak [hPa]</option>
+        </select>
+      </div>
+      <div class="exp-group">
+        <label class="exp-label">Zobrazit dnů</label>
+        <div class="ov-range-btns">
+          <button class="ov-range-btn" data-ovdays="7"   onclick="setOvDays(7)">7 dní</button>
+          <button class="ov-range-btn active" data-ovdays="30"  onclick="setOvDays(30)">30 dní</button>
+          <button class="ov-range-btn" data-ovdays="90"  onclick="setOvDays(90)">90 dní</button>
+          <button class="ov-range-btn" data-ovdays="0"   onclick="setOvDays(0)">Vše</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper" style="margin-top:.6rem">
+      <div class="chart-title" id="ovChartTitle">Teploty za poslední dny (°C)</div>
+      <div class="chart-canvas-wrap" style="height:300px"><canvas id="chartOverview"></canvas></div>
+    </div>
+    <div class="ov-table-wrap">
+      <table class="ov-table">
+        <thead><tr><th>Den</th><th>Min.</th><th>Průměr</th><th>Max.</th><th>Měření</th></tr></thead>
+        <tbody id="ovTableBody"><tr><td colspan="5" style="color:var(--muted);padding:1rem">Zatím žádná data.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════ Měsíční ══ -->
+  <div class="tab-pane" id="tab-monthly">
+    <div class="chart-wrapper">
+      <div class="chart-title">Průměrné hodnoty – posledních 30 dní</div>
+      <div class="chart-canvas-wrap"><canvas id="chartMonthly"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════ Roční ══ -->
+  <div class="tab-pane" id="tab-yearly">
+    <div class="chart-wrapper">
+      <div class="chart-title">Průměrné hodnoty – posledních 12 měsíců</div>
+      <div class="chart-canvas-wrap"><canvas id="chartYearly"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════ Historie ══ -->
+  <div class="tab-pane" id="tab-hist">
+    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
+      <span>Zobrazit:</span>
+      <select id="histLimit" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:.25rem .5rem;font-size:.82rem">
+        <option value="100">100 řádků</option>
+        <option value="500" selected>500 řádků</option>
+        <option value="2000">2 000 řádků</option>
+        <option value="0">Vše</option>
+      </select>
+    </div>
+    <div class="history-table-wrap">
+      <table class="history-table">
+        <thead><tr>
+          <th>Datum</th><th>Čas</th><th>Teplota °C</th><th>Tlak hPa</th>
+          <th>Vlhkost %</th><th>Přírůstek mm</th><th>Déšť mm</th>
+          <th>Nádrž mm</th><th>Napětí V</th>
+        </tr></thead>
+        <tbody id="histTableBody">
+          <tr><td colspan="9" style="color:var(--muted)">Žádná data.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<script>
+/* ══════════════════════════════════════════════
+   MULTI-STATION CONFIG
+══════════════════════════════════════════════ */
+const STATION_DEFAULTS = [
+  { name:"Meteo stanice Praha-baterie-nový systém", cfgFile:"config_praha_baterie.json",  sheetId:"1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8", sheetName:"Hlavni_datovna", interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.08, lon:14.42 },
+  { name:"Praha za oknem",                          cfgFile:"config_praha_okno.json",      sheetId:"1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA", sheetName:"Hlavni_datovna", interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.08, lon:14.42 },
+  { name:"Mšené lázně",                              cfgFile:"config_stanice3.json",        sheetId:"",                                               sheetName:"List1",          interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.44, lon:13.91 },
+];
+
+let stations, activeIdx;
+try { stations = JSON.parse(localStorage.getItem("meteoStations")); } catch(e){}
+if (!Array.isArray(stations) || stations.length < 3) {
+  // Migrace ze starého jednoho CFG na stanici 0
+  const old = (() => { try { return JSON.parse(localStorage.getItem("meteoCFG")); } catch(e){ return null; } })();
+  stations = STATION_DEFAULTS.map((d,i) => i===0 && old
+    ? { ...d, sheetId:old.sheetId||"", sheetName:old.sheetName||d.sheetName, interval:old.interval||60,
+        source:old.source||"sheets", mqttHost:old.mqttHost||"", mqttPort:old.mqttPort||9001,
+        mqttJson:old.mqttJson||d.mqttJson, name:old.location||d.name }
+    : { ...d });
+}
+while (stations.length < 3) stations.push({ ...STATION_DEFAULTS[stations.length] });
+
+// Doplň chybějící sheetId z STATION_DEFAULTS (pro existující localStorage bez sheetId)
+stations = stations.map((s, i) => (!s.sheetId && STATION_DEFAULTS[i].sheetId)
+  ? { ...s, sheetId: STATION_DEFAULTS[i].sheetId, sheetName: STATION_DEFAULTS[i].sheetName }
+  : s);
+
+// Vždy synchronizuj jméno stanice z STATION_DEFAULTS (aby přejmenování v kódu se projevilo)
+stations = stations.map((s, i) => ({ ...s, name: STATION_DEFAULTS[i].name }));
+
+try { activeIdx = parseInt(localStorage.getItem("meteoActiveIdx"))||0; } catch(e){ activeIdx=0; }
+if (activeIdx < 0 || activeIdx > 2) activeIdx = 0;
+
+let CFG = stations[activeIdx];
+
+function saveStations() { localStorage.setItem("meteoStations", JSON.stringify(stations)); }
+
+/* ── Přepnutí stanice ── */
+function switchStation(idx) {
+  if (idx === activeIdx) { closeAllDD(); return; }
+  if (fetchTimer) clearInterval(fetchTimer);
+  activeIdx = idx;
+  CFG = stations[activeIdx];
+  localStorage.setItem("meteoActiveIdx", String(activeIdx));
+  store.rows = [];
+  closeAllDD();
+  updateStationUI();
+  fillConfigUI();
+  tryLoadConfigJson(idx).then(loaded => startAll());
+}
+
+function updateStationUI() {
+  for (let i = 0; i < 3; i++) {
+    el("st"+i+"name").textContent  = stations[i].name;
+    el("st"+i+"check").textContent = (i === activeIdx) ? "✓" : " ";
+  }
+  el("pillStationName").textContent  = stations[activeIdx].name;
+  el("statLocation").textContent     = stations[activeIdx].name;
+  if (el("headerStationName")) el("headerStationName").textContent = stations[activeIdx].name;
+  el("gearSource").value            = stations[activeIdx].source || "sheets";
+  if (el("cfgSaveName")) el("cfgSaveName").textContent = STATION_DEFAULTS[activeIdx].cfgFile;
+  if (el("cfgPanelStName")) el("cfgPanelStName").textContent = stations[activeIdx].name;
+  updateThemeBtns();
+}
+
+/* ── Téma ── */
+let theme = localStorage.getItem("meteoTheme") || "darkblue";
+
+function setTheme(t) {
+  theme = t;
+  localStorage.setItem("meteoTheme", t);
+  document.body.className = (t === "darkblue") ? "" : "theme-" + t;
+  updateThemeBtns();
+  closeAllDD();
+}
+function updateThemeBtns() {
+  document.querySelectorAll(".theme-btn").forEach(b => b.classList.toggle("active", b.dataset.theme === theme));
+}
+
+/* ── Dropdown helpers ── */
+function toggleDD(id) {
+  const m = el(id), wasOpen = m.classList.contains("open");
+  closeAllDD();
+  if (!wasOpen) { m.classList.add("open"); el("ddOverlay").style.display = "block"; }
+}
+function closeAllDD() {
+  document.querySelectorAll(".dd-menu").forEach(m => m.classList.remove("open"));
+  el("ddOverlay").style.display = "none";
+}
+function toggleFullCfg() {
+  closeAllDD();
+  const d = el("cfgDetails");
+  if (d.style.display === "none" || d.style.display === "") {
+    d.style.display = "block";
+    el("cfgPanelStName").textContent = stations[activeIdx].name;
+    d.scrollIntoView({ behavior:"smooth", block:"start" });
+  } else {
+    d.style.display = "none";
+  }
+}
+
+/* ── Rychlá změna zdroje z gear popup ── */
+function applyGearSource() {
+  stations[activeIdx].source = el("gearSource").value;
+  CFG = stations[activeIdx];
+  saveStations();
+  startAll();
+}
+
+/* Automatické načtení konfiguračního souboru pro danou stanici */
+function cfgFileName(idx) { return "./" + STATION_DEFAULTS[idx ?? activeIdx].cfgFile; }
+
+async function tryLoadConfigJson(idx) {
+  const i = idx ?? activeIdx;
+  const fname = cfgFileName(i);
+  try {
+    const r = await fetch(fname + "?_=" + Date.now());
+    if (!r.ok) return false;
+    const obj = await r.json();
+    // Validace: je tento konfig určen pro správnou stanici?
+    if (obj.stationIdx !== undefined && obj.stationIdx !== i) {
+      console.warn("[CFG] Varování: soubor", fname, "má stationIdx="+obj.stationIdx, "ale načítám pro stanici", i);
+      setGsStatus(null, "⚠ Konfig pro stanici " + (obj.stationIdx+1) + " načten místo " + (i+1) + "!");
+    }
+    _applyCfgObject(obj, fname, false);
+    return true;
+  } catch (e) { return false; }
+}
+
+/* Načtení config.json přes <input type=file> */
+function loadConfigFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const obj = JSON.parse(e.target.result);
+      _applyCfgObject(obj, file.name, true);
+      el("cfgFileStatus").textContent = "✓ Načteno z " + file.name;
+      el("cfgFileStatus").style.color = "#4caf50";
+    } catch (err) {
+      el("cfgFileStatus").textContent = "✗ Chyba parsování: " + err.message;
+      el("cfgFileStatus").style.color = "#f44336";
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* Uložit jako pojmenovaný config soubor stanice */
+function saveConfigToFile() {
+  const fname = STATION_DEFAULTS[activeIdx].cfgFile;
+  const data = JSON.stringify({ ...CFG, stationIdx: activeIdx }, null, 2);
+  const blob = new Blob([data], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = fname; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* Interní: aplikuj objekt do aktivní stanice */
+function _applyCfgObject(obj, source, runStartAll) {
+  stations[activeIdx] = { ...STATION_DEFAULTS[activeIdx], ...stations[activeIdx], ...obj };
+  CFG = stations[activeIdx];
+  saveStations();
+  fillConfigUI();
+  updateStationUI();
+  console.log("[CFG] Načteno z:", source, CFG);
+  if (runStartAll) startAll();
+}
+
+function applyConfig() {
+  const obj = {
+    name:      document.getElementById("cfgStationName").value.trim() || stations[activeIdx].name,
+    sheetId:   document.getElementById("cfgSheetId").value.trim(),
+    sheetName: document.getElementById("cfgSheetName").value.trim() || "List1",
+    interval:  parseInt(document.getElementById("cfgInterval").value) || 60,
+    source:    document.getElementById("cfgSource").value,
+    mqttHost:  document.getElementById("cfgMqttHost").value.trim(),
+    mqttPort:  parseInt(document.getElementById("cfgMqttPort").value) || 9001,
+    mqttJson:  document.getElementById("cfgMqttJson").value.trim(),
+    lat:       parseFloat(document.getElementById("cfgLat").value) || 50.08,
+    lon:       parseFloat(document.getElementById("cfgLon").value) || 14.42,
+  };
+  document.getElementById("cfgDetails").style.display = "none";
+  _applyCfgObject(obj, "formulář", true);
+}
+
+function fillConfigUI() {
+  const s = stations[activeIdx];
+  document.getElementById("cfgStationName").value = s.name      || "";
+  document.getElementById("cfgSheetId").value     = s.sheetId   || "";
+  document.getElementById("cfgSheetName").value   = s.sheetName || "";
+  document.getElementById("cfgInterval").value    = s.interval  || 60;
+  document.getElementById("cfgSource").value      = s.source    || "sheets";
+  document.getElementById("cfgMqttHost").value    = s.mqttHost  || "";
+  document.getElementById("cfgMqttPort").value    = s.mqttPort  || 9001;
+  document.getElementById("cfgMqttJson").value    = s.mqttJson  || "";
+  document.getElementById("cfgLat").value         = s.lat  ?? 50.08;
+  document.getElementById("cfgLon").value         = s.lon  ?? 14.42;
+  updateSunBar();
+}
+
+/* ══════════════════════════════════════════════
+   SUNRISE / SUNSET / MOON PHASE
+══════════════════════════════════════════════ */
+function calcSunTimes(lat, lon, date) {
+  const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+  const start = new Date(date.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((date - start) / 86400000);
+  const gamma = 2 * Math.PI / 365 * (dayOfYear - 1);
+  const eqtime = 229.18 * (0.000075 + 0.001868*Math.cos(gamma) - 0.032077*Math.sin(gamma)
+                          - 0.014615*Math.cos(2*gamma) - 0.04089*Math.sin(2*gamma));
+  const decl = 0.006918 - 0.399912*Math.cos(gamma) + 0.070257*Math.sin(gamma)
+              - 0.006758*Math.cos(2*gamma) + 0.000907*Math.sin(2*gamma)
+              - 0.002697*Math.cos(3*gamma) + 0.00148*Math.sin(3*gamma);
+  const cosHA = Math.cos(90.833*D2R) / (Math.cos(lat*D2R)*Math.cos(decl)) - Math.tan(lat*D2R)*Math.tan(decl);
+  if (cosHA < -1 || cosHA > 1) return { rise:null, set:null }; // polární noc / slunce
+  const ha = Math.acos(cosHA) * R2D;
+  const noon = 720 - 4*lon - eqtime;
+  const yr = date.getFullYear(), mo = date.getMonth(), dy = date.getDate();
+  return {
+    rise: new Date(Date.UTC(yr, mo, dy, 0, Math.round(noon - 4*ha))),
+    set:  new Date(Date.UTC(yr, mo, dy, 0, Math.round(noon + 4*ha)))
+  };
+}
+
+function calcMoonPhase(date) {
+  const knownNew = new Date(Date.UTC(2000, 0, 6, 18, 14));
+  const cycle = 29.530588853;
+  const phaseDays = (((date - knownNew) / 86400000) % cycle + cycle) % cycle;
+  const names = [
+    { max:1.85,  icon:"🌑", name:"Nov" },
+    { max:7.38,  icon:"🌒", name:"Dorůstající srpek" },
+    { max:9.22,  icon:"🌓", name:"První čtvrtina" },
+    { max:14.77, icon:"🌔", name:"Dorůstající měsíc" },
+    { max:16.61, icon:"🌕", name:"Úplněk" },
+    { max:22.15, icon:"🌖", name:"Ubývající měsíc" },
+    { max:23.99, icon:"🌗", name:"Poslední čtvrtina" },
+    { max:29.53, icon:"🌘", name:"Ubývající srpek" },
+  ];
+  const entry = names.find(n => phaseDays < n.max) || names[0];
+
+  // Illumination (0-100 %)
+  const illum = Math.round((1 - Math.cos(2 * Math.PI * phaseDays / cycle)) / 2 * 100);
+
+  // Days to next full moon (full = 14.765 days)
+  const fullDay = cycle / 2;
+  const rawToFull = phaseDays < fullDay ? fullDay - phaseDays : cycle - phaseDays + fullDay;
+  const daysToFull = Math.round(rawToFull);
+
+  // Approximate distance via Moon's mean anomaly (km)
+  const D = (date - new Date(Date.UTC(2000, 0, 1, 12))) / 86400000;
+  const M = ((134.963 + 13.064993 * D) % 360 + 360) % 360 * Math.PI / 180;
+  const dist = Math.round(385001 - 20905 * Math.cos(M));
+
+  return { ...entry, phaseDays, illum, daysToFull, dist };
+}
+
+function calcMoonRiseSet(lat, lon, date, phaseDays) {
+  // Approximation: Moon rises ~50 min later each day vs Sun
+  // At new moon (phase=0): rises with Sun; at full moon (phase=14.77): rises at sunset
+  const { rise, set } = calcSunTimes(lat, lon, date);
+  if (!rise || !set) return { moonrise: null, moonset: null };
+  const cycle = 29.530588853;
+  const offset = (phaseDays / cycle) * 24 * 60; // minutes offset from sunrise
+  const riseMin = rise.getUTCHours() * 60 + rise.getUTCMinutes();
+  const setMin  = set.getUTCHours()  * 60 + set.getUTCMinutes();
+  const toDate = (totalMin) => {
+    const mins = ((totalMin % 1440) + 1440) % 1440;
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+                             Math.floor(mins / 60), mins % 60));
+  };
+  return {
+    moonrise: toDate(riseMin + offset),
+    moonset:  toDate(setMin  + offset),
+  };
+}
+
+function updateSunBar() {
+  const now = new Date();
+  const lat = CFG.lat ?? 50.08;
+  const lon = CFG.lon ?? 14.42;
+  const hhmm = d => d ? d.toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"}) : "–";
+  const minsToStr = m => Math.floor(m/60) + "h " + (m%60) + "min";
+  const { rise, set } = calcSunTimes(lat, lon, now);
+
+  el("sbRise").textContent = hhmm(rise);
+  el("sbSet").textContent  = hhmm(set);
+
+  let dayMins = 0;
+  if (rise && set) {
+    dayMins = Math.round((set - rise) / 60000);
+    el("sbDayLen").textContent = minsToStr(dayMins);
+  } else {
+    el("sbDayLen").textContent = "–";
+  }
+
+  // ── Rise popup ──
+  el("rpBigTime").textContent = hhmm(rise);
+  if (rise && set) {
+    const firstLight = new Date(rise.getTime() - 33*60000);
+    el("rpSubtitle").textContent = rise > now
+      ? "Do východu zbývá: " + minsToStr(Math.round((rise - now) / 60000))
+      : "Slunce vyšlo před " + minsToStr(Math.round((now - rise) / 60000));
+    el("rpFirstLight").textContent = hhmm(firstLight);
+    el("rpSunrise").textContent    = hhmm(rise);
+    el("rpTotalDay").textContent   = minsToStr(dayMins);
+  }
+  if (el("riseWrap").classList.contains("popup-open")) drawRiseArc();
+
+  // ── Sun popup ──
+  el("spBigTime").textContent = hhmm(set);
+  if (rise && set) {
+    const remMins = set > now ? Math.round((set - now) / 60000) : 0;
+    const lastLight  = new Date(set.getTime()  + 33*60000);
+    el("spSubtitle").textContent = set > now
+      ? "Zbývá denního světla: " + minsToStr(remMins)
+      : "Slunce již zapadlo";
+    el("spSunset").textContent     = hhmm(set);
+    el("spLastLight").textContent  = hhmm(lastLight);
+    el("spTotalDay").textContent   = minsToStr(dayMins);
+  }
+  if (el("sunWrap").classList.contains("popup-open")) drawSunArc();
+
+  // ── UV index ──
+  const uvReal = uvStore.hourly ? uvStore.hourly[now.getHours()] : null;
+  const uv = uvReal !== null && uvReal !== undefined ? uvReal : calcUVIndex(lat, lon, now);
+  const uvSrc = uvStore.hourly ? "" : " (~)";
+  el("sbUV").textContent = uv.toFixed(1) + uvSrc;
+  const uvInfo = uvLevelInfo(uv);
+  el("uvBigVal").textContent  = uv.toFixed(1);
+  el("uvBigVal").style.color  = uvInfo.color;
+  el("uvLevel").textContent   = uvInfo.name + (uvStore.hourly ? " • Open-Meteo" : " • výpočet");
+  const maxUVToday = uvStore.hourly ? Math.max(...uvStore.hourly) : calcUVIndex(lat, lon, new Date(now.getFullYear(),now.getMonth(),now.getDate(),12,0,0));
+  el("uvMax").textContent     = maxUVToday.toFixed ? maxUVToday.toFixed(1) : maxUVToday;
+  el("uvProtect").textContent = uvInfo.protect;
+  if (el("uvWrap").classList.contains("popup-open")) drawUVChart();
+
+  // ── Moon popup ──
+  const moon = calcMoonPhase(now);
+  el("sbMoonIcon").textContent = moon.icon;
+  el("sbMoonName").textContent = moon.name;
+  el("mpBigIcon").textContent   = moon.icon;
+  el("mpPhaseName").textContent = moon.name;
+  el("mpDate").textContent      = now.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  el("mpIllumPct").textContent  = moon.illum + " %";
+  el("mpIllumFill").style.width = moon.illum + "%";
+  el("mpNextFull").textContent  = moon.daysToFull === 0 ? "Dnes! 🌕"
+    : moon.daysToFull + (moon.daysToFull===1?" den":moon.daysToFull<5?" dny":" dní");
+  el("mpDistance").textContent  = moon.dist.toLocaleString("cs-CZ") + " km";
+  const { moonrise, moonset } = calcMoonRiseSet(lat, lon, now, moon.phaseDays);
+  el("mpMoonrise").textContent = hhmm(moonrise);
+  el("mpMoonset").textContent  = hhmm(moonset);
+}
+
+function toggleMoonPopup() {
+  const w = el("moonWrap");
+  w.classList.toggle("popup-open");
+  if (w.classList.contains("popup-open")) {
+    setTimeout(() => document.addEventListener("click", function _closeMoon(e){
+      if (!w.contains(e.target)) { w.classList.remove("popup-open"); document.removeEventListener("click",_closeMoon); }
+    }), 10);
+  }
+}
+
+function toggleRisePopup() {
+  const w = el("riseWrap");
+  w.classList.toggle("popup-open");
+  if (w.classList.contains("popup-open")) {
+    setTimeout(() => drawRiseArc(), 10);
+    setTimeout(() => document.addEventListener("click", function _closeRise(e){
+      if (!w.contains(e.target)) { w.classList.remove("popup-open"); document.removeEventListener("click",_closeRise); }
+    }), 10);
+  }
+}
+
+function toggleSunPopup() {
+  const w = el("sunWrap");
+  w.classList.toggle("popup-open");
+  if (w.classList.contains("popup-open")) {
+    setTimeout(() => drawSunArc(), 10);
+    setTimeout(() => document.addEventListener("click", function _closeSun(e){
+      if (!w.contains(e.target)) { w.classList.remove("popup-open"); document.removeEventListener("click",_closeSun); }
+    }), 10);
+  }
+}
+
+function toggleUVPopup() {
+  const w = el("uvWrap");
+  w.classList.toggle("popup-open");
+  if (w.classList.contains("popup-open")) {
+    setTimeout(() => drawUVChart(), 10);
+    setTimeout(() => document.addEventListener("click", function _closeUV(e){
+      if (!w.contains(e.target)) { w.classList.remove("popup-open"); document.removeEventListener("click",_closeUV); }
+    }), 10);
+  }
+}
+
+function calcSolarElevation(lat, lon, date) {
+  const D2R = Math.PI/180;
+  const start = new Date(date.getFullYear(),0,0);
+  const doy = Math.floor((date-start)/86400000);
+  const gamma = 2*Math.PI/365*(doy-1);
+  const decl = 0.006918-0.399912*Math.cos(gamma)+0.070257*Math.sin(gamma)
+               -0.006758*Math.cos(2*gamma)+0.000907*Math.sin(2*gamma)
+               -0.002697*Math.cos(3*gamma)+0.00148*Math.sin(3*gamma);
+  const eqtime = 229.18*(0.000075+0.001868*Math.cos(gamma)-0.032077*Math.sin(gamma)
+                         -0.014615*Math.cos(2*gamma)-0.04089*Math.sin(2*gamma));
+  const totalMin = date.getUTCHours()*60+date.getUTCMinutes();
+  const ha = ((totalMin+eqtime+4*lon)-720)/4*D2R;
+  return Math.asin(Math.sin(lat*D2R)*Math.sin(decl)+Math.cos(lat*D2R)*Math.cos(decl)*Math.cos(ha))/D2R;
+}
+
+function calcUVIndex(lat, lon, date) {
+  const elev = calcSolarElevation(lat, lon, date);
+  if (elev <= 0) return 0;
+  const start = new Date(date.getFullYear(),0,0);
+  const doy = Math.floor((date-start)/86400000);
+  const seasonFactor = 0.45+0.55*Math.pow((1-Math.cos((doy-172)*2*Math.PI/365))/2,0.5);
+  const uv = 9 * Math.sin(elev*Math.PI/180) * seasonFactor;
+  return Math.max(0,Math.round(uv*10)/10);
+}
+
+function uvLevelInfo(uv) {
+  if (uv < 3)  return { name:"Nízký",    color:"#27ae60",  protect:"Ochrana není nutná" };
+  if (uv < 6)  return { name:"Střední",   color:"#f39c12",  protect:"Doporučen SPF 15+" };
+  if (uv < 8)  return { name:"Vysoký",    color:"#e67e22",  protect:"SPF 30+, stín v poledne" };
+  if (uv < 11) return { name:"Velmi vysoký",color:"#e74c3c", protect:"SPF 50+, vyhýbat se 11-15h" };
+  return           { name:"Extrémní",   color:"#8e44ad",  protect:"Minimalizovat pobyt venku" };
+}
+
+function drawSunArc() {
+  const canvas = el("spCanvas"); if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const now = new Date();
+  const lat = CFG.lat??50.08, lon = CFG.lon??14.42;
+  const { rise, set } = calcSunTimes(lat, lon, now);
+  ctx.clearRect(0,0,W,H);
+
+  // Sky gradient (above horizon = top half)
+  const skyGrad = ctx.createLinearGradient(0,0,0,H*0.55);
+  skyGrad.addColorStop(0,"#0d2a4a"); skyGrad.addColorStop(1,"#1a4a7a");
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0,0,W,H*0.55);
+
+  // Ground
+  ctx.fillStyle = "#0a0a0a";
+  ctx.fillRect(0,H*0.55,W,H*0.45);
+
+  // Horizon line
+  ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,H*0.55); ctx.lineTo(W,H*0.55); ctx.stroke();
+
+  // Hour markers 00/06/12/18
+  ctx.fillStyle="rgba(255,255,255,0.45)"; ctx.font="10px sans-serif"; ctx.textAlign="center";
+  [0,6,12,18].forEach(h => {
+    const x = h/24*W;
+    ctx.fillStyle="rgba(255,255,255,0.2)"; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.setLineDash([3,3]); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="rgba(255,255,255,0.45)"; ctx.fillText(h<10?"0"+h:h, x, H-3);
+  });
+
+  if (!rise || !set) return;
+  const riseMin = rise.getUTCHours()*60+rise.getUTCMinutes();
+  const setMin  = set.getUTCHours()*60+set.getUTCMinutes();
+  const riseX = riseMin/1440*W, setX = setMin/1440*W;
+  const peakX = (riseX+setX)/2, peakY = H*0.08;
+
+  // Sun arc path
+  ctx.beginPath();
+  ctx.moveTo(riseX, H*0.55);
+  ctx.quadraticCurveTo(peakX, peakY, setX, H*0.55);
+  // Night arc (below horizon)
+  ctx.quadraticCurveTo((setX+W+riseX)/2, H*0.9, riseX, H*0.55);
+  ctx.closePath();
+  const arcGrad = ctx.createLinearGradient(0,peakY,0,H*0.55);
+  arcGrad.addColorStop(0,"rgba(255,255,255,0.15)"); arcGrad.addColorStop(1,"rgba(255,255,255,0.02)");
+  ctx.fillStyle = arcGrad; ctx.fill();
+
+  // Arc stroke above horizon
+  ctx.beginPath();
+  ctx.moveTo(riseX, H*0.55);
+  ctx.quadraticCurveTo(peakX, peakY, setX, H*0.55);
+  ctx.strokeStyle="rgba(255,255,255,0.6)";
+  ctx.lineWidth=2; ctx.setLineDash([]);
+  ctx.stroke();
+
+  // Night arc stroke
+  ctx.beginPath();
+  ctx.moveTo(setX, H*0.55);
+  ctx.quadraticCurveTo((setX+W+riseX)/2, H*0.9, riseX+(W-riseX+setX)/2, H*0.9);
+  ctx.strokeStyle="rgba(255,255,255,0.18)"; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // Rise/set dots
+  [riseX, setX].forEach(x => {
+    ctx.beginPath(); ctx.arc(x, H*0.55, 3, 0, 2*Math.PI);
+    ctx.fillStyle="rgba(255,255,255,0.6)"; ctx.fill();
+  });
+
+  // Current sun position
+  const nowMin = now.getUTCHours()*60+now.getUTCMinutes();
+  if (nowMin >= riseMin && nowMin <= setMin) {
+    const t = (nowMin - riseMin) / (setMin - riseMin);
+    const sunX = riseX + (setX-riseX)*t;
+    const sunY = H*0.55 - (H*0.55-peakY)*4*t*(1-t);
+    // Glow
+    const glow = ctx.createRadialGradient(sunX,sunY,2,sunX,sunY,14);
+    glow.addColorStop(0,"rgba(255,255,255,0.9)"); glow.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.beginPath(); ctx.arc(sunX,sunY,14,0,2*Math.PI);
+    ctx.fillStyle=glow; ctx.fill();
+    // Sun dot
+    ctx.beginPath(); ctx.arc(sunX,sunY,6,0,2*Math.PI);
+    ctx.fillStyle="#ffffff"; ctx.fill();
+  }
+}
+
+function drawRiseArc() {
+  const canvas = el("rpCanvas"); if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const now = new Date();
+  const lat = CFG.lat??50.08, lon = CFG.lon??14.42;
+  const { rise, set } = calcSunTimes(lat, lon, now);
+  ctx.clearRect(0,0,W,H);
+
+  const skyGrad = ctx.createLinearGradient(0,0,0,H*0.55);
+  skyGrad.addColorStop(0,"#0d2a4a"); skyGrad.addColorStop(1,"#1a4a7a");
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0,0,W,H*0.55);
+  ctx.fillStyle = "#0a0a0a";
+  ctx.fillRect(0,H*0.55,W,H*0.45);
+  ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,H*0.55); ctx.lineTo(W,H*0.55); ctx.stroke();
+
+  ctx.fillStyle="rgba(255,255,255,0.45)"; ctx.font="10px sans-serif"; ctx.textAlign="center";
+  [0,6,12,18].forEach(h => {
+    const x = h/24*W;
+    ctx.strokeStyle="rgba(255,255,255,0.12)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H*0.55); ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,0.45)"; ctx.fillText(h<10?"0"+h:h, x, H-3);
+  });
+
+  if (!rise || !set) return;
+  const riseMin = rise.getUTCHours()*60+rise.getUTCMinutes();
+  const setMin  = set.getUTCHours()*60+set.getUTCMinutes();
+  const riseX = riseMin/1440*W, setX = setMin/1440*W;
+  const peakX = (riseX+setX)/2, peakY = H*0.08;
+
+  ctx.beginPath();
+  ctx.moveTo(riseX, H*0.55);
+  ctx.quadraticCurveTo(peakX, peakY, setX, H*0.55);
+  ctx.quadraticCurveTo((setX+W+riseX)/2, H*0.9, riseX, H*0.55);
+  ctx.closePath();
+  const arcGrad = ctx.createLinearGradient(0,peakY,0,H*0.55);
+  arcGrad.addColorStop(0,"rgba(255,255,255,0.15)"); arcGrad.addColorStop(1,"rgba(255,255,255,0.02)");
+  ctx.fillStyle = arcGrad; ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(riseX, H*0.55);
+  ctx.quadraticCurveTo(peakX, peakY, setX, H*0.55);
+  ctx.strokeStyle="rgba(255,255,255,0.6)"; ctx.lineWidth=2; ctx.setLineDash([]);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(setX, H*0.55);
+  ctx.quadraticCurveTo((setX+W+riseX)/2, H*0.9, riseX+(W-riseX+setX)/2, H*0.9);
+  ctx.strokeStyle="rgba(255,255,255,0.18)"; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.stroke(); ctx.setLineDash([]);
+
+  [riseX, setX].forEach(x => {
+    ctx.beginPath(); ctx.arc(x,H*0.55,4,0,2*Math.PI);
+    ctx.fillStyle="rgba(255,255,255,0.6)"; ctx.fill();
+  });
+
+  const nowMin = now.getUTCHours()*60+now.getUTCMinutes();
+  if (nowMin >= riseMin && nowMin <= setMin) {
+    const t = (nowMin - riseMin) / (setMin - riseMin);
+    const cx = riseX + (setX-riseX)*t;
+    const cy = H*0.55 - (H*0.55-peakY)*4*t*(1-t);
+    ctx.shadowColor="rgba(255,220,80,.9)"; ctx.shadowBlur=14;
+    ctx.beginPath(); ctx.arc(cx,cy,7,0,2*Math.PI);
+    ctx.fillStyle="#ffe050"; ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.beginPath(); ctx.arc(cx,cy,6,0,2*Math.PI);
+    ctx.fillStyle="#ffffff"; ctx.fill();
+  }
+}
+
+function drawUVChart() {
+  const canvas = el("uvCanvas"); if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  const now = new Date();
+  const lat = CFG.lat??50.08, lon = CFG.lon??14.42;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle="#111"; ctx.fillRect(0,0,W,H);
+
+  // Horizontal grid lines at UV 3,6,8,11
+  const maxUV = 11;
+  const uvLevels = [{v:3,l:"Low"},{v:6,l:"Mid"},{v:8,l:"High"},{v:11,l:"VH"}];
+  const chartH = H-24, chartT = 4;
+  uvLevels.forEach(({v,l}) => {
+    const y = chartT + chartH*(1-v/maxUV);
+    ctx.strokeStyle="rgba(255,255,255,0.1)"; ctx.lineWidth=0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="9px sans-serif"; ctx.textAlign="left";
+    ctx.fillText(l,2,y-2);
+  });
+
+  // UV bars per hour
+  const barW = W/24;
+  const nowHour = now.getHours();
+  for (let h=0; h<24; h++) {
+    let uv;
+    if (uvStore.hourly) {
+      uv = uvStore.hourly[h] ?? 0;
+    } else {
+      const d = new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,0,0);
+      uv = calcUVIndex(lat,lon,d);
+    }
+    if (uv<=0) continue;
+    const barH = (uv/maxUV)*chartH;
+    const x = h*barW, y = chartT+chartH-barH;
+    // Color based on UV level
+    const info = uvLevelInfo(uv);
+    ctx.fillStyle = h===nowHour ? "#fff" : info.color+"cc";
+    ctx.fillRoundRect ? ctx.fillRoundRect(x+1,y,barW-2,barH,2)
+                     : (ctx.fillRect(x+1,y,barW-2,barH));
+    // Value label on top of bar
+    if (uv>=1) {
+      ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.font="8px sans-serif"; ctx.textAlign="center";
+      ctx.fillText(Math.round(uv), x+barW/2, y-2);
+    }
+  }
+
+  // Current time marker
+  const nowX = nowHour*barW+barW/2;
+  ctx.strokeStyle="rgba(255,255,255,0.6)"; ctx.lineWidth=1.5; ctx.setLineDash([2,2]);
+  ctx.beginPath(); ctx.moveTo(nowX,chartT); ctx.lineTo(nowX,chartT+chartH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Hour labels 00/06/12/18
+  ctx.fillStyle="rgba(255,255,255,0.45)"; ctx.font="9px sans-serif"; ctx.textAlign="center";
+  [0,6,12,18].forEach(h => ctx.fillText(h<10?"0"+h:h, h*barW+barW/2, H-5));
+}
+
+/* ══════════════════════════════════════════════
+   DATA STORE
+   Každý záznam: { date, time, ts, temp, pressure, hum, rainInc, rain, tank, voltage }
+══════════════════════════════════════════════ */
+const store = { rows: [], lastRowCount: 0 };
+
+/* UV data z Open-Meteo (reálná data dle polohy) */
+const uvStore = { hourly: null, lat: null, lon: null, date: null };
+
+async function fetchUVData() {
+  const lat = CFG.lat ?? 50.08;
+  const lon = CFG.lon ?? 14.42;
+  const today = new Date().toISOString().slice(0,10);
+  // Neměň zbytečně – stejná poloha i den
+  if (uvStore.lat === lat && uvStore.lon === lon && uvStore.date === today && uvStore.hourly) return;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=uv_index&timezone=auto&forecast_days=1`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    uvStore.hourly = j.hourly.uv_index;   // pole 24 hodnot 0–23h
+    uvStore.lat  = lat;
+    uvStore.lon  = lon;
+    uvStore.date = today;
+    console.log("[UV] Načteno z Open-Meteo pro", lat, lon, uvStore.hourly);
+    updateSunBar(); // aktualizuj zobrazeni
+  } catch(e) {
+    console.warn("[UV] Chyba načtění:", e);
+    uvStore.hourly = null;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function el(id)   { return document.getElementById(id); }
+function pf(v)    { const n=parseFloat(String(v).replace(",",".")); return isNaN(n)?null:n; }
+function fmt(v,d=1){ return v===null||v===undefined?"–":Number(v).toFixed(d); }
+
+function dewPoint(T, RH) {
+  if(T===null||RH===null) return null;
+  const a=17.625, b=243.04, al=Math.log(RH/100)+(a*T)/(b+T);
+  return parseFloat((b*al/(a-al)).toFixed(1));
+}
+function fmtTime(d)      { return d.toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"}); }
+function fmtDT(d)        { return d.toLocaleString("cs-CZ",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+function fmtDate(d)      { return d.toLocaleDateString("cs-CZ",{weekday:"long",day:"numeric",month:"long"}); }
+function fmtDateShort(d) { return d.toLocaleDateString("cs-CZ",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+
+/* Parse "27.2." or "27.2.2026" + "22:00" → Date */
+function parseCSDateTime(dateStr, timeStr) {
+  try {
+    const d   = dateStr.trim().replace(/\s/g,"").replace(/\.$/,"");
+    const dp  = d.split(".");
+    const day = parseInt(dp[0]), mon = parseInt(dp[1])-1;
+    const now = new Date();
+    let yr    = dp[2] ? parseInt(dp[2]) : now.getFullYear();
+    const tp  = (timeStr||"").split(":");
+    const dt  = new Date(yr, mon, day, parseInt(tp[0]||0), parseInt(tp[1]||0), 0);
+    // Pokud je odvozené datum v budoucnosti (> nyní + 1 den), pravděpodobně
+    // patří do minulého roku – odečti rok (data uložená bez roku "27.2.")
+    if (!dp[2] && dt.getTime() > now.getTime() + 86400000) {
+      dt.setFullYear(yr - 1);
+    }
+    return dt;
+  } catch(e) { return null; }
+}
+
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS  → public CSV export
+   URL: /gviz/tq?tqx=out:csv&sheet=SHEETNAME
+══════════════════════════════════════════════ */
+let fetchTimer = null;
+
+function sheetsURL(id, name) {
+  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+}
+
+async function fetchSheets() {
+  if(!CFG.sheetId) { setGsStatus(false,"Google Sheets: zadejte Sheet ID v nastavení ↑"); return; }
+
+  const fullURL  = sheetsURL(CFG.sheetId, CFG.sheetName);
+  const proxy1   = "https://corsproxy.io/?url=" + encodeURIComponent(fullURL);
+  const proxy2   = "https://api.allorigins.win/raw?url=" + encodeURIComponent(fullURL);
+  const isFile   = location.protocol === "file:";
+  const allURLs  = isFile ? [proxy1, proxy2] : [fullURL, proxy1, proxy2];
+
+  // ── Inkrementální kontrola: pokud už máme data, zkontroluj jen první řádek ──
+  if (store.rows.length > 50) {
+    const checkURL = fullURL + "?tqx=out:csv&range=1:2&_=" + Date.now();
+    const checkURLs = isFile
+      ? ["https://corsproxy.io/?url=" + encodeURIComponent(checkURL), "https://api.allorigins.win/raw?url=" + encodeURIComponent(checkURL)]
+      : [checkURL, "https://corsproxy.io/?url=" + encodeURIComponent(checkURL)];
+    for (const url of checkURLs) {
+      try {
+        const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (!r.ok) continue;
+        const txt = await r.text();
+        const lastLine = txt.split(/\r?\n/).filter(Boolean).pop();
+        if (store._lastRawLine && store._lastRawLine === lastLine) {
+          setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
+          return; // žádná nová data → nic nepřekresluj
+        }
+        store._lastRawLine = lastLine;
+        break;
+      } catch(e) {}
+    }
+  }
+
+  // ── Plné načtení ──
+  setGsStatus(null, "Google Sheets: načítám…");
+  let lastErr = "";
+  for (const url of allURLs) {
+    try {
+      const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now());
+      if (!r.ok) { lastErr = "HTTP " + r.status; continue; }
+      const text = await r.text();
+      if (!text || text.length < 10) { lastErr = "prázdná odpověď"; continue; }
+      parseAndStore(text);
+      setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
+      return;
+    } catch(e) { lastErr = e.message; }
+  }
+  setGsStatus(false, "Google Sheets: chyba načtení – " + lastErr);
+}
+
+/* ══════════════════════════════════════════════
+   CSV PARSER
+   Sloupce A–I: Datum, Čas, Teplota, Tlak, Vlhkost, Přírůstek, Déšť, nádrž, Napětí
+   Přeskočí řádky nadpis + záhlaví (autodetekce)
+══════════════════════════════════════════════ */
+function parseAndStore(text) {
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+
+  // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
+  let dataStart = 0;
+  for(let i=0; i<Math.min(lines.length,4); i++){
+    const c0 = stripQ(splitCSV(lines[i])[0]);
+    if(/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
+    dataStart = i+1;
+  }
+
+  const parsed = [];
+  for(let i=dataStart; i<lines.length; i++){
+    const c   = splitCSV(lines[i]);
+    const ds  = stripQ(c[0]), ts2 = stripQ(c[1]);
+    if(!ds||!/\d/.test(ds)) continue;
+    const ts  = parseCSDateTime(ds, ts2);
+    if(!ts||isNaN(ts.getTime())) continue;
+    parsed.push({
+      date: ds, time: ts2, ts,
+      temp:     pf(c[2]),
+      pressure: pf(c[3]),
+      hum:      pf(c[4]),
+      rainInc:  pf(c[5]),
+      rain:     pf(c[6]),
+      tank:     pf(c[7]),
+      voltage:  stripQ(c[8]||"").replace(/[Vv]/g,"").trim() !== "" ? pf(stripQ(c[8]||"").replace(/[Vv]/g,"")) : null
+    });
+  }
+  if(!parsed.length) {
+    setGsStatus(false,"Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
+    return;
+  }
+  parsed.sort((a,b)=>b.ts-a.ts);
+  store.rows = parsed;
+  refreshUI();
+}
+
+function stripQ(s=""){ return String(s).replace(/^["'\s]+|["'\s]+$/g,""); }
+
+function splitCSV(line) {
+  const r=[]; let cur="", inQ=false;
+  for(const c of line){
+    if(c==='"'){ inQ=!inQ; }
+    else if(c===','&&!inQ){ r.push(cur); cur=""; }
+    else cur+=c;
+  }
+  r.push(cur); return r;
+}
+
+/* ══════════════════════════════════════════════
+   UI REFRESH
+══════════════════════════════════════════════ */
+function refreshUI() {
+  if(!store.rows.length) return;
+  const R = store.rows[0];
+
+  el("curTemp").textContent      = fmt(R.temp);
+  el("curHum").textContent       = fmt(R.hum);
+  el("curDew").textContent       = fmt(dewPoint(R.temp, R.hum));
+  el("curPressure").textContent  = fmt(R.pressure,1);
+  el("curRainInc").textContent   = fmt(R.rainInc,1);
+  el("curRainTotal").textContent = fmt(R.rain,1);
+  el("curTank").textContent      = fmt(R.tank,1);
+  el("curVoltage").textContent   = fmt(R.voltage,2);
+  el("curTime").textContent      = fmtDT(R.ts);
+
+  if(store.rows.length>1){
+    const P = store.rows[1];
+    el("tempTrend").textContent = arrow(R.temp, P.temp, .2);
+    el("humTrend").textContent  = arrow(R.hum,  P.hum,  1);
+  }
+
+  // Statistika
+  el("statLocation").textContent    = CFG.name || stations[activeIdx].name;
+  el("pillStationName").textContent = CFG.name || stations[activeIdx].name;
+  if (el("headerStationName")) el("headerStationName").textContent = CFG.name || stations[activeIdx].name;
+  el("statCount").textContent    = store.rows.length.toLocaleString("cs-CZ");
+  const oldest = store.rows[store.rows.length-1];
+  el("statFrom").textContent     = fmtDT(oldest.ts);
+
+  const temps = store.rows.map(r=>r.temp).filter(v=>v!==null);
+  if(temps.length){
+    const maxT=Math.max(...temps), minT=Math.min(...temps);
+    const mxR=store.rows.find(r=>r.temp===maxT), mnR=store.rows.find(r=>r.temp===minT);
+    el("statTempMax").textContent = fmt(maxT)+" °C  "+fmtDT(mxR.ts);
+    el("statTempMin").textContent = fmt(minT)+" °C  "+fmtDT(mnR.ts);
+  }
+
+  // max rain per day
+  const rb={};
+  store.rows.forEach(r=>{ if(r.rain===null) return; const k=fmtDateShort(r.ts); if(!rb[k]||r.rain>rb[k]) rb[k]=r.rain; });
+  const rEntries=Object.entries(rb);
+  if(rEntries.length){ const mx=rEntries.reduce((a,b)=>b[1]>a[1]?b:a); el("statRainMax").textContent=fmt(mx[1],1)+" mm ("+mx[0]+")"; }
+
+  // Today
+  const today=new Date(); today.setHours(0,0,0,0);
+  const today_rows=store.rows.filter(r=>r.ts>=today);
+  el("todayDate").textContent = fmtDate(new Date());
+  if(today_rows.length){
+    const dt=today_rows.map(r=>r.temp).filter(v=>v!==null);
+    const dh=today_rows.map(r=>r.hum ).filter(v=>v!==null);
+    const dr=today_rows.map(r=>r.rain).filter(v=>v!==null);
+    if(dt.length){ el("dayTempMin").textContent=fmt(Math.min(...dt)); el("dayTempMax").textContent=fmt(Math.max(...dt)); el("dayTempAvg").textContent=fmt(dt.reduce((a,b)=>a+b,0)/dt.length,2); }
+    if(dh.length){ el("dayHumMin").textContent=fmt(Math.min(...dh));  el("dayHumMax").textContent=fmt(Math.max(...dh));  el("dayHumAvg").textContent=fmt(dh.reduce((a,b)=>a+b,0)/dh.length,2); }
+    if(dr.length) el("dayRain").textContent=fmt(Math.max(...dr),1);
+  }
+
+  buildCharts();
+  buildHistoryRows();
+  buildExplorer();
+  buildCompare();
+  updateHistoryTable();
+  buildDailyGrid();
+}
+
+function arrow(a,b,thr){ if(a===null||b===null) return "→"; const d=a-b; return d>thr?"↑":d<-thr?"↓":"→"; }
+
+/* ══════════════════════════════════════════════
+   PLUGIN – vertikální linka při hoveru
+══════════════════════════════════════════════ */
+const crosshairPlugin = {
+  id: "crosshair",
+  afterDraw(chart) {
+    if (chart._crossX == null) return;
+    const { ctx, chartArea: { top, bottom } } = chart;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(chart._crossX, top);
+    ctx.lineTo(chart._crossX, bottom);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.setLineDash([4, 3]);
+    ctx.stroke();
+    ctx.restore();
+  },
+  afterEvent(chart, args) {
+    const e = args.event;
+    if (e.type === "mousemove") {
+      const { left, right } = chart.chartArea;
+      chart._crossX = (e.x >= left && e.x <= right) ? e.x : null;
+    } else if (e.type === "mouseout" || e.type === "mouseleave") {
+      chart._crossX = null;
+    }
+    chart.draw();
+  }
+};
+
+/* ══════════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════════ */
+const baseScales = {
+  x:     { ticks:{color:"#95a5a6",maxRotation:0,autoSkip:true,maxTicksLimit:10,font:{size:10}}, grid:{color:"#34495e"} },
+  yTemp: { position:"left",  ticks:{color:"#e74c3c",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"°C",color:"#e74c3c"} },
+  yHum:  { position:"right", min:0, max:100, ticks:{color:"#2980b9",font:{size:10}}, grid:{drawOnChartArea:false}, title:{display:true,text:"%",color:"#2980b9"} }
+};
+const baseOpts = {
+  responsive:true, maintainAspectRatio:false, animation:{duration:300},
+  plugins:{ legend:{labels:{color:"#ecf0f1",boxWidth:14,font:{size:11}}}, tooltip:{mode:"index",intersect:false} },
+  scales: baseScales
+};
+
+function mkChart(id, type, datasets, scales) {
+  return new Chart(el(id).getContext("2d"), { type, data:{labels:[],datasets}, plugins:[crosshairPlugin], options:{...baseOpts, scales:scales||baseScales} });
+}
+
+const chart24 = mkChart("chart24h","line",[
+  {label:"Teplota", borderColor:"#e74c3c", backgroundColor:"rgba(231,76,60,.1)",  tension:.35, pointRadius:0, borderWidth:2,  yAxisID:"yTemp", data:[]},
+  {label:"Vlhkost", borderColor:"#2980b9", backgroundColor:"rgba(41,128,185,.1)", tension:.35, pointRadius:0, borderWidth:2,  yAxisID:"yHum",  data:[]},
+  {label:"Rosný bod",borderColor:"#16a085",backgroundColor:"transparent",         tension:.35, pointRadius:0, borderWidth:1.5, borderDash:[4,3], yAxisID:"yTemp", data:[]}
+]);
+
+const chartRain = mkChart("chartRain","bar",[
+  {label:"Srážky (mm)", backgroundColor:"rgba(41,128,185,.75)", data:[]}
+],{
+  x:{ ticks:{color:"#95a5a6",font:{size:10},maxRotation:45}, grid:{color:"#34495e"} },
+  y:{ ticks:{color:"#2980b9",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"mm",color:"#2980b9"} }
+});
+
+const chartVoltage = mkChart("chartVoltage","line",[
+  {label:"Napětí (V)",       borderColor:"#8e44ad", backgroundColor:"rgba(142,68,173,.1)", tension:.4, pointRadius:0, borderWidth:2, data:[]},
+  {label:"Predikce (V)",    borderColor:"rgba(231,76,60,.8)", backgroundColor:"transparent",           tension:.3, pointRadius:0, borderWidth:1.5, borderDash:[6,4], data:[]}
+],{
+  x:{ ticks:{color:"#95a5a6",font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:10}, grid:{color:"#34495e"} },
+  y:{ ticks:{color:"#8e44ad",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"V",color:"#8e44ad"} }
+});
+
+const chartMonthly = mkChart("chartMonthly","bar",[
+  {label:"Prům. Teplota [°C]", backgroundColor:"rgba(231,76,60,.7)",  yAxisID:"yTemp", data:[]},
+  {label:"Prům. Vlhkost [%]", backgroundColor:"rgba(41,128,185,.7)", yAxisID:"yHum",  data:[]}
+]);
+const chartYearly = mkChart("chartYearly","bar",[
+  {label:"Prům. Teplota [°C]", backgroundColor:"rgba(231,76,60,.7)",  yAxisID:"yTemp", data:[]},
+  {label:"Prům. Vlhkost [%]", backgroundColor:"rgba(41,128,185,.7)", yAxisID:"yHum",  data:[]}
+]);
+
+function buildCharts() {
+  const rows = store.rows;
+
+  // 24h – seřazeno od nejstaršího
+  const cut = Date.now()-24*3600*1000;
+  const h24 = [...rows].filter(r=>r.ts.getTime()>=cut).sort((a,b)=>a.ts-b.ts);
+  chart24.data.labels           = h24.map(r=>fmtTime(r.ts));
+  chart24.data.datasets[0].data = h24.map(r=>r.temp);
+  chart24.data.datasets[1].data = h24.map(r=>r.hum);
+  chart24.data.datasets[2].data = h24.map(r=>dewPoint(r.temp,r.hum));
+  chart24.update();
+
+  // Rain daily totals (max per day)
+  const rb={};
+  rows.forEach(r=>{ if(r.rain===null) return; const k=fmtDateShort(r.ts); if(!rb[k]||r.rain>rb[k]) rb[k]=r.rain; });
+  const rk=Object.keys(rb).slice(-30);
+  chartRain.data.labels           = rk;
+  chartRain.data.datasets[0].data = rk.map(k=>rb[k]);
+  chartRain.update();
+
+  // Voltage + predikce
+  const vr = [...rows].filter(r => r.voltage !== null).sort((a, b) => a.ts - b.ts).slice(-500);
+  // Lineární regrese z posledních 3 dní (slope = V/ms)
+  const reg7 = vr.filter(r => r.ts.getTime() >= Date.now() - 3 * 86400000);
+  let slope = 0;
+  if (reg7.length >= 2) {
+    const n = reg7.length;
+    const tMean = reg7.reduce((s, r) => s + r.ts.getTime(), 0) / n;
+    const vMean = reg7.reduce((s, r) => s + r.voltage, 0) / n;
+    const num   = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) * (r.voltage - vMean), 0);
+    const den   = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) ** 2, 0);
+    slope = den ? num / den : 0;
+  }
+  // Predikce: 1/4 počtu zobrazených bodů dopredu, po 10 min
+  const predSteps = Math.max(12, Math.round(vr.length / 4));
+  const stepMs    = 10 * 60 * 1000;
+  const lastReal  = vr.length ? vr[vr.length - 1] : null;
+  const predLabels = lastReal
+    ? Array.from({ length: predSteps }, (_, i) => fmtDT(new Date(lastReal.ts.getTime() + (i + 1) * stepMs)))
+    : [];
+  const predVals = lastReal
+    ? Array.from({ length: predSteps }, (_, i) => +( lastReal.voltage + slope * (i + 1) * stepMs ).toFixed(3))
+    : [];
+  // Sestav spolené labely
+  const allLabels = [...vr.map(r => fmtDT(r.ts)), ...predLabels];
+  const realData  = [...vr.map(r => r.voltage), ...Array(predSteps).fill(null)];
+  const predData  = [...Array(vr.length - 1).fill(null), lastReal ? lastReal.voltage : null, ...predVals];
+  chartVoltage.data.labels           = allLabels;
+  chartVoltage.data.datasets[0].data = realData;
+  chartVoltage.data.datasets[1].data = predData;
+  chartVoltage.update();
+
+  buildAgg(chartMonthly, rows, "day",   30);
+  buildAgg(chartYearly,  rows, "month", 12);
+  buildTempOverview();
+}
+
+function buildAgg(chart, rows, unit, count) {
+  const b={};
+  rows.forEach(r=>{
+    const k = unit==="day"
+      ? `${r.ts.getDate()}.${r.ts.getMonth()+1}.`
+      : `${r.ts.getMonth()+1}/${r.ts.getFullYear()}`;
+    if(!b[k]) b[k]={ts:0,hs:0,tn:0,hn:0};
+    if(r.temp!==null){ b[k].ts+=r.temp; b[k].tn++; }
+    if(r.hum !==null){ b[k].hs+=r.hum;  b[k].hn++; }
+  });
+  const keys=Object.keys(b).slice(-count);
+  chart.data.labels           = keys;
+  chart.data.datasets[0].data = keys.map(k=>b[k].tn ? +(b[k].ts/b[k].tn).toFixed(2) : null);
+  chart.data.datasets[1].data = keys.map(k=>b[k].hn ? +(b[k].hs/b[k].hn).toFixed(2) : null);
+  chart.update();
+}
+
+/* ══════════════════════════════════════════════
+   DŘÍVE TOUTO DOBOU
+══════════════════════════════════════════════ */
+function buildHistoryRows() {
+  const now=Date.now(), tol=30*60*1000;
+  const offs=[
+    {l:"Před rokem",   ms:365*86400e3},
+    {l:"Před měsícem", ms:30*86400e3},
+    {l:"Před týdnem",  ms:7*86400e3},
+    {l:"Včera",        ms:86400e3}
+  ];
+  el("historyRows").innerHTML = offs.map(o=>{
+    const t=now-o.ms;
+    let best=null, bd=Infinity;
+    store.rows.forEach(r=>{ const d=Math.abs(r.ts.getTime()-t); if(d<tol&&d<bd){best=r;bd=d;} });
+    if(!best) return `<tr><td style="color:var(--muted)">${o.l}</td><td colspan="2" style="color:var(--border)">–</td></tr>`;
+    return `<tr><td style="color:var(--muted)">${o.l}</td><td style="color:var(--accent);font-weight:700;text-align:right">${fmt(best.temp)} °C</td><td style="color:var(--blue);text-align:right">${fmt(best.hum)} %</td></tr>`;
+  }).join("");
+}
+
+/* ══════════════════════════════════════════════
+   DENNÍ STATISTIKY
+══════════════════════════════════════════════ */
+function buildDailyGrid() {
+  const today=new Date(); today.setHours(0,0,0,0);
+  const rows=store.rows.filter(r=>r.ts>=today);
+  if(!rows.length){ el("dailyGrid").innerHTML=`<p style="color:var(--muted);padding:1rem;grid-column:span 3">Žádná data za dnešní den.</p>`; return; }
+  const dt=rows.map(r=>r.temp).filter(v=>v!==null);
+  const dh=rows.map(r=>r.hum ).filter(v=>v!==null);
+  const dp=rows.map(r=>r.pressure).filter(v=>v!==null);
+  const dr=rows.map(r=>r.rain).filter(v=>v!==null);
+  const dv=rows.map(r=>r.voltage).filter(v=>v!==null);
+  const tiles=[
+    {l:"Min. teplota",   v:dt.length?fmt(Math.min(...dt))+" °C":"–", c:"var(--blue)"},
+    {l:"Prům. teplota",  v:dt.length?fmt(dt.reduce((a,b)=>a+b,0)/dt.length,2)+" °C":"–", c:"var(--text)"},
+    {l:"Max. teplota",   v:dt.length?fmt(Math.max(...dt))+" °C":"–", c:"var(--red)"},
+    {l:"Min. vlhkost",   v:dh.length?fmt(Math.min(...dh))+" %":"–", c:"var(--blue)"},
+    {l:"Prům. vlhkost",  v:dh.length?fmt(dh.reduce((a,b)=>a+b,0)/dh.length,2)+" %":"–", c:"var(--text)"},
+    {l:"Max. vlhkost",   v:dh.length?fmt(Math.max(...dh))+" %":"–", c:"var(--teal)"},
+    {l:"Prům. tlak",     v:dp.length?fmt(dp.reduce((a,b)=>a+b,0)/dp.length,1)+" hPa":"–", c:"var(--yellow)"},
+    {l:"Celkové srážky", v:dr.length?fmt(Math.max(...dr),1)+" mm":"–", c:"var(--blue)"},
+    {l:"Posl. napětí",   v:dv.length?fmt(dv[0],2)+" V":"–", c:"var(--purple)"},
+  ];
+  el("dailyGrid").innerHTML=tiles.map(t=>`<div class="stat-tile"><div class="stl">${t.l}</div><div class="stv" style="color:${t.c}">${t.v}</div></div>`).join("");
+}
+
+/* ══════════════════════════════════════════════
+   HISTORY TABLE
+══════════════════════════════════════════════ */
+function updateHistoryTable() {
+  const lim=parseInt(el("histLimit").value)||500;
+  const rows=lim?store.rows.slice(0,lim):store.rows;
+  el("histTableBody").innerHTML=rows.map(r=>`<tr>
+    <td>${r.date}</td><td>${r.time}</td>
+    <td style="color:#e74c3c">${fmt(r.temp)}</td>
+    <td style="color:#f39c12">${fmt(r.pressure,1)}</td>
+    <td style="color:#2980b9">${fmt(r.hum)}</td>
+    <td style="color:#16a085">${fmt(r.rainInc,1)}</td>
+    <td style="color:#2980b9">${fmt(r.rain,1)}</td>
+    <td style="color:#16a085">${fmt(r.tank,1)}</td>
+    <td style="color:#8e44ad">${fmt(r.voltage,2)}</td>
+  </tr>`).join("")||`<tr><td colspan="9" style="color:var(--muted)">Žádná data.</td></tr>`;
+}
+el("histLimit").addEventListener("change", updateHistoryTable);
+
+/* ══════════════════════════════════════════════
+   GRAF PRŮZKUMNÍK
+══════════════════════════════════════════════ */
+let expRange = "24h";
+let expAllPts  = [];   // plný filtrovaný soubor bodů pro posuvník
+
+const chartExplorer = new Chart(el("chartExplorer").getContext("2d"), {
+  type: "line",
+  data: { labels: [], datasets: [] },
+  plugins: [crosshairPlugin],
+  options: {
+    responsive: true, maintainAspectRatio: false, animation: { duration: 200 },
+    plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
+    scales: {
+      x:     { ticks: { color: "#95a5a6", maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: "#34495e" } },
+      yMain: { position: "left",  ticks: { color: "#ecf0f1", font: { size: 10 } }, grid: { color: "#34495e" } },
+      ySec:  { position: "right", display: false, min: 0, max: 100, ticks: { color: "#2980b9", font: { size: 10 } }, grid: { drawOnChartArea: false } },
+    }
+  }
+});
+
+function setExpRange(r) {
+  expRange = r;
+  document.querySelectorAll(".exp-range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === r));
+  el("expCustomWrap").style.display  = (r === "custom")  ? "flex" : "none";
+  el("expOneDayWrap").style.display  = (r === "oneday")  ? "flex" : "none";
+  if (r !== "custom" && r !== "oneday") buildExplorer();
+  if (r === "oneday" && el("expDateOne").value) buildExplorer();
+}
+
+function expSetToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  el("expDateFrom").value = today;
+  el("expDateTo").value   = today;
+  buildExplorer();
+}
+
+function expApplyOneDay() {
+  buildExplorer();
+}
+function expOneSetToday() {
+  el("expDateOne").value = new Date().toISOString().slice(0, 10);
+  buildExplorer();
+}
+
+/* Otevří Graf tab s vybranou veličinou, zachová aktuální časový rozsah */
+function openExplorerWith(metric) {
+  el("expMetric").value = metric;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === "explorer"));
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab-explorer"));
+  buildExplorer();
+  el("tab-explorer").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function buildExplorer() {
+  if (!store.rows.length) return;
+  const metric = el("expMetric").value;
+
+  // --- Určení časového rozsahu ---
+  let cutFrom, cutTo;
+  const now = Date.now();
+  if (expRange === "custom") {
+    const fv = el("expDateFrom").value, tv = el("expDateTo").value;
+    if (!fv) return;
+    cutFrom = new Date(fv + "T00:00:00").getTime();
+    cutTo   = tv ? new Date(tv + "T23:59:59").getTime() : cutFrom + 86399000;
+  } else if (expRange === "oneday") {
+    const dv = el("expDateOne").value;
+    if (!dv) return;
+    cutFrom = new Date(dv + "T00:00:00").getTime();
+    cutTo   = new Date(dv + "T23:59:59").getTime();
+  } else if (expRange === "all") {
+    cutFrom = 0;
+    cutTo   = now + 60000;
+  } else {
+    const hrs = { "24h": 24, "3d": 72, "7d": 168, "30d": 720, "90d": 2160 }[expRange] || 24;
+    cutFrom = now - hrs * 3600000;
+    cutTo   = now + 60000;
+  }
+
+  // --- Filtrování a řazení ---
+  let rows = [...store.rows]
+    .filter(r => { const t = r.ts.getTime(); return t >= cutFrom && t <= cutTo; })
+    .sort((a, b) => a.ts - b.ts);
+
+  // Pro srážky denní – agregace max na den
+  if (metric === "rain") {
+    const rb = {};
+    rows.forEach(r => {
+      if (r.rain === null) return;
+      const k = fmtDateShort(r.ts);
+      if (!rb[k] || r.rain > rb[k].val) rb[k] = { val: r.rain, ts: r.ts };
+    });
+    const keys = Object.keys(rb).sort();
+    chartExplorer.config.type = "bar";
+    chartExplorer.data.labels = keys;
+    chartExplorer.data.datasets = [{
+      label: "Srážky [mm]", backgroundColor: "rgba(41,128,185,.75)",
+      data: keys.map(k => rb[k].val), yAxisID: "yMain"
+    }];
+    chartExplorer.options.scales.yMain.ticks.color = "#2980b9";
+    chartExplorer.options.scales.yMain.title = { display: true, text: "mm", color: "#2980b9" };
+    chartExplorer.options.scales.ySec.display = false;
+    el("expChartTitle").textContent = "Srážky – " + expLabelFor(expRange) + " (" + keys.length + " dní)";
+    el("expInfo").textContent = rows.length + " záznamů v rozsahu";
+    buildExpStats([{ label:"☔ Srážky", unit:"mm", vals: keys.map(k => rb[k].val) }]);
+    expAllPts = [];
+    el("expSliderWrap").style.display = "none";
+    chartExplorer.update();
+    return;
+  }
+
+  // Autoredukce počtu bodů pro přehlednost
+  const maxPts = 800;
+  let pts = rows;
+  if (pts.length > maxPts) {
+    const step = Math.ceil(pts.length / maxPts);
+    pts = pts.filter((_, i) => i % step === 0);
+  }
+
+  // Posuvník: ulož všechny body, resetuj slider na 0–100
+  expAllPts = pts;
+  el("expSliderWrap").style.display = "";
+  el("expSliderL").value = "0";
+  el("expSliderR").value = "100";
+  expSliderUpdateFill();
+  _drawExplorerPts(pts);
+}
+
+function _drawExplorerPts(pts) {
+  if (!pts.length) return;
+  const metric = el("expMetric").value;
+  chartExplorer.config.type = "line";
+
+  const METRICS = {
+    temp:     { label: "Teplota",    color: "#e74c3c", fn: r => r.temp,                           unit: "°C" },
+    hum:      { label: "Vlhkost",    color: "#2980b9", fn: r => r.hum,                            unit: "%" },
+    pressure: { label: "Tlak",       color: "#27ae60", fn: r => r.pressure,                       unit: "hPa" },
+    dew:      { label: "Rosný bod",  color: "#16a085", fn: r => dewPoint(r.temp, r.hum),          unit: "°C" },
+    rainInc:  { label: "Přírůstek",  color: "#2980b9", fn: r => r.rainInc,                       unit: "mm" },
+    voltage:  { label: "Napětí",     color: "#8e44ad", fn: r => r.voltage,                        unit: "V" },
+  };
+
+  const labels = pts.map(r => expRange === "24h" ? fmtTime(r.ts) : fmtDT(r.ts));
+
+  if (metric === "temp_hum") {
+    chartExplorer.data.labels = labels;
+    chartExplorer.data.datasets = [
+      { label: "Teplota [°C]", borderColor: "#e74c3c", backgroundColor: "rgba(231,76,60,.1)",  tension: .3, pointRadius: 0, borderWidth: 2, yAxisID: "yMain", data: pts.map(r => r.temp) },
+      { label: "Vlhkost [%]",  borderColor: "#2980b9", backgroundColor: "rgba(41,128,185,.1)", tension: .3, pointRadius: 0, borderWidth: 2, yAxisID: "ySec",  data: pts.map(r => r.hum) },
+    ];
+    chartExplorer.options.scales.yMain.ticks.color = "#e74c3c";
+    chartExplorer.options.scales.yMain.title = { display: true, text: "[°C]", color: "#e74c3c" };
+    chartExplorer.options.scales.ySec.display = true;
+    chartExplorer.options.scales.ySec.min = 0;
+    chartExplorer.options.scales.ySec.max = 100;
+    el("expChartTitle").textContent = "Teplota & Vlhkost – " + expLabelFor(expRange);
+  } else {
+    const m = METRICS[metric];
+    if (metric === "voltage") {
+      // Lineární regrese z posledních 7 dní → predikce
+      const reg7 = pts.filter(r => r.ts.getTime() >= Date.now() - 3 * 86400000);
+      let slope = 0;
+      if (reg7.length >= 2) {
+        const n = reg7.length;
+        const tMean = reg7.reduce((s, r) => s + r.ts.getTime(), 0) / n;
+        const vMean = reg7.reduce((s, r) => s + r.voltage, 0) / n;
+        const num   = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) * (r.voltage - vMean), 0);
+        const den   = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) ** 2, 0);
+        slope = den ? num / den : 0;
+      }
+      const predSteps  = Math.max(12, Math.round(pts.length / 4));
+      const stepMs     = 10 * 60 * 1000;
+      const lastPt     = pts[pts.length - 1];
+      const predLabels = Array.from({ length: predSteps }, (_, i) => fmtDT(new Date(lastPt.ts.getTime() + (i + 1) * stepMs)));
+      const predVals   = Array.from({ length: predSteps }, (_, i) => +( lastPt.voltage + slope * (i + 1) * stepMs ).toFixed(3));
+      chartExplorer.data.labels = [...labels, ...predLabels];
+      const realData = [...pts.map(r => r.voltage), ...Array(predSteps).fill(null)];
+      const predData = [...Array(pts.length - 1).fill(null), lastPt.voltage, ...predVals];
+      chartExplorer.data.datasets = [
+        { label: "Napětí [V]",   borderColor: m.color, backgroundColor: m.color + "26",    tension:.3, pointRadius:0, borderWidth:2,   borderDash:[],    yAxisID:"yMain", data: realData },
+        { label: "Predikce [V]", borderColor: "rgba(231,76,60,.8)", backgroundColor:"transparent", tension:.3, pointRadius:0, borderWidth:1.5, borderDash:[6,4], yAxisID:"yMain", data: predData }
+      ];
+    } else {
+      chartExplorer.data.labels = labels;
+      chartExplorer.data.datasets = [{
+        label: m.label + " [" + m.unit + "]",
+        borderColor: m.color, backgroundColor: m.color + "26",
+        tension: .3, pointRadius: 0, borderWidth: 2, yAxisID: "yMain",
+        data: pts.map(r => m.fn(r))
+      }];
+    }
+    chartExplorer.options.scales.yMain.ticks.color = m.color;
+    chartExplorer.options.scales.yMain.title = { display: true, text: "[" + m.unit + "]", color: m.color };
+    chartExplorer.options.scales.ySec.display = false;
+    el("expChartTitle").textContent = m.label + " – " + expLabelFor(expRange);
+  }
+
+  el("expInfo").textContent = pts.length + " bodů" +
+    (expAllPts.length && expAllPts.length !== pts.length
+      ? " (zobrazený úsek z " + expAllPts.length + " v rozsahu)"
+      : " v rozsahu");
+
+  // ── Stats bar ──
+  if (metric === "temp_hum") {
+    buildExpStats([
+      { label:"🌡 Teplota", unit:"°C", vals: pts.map(r => r.temp).filter(v=>v!==null) },
+      { label:"💧 Vlhkost", unit:"%",   vals: pts.map(r => r.hum).filter(v=>v!==null) },
+    ]);
+  } else {
+    const m = METRICS[metric];
+    buildExpStats([
+      { label: m.label, unit: m.unit, vals: pts.map(r => m.fn(r)).filter(v=>v!==null) }
+    ]);
+  }
+
+  chartExplorer.update();
+}
+
+function expLabelFor(r) {
+  return { "24h": "posledních 24 h", "3d": "poslední 3 dny", "7d": "posledních 7 dní", "30d": "posledních 30 dní", "90d": "posledních 90 dní", "all": "celé období", "custom": "vlastní rozsah", "oneday": (el("expDateOne").value || "jeden den") }[r] || r;
+}
+
+function buildExpStats(groups) {
+  const box = el("expStats");
+  if (!box) return;
+  const hm = (n, d=1) => n===null?"\u2013":Number(n).toFixed(d);
+  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+  box.innerHTML = groups.map(({label, unit, vals}) => {
+    if (!vals.length) return "";
+    const mn  = Math.min(...vals);
+    const mx  = Math.max(...vals);
+    const av  = avg(vals);
+    return `<div class="ds-block">
+      <div class="ds-title">${label}</div>
+      <div class="ds-vals">
+        Min:&nbsp;<span>${hm(mn)}&nbsp;${unit}</span>
+        &nbsp;|&nbsp;
+        Prům:&nbsp;<span>${hm(av)}&nbsp;${unit}</span>
+        &nbsp;|&nbsp;
+        Max:&nbsp;<span>${hm(mx)}&nbsp;${unit}</span>
+        &nbsp;|&nbsp;
+        <span style="color:var(--muted)">${vals.length}&nbsp;měření</span>
+      </div>
+    </div>`;
+  }).join("");
+  box.style.display = box.innerHTML.trim() ? "" : "none";
+}
+
+/* ══════════════════════════════════════════════
+   POSUVNÍK ZOUMU (slider pod grafem)
+══════════════════════════════════════════════ */
+function expSliderUpdateFill() {
+  const l = parseFloat(el("expSliderL").value);
+  const r = parseFloat(el("expSliderR").value);
+  const mn = Math.min(l, r), mx = Math.max(l, r);
+  const fill = el("expSliderFill");
+  fill.style.left  = mn + "%";
+  fill.style.width = (mx - mn) + "%";
+}
+
+function expSliderUpdate() {
+  expSliderUpdateFill();
+  if (!expAllPts.length) return;
+  let l = parseFloat(el("expSliderL").value);
+  let r = parseFloat(el("expSliderR").value);
+  if (l > r) [l, r] = [r, l];
+  const total = expAllPts.length;
+  const from  = Math.round(l / 100 * (total - 1));
+  const to    = Math.round(r / 100 * (total - 1));
+  const sliced = expAllPts.slice(from, Math.max(from + 1, to + 1));
+  if (sliced.length) {
+    const fmt = expRange === "24h" ? fmtTime : fmtDT;
+    el("expSliderLbl1").textContent = fmt(sliced[0].ts);
+    el("expSliderLbl2").textContent = fmt(sliced[sliced.length - 1].ts);
+  }
+  _drawExplorerPts(sliced);
+}
+
+/* ══════════════════════════════════════════════
+   POROVNÁNÍ DNŮ
+══════════════════════════════════════════════ */
+const chartCompare = new Chart(el("chartCompare").getContext("2d"), {
+  type:"line",
+  data:{ labels:[], datasets:[] },
+  plugins:[crosshairPlugin],
+  options:{ ...baseOpts,
+    scales:{
+      xMain:{ ...baseScales.xMain },
+      yMain:{ ...baseScales.yMain },
+      ySec:{ ...baseScales.ySec, display:false }
+    }
+  }
+});
+
+const chartOverview = new Chart(el("chartOverview").getContext("2d"), {
+  type:"line",
+  data:{ labels:[], datasets:[] },
+  plugins:[crosshairPlugin],
+  options:{
+    responsive:true, maintainAspectRatio:false, animation:{duration:300},
+    plugins:{ legend:{labels:{color:"#ecf0f1",boxWidth:14,font:{size:11}}}, tooltip:{mode:"index",intersect:false} },
+    scales:{
+      x:{ ticks:{color:"#95a5a6",font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:20}, grid:{color:"#34495e"} },
+      y:{ ticks:{color:"#e74c3c",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"°C",color:"#e74c3c"} }
+    }
+  }
+});
+const CMP_COLORS = ["#e74c3c","#f39c12","#2980b9","#27ae60","#8e44ad","#16a085","#d35400","#1abc9c"];
+let cmpSelectedDays = [];
+
+function initCmpDays() {
+  const today = new Date().toISOString().slice(0, 10);
+  const yest  = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (!cmpSelectedDays.length) cmpSelectedDays = [today, yest];
+  el("cmpAddDate").value = today;
+  renderCmpDayBtns();
+}
+
+function renderCmpDayBtns() {
+  const today = new Date().toISOString().slice(0, 10);
+  const quick = Array.from({ length: 8 }, (_, i) =>
+    new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
+  cmpSelectedDays.forEach(d => { if (!quick.includes(d)) quick.push(d); });
+  el("cmpDayBtns").innerHTML = quick.map(d => {
+    const idx    = cmpSelectedDays.indexOf(d);
+    const active = idx >= 0;
+    const color  = active ? CMP_COLORS[idx % CMP_COLORS.length] : "";
+    const off    = Math.round((new Date(today).getTime() - new Date(d).getTime()) / 86400000);
+    const lbl    = off === 0 ? "Dnes" : off === 1 ? "Včera" : d.slice(5).replace("-", ".");
+    const st     = active ? `border-color:${color};color:${color}` : "";
+    return `<button class="cmp-day-btn${active ? " active" : ""}" onclick="cmpToggleDay('${d}')" style="${st}" title="${d}">${lbl}</button>`;
+  }).join("");
+}
+
+function cmpToggleDay(date) {
+  const idx = cmpSelectedDays.indexOf(date);
+  if (idx >= 0) { if (cmpSelectedDays.length > 1) cmpSelectedDays.splice(idx, 1); }
+  else           { cmpSelectedDays.push(date); }
+  renderCmpDayBtns();
+  buildCompare();
+}
+
+function cmpAddCustomDay() {
+  const d = el("cmpAddDate").value;
+  if (!d || cmpSelectedDays.includes(d)) return;
+  cmpSelectedDays.push(d);
+  renderCmpDayBtns();
+  buildCompare();
+}
+
+function buildCompare() {
+  if (!store.rows.length) return;
+  const metric = el("cmpMetric").value;
+
+  /* Seskupit řádky podle data (YYYY-MM-DD) */
+  const byDate = {};
+  store.rows.forEach(r => {
+    const d = r.ts.toISOString().slice(0, 10);
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  });
+
+  /* 24 hodinových štítků */
+  const hours = Array.from({ length: 24 }, (_, i) => (i < 10 ? "0" : "") + i + ":00");
+
+  const today = new Date().toISOString().slice(0, 10);
+  const datasets = [];
+
+  cmpSelectedDays.forEach((date, di) => {
+    const rows  = (byDate[date] || []).sort((a, b) => a.ts - b.ts);
+    const color = CMP_COLORS[di % CMP_COLORS.length];
+    const off   = Math.round((new Date(today).getTime() - new Date(date).getTime()) / 86400000);
+    const lbl   = off === 0 ? "Dnes" : off === 1 ? "Včera" : date.slice(5).replace("-", ".");
+
+    const hourAvg = fn => hours.map((_, hi) => {
+      const vals = rows.filter(r => r.ts.getHours() === hi).map(fn).filter(v => v !== null);
+      return vals.length ? +(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
+    });
+
+    if (metric === "temp_hum") {
+      const colH = CMP_COLORS[(di * 2 + 1) % CMP_COLORS.length];
+      datasets.push({ label: "Teplota – " + lbl, borderColor: color, backgroundColor: color + "22",
+        tension: .4, pointRadius: 2, borderWidth: 2.5, yAxisID: "yMain", spanGaps: true,
+        data: hourAvg(r => r.temp) });
+      datasets.push({ label: "Vlhkost – " + lbl, borderColor: colH, backgroundColor: "transparent",
+        tension: .4, pointRadius: 1, borderWidth: 1.5, borderDash: [5, 3], yAxisID: "ySec", spanGaps: true,
+        data: hourAvg(r => r.hum) });
+    } else {
+      const fn = metric === "hum" ? r => r.hum : metric === "pressure" ? r => r.pressure : r => r.temp;
+      datasets.push({ label: lbl, borderColor: color, backgroundColor: color + "22",
+        tension: .4, pointRadius: 2, borderWidth: 2.5, yAxisID: "yMain", spanGaps: true,
+        data: hourAvg(fn) });
+    }
+  });
+
+  chartCompare.data.labels   = hours;
+  chartCompare.data.datasets = datasets;
+
+  const metricCfg = {
+    temp:     { unit: "°C",     color: "#e74c3c", title: "Teploty" },
+    hum:      { unit: "%",      color: "#2980b9", title: "Vlhkosti" },
+    pressure: { unit: "hPa",    color: "#27ae60", title: "Tlaku" },
+    temp_hum: { unit: "°C / %", color: "#e74c3c", title: "Teploty & Vlhkosti" },
+  };
+  const mc = metricCfg[metric] || metricCfg.temp;
+  chartCompare.options.scales.yMain.ticks.color   = mc.color;
+  chartCompare.options.scales.yMain.title = { display: true, text: "[" + mc.unit.split(" / ")[0] + "]", color: mc.color };
+  chartCompare.options.scales.ySec.display = metric === "temp_hum";
+  if (metric === "temp_hum") {
+    chartCompare.options.scales.ySec.ticks = { color: "#2980b9", font: { size: 10 } };
+    chartCompare.options.scales.ySec.title = { display: true, text: "[%]", color: "#2980b9" };
+  }
+
+  el("cmpChartTitle").textContent = "Porovnání " + mc.title + " – " + cmpSelectedDays.length + " dní";
+  el("cmpInfo").textContent = "Hodinové průměry; vybráno " + cmpSelectedDays.length + " dní";
+  chartCompare.update();
+}
+
+/* ══════════════════════════════════════════════
+   PŘEHLED TEPLOT / VLHKOSTI / TLAKU
+══════════════════════════════════════════════ */
+let ovDays = 30;
+
+function setOvDays(d) {
+  ovDays = d;
+  document.querySelectorAll(".ov-range-btn").forEach(b => b.classList.toggle("active", +b.dataset.ovdays === d));
+  buildTempOverview();
+}
+
+function buildTempOverview() {
+  if (!store.rows.length) return;
+  const metric = el("ovMetric") ? el("ovMetric").value : "temp";
+  const METRICS_OV = {
+    temp:     { fn: r => r.temp,     label: "Teplota", unit: "°C",  color: "#e74c3c" },
+    hum:      { fn: r => r.hum,      label: "Vlhkost", unit: "%",   color: "#2980b9" },
+    pressure: { fn: r => r.pressure, label: "Tlak",    unit: "hPa", color: "#27ae60" },
+  };
+  const m = METRICS_OV[metric] || METRICS_OV.temp;
+
+  // Agregace po dnech
+  const dayMap = {};
+  const now = new Date();
+  const cutFrom = ovDays > 0 ? new Date(now.getTime() - ovDays * 86400000) : new Date(0);
+  store.rows.forEach(r => {
+    if (r.ts < cutFrom) return;
+    const v = m.fn(r);
+    if (v === null) return;
+    const k = fmtDateShort(r.ts);
+    if (!dayMap[k]) dayMap[k] = { vals: [] };
+    dayMap[k].vals.push(v);
+  });
+
+  // Seřadit klíče od nejstaršího (pro graf)
+  const parseKey = k => { const p = k.split('.'); return new Date(+p[2], +p[1]-1, +p[0]); };
+  const keys = Object.keys(dayMap).sort((a, b) => parseKey(a) - parseKey(b));
+
+  const mins = keys.map(k => +(Math.min(...dayMap[k].vals).toFixed(1)));
+  const maxs = keys.map(k => +(Math.max(...dayMap[k].vals).toFixed(1)));
+  const avgs = keys.map(k => {
+    const v = dayMap[k].vals;
+    return +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1);
+  });
+
+  // Graf – pás MIN-MAX + průměrová čára
+  el("ovChartTitle").textContent = m.label + " za poslední dny (" + m.unit + ")";
+  chartOverview.options.scales.y.ticks.color = m.color;
+  chartOverview.options.scales.y.title = { display: true, text: m.unit, color: m.color };
+  chartOverview.data.labels = keys;
+  chartOverview.data.datasets = [
+    {
+      label: "Max",
+      data: maxs,
+      borderColor: m.color + "99",
+      backgroundColor: m.color + "35",
+      fill: "+1",
+      tension: .35, pointRadius: 0, borderWidth: 1.5
+    },
+    {
+      label: "Min",
+      data: mins,
+      borderColor: m.color + "99",
+      backgroundColor: "transparent",
+      fill: false,
+      tension: .35, pointRadius: 0, borderWidth: 1.5
+    },
+    {
+      label: "Průměr",
+      data: avgs,
+      borderColor: m.color,
+      backgroundColor: "transparent",
+      fill: false,
+      tension: .35, pointRadius: 0, borderWidth: 2.5
+    },
+  ];
+  chartOverview.update();
+
+  // Tabulka – nejnovější nahoře
+  const todayStr = fmtDateShort(now);
+  el("ovTableBody").innerHTML = [...keys].reverse().map(k => {
+    const v    = dayMap[k].vals;
+    const mn   = Math.min(...v).toFixed(1);
+    const mx   = Math.max(...v).toFixed(1);
+    const av   = (v.reduce((a, b) => a + b, 0) / v.length).toFixed(1);
+    const cnt  = v.length;
+    const tod  = k === todayStr;
+    return `<tr class="${tod ? "ov-today" : ""}">
+      <td>${k}${tod ? " ← dnes" : ""}</td>
+      <td style="color:#2980b9">${mn}</td>
+      <td>${av}</td>
+      <td style="color:#e74c3c">${mx}</td>
+      <td style="color:var(--muted)">${cnt.toLocaleString("cs-CZ")}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="5" style="color:var(--muted);padding:1rem">Žádná data.</td></tr>`;
+}
+
+/* ══════════════════════════════════════════════
+   STATUS
+══════════════════════════════════════════════ */
+function setGsStatus(ok,msg){
+  el("gsDot").className="dot"+(ok===true?" ok":ok===false?"":" warn");
+  el("gsStatusText").textContent=msg;
+}
+function setMqttStatus(ok,msg){
+  el("mqttDot").className="dot"+(ok?" ok":"");
+  el("mqttStatusText").textContent="MQTT: "+msg;
+}
+
+/* ══════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════ */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    el("tab-"+btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "compare") { initCmpDays(); buildCompare(); }
+    if (btn.dataset.tab === "explorer" && store.rows.length) buildExplorer();
+    if (btn.dataset.tab === "overview") buildTempOverview();
+  });
+});
+
+/* ══════════════════════════════════════════════
+   MQTT  (volitelný živý overlay)
+══════════════════════════════════════════════ */
+function connectMQTT(){
+  if(!CFG.mqttHost||CFG.source==="sheets"){ setMqttStatus(false,"neaktivní"); return; }
+  setMqttStatus(false,"připojování…");
+  const cid="meteo_"+Math.random().toString(16).slice(2,8);
+  const mc=new Paho.Client(CFG.mqttHost,CFG.mqttPort,"/mqtt",cid);
+  mc.onConnectionLost=r=>{ setMqttStatus(false,"odpojeno"); setTimeout(connectMQTT,5000); };
+  mc.onMessageArrived=msg=>{
+    try {
+      const o=JSON.parse(msg.payloadString);
+      const now=new Date();
+      store.rows.unshift({
+        date:fmtDateShort(now),time:fmtTime(now),ts:now,
+        temp:pf(o.teplota??o.temp??o.t), pressure:pf(o.tlak??o.pressure??o.p),
+        hum:pf(o.vlhkost??o.humidity??o.h), rainInc:pf(o.prirůstek??o.rainInc),
+        rain:pf(o.dest??o.rain??o.r), tank:pf(o.nadrz??o.tank),
+        voltage:pf(o.napeti??o.voltage??o.v)
+      });
+      refreshUI();
+    }catch(e){}
+  };
+  mc.connect({
+    useSSL: CFG.mqttPort===8883||CFG.mqttPort===8884,
+    timeout:10,
+    onSuccess:()=>{ setMqttStatus(true,"připojeno – "+CFG.mqttHost); if(CFG.mqttJson) mc.subscribe(CFG.mqttJson); },
+    onFailure:e=>{ setMqttStatus(false,"chyba – "+e.errorMessage); setTimeout(connectMQTT,5000); }
+  });
+}
+
+/* ══════════════════════════════════════════════
+   START
+══════════════════════════════════════════════ */
+function startAll(){
+  if(fetchTimer) clearInterval(fetchTimer);
+  if(CFG.source==="sheets"||CFG.source==="both"){
+    fetchSheets();
+    fetchTimer=setInterval(fetchSheets, CFG.interval*1000);
+  }
+  if(CFG.source==="mqtt"||CFG.source==="both") connectMQTT();
+  if(CFG.source==="sheets") setMqttStatus(false,"neaktivní");
+  // Načti reálný UV index z Open-Meteo pro aktuální souřadnice
+  uvStore.lat = null; // vynutit nové načtení při přepnutí stanice
+  fetchUVData();
+  if (window._uvTimer) clearInterval(window._uvTimer);
+  window._uvTimer = setInterval(fetchUVData, 3600000);
+}
+
+// Init: téma, stanice, config
+setTheme(theme);
+updateStationUI();
+// Výchozí data pro vlastní rozsah = dnes
+const _today = new Date().toISOString().slice(0,10);
+el("expDateFrom").value = _today;
+el("expDateTo").value   = _today;
+el("expDateOne").value  = _today;
+fillConfigUI();
+initCmpDays();
+updateSunBar();
+setInterval(updateSunBar, 60000); // refresh sunrise/sunset/moon každou minutu
+
+tryLoadConfigJson().then(loaded => {
+  if (!loaded) startAll();
+  else startAll();
+});
+</script>
+</body>
+</html>

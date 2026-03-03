@@ -1,0 +1,11 @@
+{
+  "stationIdx": 1,
+  "name":      "Praha za oknem",
+  "sheetId":   "1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA",
+  "sheetName": "Hlavni_datovna",
+  "interval":  300,
+  "source":    "sheets",
+  "mqttHost":  "",
+  "mqttPort":  9001,
+  "mqttJson":  "meteo/data"
+}
