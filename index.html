@@ -78,7 +78,8 @@
     .table-card table td { padding:.38rem .75rem; white-space:nowrap; }
 
     /* tabs */
-    .tabs { display:flex; border-bottom:2px solid var(--border); margin-bottom:.8rem; overflow-x:auto; }
+    .tabs { display:flex; border-bottom:2px solid var(--border); margin-bottom:.8rem; overflow-x:auto; scrollbar-width:none; }
+    .tabs::-webkit-scrollbar { display:none; }
     .tab-btn { background:none; border:none; border-bottom:3px solid transparent; color:var(--muted); cursor:pointer; padding:.6rem 1rem; font-size:.86rem; font-weight:600; margin-bottom:-2px; transition:color .2s,border-color .2s; white-space:nowrap; }
     .tab-btn:hover { color:var(--text); }
     .tab-btn.active { color:var(--text); border-bottom-color:var(--accent); }
@@ -376,6 +377,39 @@
     .cmp-day-btn:hover { color:var(--text); }
     .cmp-day-btn.active { background:color-mix(in srgb, var(--day-clr,var(--accent)) 15%, transparent);
       border-color:var(--day-clr,var(--accent)); color:var(--day-clr,var(--accent)); }
+
+    /* ── All Stations overview bar ── */
+    .all-st-bar { background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:stretch; justify-content:center; position:sticky; top:86px; z-index:97; overflow-x:auto; scrollbar-width:none; }
+    .all-st-bar::-webkit-scrollbar { display:none; }
+    .ov-st { display:flex; align-items:center; gap:.45rem; padding:.3rem 1rem; border-right:1px solid var(--border); font-size:.76rem; cursor:pointer; flex-shrink:0; transition:background .15s; white-space:nowrap; }
+    .ov-st:last-child { border-right:none; }
+    .ov-st:hover { background:var(--bg3); }
+    .ov-st.ov-active { border-bottom:2px solid var(--accent); background:color-mix(in srgb, var(--accent) 8%, transparent); }
+    .ov-name { font-weight:700; color:var(--text); font-size:.78rem; }
+    .ov-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+    .ov-dot.ok   { background:var(--green); box-shadow:0 0 5px var(--green); }
+    .ov-dot.warn { background:var(--red);   box-shadow:0 0 5px var(--red); }
+    .ov-sep { color:var(--border); margin:0 .1rem; }
+    .ov-item { display:flex; align-items:center; gap:.2rem; }
+    .ov-ikey { color:var(--muted); font-size:.72rem; }
+    .ov-val { color:var(--text); font-weight:600; }
+    .ov-last { color:var(--muted); font-size:.7rem; margin-left:.15rem; }
+    @media(max-width:480px){ .all-st-bar { top:78px; } .ov-st { padding:.22rem .55rem; gap:.3rem; font-size:.72rem; } }
+
+    /* ── Password modal ── */
+    .pw-overlay { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.65); backdrop-filter:blur(3px); align-items:center; justify-content:center; }
+    .pw-overlay.open { display:flex; }
+    .pw-box { background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:1.6rem 1.8rem; min-width:280px; max-width:340px; width:90%; box-shadow:0 12px 40px rgba(0,0,0,.6); }
+    .pw-title { font-size:.95rem; font-weight:700; color:var(--accent); margin-bottom:1rem; }
+    .pw-box input[type=password] { width:100%; background:var(--bg2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:.5rem .8rem; font-size:.95rem; margin-bottom:.75rem; outline:none; }
+    .pw-box input[type=password]:focus { border-color:var(--accent); }
+    .pw-err { color:var(--red); font-size:.78rem; min-height:1rem; margin-bottom:.5rem; }
+    .pw-btns { display:flex; gap:.6rem; }
+    .pw-btns button { flex:1; padding:.45rem; border-radius:6px; border:none; font-size:.85rem; font-weight:700; cursor:pointer; }
+    .pw-ok  { background:var(--accent); color:#fff; }
+    .pw-ok:hover  { opacity:.85; }
+    .pw-cancel { background:var(--bg2); border:1px solid var(--border) !important; color:var(--muted); }
+    .pw-cancel:hover { color:var(--text); }
   </style>
 </head>
 <body>
@@ -390,7 +424,7 @@
       <div class="pill" onclick="toggleDD('ddStation')"><span id="pillStationName">–</span> ▾</div>
       <div class="dd-menu" id="ddStation">
         <div class="dd-label">Stanice</div>
-        <div class="dd-item" onclick="switchStation(0)"><span id="st0check">✓</span><span id="st0name">Meteo stanice Praha-baterie-nový systém</span></div>
+        <div class="dd-item" onclick="switchStation(0)"><span id="st0check">✓</span><span id="st0name">Praha-baterie PCB</span></div>
         <div class="dd-item" onclick="switchStation(1)"><span id="st1check"> </span><span id="st1name">Praha za oknem</span></div>
         <div class="dd-item" onclick="switchStation(2)"><span id="st2check"> </span><span id="st2name">Mšené lázně</span></div>
       </div>
@@ -422,8 +456,7 @@
       </div>
     </div>
 
-    <div class="pill">CZ ▾</div>
-    <div class="pill">°C ▾</div>
+
   </div>
 </header>
 
@@ -500,8 +533,55 @@
   </span>
 </div>
 
+<!-- ── All Stations Overview Bar ── -->
+<div id="allStBar" class="all-st-bar">
+  <div class="ov-st" id="ovSt0" onclick="switchStation(0)">
+    <span class="ov-dot" id="ovDot0"></span>
+    <span class="ov-name" id="ovName0">–</span>
+    <span class="ov-sep">|</span>
+    <span class="ov-item"><span class="ov-ikey">🌡</span><span class="ov-val" id="ovTemp0">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">💧</span><span class="ov-val" id="ovHum0">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">📊</span><span class="ov-val" id="ovPres0">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">🔋</span><span class="ov-val" id="ovVolt0">–</span></span>
+    <span class="ov-last" id="ovLast0">–</span>
+  </div>
+  <div class="ov-st" id="ovSt1" onclick="switchStation(1)">
+    <span class="ov-dot" id="ovDot1"></span>
+    <span class="ov-name" id="ovName1">–</span>
+    <span class="ov-sep">|</span>
+    <span class="ov-item"><span class="ov-ikey">🌡</span><span class="ov-val" id="ovTemp1">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">💧</span><span class="ov-val" id="ovHum1">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">📊</span><span class="ov-val" id="ovPres1">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">🔋</span><span class="ov-val" id="ovVolt1">–</span></span>
+    <span class="ov-last" id="ovLast1">–</span>
+  </div>
+  <div class="ov-st" id="ovSt2" onclick="switchStation(2)">
+    <span class="ov-dot" id="ovDot2"></span>
+    <span class="ov-name" id="ovName2">–</span>
+    <span class="ov-sep">|</span>
+    <span class="ov-item"><span class="ov-ikey">🌡</span><span class="ov-val" id="ovTemp2">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">💧</span><span class="ov-val" id="ovHum2">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">📊</span><span class="ov-val" id="ovPres2">–</span></span>
+    <span class="ov-item"><span class="ov-ikey">🔋</span><span class="ov-val" id="ovVolt2">–</span></span>
+    <span class="ov-last" id="ovLast2">–</span>
+  </div>
+</div>
+
 <!-- Overlay pro zavření dropdownů -->
 <div id="ddOverlay" onclick="closeAllDD()" style="display:none;position:fixed;inset:0;z-index:99"></div>
+
+<!-- ── Password modal ── -->
+<div class="pw-overlay" id="pwOverlay" onclick="_pwBgClick(event)">
+  <div class="pw-box">
+    <div class="pw-title">🔒 Nastavení – zadání hesla</div>
+    <input type="password" id="pwInput" placeholder="Heslo…" onkeydown="if(event.key==='Enter')_pwConfirm();if(event.key==='Escape')_pwClose();" autocomplete="current-password">
+    <div class="pw-err" id="pwErr"></div>
+    <div class="pw-btns">
+      <button class="pw-ok" onclick="_pwConfirm()">Otevřít</button>
+      <button class="pw-cancel pw-btns" onclick="_pwClose()">Zrušit</button>
+    </div>
+  </div>
+</div>
 
 <div class="page-wrapper">
 
@@ -899,7 +979,7 @@
    MULTI-STATION CONFIG
 ══════════════════════════════════════════════ */
 const STATION_DEFAULTS = [
-  { name:"Meteo stanice Praha-baterie-nový systém", cfgFile:"config_praha_baterie.json",  sheetId:"1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8", sheetName:"Hlavni_datovna", interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.08, lon:14.42 },
+  { name:"Praha-baterie PCB", cfgFile:"config_praha_baterie.json",  sheetId:"1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8", sheetName:"Hlavni_datovna", interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.08, lon:14.42 },
   { name:"Praha za oknem",                          cfgFile:"config_praha_okno.json",      sheetId:"1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA", sheetName:"Hlavni_datovna", interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.08, lon:14.42 },
   { name:"Mšené lázně",                              cfgFile:"config_stanice3.json",        sheetId:"",                                               sheetName:"List1",          interval:60, source:"sheets", mqttHost:"", mqttPort:9001, mqttJson:"meteo/data", lat:50.44, lon:13.91 },
 ];
@@ -958,6 +1038,7 @@ function updateStationUI() {
   if (el("cfgSaveName")) el("cfgSaveName").textContent = STATION_DEFAULTS[activeIdx].cfgFile;
   if (el("cfgPanelStName")) el("cfgPanelStName").textContent = stations[activeIdx].name;
   updateThemeBtns();
+  updateOvBar();
 }
 
 /* ── Téma ── */
@@ -988,12 +1069,42 @@ function toggleFullCfg() {
   closeAllDD();
   const d = el("cfgDetails");
   if (d.style.display === "none" || d.style.display === "") {
+    // Vyžaduj heslo před otevřením
+    el("pwInput").value = "";
+    el("pwErr").textContent = "";
+    el("pwOverlay").classList.add("open");
+    setTimeout(() => el("pwInput").focus(), 80);
+  } else {
+    d.style.display = "none";
+  }
+}
+
+const _CFG_HASH = "23c6f2640a9605f290255b4bc43d25d3e5afeedc60734067d8964dea5b4fff6b";
+
+async function _pwConfirm() {
+  const val = el("pwInput").value;
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(val));
+  const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+  if (hex === _CFG_HASH) {
+    _pwClose();
+    const d = el("cfgDetails");
     d.style.display = "block";
     el("cfgPanelStName").textContent = stations[activeIdx].name;
     d.scrollIntoView({ behavior:"smooth", block:"start" });
   } else {
-    d.style.display = "none";
+    el("pwErr").textContent = "❌ Nesprávné heslo";
+    el("pwInput").select();
   }
+}
+
+function _pwClose() {
+  el("pwOverlay").classList.remove("open");
+  el("pwInput").value = "";
+  el("pwErr").textContent = "";
+}
+
+function _pwBgClick(e) {
+  if (e.target === el("pwOverlay")) _pwClose();
 }
 
 /* ── Rychlá změna zdroje z gear popup ── */
@@ -1731,6 +1842,9 @@ function splitCSV(line) {
 function refreshUI() {
   if(!store.rows.length) return;
   const R = store.rows[0];
+  // Aktualizuj overview bar pro aktivní stanici přímo z čerstvých dat
+  ovStores[activeIdx] = { ts: R.ts, temp: R.temp, pressure: R.pressure, hum: R.hum, voltage: R.voltage };
+  updateOvBar();
 
   el("curTemp").textContent      = fmt(R.temp);
   el("curHum").textContent       = fmt(R.hum);
@@ -2602,6 +2716,86 @@ function startAll(){
   window._uvTimer = setInterval(fetchUVData, 3600000);
 }
 
+/* ══════════════════════════════════════════════
+   ALL-STATIONS OVERVIEW BAR
+══════════════════════════════════════════════ */
+const ovStores = [null, null, null];
+
+async function fetchOvStation(idx) {
+  const s = stations[idx];
+  if (!s.sheetId) { ovStores[idx] = null; updateOvBar(); return; }
+  const url = `https://docs.google.com/spreadsheets/d/${s.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s.sheetName||"List1")}`;
+  const isFile = location.protocol === "file:";
+  const urls = isFile
+    ? ["https://corsproxy.io/?url=" + encodeURIComponent(url), "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)]
+    : [url, "https://corsproxy.io/?url=" + encodeURIComponent(url)];
+  for (const u of urls) {
+    try {
+      const r = await fetch(u + (u.includes("?") ? "&" : "?") + "_=" + Date.now(), { signal: AbortSignal.timeout(10000) });
+      if (!r.ok) continue;
+      const text = await r.text();
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      for (let i = 0; i < Math.min(lines.length, 6); i++) {
+        const c0 = stripQ(splitCSV(lines[i])[0]);
+        if (/^\d{1,2}\.\d/.test(c0)) {
+          const c = splitCSV(lines[i]);
+          const ts = parseCSDateTime(stripQ(c[0]), stripQ(c[1]));
+          if (ts && !isNaN(ts.getTime())) {
+            const rawV = stripQ(c[8]||"" ).replace(/[Vv]/g,"").trim();
+            ovStores[idx] = { ts, temp: pf(c[2]), pressure: pf(c[3]), hum: pf(c[4]), voltage: rawV ? pf(rawV) : null };
+            updateOvBar();
+            return;
+          }
+          break;
+        }
+      }
+      break;
+    } catch(e) { console.warn("[OV] fetchOvStation", idx, e.message); }
+  }
+}
+
+function updateOvBar() {
+  const now = Date.now();
+  for (let i = 0; i < 3; i++) {
+    const ov    = ovStores[i];
+    const dot   = el("ovDot"  + i);
+    const nameEl= el("ovName" + i);
+    const tmpEl = el("ovTemp" + i);
+    const humEl = el("ovHum"  + i);
+    const preEl = el("ovPres" + i);
+    const vltEl = el("ovVolt" + i);
+    const lstEl = el("ovLast" + i);
+    const stEl  = el("ovSt"   + i);
+    if (nameEl) nameEl.textContent = stations[i] ? stations[i].name : "–";
+    if (stEl)   stEl.classList.toggle("ov-active", i === activeIdx);
+    if (!ov) {
+      if (dot)   dot.className = "ov-dot";
+      if (tmpEl) tmpEl.textContent = "–";
+      if (humEl) humEl.textContent = "–";
+      if (preEl) preEl.textContent = "–";
+      if (vltEl) vltEl.textContent = "–";
+      if (lstEl) lstEl.textContent = "načítám…";
+      continue;
+    }
+    const ageMs = now - ov.ts.getTime();
+    const fresh = ageMs < 3600000; // < 1 hodina
+    if (dot)   dot.className = "ov-dot " + (fresh ? "ok" : "warn");
+    if (tmpEl) tmpEl.textContent = fmt(ov.temp)        + " °C";
+    if (humEl) humEl.textContent = fmt(ov.hum, 0)      + " %";
+    if (preEl) preEl.textContent = fmt(ov.pressure, 0) + " hPa";
+    if (vltEl) vltEl.textContent = ov.voltage !== null ? fmt(ov.voltage, 2) + " V" : "–";
+    if (lstEl) {
+      const min = Math.round(ageMs / 60000);
+      lstEl.textContent = min < 2 ? "právě teď" : min < 60 ? "(" + min + " min)" : "(" + Math.round(min / 60) + " h)";
+    }
+  }
+}
+
+async function fetchAllOv() {
+  // Přeskoč aktivní stanici – ta se aktualizuje přes refreshUI
+  await Promise.all([0, 1, 2].filter(i => i !== activeIdx).map(fetchOvStation));
+}
+
 // Init: téma, stanice, config
 setTheme(theme);
 updateStationUI();
@@ -2614,6 +2808,8 @@ fillConfigUI();
 initCmpDays();
 updateSunBar();
 setInterval(updateSunBar, 60000); // refresh sunrise/sunset/moon každou minutu
+fetchAllOv();
+setInterval(fetchAllOv, 5 * 60 * 1000); // overview bar: refresh ostatních stanic každých 5 min
 
 tryLoadConfigJson().then(loaded => {
   if (!loaded) startAll();
