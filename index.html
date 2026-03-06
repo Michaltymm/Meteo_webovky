@@ -219,13 +219,17 @@
       html { -webkit-text-size-adjust:100%; }
     }
 
+    /* ── Sticky wrapper pro obě lišty ── */
+    .sticky-bars { position:sticky; top:52px; z-index:99; background:var(--bg2); }
+    @media(max-width:480px){ .sticky-bars { top:48px; } }
+
     /* ── Sun / Moon bar ── */
-    .sun-bar { background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:1.4rem; padding:.28rem 1rem; font-size:.78rem; color:var(--muted); flex-wrap:wrap; position:sticky; top:52px; z-index:99; overflow:visible; }
+    .sun-bar { background:var(--bg2); display:flex; align-items:center; justify-content:center; gap:1.4rem; padding:.28rem 1rem; font-size:.78rem; color:var(--muted); flex-wrap:wrap; overflow:visible; }
     .sun-bar .sb-item { display:flex; align-items:center; gap:.3rem; }
     .sun-bar .sb-icon { font-size:1rem; }
     .sun-bar .sb-val  { color:var(--text); font-weight:600; }
     .sun-bar .sb-sep  { color:var(--border); }
-    @media(max-width:480px){ .sun-bar { top:48px; font-size:.72rem; gap:.8rem; padding:.22rem .6rem; } }
+    @media(max-width:480px){ .sun-bar { font-size:.72rem; gap:.8rem; padding:.22rem .6rem; } }
 
     /* ── Moon detail popup ── */
     .moon-wrap { position:relative; display:flex; align-items:center; gap:.3rem; cursor:pointer; }
@@ -351,20 +355,19 @@
     .cfg-full-btn:hover { border-color:var(--accent); color:var(--text); }
 
     /* ── Posuvník rozsahu (sliding window) ── */
-    .exp-slider-wrap { padding:.5rem 0 .1rem; user-select:none; }
-    .exp-slider-track { position:relative; height:28px; display:flex; align-items:center; }
-    .exp-slider-input { position:absolute; left:0; width:100%; height:4px; margin:0;
-      -webkit-appearance:none; appearance:none; background:none; pointer-events:none; outline:none; }
-    .exp-slider-input::-webkit-slider-runnable-track { height:4px; border-radius:2px; background:var(--border); }
-    .exp-slider-input::-moz-range-track { height:4px; border-radius:2px; background:var(--border); }
+    .exp-slider-wrap { padding:.6rem 0 .2rem; user-select:none; position:relative; z-index:20; overflow:visible; }
+    .exp-slider-track { position:relative; height:4px; margin:12px 0; background:var(--border); border-radius:2px; overflow:visible; z-index:20; }
+    .exp-slider-track-fill { position:absolute; height:4px; top:0; background:var(--accent); border-radius:2px; pointer-events:none; opacity:.7; }
+    .exp-slider-input { position:absolute; left:0; width:100%; height:4px; top:0; margin:0;
+      -webkit-appearance:none; appearance:none; background:none; pointer-events:none; outline:none; z-index:20; }
+    .exp-slider-input::-webkit-slider-runnable-track { height:4px; background:transparent; border-radius:2px; }
+    .exp-slider-input::-moz-range-track { height:4px; background:transparent; border-radius:2px; }
     .exp-slider-input::-webkit-slider-thumb { -webkit-appearance:none; pointer-events:auto;
       width:20px; height:20px; border-radius:50%; background:var(--accent); cursor:grab;
-      border:2px solid var(--bg); box-shadow:0 1px 4px rgba(0,0,0,.4); margin-top:-8px; }
-    .exp-slider-input::-moz-range-thumb { pointer-events:auto; width:18px; height:18px;
+      border:2px solid var(--bg); box-shadow:0 2px 6px rgba(0,0,0,.5); margin-top:-8px; }
+    .exp-slider-input::-moz-range-thumb { pointer-events:auto; width:20px; height:20px; margin-top:-8px;
       border-radius:50%; background:var(--accent); cursor:grab; border:2px solid var(--bg); }
     .exp-slider-input:active::-webkit-slider-thumb { cursor:grabbing; background:var(--blue); }
-    .exp-slider-track-fill { position:absolute; height:4px; background:var(--accent);
-      border-radius:2px; pointer-events:none; opacity:.5; }
     .exp-slider-labels { display:flex; justify-content:space-between; align-items:center;
       font-size:.7rem; color:var(--muted); margin-top:.15rem; gap:.5rem; }
     .exp-slider-lbl { flex:0 0 auto; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -379,7 +382,7 @@
       border-color:var(--day-clr,var(--accent)); color:var(--day-clr,var(--accent)); }
 
     /* ── All Stations overview bar ── */
-    .all-st-bar { background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:stretch; justify-content:center; position:sticky; top:86px; z-index:97; overflow-x:auto; scrollbar-width:none; }
+    .all-st-bar { background:var(--bg2); border-bottom:1px solid var(--border); display:flex; align-items:stretch; justify-content:center; overflow-x:auto; scrollbar-width:none; }
     .all-st-bar::-webkit-scrollbar { display:none; }
     .ov-st { display:flex; align-items:center; gap:.45rem; padding:.3rem 1rem; border-right:1px solid var(--border); font-size:.76rem; cursor:pointer; flex-shrink:0; transition:background .15s; white-space:nowrap; }
     .ov-st:last-child { border-right:none; }
@@ -394,7 +397,7 @@
     .ov-ikey { color:var(--muted); font-size:.72rem; }
     .ov-val { color:var(--text); font-weight:600; }
     .ov-last { color:var(--muted); font-size:.7rem; margin-left:.15rem; }
-    @media(max-width:480px){ .all-st-bar { top:78px; } .ov-st { padding:.22rem .55rem; gap:.3rem; font-size:.72rem; } }
+    @media(max-width:480px){ .all-st-bar::-webkit-scrollbar { display:none; } .ov-st { padding:.22rem .55rem; gap:.3rem; font-size:.72rem; } }
 
     /* ── Password modal ── */
     .pw-overlay { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.65); backdrop-filter:blur(3px); align-items:center; justify-content:center; }
@@ -460,7 +463,8 @@
   </div>
 </header>
 
-<!-- ── Sun/Moon bar ── -->
+<!-- ── Sun/Moon bar + Overview bar (sticky jako celek) ── -->
+<div class="sticky-bars">
 <div class="sun-bar" id="sunBar">
   <span class="rise-wrap" id="riseWrap" onclick="toggleRisePopup()">
     <span class="sb-icon">🌅</span><span>Východ:</span><span class="sb-val" id="sbRise">–</span>
@@ -566,6 +570,7 @@
     <span class="ov-last" id="ovLast2">–</span>
   </div>
 </div>
+</div><!-- /sticky-bars -->
 
 <!-- Overlay pro zavření dropdownů -->
 <div id="ddOverlay" onclick="closeAllDD()" style="display:none;position:fixed;inset:0;z-index:99"></div>
@@ -845,7 +850,7 @@
     <div id="expStats" class="day-summary" style="margin-bottom:.5rem;display:none"></div>
     <div class="chart-wrapper" style="margin-top:.6rem">
       <div class="chart-title" id="expChartTitle">Graf</div>
-      <div class="chart-canvas-wrap" style="height:320px"><canvas id="chartExplorer"></canvas></div>
+      <div class="chart-canvas-wrap" style="height:320px;padding-bottom:4px"><canvas id="chartExplorer"></canvas></div>
     </div>
     <div id="expInfo" style="font-size:.78rem;color:var(--muted);margin-top:.3rem;text-align:right"></div>
 
@@ -1938,12 +1943,17 @@ const crosshairPlugin = {
 };
 
 /* ══════════════════════════════════════════════
+   PLUGIN – jednotky nad osou Y (šetří místo na mobilu)
+══════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════
    CHARTS
 ══════════════════════════════════════════════ */
 const baseScales = {
   x:     { ticks:{color:"#95a5a6",maxRotation:0,autoSkip:true,maxTicksLimit:10,font:{size:10}}, grid:{color:"#34495e"} },
-  yTemp: { position:"left",  ticks:{color:"#e74c3c",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"°C",color:"#e74c3c"} },
-  yHum:  { position:"right", min:0, max:100, ticks:{color:"#2980b9",font:{size:10}}, grid:{drawOnChartArea:false}, title:{display:true,text:"%",color:"#2980b9"} }
+  yTemp: { position:"left",  ticks:{color:"#e74c3c",font:{size:10}}, grid:{color:"#34495e"}, title:{display:false,text:"°C",color:"#e74c3c"} },
+  yHum:  { position:"right", min:0, max:100, ticks:{color:"#2980b9",font:{size:10}}, grid:{drawOnChartArea:false}, title:{display:false,text:"%",color:"#2980b9"} }
 };
 const baseOpts = {
   responsive:true, maintainAspectRatio:false, animation:{duration:300},
@@ -1956,16 +1966,16 @@ function mkChart(id, type, datasets, scales) {
 }
 
 const chart24 = mkChart("chart24h","line",[
-  {label:"Teplota", borderColor:"#e74c3c", backgroundColor:"rgba(231,76,60,.1)",  tension:.35, pointRadius:0, borderWidth:2,  yAxisID:"yTemp", data:[]},
-  {label:"Vlhkost", borderColor:"#2980b9", backgroundColor:"rgba(41,128,185,.1)", tension:.35, pointRadius:0, borderWidth:2,  yAxisID:"yHum",  data:[]},
-  {label:"Rosný bod",borderColor:"#16a085",backgroundColor:"transparent",         tension:.35, pointRadius:0, borderWidth:1.5, borderDash:[4,3], yAxisID:"yTemp", data:[]}
+  {label:"Teplota [°C]", borderColor:"#e74c3c", backgroundColor:"rgba(231,76,60,.1)",  tension:.35, pointRadius:0, borderWidth:2,  yAxisID:"yTemp", data:[]},
+  {label:"Vlhkost [%]", borderColor:"#2980b9", backgroundColor:"rgba(41,128,185,.1)", tension:.35, pointRadius:0, borderWidth:2,  yAxisID:"yHum",  data:[]},
+  {label:"Rosný bod [°C]",borderColor:"#16a085",backgroundColor:"transparent",         tension:.35, pointRadius:0, borderWidth:1.5, borderDash:[4,3], yAxisID:"yTemp", data:[]}
 ]);
 
 const chartRain = mkChart("chartRain","bar",[
   {label:"Srážky (mm)", backgroundColor:"rgba(41,128,185,.75)", data:[]}
 ],{
   x:{ ticks:{color:"#95a5a6",font:{size:10},maxRotation:45}, grid:{color:"#34495e"} },
-  y:{ ticks:{color:"#2980b9",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"mm",color:"#2980b9"} }
+  y:{ ticks:{color:"#2980b9",font:{size:10}}, grid:{color:"#34495e"}, title:{display:false,text:"mm",color:"#2980b9"} }
 });
 
 const chartVoltage = mkChart("chartVoltage","line",[
@@ -1973,7 +1983,7 @@ const chartVoltage = mkChart("chartVoltage","line",[
   {label:"Predikce (V)",    borderColor:"rgba(231,76,60,.8)", backgroundColor:"transparent",           tension:.3, pointRadius:0, borderWidth:1.5, borderDash:[6,4], data:[]}
 ],{
   x:{ ticks:{color:"#95a5a6",font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:10}, grid:{color:"#34495e"} },
-  y:{ ticks:{color:"#8e44ad",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"V",color:"#8e44ad"} }
+  y:{ ticks:{color:"#8e44ad",font:{size:10}}, grid:{color:"#34495e"}, title:{display:false,text:"V",color:"#8e44ad"} }
 });
 
 const chartMonthly = mkChart("chartMonthly","bar",[
@@ -2225,7 +2235,7 @@ function buildExplorer() {
       data: keys.map(k => rb[k].val), yAxisID: "yMain"
     }];
     chartExplorer.options.scales.yMain.ticks.color = "#2980b9";
-    chartExplorer.options.scales.yMain.title = { display: true, text: "mm", color: "#2980b9" };
+    chartExplorer.options.scales.yMain.title = { display: false, text: "mm", color: "#2980b9" };
     chartExplorer.options.scales.ySec.display = false;
     el("expChartTitle").textContent = "Srážky – " + expLabelFor(expRange) + " (" + keys.length + " dní)";
     el("expInfo").textContent = rows.length + " záznamů v rozsahu";
@@ -2276,7 +2286,7 @@ function _drawExplorerPts(pts) {
       { label: "Vlhkost [%]",  borderColor: "#2980b9", backgroundColor: "rgba(41,128,185,.1)", tension: .3, pointRadius: 0, borderWidth: 2, yAxisID: "ySec",  data: pts.map(r => r.hum) },
     ];
     chartExplorer.options.scales.yMain.ticks.color = "#e74c3c";
-    chartExplorer.options.scales.yMain.title = { display: true, text: "[°C]", color: "#e74c3c" };
+    chartExplorer.options.scales.yMain.title = { display: false, text: "[°C]", color: "#e74c3c" };
     chartExplorer.options.scales.ySec.display = true;
     chartExplorer.options.scales.ySec.min = 0;
     chartExplorer.options.scales.ySec.max = 100;
@@ -2317,7 +2327,7 @@ function _drawExplorerPts(pts) {
       }];
     }
     chartExplorer.options.scales.yMain.ticks.color = m.color;
-    chartExplorer.options.scales.yMain.title = { display: true, text: "[" + m.unit + "]", color: m.color };
+    chartExplorer.options.scales.yMain.title = { display: false, text: "[" + m.unit + "]", color: m.color };
     chartExplorer.options.scales.ySec.display = false;
     el("expChartTitle").textContent = m.label + " – " + expLabelFor(expRange);
   }
@@ -2428,7 +2438,7 @@ const chartOverview = new Chart(el("chartOverview").getContext("2d"), {
     plugins:{ legend:{labels:{color:"#ecf0f1",boxWidth:14,font:{size:11}}}, tooltip:{mode:"index",intersect:false} },
     scales:{
       x:{ ticks:{color:"#95a5a6",font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:20}, grid:{color:"#34495e"} },
-      y:{ ticks:{color:"#e74c3c",font:{size:10}}, grid:{color:"#34495e"}, title:{display:true,text:"°C",color:"#e74c3c"} }
+      y:{ ticks:{color:"#e74c3c",font:{size:10}}, grid:{color:"#34495e"}, title:{display:false,text:"°C",color:"#e74c3c"} }
     }
   }
 });
@@ -2531,11 +2541,11 @@ function buildCompare() {
   };
   const mc = metricCfg[metric] || metricCfg.temp;
   chartCompare.options.scales.yMain.ticks.color   = mc.color;
-  chartCompare.options.scales.yMain.title = { display: true, text: "[" + mc.unit.split(" / ")[0] + "]", color: mc.color };
+  chartCompare.options.scales.yMain.title = { display: false, text: "[" + mc.unit.split(" / ")[0] + "]", color: mc.color };
   chartCompare.options.scales.ySec.display = metric === "temp_hum";
   if (metric === "temp_hum") {
     chartCompare.options.scales.ySec.ticks = { color: "#2980b9", font: { size: 10 } };
-    chartCompare.options.scales.ySec.title = { display: true, text: "[%]", color: "#2980b9" };
+    chartCompare.options.scales.ySec.title = { display: false, text: "[%]", color: "#2980b9" };
   }
 
   el("cmpChartTitle").textContent = "Porovnání " + mc.title + " – " + cmpSelectedDays.length + " dní";
@@ -2591,7 +2601,7 @@ function buildTempOverview() {
   // Graf – pás MIN-MAX + průměrová čára
   el("ovChartTitle").textContent = m.label + " za poslední dny (" + m.unit + ")";
   chartOverview.options.scales.y.ticks.color = m.color;
-  chartOverview.options.scales.y.title = { display: true, text: m.unit, color: m.color };
+  chartOverview.options.scales.y.title = { display: false, text: m.unit, color: m.color };
   chartOverview.data.labels = keys;
   chartOverview.data.datasets = [
     {
