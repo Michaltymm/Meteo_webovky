@@ -399,6 +399,54 @@
     .ov-last { color:var(--muted); font-size:.7rem; margin-left:.15rem; }
     @media(max-width:480px){ .all-st-bar::-webkit-scrollbar { display:none; } .ov-st { padding:.22rem .55rem; gap:.3rem; font-size:.72rem; } }
 
+    /* ── Refresh button ── */
+    .refresh-btn { background:var(--bg3); border:1px solid var(--border); color:var(--muted); border-radius:4px; padding:.2rem .7rem; font-size:.75rem; cursor:pointer; display:flex; align-items:center; gap:.3rem; transition:all .15s; }
+    .refresh-btn:hover { border-color:var(--accent); color:var(--text); }
+    .refresh-btn.spinning .refresh-icon { animation:spin .8s linear infinite; }
+    .partial-badge { background:rgba(243,156,18,.12); border:1px solid var(--yellow,#f39c12); color:var(--yellow,#f39c12); border-radius:4px; padding:.2rem .7rem; font-size:.75rem; cursor:pointer; transition:all .15s; }
+    .partial-badge:hover { background:rgba(243,156,18,.25); }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── Yearly stats ── */
+    .ys-year { margin-bottom:2rem; }
+    .ys-year-header { background:linear-gradient(135deg,#1a6b5a,#1a7a5a); border-radius:8px 8px 0 0; padding:.8rem 1.2rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; }
+    .ys-year-title { font-size:1.6rem; font-weight:700; color:#fff; }
+    .ys-year-summary { font-size:.78rem; color:rgba(255,255,255,.85); }
+    .ys-year-summary b { color:#fff; }
+    .ys-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:.8rem; padding:.8rem 0; }
+    .ys-table { background:var(--bg2); border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+    .ys-table-title { padding:.5rem .8rem; font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#fff; }
+    .ys-table-title.red { background:#c0392b; }
+    .ys-table-title.blue { background:#2471a3; }
+    .ys-table-title.green { background:#1a6b5a; }
+    .ys-table-title.orange { background:#d35400; }
+    .ys-table table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .ys-table th { background:var(--bg3); padding:.35rem .7rem; text-align:right; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+    .ys-table th:first-child { text-align:left; }
+    .ys-table td { padding:.32rem .7rem; border-bottom:1px solid var(--border); text-align:right; }
+    .ys-table td:first-child { text-align:left; color:var(--muted); }
+    .ys-table tr:last-child td { border-bottom:none; }
+
+    /* ── Notes table ── */
+    .notes-table-wrap { overflow-x:auto; }
+
+    /* ── Info tooltip ── */
+    .ys-tip { position:relative; display:inline-flex; align-items:center; gap:.3rem; cursor:default; }
+    .ys-tip-icon { display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px;
+      border-radius:50%; background:var(--muted); color:var(--bg); font-size:10px; font-weight:700; line-height:1;
+      flex-shrink:0; cursor:help; }
+    .ys-tip-box { display:none; position:absolute; bottom:calc(100% + 7px); left:0;
+      background:var(--bg3); border:1px solid var(--border); border-radius:8px;
+      padding:.55rem .8rem; font-size:.77rem; color:var(--text); white-space:nowrap;
+      box-shadow:0 6px 20px rgba(0,0,0,.5); z-index:300; pointer-events:none;
+      max-width:280px; white-space:normal; line-height:1.4; }
+    .ys-tip:hover .ys-tip-box { display:block; }
+    .notes-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+    .notes-table th { background:#1a6b5a; color:#fff; padding:.5rem .8rem; text-align:left; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; position:sticky; top:0; z-index:2; }
+    .notes-table td { padding:.45rem .8rem; border-bottom:1px solid var(--border); }
+    .notes-table tr:hover td { background:var(--bg3); }
+    .notes-table td:nth-child(3) { color:var(--accent); min-width:200px; }
+
     /* ── Password modal ── */
     .pw-overlay { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.65); backdrop-filter:blur(3px); align-items:center; justify-content:center; }
     .pw-overlay.open { display:flex; }
@@ -661,6 +709,8 @@
     <span id="gsStatusText">Google Sheets: nezadáno</span>
     <div class="dot" id="mqttDot"></div>
     <span id="mqttStatusText">MQTT: neaktivní</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()" title="Obnovit data"><span class="refresh-icon">↻</span> Refresh</button>
+    <button class="partial-badge" id="partialBadge" onclick="fetchSheets(true)" style="display:none" title="Zobrazena jen poslední data – kliknutím načíst celou historii">⚡ 3 dny · Načíst vše</button>
     <span id="gsLastFetch"></span>
     <button onclick="toggleFullCfg()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:.2rem .7rem;font-size:.75rem;cursor:pointer" title="Nastavení zdroje dat">⚙ Nastavení</button>
   </div>
@@ -751,6 +801,8 @@
     <button class="tab-btn" data-tab="monthly">Měsíční</button>
     <button class="tab-btn" data-tab="yearly">Roční</button>
     <button class="tab-btn" data-tab="hist">Historie</button>
+    <button class="tab-btn" data-tab="yearstats">📅 Roční statistiky</button>
+    <button class="tab-btn" data-tab="notes">📝 Poznámky</button>
   </div>
 
   <!-- ══ Aktuálně ══ -->
@@ -977,6 +1029,34 @@
     </div>
   </div>
 
+  <!-- ════ Roční statistiky ══ -->
+  <div class="tab-pane" id="tab-yearstats">
+    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
+      <span>Zobrazit rok:</span>
+      <select id="yearStatsFilter" onchange="buildYearlyStats()" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:.25rem .5rem;font-size:.82rem">
+        <option value="0">Všechny roky</option>
+      </select>
+    </div>
+    <div id="yearStatsContent"><p style="color:var(--muted);padding:1rem">Načítám data…</p></div>
+  </div>
+
+  <!-- ════ Poznámky ══ -->
+  <div class="tab-pane" id="tab-notes">
+    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
+      <span>Filtr roku:</span>
+      <select id="notesYearFilter" onchange="buildNotesTable()" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:.25rem .5rem;font-size:.82rem">
+        <option value="0">Vše</option>
+      </select>
+      <span id="notesCount" style="margin-left:auto"></span>
+    </div>
+    <div class="notes-table-wrap" style="max-height:600px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)">
+      <table class="notes-table">
+        <thead><tr><th>Datum</th><th>Čas</th><th>Poznámka</th></tr></thead>
+        <tbody id="notesTableBody"><tr><td colspan="3" style="color:var(--muted)">Žádné poznámky.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
 </div><!-- /page-wrapper -->
 
 <script>
@@ -1025,6 +1105,10 @@ function switchStation(idx) {
   CFG = stations[activeIdx];
   localStorage.setItem("meteoActiveIdx", String(activeIdx));
   store.rows = [];
+  store.fullLoaded = false;
+  store._onFullLoad = [];
+  store._fullLoadPending = false;
+  store._lastRawLine = null;
   closeAllDD();
   updateStationUI();
   fillConfigUI();
@@ -1664,7 +1748,7 @@ function drawUVChart() {
    DATA STORE
    Každý záznam: { date, time, ts, temp, pressure, hum, rainInc, rain, tank, voltage }
 ══════════════════════════════════════════════ */
-const store = { rows: [], lastRowCount: 0 };
+const store = { rows: [], lastRowCount: 0, fullLoaded: false, _onFullLoad: [], _fullLoadPending: false };
 
 /* UV data z Open-Meteo (reálná data dle polohy) */
 const uvStore = { hourly: null, lat: null, lon: null, date: null };
@@ -1738,7 +1822,7 @@ function sheetsURL(id, name) {
   return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
 }
 
-async function fetchSheets() {
+async function fetchSheets(forceFullLoad = false) {
   if(!CFG.sheetId) { setGsStatus(false,"Google Sheets: zadejte Sheet ID v nastavení ↑"); return; }
 
   const fullURL  = sheetsURL(CFG.sheetId, CFG.sheetName);
@@ -1747,8 +1831,38 @@ async function fetchSheets() {
   const isFile   = location.protocol === "file:";
   const allURLs  = isFile ? [proxy1, proxy2] : [fullURL, proxy1, proxy2];
 
-  // ── Inkrementální kontrola: pokud už máme data, zkontroluj jen první řádek ──
-  if (store.rows.length > 50) {
+  // ── QUICK LOAD: první načtení – stáhneme jen posledních ~400 řádků (≈3 dny) ──
+  if (!forceFullLoad && !store.fullLoaded) {
+    const quickTQ  = encodeURIComponent("SELECT * ORDER BY A DESC, B DESC LIMIT 400");
+    const quickFull = fullURL + "&tq=" + quickTQ;
+    const qp1 = "https://corsproxy.io/?url=" + encodeURIComponent(quickFull);
+    const qp2 = "https://api.allorigins.win/raw?url=" + encodeURIComponent(quickFull);
+    const qURLs = isFile ? [qp1, qp2] : [quickFull, qp1, qp2];
+    setGsStatus(null, "Google Sheets: načítám…");
+    let ok = false;
+    for (const url of qURLs) {
+      try {
+        const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) continue;
+        const text = await r.text();
+        if (!text || text.length < 10) continue;
+        parseAndStore(text);
+        updatePartialBadge();
+        setGsStatus(true, "Google Sheets: OK – posl. 3 dny (" + fmtTime(new Date()) + ")");
+        ok = true;
+        break;
+      } catch(e) {}
+    }
+    if (!ok) {
+      // quick load selhal – zkusit plné načtení
+      forceFullLoad = true;
+    } else {
+      return; // quick load OK – plná historie se načte lazy
+    }
+  }
+
+  // ── INCREMENTAL CHECK: pokud máme plná data, zkontroluj jen první řádek ──
+  if (store.fullLoaded && store.rows.length > 50) {
     const checkURL = fullURL + "?tqx=out:csv&range=1:2&_=" + Date.now();
     const checkURLs = isFile
       ? ["https://corsproxy.io/?url=" + encodeURIComponent(checkURL), "https://api.allorigins.win/raw?url=" + encodeURIComponent(checkURL)]
@@ -1761,7 +1875,7 @@ async function fetchSheets() {
         const lastLine = txt.split(/\r?\n/).filter(Boolean).pop();
         if (store._lastRawLine && store._lastRawLine === lastLine) {
           setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
-          return; // žádná nová data → nic nepřekresluj
+          return;
         }
         store._lastRawLine = lastLine;
         break;
@@ -1769,8 +1883,8 @@ async function fetchSheets() {
     }
   }
 
-  // ── Plné načtení ──
-  setGsStatus(null, "Google Sheets: načítám…");
+  // ── PLNÉ NAČTENÍ ──
+  setGsStatus(null, "Google Sheets: načítám celou historii…");
   let lastErr = "";
   for (const url of allURLs) {
     try {
@@ -1779,11 +1893,35 @@ async function fetchSheets() {
       const text = await r.text();
       if (!text || text.length < 10) { lastErr = "prázdná odpověď"; continue; }
       parseAndStore(text);
+      store.fullLoaded = true;
+      store._fullLoadPending = false;
+      updatePartialBadge();
       setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
+      // Spusť čekající callbacky (ensureFullData)
+      const cbs = store._onFullLoad.splice(0);
+      cbs.forEach(cb => { try { cb(); } catch(e) {} });
       return;
     } catch(e) { lastErr = e.message; }
   }
+  store._fullLoadPending = false;
   setGsStatus(false, "Google Sheets: chyba načtení – " + lastErr);
+}
+
+/* ══════════════════════════════════════════════
+   LAZY LOAD HELPERS
+══════════════════════════════════════════════ */
+function ensureFullData(callback) {
+  if (store.fullLoaded) { callback(); return; }
+  store._onFullLoad.push(callback);
+  if (!store._fullLoadPending) {
+    store._fullLoadPending = true;
+    fetchSheets(true);
+  }
+}
+
+function updatePartialBadge() {
+  const b = el("partialBadge");
+  if (b) b.style.display = (!store.fullLoaded && store.rows.length > 0) ? "" : "none";
 }
 
 /* ══════════════════════════════════════════════
@@ -1809,6 +1947,7 @@ function parseAndStore(text) {
     if(!ds||!/\d/.test(ds)) continue;
     const ts  = parseCSDateTime(ds, ts2);
     if(!ts||isNaN(ts.getTime())) continue;
+    const noteRaw = stripQ(c[9]||"").trim();
     parsed.push({
       date: ds, time: ts2, ts,
       temp:     pf(c[2]),
@@ -1817,7 +1956,8 @@ function parseAndStore(text) {
       rainInc:  pf(c[5]),
       rain:     pf(c[6]),
       tank:     pf(c[7]),
-      voltage:  stripQ(c[8]||"").replace(/[Vv]/g,"").trim() !== "" ? pf(stripQ(c[8]||"").replace(/[Vv]/g,"")) : null
+      voltage:  stripQ(c[8]||"").replace(/[Vv]/g,"").trim() !== "" ? pf(stripQ(c[8]||"").replace(/[Vv]/g,"")) : null,
+      note:     noteRaw || null
     });
   }
   if(!parsed.length) {
@@ -2160,6 +2300,15 @@ function setExpRange(r) {
   document.querySelectorAll(".exp-range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === r));
   el("expCustomWrap").style.display  = (r === "custom")  ? "flex" : "none";
   el("expOneDayWrap").style.display  = (r === "oneday")  ? "flex" : "none";
+  const needsFull = ["7d","30d","90d","all","custom"].includes(r);
+  if (needsFull && !store.fullLoaded) {
+    setGsStatus(null, "Google Sheets: načítám historii…");
+    ensureFullData(() => {
+      if (r !== "custom" && r !== "oneday") buildExplorer();
+      if (r === "oneday" && el("expDateOne").value) buildExplorer();
+    });
+    return;
+  }
   if (r !== "custom" && r !== "oneday") buildExplorer();
   if (r === "oneday" && el("expDateOne").value) buildExplorer();
 }
@@ -2391,6 +2540,7 @@ function expSliderUpdateFill() {
   const r = parseFloat(el("expSliderR").value);
   const mn = Math.min(l, r), mx = Math.max(l, r);
   const fill = el("expSliderFill");
+  /* fill track is inset by 10px each side → convert % to inner % */
   fill.style.left  = mn + "%";
   fill.style.width = (mx - mn) + "%";
 }
@@ -2663,6 +2813,26 @@ function setMqttStatus(ok,msg){
 }
 
 /* ══════════════════════════════════════════════
+   MANUAL REFRESH
+══════════════════════════════════════════════ */
+async function manualRefresh() {
+  const btn = el("refreshBtn");
+  btn.classList.add("spinning");
+  btn.disabled = true;
+  store._lastRawLine = null;
+  store.fullLoaded = true; // force plné načtení při manuálním refreshi
+  store._fullLoadPending = false;
+  store._onFullLoad = [];
+  try {
+    if (CFG.source === "sheets" || CFG.source === "both") await fetchSheets(true);
+    if (CFG.source === "mqtt" || CFG.source === "both") connectMQTT();
+  } finally {
+    btn.classList.remove("spinning");
+    btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════════════
    TABS
 ══════════════════════════════════════════════ */
 document.querySelectorAll(".tab-btn").forEach(btn=>{
@@ -2671,11 +2841,230 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
     document.querySelectorAll(".tab-pane").forEach(p=>p.classList.remove("active"));
     btn.classList.add("active");
     el("tab-"+btn.dataset.tab).classList.add("active");
-    if (btn.dataset.tab === "compare") { initCmpDays(); buildCompare(); }
-    if (btn.dataset.tab === "explorer" && store.rows.length) buildExplorer();
-    if (btn.dataset.tab === "overview") buildTempOverview();
+    const tab = btn.dataset.tab;
+    const heavyTabs = ["compare","overview","monthly","yearly","yearstats","hist"];
+    if (heavyTabs.includes(tab) && !store.fullLoaded) {
+      el("yearStatsContent") && (el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Načítám celou historii…</p>');
+      ensureFullData(() => {
+        if (tab === "compare") { initCmpDays(); buildCompare(); }
+        if (tab === "explorer" && store.rows.length) buildExplorer();
+        if (tab === "overview") buildTempOverview();
+        if (tab === "yearstats") buildYearlyStats();
+        if (tab === "notes") buildNotesTable();
+      });
+      return;
+    }
+    if (tab === "compare") { initCmpDays(); buildCompare(); }
+    if (tab === "explorer" && store.rows.length) buildExplorer();
+    if (tab === "overview") buildTempOverview();
+    if (tab === "yearstats") buildYearlyStats();
+    if (tab === "notes") buildNotesTable();
   });
 });
+
+/* ══════════════════════════════════════════════
+   ROČNÍ STATISTIKY
+══════════════════════════════════════════════ */
+function buildYearlyStats() {
+  if (!store.rows.length) { el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Žádná data.</p>'; return; }
+
+  // Seskupit řádky podle roku
+  const byYear = {};
+  store.rows.forEach(r => {
+    const yr = r.ts.getFullYear();
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(r);
+  });
+
+  const allYears = Object.keys(byYear).sort((a, b) => b - a); // nejnovější nahoře
+
+  // Naplnit filtr let
+  const sel = el("yearStatsFilter");
+  if (sel) {
+    const curVal = sel.value;
+    sel.innerHTML = '<option value="0">Všechny roky</option>' + allYears.map(y => `<option value="${y}">${y}</option>`).join("");
+    sel.value = curVal && allYears.includes(curVal) ? curVal : sel.value || "0";
+  }
+
+  const filterYear = sel ? parseInt(sel.value) : 0;
+  const years = filterYear ? allYears.filter(y => +y === filterYear) : allYears;
+  let html = "";
+
+  for (const yr of years) {
+    const rows = byYear[yr];
+    const temps = rows.filter(r => r.temp !== null);
+    const hums = rows.filter(r => r.hum !== null);
+    const rains = rows.filter(r => r.rain !== null);
+    const rainIncs = rows.filter(r => r.rainInc !== null && r.rainInc > 0);
+
+    // Základní statistiky
+    const tMax = temps.length ? Math.max(...temps.map(r => r.temp)) : null;
+    const tMin = temps.length ? Math.min(...temps.map(r => r.temp)) : null;
+    const tAvg = temps.length ? (temps.reduce((a, r) => a + r.temp, 0) / temps.length) : null;
+    const hMax = hums.length ? Math.max(...hums.map(r => r.hum)) : null;
+    const hMin = hums.length ? Math.min(...hums.map(r => r.hum)) : null;
+    const hAvg = hums.length ? (hums.reduce((a, r) => a + r.hum, 0) / hums.length) : null;
+
+    // Max/min záznamy s daty
+    const tMaxRow = temps.find(r => r.temp === tMax);
+    const tMinRow = temps.find(r => r.temp === tMin);
+    const hMaxRow = hums.find(r => r.hum === hMax);
+    const hMinRow = hums.find(r => r.hum === hMin);
+
+    // Celkové srážky – max déšť za den
+    const rainByDay = {};
+    rains.forEach(r => {
+      const dk = fmtDateShort(r.ts);
+      if (!rainByDay[dk] || r.rain > rainByDay[dk].val) rainByDay[dk] = { val: r.rain, ts: r.ts };
+    });
+    const totalRain = Object.values(rainByDay).length
+      ? Math.max(...Object.values(rainByDay).map(v => v.val))
+      : 0;
+
+    // Max srážkový přírůstek za hodinu (= max rainInc za jeden záznam, protože záznamy ≈ hodinové)
+    let maxHourRain = 0, maxHourRainRow = null;
+    rainIncs.forEach(r => { if (r.rainInc > maxHourRain) { maxHourRain = r.rainInc; maxHourRainRow = r; } });
+
+    // Max srážky za 24h = max rozdíl v okně 24h
+    let max24hRain = 0, max24hRainDate = null;
+    if (rains.length > 1) {
+      const sorted = [...rains].sort((a, b) => a.ts - b.ts);
+      for (let i = 0; i < sorted.length; i++) {
+        for (let j = i + 1; j < sorted.length; j++) {
+          if (sorted[j].ts - sorted[i].ts > 86400000) break;
+          const diff = sorted[j].rain - sorted[i].rain;
+          if (diff > max24hRain) { max24hRain = diff; max24hRainDate = sorted[j].ts; }
+        }
+      }
+    }
+
+    // Max/min per měsíc (teplota + vlhkost) – s datem výskytu
+    const monthNames = ["leden","únor","březen","duben","květen","červen","červenec","srpen","září","říjen","listopad","prosinec"];
+    const monthTempMax = {}, monthTempMin = {}, monthHumMax = {}, monthHumMin = {};
+    rows.forEach(r => {
+      const m = r.ts.getMonth();
+      if (r.temp !== null) {
+        if (!monthTempMax[m] || r.temp > monthTempMax[m].val) monthTempMax[m] = { val: r.temp, ts: r.ts, name: monthNames[m] };
+        if (!monthTempMin[m] || r.temp < monthTempMin[m].val) monthTempMin[m] = { val: r.temp, ts: r.ts, name: monthNames[m] };
+      }
+      if (r.hum !== null) {
+        if (!monthHumMax[m] || r.hum > monthHumMax[m].val) monthHumMax[m] = { val: r.hum, ts: r.ts, name: monthNames[m] };
+        if (!monthHumMin[m] || r.hum < monthHumMin[m].val) monthHumMin[m] = { val: r.hum, ts: r.ts, name: monthNames[m] };
+      }
+    });
+    const topHotMonths  = Object.values(monthTempMax).sort((a, b) => b.val - a.val).slice(0, 6);
+    const topColdMonths = Object.values(monthTempMin).sort((a, b) => a.val - b.val).slice(0, 6);
+    const topWetMonths  = Object.values(monthHumMax).sort((a, b) => b.val - a.val).slice(0, 6);
+    const topDryMonths  = Object.values(monthHumMin).sort((a, b) => a.val - b.val).slice(0, 6);
+
+    // Průměry po měsících
+    const monthlyTemp = {}, monthlyHum = {};
+    rows.forEach(r => {
+      const m = r.ts.getMonth();
+      if (r.temp !== null) { if (!monthlyTemp[m]) monthlyTemp[m] = []; monthlyTemp[m].push(r.temp); }
+      if (r.hum !== null) { if (!monthlyHum[m]) monthlyHum[m] = []; monthlyHum[m].push(r.hum); }
+    });
+    const tempMonthAvg = Object.entries(monthlyTemp).map(([m, v]) => ({ m: +m, name: monthNames[+m], avg: v.reduce((a, b) => a + b, 0) / v.length }));
+    const humMonthAvg = Object.entries(monthlyHum).map(([m, v]) => ({ m: +m, name: monthNames[+m], avg: v.reduce((a, b) => a + b, 0) / v.length }));
+    const hottestMonths = [...tempMonthAvg].sort((a, b) => b.avg - a.avg).slice(0, 6);
+    const coldestMonths = [...tempMonthAvg].sort((a, b) => a.avg - b.avg).slice(0, 6);
+    const wettestMonths = [...humMonthAvg].sort((a, b) => b.avg - a.avg).slice(0, 6);
+    const driestMonths = [...humMonthAvg].sort((a, b) => a.avg - b.avg).slice(0, 6);
+
+    html += `<div class="ys-year">`;
+    html += `<div class="ys-year-header">
+      <span class="ys-year-title">${yr}</span>
+      <span class="ys-year-summary">
+        <b>TEPLOTA</b>&nbsp; Min.: <b>${tMin !== null ? fmt(tMin) + " °C" : "–"}</b> | Průměr: <b>${tAvg !== null ? fmt(tAvg, 2) + " °C" : "–"}</b> | Max.: <b>${tMax !== null ? fmt(tMax) + " °C" : "–"}</b>
+        &emsp;<b>VLHKOST</b>&nbsp; Min.: <b>${hMin !== null ? fmt(hMin, 0) + " %" : "–"}</b> | Průměr: <b>${hAvg !== null ? fmt(hAvg, 2) + " %" : "–"}</b> | Max.: <b>${hMax !== null ? fmt(hMax, 0) + " %" : "–"}</b>
+      </span>
+    </div>`;
+
+    // Srážky souhrn
+    html += `<div style="background:var(--bg2);padding:.6rem 1rem;border-bottom:1px solid var(--border);font-size:.82rem;display:flex;gap:2rem;flex-wrap:wrap">
+      <span class="ys-tip">☔ <b>Celk. max déšť (den):</b>&nbsp;${fmt(totalRain, 1)} mm <span class="ys-tip-icon">?</span><span class="ys-tip-box">Největší objem srážek za daný den od 00:00–23:59</span></span>
+      <span class="ys-tip">🌧 <b>Max srážky/h:</b>&nbsp;${maxHourRain > 0 ? fmt(maxHourRain, 1) + " mm (" + fmtDT(maxHourRainRow.ts) + ")" : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Kolik napadlo nejvíce srážek za 1 hodinu</span></span>
+      <span class="ys-tip">🌊 <b>Max za 24h:</b>&nbsp;${max24hRain > 0 ? fmt(max24hRain, 1) + " mm" + (max24hRainDate ? " (" + fmtDT(max24hRainDate) + ")" : "") : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Největší objem srážek za 24 hodin (např. od 12:00 do 12:00 následujícího dne)</span></span>
+    </div>`;
+
+    html += `<div class="ys-grid">`;
+
+    // Nejvyšší teplota (po měsících)
+    html += `<div class="ys-table"><div class="ys-table-title red">Nejvyšší teplota</div><table><tr><th>Měsíc</th><th>Teplota</th><th>Datum</th></tr>`;
+    topHotMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#e74c3c;font-weight:600">${fmt(m.val)} °C</td><td style="color:var(--muted);font-size:.78rem">${fmtDateShort(m.ts)}</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejnižší teplota (po měsících)
+    html += `<div class="ys-table"><div class="ys-table-title blue">Nejnižší teplota</div><table><tr><th>Měsíc</th><th>Teplota</th><th>Datum</th></tr>`;
+    topColdMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#2980b9;font-weight:600">${fmt(m.val)} °C</td><td style="color:var(--muted);font-size:.78rem">${fmtDateShort(m.ts)}</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejteplejší měsíce
+    html += `<div class="ys-table"><div class="ys-table-title orange">Nejteplejší měsíce</div><table><tr><th>Měsíc</th><th>Průměr</th></tr>`;
+    hottestMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#e74c3c;font-weight:600">${fmt(m.avg, 2)} °C</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejchladnější měsíce
+    html += `<div class="ys-table"><div class="ys-table-title blue">Nejchladnější měsíce</div><table><tr><th>Měsíc</th><th>Průměr</th></tr>`;
+    coldestMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#2980b9;font-weight:600">${fmt(m.avg, 2)} °C</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejvyšší vlhkost (po měsících)
+    html += `<div class="ys-table"><div class="ys-table-title green">Nejvyšší vlhkost</div><table><tr><th>Měsíc</th><th>Vlhkost</th><th>Datum</th></tr>`;
+    topWetMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#1a6b5a;font-weight:600">${fmt(m.val, 1)} %</td><td style="color:var(--muted);font-size:.78rem">${fmtDateShort(m.ts)}</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejnižší vlhkost (po měsících)
+    html += `<div class="ys-table"><div class="ys-table-title blue">Nejnižší vlhkost</div><table><tr><th>Měsíc</th><th>Vlhkost</th><th>Datum</th></tr>`;
+    topDryMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#2980b9;font-weight:600">${fmt(m.val, 1)} %</td><td style="color:var(--muted);font-size:.78rem">${fmtDateShort(m.ts)}</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejvlhčí měsíce
+    html += `<div class="ys-table"><div class="ys-table-title green">Nejvlhčí měsíce</div><table><tr><th>Měsíc</th><th>Průměr</th></tr>`;
+    wettestMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#1a6b5a;font-weight:600">${fmt(m.avg, 2)} %</td></tr>`; });
+    html += `</table></div>`;
+
+    // Nejsušší měsíce
+    html += `<div class="ys-table"><div class="ys-table-title blue">Nejsušší měsíce</div><table><tr><th>Měsíc</th><th>Průměr</th></tr>`;
+    driestMonths.forEach(m => { html += `<tr><td>${m.name}</td><td style="color:#2980b9;font-weight:600">${fmt(m.avg, 2)} %</td></tr>`; });
+    html += `</table></div>`;
+
+    html += `</div></div>`; // /ys-grid, /ys-year
+  }
+
+  el("yearStatsContent").innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   POZNÁMKY (sloupec O)
+══════════════════════════════════════════════ */
+function buildNotesTable() {
+  const esc = s => { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
+  const notesRows = store.rows.filter(r => r.note);
+  if (!notesRows.length) {
+    el("notesTableBody").innerHTML = '<tr><td colspan="3" style="color:var(--muted)">Žádné poznámky.</td></tr>';
+    el("notesCount").textContent = "";
+    return;
+  }
+
+  // Naplnit filtr roků
+  const years = [...new Set(notesRows.map(r => r.ts.getFullYear()))].sort((a, b) => b - a);
+  const sel = el("notesYearFilter");
+  const curVal = sel.value;
+  sel.innerHTML = '<option value="0">Vše</option>' + years.map(y => `<option value="${y}">${y}</option>`).join("");
+  sel.value = curVal && years.includes(+curVal) ? curVal : "0";
+
+  const filterYear = parseInt(sel.value);
+  const filtered = filterYear ? notesRows.filter(r => r.ts.getFullYear() === filterYear) : notesRows;
+
+  el("notesCount").textContent = `Celkem: ${filtered.length} poznámek`;
+
+  el("notesTableBody").innerHTML = filtered.map(r => `<tr>
+    <td>${fmtDateShort(r.ts)}</td>
+    <td>${r.time || "–"}</td>
+    <td>${esc(r.note)}</td>
+  </tr>`).join("") || '<tr><td colspan="3" style="color:var(--muted)">Žádné poznámky pro vybraný rok.</td></tr>';
+}
 
 /* ══════════════════════════════════════════════
    MQTT  (volitelný živý overlay)
