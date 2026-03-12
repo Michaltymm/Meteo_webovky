@@ -2,6 +2,7 @@
     --primary-bg: #2c3e50;
     --secondary-bg: #34495e;
     --accent-color: #e67e22;
+    --accent-hover: #d35400;
     --text-color: #ecf0f1;
     --shadow-color: rgba(0, 0, 0, 0.2);
 }
@@ -86,7 +87,7 @@ h1 {
 }
 
 .card button:hover {
-    background-color: #d35400;
+    background-color: var(--accent-hover);
 }
 
 .card-link {
@@ -245,7 +246,7 @@ h1 {
 }
 
 .back-button:hover {
-    background-color: #d35400;
+    background-color: var(--accent-hover);
 }
 
 .detail-info .back-button {
