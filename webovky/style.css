@@ -1,0 +1,380 @@
+:root {
+    --primary-bg: #2c3e50;
+    --secondary-bg: #34495e;
+    --accent-color: #e67e22;
+    --text-color: #ecf0f1;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+}
+
+header {
+    text-align: center;
+    padding: 2rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--primary-bg);
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.card {
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px var(--shadow-color);
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    margin: 1.5rem 1.5rem 0.5rem;
+}
+
+.card p {
+    font-size: 1rem;
+    margin: 0 1.5rem;
+    flex-grow: 1;
+}
+
+.card button {
+    display: block;
+    width: calc(100% - 3rem);
+    padding: 1rem;
+    margin: 1.5rem;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.card button:hover {
+    background-color: #d35400;
+}
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Styly pro detailní stránku */
+.detail-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+/* Carousel */
+.carousel {
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--secondary-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+.carousel-inner {
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+}
+
+.carousel-track-wrapper {
+    overflow: hidden;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.4s ease;
+}
+
+.carousel-img {
+    min-width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.carousel-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.carousel-btn.prev { left: 0.5rem; }
+.carousel-btn.next { right: 0.5rem; }
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.75rem;
+    background-color: var(--secondary-bg);
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dot.active {
+    background-color: var(--accent-color);
+}
+
+/* Detail info panel */
+.detail-info {
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-info h2 {
+    font-size: 1.8rem;
+    color: var(--accent-color);
+    margin: 0 0 1.5rem;
+}
+
+.detail-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.meta-item {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+}
+
+.meta-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.25rem;
+}
+
+.meta-value {
+    font-size: 1.05rem;
+    font-weight: bold;
+}
+
+.detail-info h3 {
+    font-size: 1.1rem;
+    color: var(--accent-color);
+    margin: 1.5rem 0 0.5rem;
+}
+
+.facts-list {
+    padding-left: 1.5rem;
+    margin: 0 0 2rem;
+    line-height: 1.9;
+}
+
+.back-button {
+    display: inline-block;
+    padding: 1rem 1.5rem;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.back-button:hover {
+    background-color: #d35400;
+}
+
+.detail-info .back-button {
+    margin-top: auto;
+    align-self: flex-start;
+}
+/* Kontakt stránka */
+.contact-wrapper {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+}
+
+.contact-card {
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.contact-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.contact-name {
+    font-size: 1.8rem;
+    color: var(--accent-color);
+    margin: 0 0 0.25rem;
+}
+
+.contact-subtitle {
+    font-size: 1rem;
+    opacity: 0.7;
+    margin: 0 0 2rem;
+}
+
+.contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-list li {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.contact-list a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.contact-list a:hover {
+    color: var(--accent-color);
+}
+
+.contact-label {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 80px;
+}
+
+
+/* Responzivita */
+@media (max-width: 1100px) {
+    .card-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .detail-wrapper {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .card-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 20px;
+}
+.profile-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.profile-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.center-nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+}
+.center-nav a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: bold;
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}

@@ -1,0 +1,15 @@
+[33m7c13922[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/main[m[33m)[m Merge branch 'main' of https://github.com/Michaltymm/Meteo_webovky
+[33m7a4a1e7[m Lokální soubory
+[33m82670e5[m test commitu
+[33mf127e31[m test
+[33mda70e0a[m Obnovení index.html
+[33m3267b9b[m Odstranění složky Git/MQTT_webovky
+[33mcaf5042[m velke změny statistik a načítání dat
+[33mef0c705[m Upraveny grafy jednotky pryč
+[33mb7fe175[m úprava widgetů a práv  (heslo settings)
+[33mfc48fd4[m Odstranění složky MQTT_webovky
+[33md868f42[m Přidání config souborů do kořene
+[33m44cb892[m Přesun souborů do kořene repozitáře
+[33m76a4143[m Merge branch 'main' of https://github.com/Michaltymm/Meteo_webovky
+[33m6cb73ec[m Přidání konfiguračních souborů
+[33m323c428[m Initial commit

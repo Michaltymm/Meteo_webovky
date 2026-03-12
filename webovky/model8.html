@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Modelu 8</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div class="profile-box">
+                <img src="obrazek_profil.webp" alt="Profil Tymyn_3D" class="profile-img">
+                <span>Tymyn_3D</span>
+            </div>
+            <div class="center-nav">
+                <a href="index.html">3D modely</a>
+                <a href="kontakt.html">Kontakt</a>
+            </div>
+        </div>
+        <h1>Model 8: Detailní pohled</h1>
+    </header>
+    <main class="detail-wrapper">
+        <div class="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-track-wrapper">
+                    <div class="carousel-track">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 1" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 2" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 3" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 4" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 5" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 6" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 7" class="carousel-img">
+                        <img src="https://via.placeholder.com/600x400.png?text=Foto+Modelu+8" alt="Foto 8" class="carousel-img">
+                    </div>
+                </div>
+                <button class="carousel-btn prev">&#10094;</button>
+                <button class="carousel-btn next">&#10095;</button>
+            </div>
+            <div class="carousel-indicators">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+        <div class="detail-info">
+            <h2>Model 8</h2>
+            <div class="detail-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Doba tisku</span>
+                    <span class="meta-value">– hod – min</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Gramáž</span>
+                    <span class="meta-value">– g</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Materiál</span>
+                    <span class="meta-value">PLA</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Barva</span>
+                    <span class="meta-value">–</span>
+                </div>
+            </div>
+            <h3>Zajímavosti</h3>
+            <ul class="facts-list">
+                <li>Zajímavost 1</li>
+                <li>Zajímavost 2</li>
+                <li>Zajímavost 3</li>
+            </ul>
+            <a href="index.html" class="back-button">Zpět na přehled</a>
+        </div>
+    </main>
+    <script>
+    (function () {
+        var track = document.querySelector('.carousel-track');
+        var imgs = document.querySelectorAll('.carousel-img');
+        var dots = document.querySelectorAll('.dot');
+        var current = 0;
+        function goTo(i) {
+            current = (i + imgs.length) % imgs.length;
+            track.style.transform = 'translateX(-' + (current * 100) + '%)';
+            dots.forEach(function (d, idx) { d.classList.toggle('active', idx === current); });
+        }
+        document.querySelector('.carousel-btn.prev').addEventListener('click', function () { goTo(current - 1); });
+        document.querySelector('.carousel-btn.next').addEventListener('click', function () { goTo(current + 1); });
+        dots.forEach(function (dot, i) { dot.addEventListener('click', function () { goTo(i); }); });
+    })();
+    </script>
+</body>
+</html>
