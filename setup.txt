@@ -1,0 +1,19 @@
+Postup pro spuštění po restartu PC
+Otevřít VS Code
+
+otevřít složku c:\Users\micha\OneDrive - CZU v Praze\7_Projects_3D\VS_code\MQTT_webovky
+Spustit Live Server
+
+kliknout na Go Live vpravo dole v liště VS Code
+nebo pravým klikem na index.html → Open with Live Server
+Prohlížeč se otevře automaticky na http://127.0.0.1:5500/MQTT_webovky/index.html
+
+Co si stránka pamatuje sama (localStorage):
+✅ Vybraná stanice (Praha za oknem / Meteo Praha-baterie / …)
+✅ Téma (Dark Blue / Dark / Light)
+✅ Zdroj dat (Sheets / MQTT)
+✅ Veškerá nastavení stanic
+Co potřebuje Live Server:
+✅ Načtení config_praha_baterie.json, config_praha_okno.json, config_stanice3.json
+(bez Live Serveru =  – tyto soubory nejdou načíst)
+💡 Tip: Přidejte VS Code do Po spuštění Windows nebo použijte code . v terminálu přímo ve složce projektu.
