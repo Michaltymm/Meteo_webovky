@@ -3381,10 +3381,11 @@
       const a = 17.625, b = 243.04, al = Math.log(RH / 100) + (a * T) / (b + T);
       return parseFloat((b * al / (a - al)).toFixed(1));
     }
-    function fmtTime(d) { return d.toLocaleTimeString("cs-CZ", { hour: "2-digit", minute: "2-digit" }); }
-    function fmtDT(d) { return d.toLocaleString("cs-CZ", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+    const _pad2 = n => n < 10 ? '0' + n : n;
+    function fmtTime(d) { return _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()); }
+    function fmtDT(d) { return _pad2(d.getDate()) + '. ' + _pad2(d.getMonth() + 1) + '. ' + d.getFullYear() + ' ' + _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()); }
     function fmtDate(d) { return d.toLocaleDateString("cs-CZ", { weekday: "long", day: "numeric", month: "long" }); }
-    function fmtDateShort(d) { return d.toLocaleDateString("cs-CZ", { day: "2-digit", month: "2-digit", year: "numeric" }); }
+    function fmtDateShort(d) { return _pad2(d.getDate()) + '. ' + _pad2(d.getMonth() + 1) + '. ' + d.getFullYear(); }
 
     function parseCSDateTime(dateStr, timeStr, yearState) {
       try {
@@ -3536,48 +3537,53 @@
        Přeskočí řádky nadpis + záhlaví (autodetekce)
     ══════════════════════════════════════════════ */
     function parseAndStore(text) {
-      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      setGsStatus(null, "Zpracovávám data (" + Math.round(text.length / 1024) + " KB)…");
+      
+      // Uvolníme Main Thread, aby se status "Zpracovávám data" stihl vykreslit
+      setTimeout(() => {
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-      // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
-      let dataStart = 0;
-      for (let i = 0; i < Math.min(lines.length, 4); i++) {
-        const c0 = stripQ(splitCSV(lines[i])[0]);
-        if (/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
-        dataStart = i + 1;
-      }
+        // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
+        let dataStart = 0;
+        for (let i = 0; i < Math.min(lines.length, 4); i++) {
+          const c0 = stripQ(splitCSV(lines[i])[0]);
+          if (/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
+          dataStart = i + 1;
+        }
 
-      const parsed = [];
-      let yearState = {
-        lastDt: new Date(),
-        inferredYear: new Date().getFullYear()
-      };
+        const parsed = [];
+        let yearState = {
+          lastDt: new Date(),
+          inferredYear: new Date().getFullYear()
+        };
 
-      for (let i = dataStart; i < lines.length; i++) {
-        const c = splitCSV(lines[i]);
-        const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
-        if (!ds || !/\d/.test(ds)) continue;
-        const ts = parseCSDateTime(ds, ts2, yearState);
-        if (!ts || isNaN(ts.getTime())) continue;
-        const noteRaw = stripQ(c[9] || "").trim();
-        parsed.push({
-          date: ds, time: ts2, ts,
-          temp: pf(c[2]),
-          pressure: pf(c[3]),
-          hum: pf(c[4]),
-          rainInc: pf(c[5]),
-          rain: pf(c[6]),
-          tank: pf(c[7]),
-          voltage: stripQ(c[8] || "").replace(/[Vv]/g, "").trim() !== "" ? pf(stripQ(c[8] || "").replace(/[Vv]/g, "")) : null,
-          note: noteRaw || null
-        });
-      }
-      if (!parsed.length) {
-        setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
-        return;
-      }
-      parsed.sort((a, b) => b.ts - a.ts);
-      store.rows = parsed;
-      refreshUI();
+        for (let i = dataStart; i < lines.length; i++) {
+          const c = splitCSV(lines[i]);
+          const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
+          if (!ds || !/\d/.test(ds)) continue;
+          const ts = parseCSDateTime(ds, ts2, yearState);
+          if (!ts || isNaN(ts.getTime())) continue;
+          const noteRaw = stripQ(c[9] || "").trim();
+          parsed.push({
+            date: ds, time: ts2, ts,
+            temp: pf(c[2]),
+            pressure: pf(c[3]),
+            hum: pf(c[4]),
+            rainInc: pf(c[5]),
+            rain: pf(c[6]),
+            tank: pf(c[7]),
+            voltage: stripQ(c[8] || "").replace(/[Vv]/g, "").trim() !== "" ? pf(stripQ(c[8] || "").replace(/[Vv]/g, "")) : null,
+            note: noteRaw || null
+          });
+        }
+        if (!parsed.length) {
+          setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
+          return;
+        }
+        parsed.sort((a, b) => b.ts - a.ts);
+        store.rows = parsed;
+        refreshUI();
+      }, 10);
     }
 
     function stripQ(s = "") { return String(s).replace(/^["'\s]+|["'\s]+$/g, ""); }
@@ -3593,8 +3599,30 @@
     }
 
     /* ══════════════════════════════════════════════
-       UI REFRESH
+       UI REFRESH - Lazy Loading
     ══════════════════════════════════════════════ */
+    const tabDirtyState = {};
+    function markAllTabsDirty() {
+      document.querySelectorAll(".tab-btn").forEach(b => tabDirtyState[b.dataset.tab] = true);
+    }
+
+    function refreshTab(tab) {
+      if (!tabDirtyState[tab]) return;
+      if (tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain") {
+        buildCharts();
+      }
+      if (tab === "daily") buildDailyGrid();
+      if (tab === "explorer") buildExplorer();
+      if (tab === "compare") { initCmpDays(); buildCompare(); }
+      if (tab === "overview") buildTempOverview();
+      if (tab === "yearstats") buildYearlyStats();
+      if (tab === "hist") updateHistoryTable();
+      if (tab === "notes") buildNotesTable();
+      
+      tabDirtyState[tab] = false;
+      setTimeout(() => resizeChartsInTab(tab), 50);
+    }
+
     function refreshUI() {
       if (!store.rows.length) return;
       const R = store.rows[0];
@@ -3653,12 +3681,11 @@
         if (dr.length) el("dayRain").textContent = fmt(Math.max(...dr), 1);
       }
 
-      buildCharts();
-      buildHistoryRows();
-      buildExplorer();
-      buildCompare();
-      updateHistoryTable();
-      buildDailyGrid();
+      markAllTabsDirty();
+      buildHistoryRows(); // Historie "Dříve touto dobou" je nahoře ve sdíleném panelu
+      
+      const activeBtn = document.querySelector(".tab-btn.active");
+      if (activeBtn) refreshTab(activeBtn.dataset.tab);
     }
 
     function arrow(a, b, thr) { if (a === null || b === null) return "→"; const d = a - b; return d > thr ? "↑" : d < -thr ? "↓" : "→"; }
@@ -3749,8 +3776,9 @@
     function buildCharts() {
       const rows = store.rows;
 
-      // 24h – seřazeno od nejstaršího
-      const cut = Date.now() - 24 * 3600 * 1000;
+      // 24h – seřazeno od nejstaršího (vázáno na poslední zaznamenaná data, nikoliv na aktuální čas PC)
+      const lastTs = rows.length ? rows[rows.length - 1].ts.getTime() : Date.now();
+      const cut = lastTs - 24 * 3600 * 1000;
       const h24 = [...rows].filter(r => r.ts.getTime() >= cut).sort((a, b) => a.ts - b.ts);
       chart24.data.labels = h24.map(r => fmtTime(r.ts));
       chart24.data.datasets[0].data = h24.map(r => r.temp);
@@ -4480,31 +4508,15 @@
         btn.classList.add("active");
         el("tab-" + btn.dataset.tab).classList.add("active");
         const tab = btn.dataset.tab;
-        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist"];
+        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer"];
         if (heavyTabs.includes(tab) && !store.fullLoaded) {
           el("yearStatsContent") && (el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Načítám celou historii…</p>');
           ensureFullData(() => {
-            if (tab === "compare") { initCmpDays(); buildCompare(); }
-            if (tab === "explorer" && store.rows.length) buildExplorer();
-            if (tab === "overview") buildTempOverview();
-            if (tab === "yearstats") buildYearlyStats();
-            if (tab === "notes") buildNotesTable();
-            if (tab === "hist" && store.rows.length) updateHistoryTable();
-            if (tab === "daily" && store.rows.length) buildDailyGrid();
-            // Resize po lazy-load dokončení
-            setTimeout(() => resizeChartsInTab(tab), 50);
+            refreshTab(tab);
           });
           return;
         }
-        if (tab === "compare") { initCmpDays(); buildCompare(); }
-        if (tab === "explorer" && store.rows.length) buildExplorer();
-        if (tab === "overview") buildTempOverview();
-        if (tab === "yearstats") buildYearlyStats();
-        if (tab === "notes") buildNotesTable();
-        if (tab === "hist" && store.rows.length) updateHistoryTable();
-        if (tab === "daily" && store.rows.length) buildDailyGrid();
-        // Vynutit resize grafů po přepnutí tabu
-        setTimeout(() => resizeChartsInTab(tab), 50);
+        refreshTab(tab);
       });
     });
 
@@ -4543,12 +4555,12 @@
         const rains = rows.filter(r => r.rain !== null);
         const rainIncs = rows.filter(r => r.rainInc !== null && r.rainInc > 0);
 
-        // Základní statistiky
-        const tMax = temps.length ? Math.max(...temps.map(r => r.temp)) : null;
-        const tMin = temps.length ? Math.min(...temps.map(r => r.temp)) : null;
+        // Základní statistiky (bezpečnější oproti Math.max(...array), které přeteče callstack)
+        const tMax = temps.length ? temps.reduce((max, r) => r.temp > max ? r.temp : max, -Infinity) : null;
+        const tMin = temps.length ? temps.reduce((min, r) => r.temp < min ? r.temp : min, Infinity) : null;
         const tAvg = temps.length ? (temps.reduce((a, r) => a + r.temp, 0) / temps.length) : null;
-        const hMax = hums.length ? Math.max(...hums.map(r => r.hum)) : null;
-        const hMin = hums.length ? Math.min(...hums.map(r => r.hum)) : null;
+        const hMax = hums.length ? hums.reduce((max, r) => r.hum > max ? r.hum : max, -Infinity) : null;
+        const hMin = hums.length ? hums.reduce((min, r) => r.hum < min ? r.hum : min, Infinity) : null;
         const hAvg = hums.length ? (hums.reduce((a, r) => a + r.hum, 0) / hums.length) : null;
 
         // Max/min záznamy s daty
@@ -4571,16 +4583,17 @@
         let maxHourRain = 0, maxHourRainRow = null;
         rainIncs.forEach(r => { if (r.rainInc > maxHourRain) { maxHourRain = r.rainInc; maxHourRainRow = r; } });
 
-        // Max srážky za 24h = max rozdíl v okně 24h
+        // Max srážky za 24h (optimalizované sliding okno O(N) namísto O(N^2))
         let max24hRain = 0, max24hRainDate = null;
         if (rains.length > 1) {
           const sorted = [...rains].sort((a, b) => a.ts - b.ts);
-          for (let i = 0; i < sorted.length; i++) {
-            for (let j = i + 1; j < sorted.length; j++) {
-              if (sorted[j].ts - sorted[i].ts > 86400000) break;
-              const diff = sorted[j].rain - sorted[i].rain;
-              if (diff > max24hRain) { max24hRain = diff; max24hRainDate = sorted[j].ts; }
+          let start = 0;
+          for (let end = 1; end < sorted.length; end++) {
+            while (sorted[end].ts - sorted[start].ts > 86400000) {
+              start++;
             }
+            const diff = sorted[end].rain - sorted[start].rain;
+            if (diff > max24hRain) { max24hRain = diff; max24hRainDate = sorted[end].ts; }
           }
         }
 
