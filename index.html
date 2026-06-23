@@ -3776,8 +3776,8 @@
     function buildCharts() {
       const rows = store.rows;
 
-      // 24h – seřazeno od nejstaršího (vázáno na poslední zaznamenaná data, nikoliv na aktuální čas PC)
-      const lastTs = rows.length ? rows[rows.length - 1].ts.getTime() : Date.now();
+      // 24h – seřazeno od nejstaršího (vázáno na nejnovější záznam, pole je řazeno sestupně)
+      const lastTs = rows.length ? rows[0].ts.getTime() : Date.now();
       const cut = lastTs - 24 * 3600 * 1000;
       const h24 = [...rows].filter(r => r.ts.getTime() >= cut).sort((a, b) => a.ts - b.ts);
       chart24.data.labels = h24.map(r => fmtTime(r.ts));
