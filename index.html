@@ -39,6 +39,19 @@
       min-height: 100vh;
     }
 
+    .development-banner {
+      padding: .65rem 1rem;
+      background: #5b21b6;
+      color: #fff;
+      text-align: center;
+      font-size: .9rem;
+    }
+
+    .development-banner a {
+      color: inherit;
+      margin-left: .6rem;
+    }
+
     /* ── Header ── */
     header {
       background: var(--bg3);
@@ -1914,6 +1927,11 @@
 
 <body>
 
+  <aside id="developmentBanner" class="development-banner" hidden>
+    Vývojová verze – změny se zde testují.
+    <a href="../">Otevřít hlavní web</a>
+  </aside>
+
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice</span>
     <span id="headerStationName"
@@ -2644,6 +2662,18 @@
   </div><!-- /page-wrapper -->
 
   <script>
+    // Both Pages versions share an origin, so preview preferences need their own keys.
+    const isDevelopmentPreview = /\/dev(?:\/|$)/.test(location.pathname);
+    const preferencePrefix = isDevelopmentPreview ? "meteoDev:" : "";
+    const preferences = {
+      getItem: key => localStorage.getItem(preferencePrefix + key),
+      setItem: (key, value) => localStorage.setItem(preferencePrefix + key, value)
+    };
+    if (isDevelopmentPreview) {
+      document.getElementById("developmentBanner").hidden = false;
+      document.title = "Vývoj – " + document.title;
+    }
+
     /* ══════════════════════════════════════════════
        MULTI-STATION CONFIG
     ══════════════════════════════════════════════ */
@@ -2654,10 +2684,10 @@
     ];
 
     let stations, activeIdx;
-    try { stations = JSON.parse(localStorage.getItem("meteoStations")); } catch (e) { }
+    try { stations = JSON.parse(preferences.getItem("meteoStations")); } catch (e) { }
     if (!Array.isArray(stations) || stations.length < 3) {
       // Migrace ze starého jednoho CFG na stanici 0
-      const old = (() => { try { return JSON.parse(localStorage.getItem("meteoCFG")); } catch (e) { return null; } })();
+      const old = (() => { try { return JSON.parse(preferences.getItem("meteoCFG")); } catch (e) { return null; } })();
       stations = STATION_DEFAULTS.map((d, i) => i === 0 && old
         ? {
           ...d, sheetId: old.sheetId || "", sheetName: old.sheetName || d.sheetName, interval: old.interval || 60,
@@ -2676,12 +2706,12 @@
     // Vždy synchronizuj jméno stanice z STATION_DEFAULTS (aby přejmenování v kódu se projevilo)
     stations = stations.map((s, i) => ({ ...s, name: STATION_DEFAULTS[i].name }));
 
-    try { activeIdx = parseInt(localStorage.getItem("meteoActiveIdx")) || 0; } catch (e) { activeIdx = 0; }
+    try { activeIdx = parseInt(preferences.getItem("meteoActiveIdx")) || 0; } catch (e) { activeIdx = 0; }
     if (activeIdx < 0 || activeIdx > 2) activeIdx = 0;
 
     let CFG = stations[activeIdx];
 
-    function saveStations() { localStorage.setItem("meteoStations", JSON.stringify(stations)); }
+    function saveStations() { preferences.setItem("meteoStations", JSON.stringify(stations)); }
 
     /* ── Přepnutí stanice ── */
     function switchStation(idx) {
@@ -2689,7 +2719,7 @@
       if (fetchTimer) clearInterval(fetchTimer);
       activeIdx = idx;
       CFG = stations[activeIdx];
-      localStorage.setItem("meteoActiveIdx", String(activeIdx));
+      preferences.setItem("meteoActiveIdx", String(activeIdx));
       store.rows = [];
       store.fullLoaded = false;
       store._onFullLoad = [];
@@ -2717,11 +2747,11 @@
     }
 
     /* ── Téma ── */
-    let theme = localStorage.getItem("meteoTheme") || "darkblue";
+    let theme = preferences.getItem("meteoTheme") || "darkblue";
 
     function setTheme(t) {
       theme = t;
-      localStorage.setItem("meteoTheme", t);
+      preferences.setItem("meteoTheme", t);
       document.body.className = (t === "darkblue") ? "" : "theme-" + t;
       updateThemeBtns();
       closeAllDD();
