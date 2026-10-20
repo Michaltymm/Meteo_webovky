@@ -22,9 +22,14 @@ Původní audit níže zachycuje stav před opravami; čísla řádků jsou hist
 | W08 | ČÁSTEČNĚ | Starý klient se odpojuje; jeho zprávy, callbacky a reconnect se ignorují. Limit počtu zpráv a slučování se Sheets zůstává TODO. |
 | W10 | ČÁSTEČNĚ | Reconnect timer je rušitelný a vázaný na klienta i relaci; exponenciální backoff zůstává TODO. |
 | D02 | DONE | Start načítání konfigurace sjednocen do `loadStationConfig`, bez duplicitních větví `.then`. |
+| W07 | DONE | Iterativní numericSummary místo neomezených spread argumentů; původní RangeError reprodukován při 250k, nová implementace prošla. |
+| P07 / AUD-013 | DONE | Min/max redukce až na hranici kreslení; plné statistiky, slider i regrese napětí. Cache rozsahu a binární výběr, nejvýše 800 pozorovaných bodů. |
+| W11 | ČÁSTEČNĚ | Aktualizace pouze grafů aktivní záložky; lazy konstrukce instancí zatím METEO-007. |
 | AUD-003 / AUD-005 / AUD-011 / AUD-012 | DONE | Další potvrzené chyby z PROJECT_AUDIT.md: HTML z CSV se vykreslí jako text, grafy bez napětí nepadají a nevymýšlejí predikci, Vše skutečně zobrazí celou historii, prázdný explorer nezachová stará data. |
 
-Ověření: `node --test tests/*.test.js` — **44/44 prošlo** (14 načítání, 20 kvalita dat, 10 server/Pages). Testy spouštějí skutečný inline JS; původní záměna konfigu i RangeError bez napětí byly reprodukovány před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo také všechny záložky nad 61 řádky bez napětí, víceřádkové poznámky, bezpečný HTML výstup, chyby/retry, změnu starého řádku při stejných hlavičkách, prázdný rozsah a mobilní viewport. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti: `PROJECT_AUDIT.md`.
+Ověření: `node --test tests/*.test.js` — **54/54 prošlo** (14 načítání, 20 kvalita dat, 10 výkon/cache, 10 server/Pages). Testy spouštějí skutečný inline JS; původní záměna konfigu i RangeError bez napětí byly reprodukovány před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo také všechny záložky nad 61 řádky bez napětí, víceřádkové poznámky, bezpečný HTML výstup, chyby/retry, změnu starého řádku při stejných hlavičkách, prázdný rozsah a mobilní viewport. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti: `PROJECT_AUDIT.md`.
+
+Centrální pokračování: [docs/NAPADY_A_ROADMAP.md](docs/NAPADY_A_ROADMAP.md), 59 návrhů včetně baterie, tří stanic, metrik a hardwarových závislostí. Měřená etapa P0: při 100k přehled 148,6→53,8 ms, explorer 43,2→14,8 ms; metodika a surová data v [docs/performance](docs/performance/README.md). Historický text níže popisuje stav před opravami.
 
 ---
 

@@ -2742,6 +2742,8 @@
       store._onFullLoad = [];
       store._fullLoadPending = false;
       store._lastFullCsv = null;
+      store._lastQuickCsv = null;
+      invalidateDerivedData();
       uvStore.hourly = null;
       uvStore.lat = null;
       el("stationData").hidden = true;
@@ -3556,11 +3558,16 @@
             const text = await stationText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context, 8000);
             if (!isCurrentStation(context)) return;
             if (!text || text.length < 10) continue;
+            if (store.rows.length && store._lastQuickCsv === text) {
+              setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
+              return;
+            }
             if (!await parseAndStore(text, context)) {
               if (!isCurrentStation(context)) return;
               continue;
             }
             if (!isCurrentStation(context)) return;
+            store._lastQuickCsv = text;
             updatePartialBadge();
             setGsStatus(true, "Google Sheets: OK – posl. 3 dny (" + fmtTime(new Date()) + ")");
             ok = true;
@@ -3687,6 +3694,7 @@
       }
       parsed.sort((a, b) => b.ts - a.ts);
       store.rows = parsed;
+      invalidateDerivedData();
       refreshUI();
       return true;
     }
@@ -3743,7 +3751,7 @@
     function refreshTab(tab) {
       if (!tabDirtyState[tab]) return;
       if (tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain") {
-        buildCharts();
+        buildCharts(tab);
       }
       if (tab === "daily") buildDailyGrid();
       if (tab === "explorer") buildExplorer();
@@ -3790,9 +3798,9 @@
       const oldest = store.rows[store.rows.length - 1];
       el("statFrom").textContent = fmtDT(oldest.ts);
 
-      const temps = store.rows.map(r => r.temp).filter(v => v !== null);
-      if (temps.length) {
-        const maxT = Math.max(...temps), minT = Math.min(...temps);
+      const temps = numericSummary(store.rows.map(r => r.temp));
+      if (temps.count) {
+        const maxT = temps.max, minT = temps.min;
         const mxR = store.rows.find(r => r.temp === maxT), mnR = store.rows.find(r => r.temp === minT);
         el("statTempMax").textContent = fmt(maxT) + " °C  " + fmtDT(mxR.ts);
         el("statTempMin").textContent = fmt(minT) + " °C  " + fmtDT(mnR.ts);
@@ -3809,12 +3817,12 @@
       const today_rows = store.rows.filter(r => r.ts >= today);
       el("todayDate").textContent = fmtDate(new Date());
       if (today_rows.length) {
-        const dt = today_rows.map(r => r.temp).filter(v => v !== null);
-        const dh = today_rows.map(r => r.hum).filter(v => v !== null);
-        const dr = today_rows.map(r => r.rain).filter(v => v !== null);
-        if (dt.length) { el("dayTempMin").textContent = fmt(Math.min(...dt)); el("dayTempMax").textContent = fmt(Math.max(...dt)); el("dayTempAvg").textContent = fmt(dt.reduce((a, b) => a + b, 0) / dt.length, 2); }
-        if (dh.length) { el("dayHumMin").textContent = fmt(Math.min(...dh)); el("dayHumMax").textContent = fmt(Math.max(...dh)); el("dayHumAvg").textContent = fmt(dh.reduce((a, b) => a + b, 0) / dh.length, 2); }
-        if (dr.length) el("dayRain").textContent = fmt(Math.max(...dr), 1);
+        const dt = numericSummary(today_rows.map(r => r.temp));
+        const dh = numericSummary(today_rows.map(r => r.hum));
+        const dr = numericSummary(today_rows.map(r => r.rain));
+        if (dt.count) { el("dayTempMin").textContent = fmt(dt.min); el("dayTempMax").textContent = fmt(dt.max); el("dayTempAvg").textContent = fmt(dt.avg, 2); }
+        if (dh.count) { el("dayHumMin").textContent = fmt(dh.min); el("dayHumMax").textContent = fmt(dh.max); el("dayHumAvg").textContent = fmt(dh.avg, 2); }
+        if (dr.count) el("dayRain").textContent = fmt(dr.max, 1);
       }
 
       markAllTabsDirty();
@@ -3909,10 +3917,12 @@
       { label: "Prům. Vlhkost [%]", backgroundColor: "rgba(41,128,185,.7)", yAxisID: "yHum", data: [] }
     ]);
 
-    function voltageSeries(rows, limit = Infinity) {
+    function voltageSeries(rows, limit = Infinity, regressionRows = null) {
       const samples = rows.filter(r => Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()))
         .sort((a, b) => a.ts - b.ts).slice(-limit);
-      const recent = samples.filter(r => r.ts.getTime() >= Date.now() - 3 * 86400000);
+      const recent = (regressionRows || samples).filter(r =>
+        Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()) &&
+        r.ts.getTime() >= Date.now() - 3 * 86400000);
       let slope = null;
       if (recent.length >= 2) {
         const tMean = recent.reduce((sum, r) => sum + r.ts.getTime(), 0) / recent.length;
@@ -3935,36 +3945,39 @@
       };
     }
 
-    function buildCharts() {
+    function buildCharts(tab) {
       const rows = store.rows;
 
-      // 24h – seřazeno od nejstaršího (vázáno na nejnovější záznam, pole je řazeno sestupně)
-      const lastTs = rows.length ? rows[0].ts.getTime() : Date.now();
-      const cut = lastTs - 24 * 3600 * 1000;
-      const h24 = [...rows].filter(r => r.ts.getTime() >= cut).sort((a, b) => a.ts - b.ts);
-      chart24.data.labels = h24.map(r => fmtTime(r.ts));
-      chart24.data.datasets[0].data = h24.map(r => r.temp);
-      chart24.data.datasets[1].data = h24.map(r => r.hum);
-      chart24.data.datasets[2].data = h24.map(r => dewPoint(r.temp, r.hum));
-      chart24.update();
+      if (!tab || tab === "now") {
+        // 24h – seřazeno od nejstaršího (vázáno na nejnovější záznam, pole je řazeno sestupně)
+        const lastTs = rows.length ? rows[0].ts.getTime() : Date.now();
+        const cut = lastTs - 24 * 3600 * 1000;
+        const h24 = [...rows].filter(r => r.ts.getTime() >= cut).sort((a, b) => a.ts - b.ts);
+        chart24.data.labels = h24.map(r => fmtTime(r.ts));
+        chart24.data.datasets[0].data = h24.map(r => r.temp);
+        chart24.data.datasets[1].data = h24.map(r => r.hum);
+        chart24.data.datasets[2].data = h24.map(r => dewPoint(r.temp, r.hum));
+        chart24.update();
+      }
 
-      // Rain daily totals (max per day)
-      const rb = {};
-      rows.forEach(r => { if (r.rain === null) return; const k = fmtDateShort(r.ts); if (!rb[k] || r.rain > rb[k].val) rb[k] = { val: r.rain, time: r.ts.getTime() }; });
-      const rk = Object.keys(rb).sort((a, b) => rb[a].time - rb[b].time).slice(-30);
-      chartRain.data.labels = rk;
-      chartRain.data.datasets[0].data = rk.map(k => rb[k].val);
-      chartRain.update();
+      if (!tab || tab === "rain") {
+        // Rain daily totals (max per day)
+        const rb = {};
+        rows.forEach(r => { if (r.rain === null) return; const k = fmtDateShort(r.ts); if (!rb[k] || r.rain > rb[k].val) rb[k] = { val: r.rain, time: r.ts.getTime() }; });
+        const rk = Object.keys(rb).sort((a, b) => rb[a].time - rb[b].time).slice(-30);
+        chartRain.data.labels = rk;
+        chartRain.data.datasets[0].data = rk.map(k => rb[k].val);
+        chartRain.update();
 
-      const voltage = voltageSeries(rows, 500);
-      chartVoltage.data.labels = voltage.labels;
-      chartVoltage.data.datasets[0].data = voltage.actual;
-      chartVoltage.data.datasets[1].data = voltage.predicted;
-      chartVoltage.update();
+        const voltage = voltageSeries(rows, 500);
+        chartVoltage.data.labels = voltage.labels;
+        chartVoltage.data.datasets[0].data = voltage.actual;
+        chartVoltage.data.datasets[1].data = voltage.predicted;
+        chartVoltage.update();
+      }
 
-      buildAgg(chartMonthly, rows, "day", 30);
-      buildAgg(chartYearly, rows, "month", 12);
-      buildTempOverview();
+      if (!tab || tab === "monthly") buildAgg(chartMonthly, rows, "day", 30);
+      if (!tab || tab === "yearly") buildAgg(chartYearly, rows, "month", 12);
     }
 
     function buildAgg(chart, rows, unit, count) {
@@ -4011,20 +4024,20 @@
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const rows = store.rows.filter(r => r.ts >= today);
       if (!rows.length) { el("dailyGrid").innerHTML = `<p style="color:var(--muted);padding:1rem;grid-column:span 3">Žádná data za dnešní den.</p>`; return; }
-      const dt = rows.map(r => r.temp).filter(v => v !== null);
-      const dh = rows.map(r => r.hum).filter(v => v !== null);
-      const dp = rows.map(r => r.pressure).filter(v => v !== null);
-      const dr = rows.map(r => r.rain).filter(v => v !== null);
+      const dt = numericSummary(rows.map(r => r.temp));
+      const dh = numericSummary(rows.map(r => r.hum));
+      const dp = numericSummary(rows.map(r => r.pressure));
+      const dr = numericSummary(rows.map(r => r.rain));
       const dv = rows.map(r => r.voltage).filter(v => v !== null);
       const tiles = [
-        { l: "Min. teplota", v: dt.length ? fmt(Math.min(...dt)) + " °C" : "–", c: "var(--blue)" },
-        { l: "Prům. teplota", v: dt.length ? fmt(dt.reduce((a, b) => a + b, 0) / dt.length, 2) + " °C" : "–", c: "var(--text)" },
-        { l: "Max. teplota", v: dt.length ? fmt(Math.max(...dt)) + " °C" : "–", c: "var(--red)" },
-        { l: "Min. vlhkost", v: dh.length ? fmt(Math.min(...dh)) + " %" : "–", c: "var(--blue)" },
-        { l: "Prům. vlhkost", v: dh.length ? fmt(dh.reduce((a, b) => a + b, 0) / dh.length, 2) + " %" : "–", c: "var(--text)" },
-        { l: "Max. vlhkost", v: dh.length ? fmt(Math.max(...dh)) + " %" : "–", c: "var(--teal)" },
-        { l: "Prům. tlak", v: dp.length ? fmt(dp.reduce((a, b) => a + b, 0) / dp.length, 1) + " hPa" : "–", c: "var(--yellow)" },
-        { l: "Celkové srážky", v: dr.length ? fmt(Math.max(...dr), 1) + " mm" : "–", c: "var(--blue)" },
+        { l: "Min. teplota", v: dt.count ? fmt(dt.min) + " °C" : "–", c: "var(--blue)" },
+        { l: "Prům. teplota", v: dt.count ? fmt(dt.avg, 2) + " °C" : "–", c: "var(--text)" },
+        { l: "Max. teplota", v: dt.count ? fmt(dt.max) + " °C" : "–", c: "var(--red)" },
+        { l: "Min. vlhkost", v: dh.count ? fmt(dh.min) + " %" : "–", c: "var(--blue)" },
+        { l: "Prům. vlhkost", v: dh.count ? fmt(dh.avg, 2) + " %" : "–", c: "var(--text)" },
+        { l: "Max. vlhkost", v: dh.count ? fmt(dh.max) + " %" : "–", c: "var(--teal)" },
+        { l: "Prům. tlak", v: dp.count ? fmt(dp.avg, 1) + " hPa" : "–", c: "var(--yellow)" },
+        { l: "Celkové srážky", v: dr.count ? fmt(dr.max, 1) + " mm" : "–", c: "var(--blue)" },
         { l: "Posl. napětí", v: dv.length ? fmt(dv[0], 2) + " V" : "–", c: "var(--purple)" },
       ];
       el("dailyGrid").innerHTML = tiles.map(t => `<div class="stat-tile"><div class="stl">${t.l}</div><div class="stv" style="color:${t.c}">${t.v}</div></div>`).join("");
@@ -4055,13 +4068,73 @@
     ══════════════════════════════════════════════ */
     let expRange = "24h";
     let expAllPts = [];   // plný filtrovaný soubor bodů pro posuvník
+    let explorerRangeCache = null;
+
+    function invalidateDerivedData() {
+      explorerRangeCache = null;
+      expAllPts = [];
+    }
+
+    // Descending store contract: binary range lookup, then reverse only the
+    // selected slice. Cache one view, never an unbounded list of histories.
+    function explorerRows(from, to) {
+      const source = store.rows;
+      const boundary = (time, inclusive) => {
+        let lo = 0, hi = source.length;
+        while (lo < hi) {
+          const mid = (lo + hi) >>> 1, t = source[mid].ts.getTime();
+          if (inclusive ? t >= time : t > time) lo = mid + 1;
+          else hi = mid;
+        }
+        return lo;
+      };
+      const start = boundary(to, false), end = boundary(from, true);
+      if (explorerRangeCache && explorerRangeCache.source === source &&
+        explorerRangeCache.start === start && explorerRangeCache.end === end) return explorerRangeCache.rows;
+      const rows = source.slice(start, end).reverse();
+      explorerRangeCache = { source, start, end, rows };
+      return rows;
+    }
+
+    // O(n) bucket min/max per displayed metric. Keep endpoints and a missing
+    // value marker per metric/bucket; never change the underlying measurements.
+    function sampleExtrema(rows, getters, limit = 800) {
+      if (rows.length <= limit) return rows;
+      const buckets = Math.max(1, Math.floor((limit - 2) / (3 * getters.length)));
+      const indices = new Set([0, rows.length - 1]);
+      for (let bucket = 0; bucket < buckets; bucket++) {
+        const start = Math.floor(bucket * rows.length / buckets);
+        const end = Math.floor((bucket + 1) * rows.length / buckets);
+        for (const get of getters) {
+          let min = Infinity, max = -Infinity, minIndex = -1, maxIndex = -1, gap = -1;
+          for (let i = start; i < end; i++) {
+            const value = get(rows[i]);
+            if (!Number.isFinite(value)) { if (gap < 0) gap = i; continue; }
+            if (value < min) { min = value; minIndex = i; }
+            if (value > max) { max = value; maxIndex = i; }
+          }
+          for (const index of [minIndex, maxIndex, gap]) if (index >= 0) indices.add(index);
+        }
+      }
+      return [...indices].sort((a, b) => a - b).map(i => rows[i]);
+    }
+
+    function numericSummary(values) {
+      let min = Infinity, max = -Infinity, sum = 0, count = 0;
+      for (const value of values) {
+        if (!Number.isFinite(value)) continue;
+        min = Math.min(min, value); max = Math.max(max, value);
+        sum += value; count++;
+      }
+      return { min: count ? min : null, max: count ? max : null, avg: count ? sum / count : null, count };
+    }
 
     const chartExplorer = new Chart(el("chartExplorer").getContext("2d"), {
       type: "line",
       data: { labels: [], datasets: [] },
       plugins: [crosshairPlugin],
       options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 200 },
+        responsive: true, maintainAspectRatio: false, animation: false,
         plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
         scales: {
           x: { ticks: { color: "#95a5a6", maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: "#34495e" } },
@@ -4140,9 +4213,7 @@
       }
 
       // --- Filtrování a řazení ---
-      let rows = [...store.rows]
-        .filter(r => { const t = r.ts.getTime(); return t >= cutFrom && t <= cutTo; })
-        .sort((a, b) => a.ts - b.ts);
+      const rows = explorerRows(cutFrom, cutTo);
 
       // Pro srážky denní – agregace max na den
       if (metric === "rain") {
@@ -4171,25 +4242,18 @@
         return;
       }
 
-      // Autoredukce počtu bodů pro přehlednost
-      const maxPts = 800;
-      let pts = rows;
-      if (pts.length > maxPts) {
-        const step = Math.ceil(pts.length / maxPts);
-        pts = pts.filter((_, i) => i % step === 0);
-      }
-
-      // Posuvník: ulož všechny body, resetuj slider na 0–100
-      expAllPts = pts;
+      // Slider and statistics always operate on the complete selected data.
+      // Sampling is applied only at the rendering boundary.
+      expAllPts = rows;
       el("expSliderWrap").style.display = "";
       el("expSliderL").value = "0";
       el("expSliderR").value = "100";
       expSliderUpdateFill();
-      _drawExplorerPts(pts);
+      _drawExplorerPts(rows);
     }
 
-    function _drawExplorerPts(pts) {
-      if (!pts.length) {
+    function _drawExplorerPts(rows) {
+      if (!rows.length) {
         chartExplorer.data.labels = [];
         chartExplorer.data.datasets = [];
         chartExplorer.update();
@@ -4211,6 +4275,9 @@
         voltage: { label: "Napětí", color: "#8e44ad", fn: r => r.voltage, unit: "V" },
       };
 
+      const getters = metric === "temp_hum"
+        ? [METRICS.temp.fn, METRICS.hum.fn] : [METRICS[metric].fn];
+      const pts = sampleExtrema(rows, getters);
       const labels = pts.map(r => expRange === "24h" ? fmtTime(r.ts) : fmtDT(r.ts));
 
       if (metric === "temp_hum") {
@@ -4228,7 +4295,7 @@
       } else {
         const m = METRICS[metric];
         if (metric === "voltage") {
-          const voltage = voltageSeries(pts);
+          const voltage = voltageSeries(pts, Infinity, rows);
           chartExplorer.data.labels = voltage.labels;
           chartExplorer.data.datasets = [
             { label: "Napětí [V]", borderColor: m.color, backgroundColor: m.color + "26", tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [], yAxisID: "yMain", data: voltage.actual },
@@ -4249,25 +4316,25 @@
         el("expChartTitle").textContent = m.label + " – " + expLabelFor(expRange);
       }
 
-      el("expInfo").textContent = pts.length + " bodů" +
-        (expAllPts.length && expAllPts.length !== pts.length
-          ? " (zobrazený úsek z " + expAllPts.length + " v rozsahu)"
-          : " v rozsahu");
+      el("expInfo").textContent = rows.length + " měření • " + pts.length + " bodů v grafu" +
+        (expAllPts.length && expAllPts.length !== rows.length
+          ? " (úsek z " + expAllPts.length + " měření)" : "") +
+        (pts.length < rows.length ? " • zjednodušený graf, statistiky ze všech měření" : "");
 
       // ── Stats bar ──
       if (metric === "temp_hum") {
         buildExpStats([
-          { label: "🌡 Teplota", unit: "°C", vals: pts.map(r => r.temp).filter(v => v !== null) },
-          { label: "💧 Vlhkost", unit: "%", vals: pts.map(r => r.hum).filter(v => v !== null) },
+          { label: "🌡 Teplota", unit: "°C", vals: rows.map(r => r.temp) },
+          { label: "💧 Vlhkost", unit: "%", vals: rows.map(r => r.hum) },
         ]);
       } else {
         const m = METRICS[metric];
         buildExpStats([
-          { label: m.label, unit: m.unit, vals: pts.map(r => m.fn(r)).filter(v => v !== null) }
+          { label: m.label, unit: m.unit, vals: rows.map(r => m.fn(r)) }
         ]);
       }
 
-      chartExplorer.update();
+      chartExplorer.update("none");
     }
 
     function expLabelFor(r) {
@@ -4278,12 +4345,9 @@
       const box = el("expStats");
       if (!box) return;
       const hm = (n, d = 1) => n === null ? "\u2013" : Number(n).toFixed(d);
-      const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
       box.innerHTML = groups.map(({ label, unit, vals }) => {
-        if (!vals.length) return "";
-        const mn = Math.min(...vals);
-        const mx = Math.max(...vals);
-        const av = avg(vals);
+        const {min: mn, max: mx, avg: av, count} = numericSummary(vals);
+        if (!count) return "";
         return `<div class="ds-block">
       <div class="ds-title">${label}</div>
       <div class="ds-vals">
@@ -4293,7 +4357,7 @@
         &nbsp;|&nbsp;
         Max:&nbsp;<span>${hm(mx)}&nbsp;${unit}</span>
         &nbsp;|&nbsp;
-        <span style="color:var(--muted)">${vals.length}&nbsp;měření</span>
+        <span style="color:var(--muted)">${count}&nbsp;měření</span>
       </div>
     </div>`;
       }).join("");
@@ -4522,12 +4586,10 @@
       const parseKey = k => { const p = k.split('.'); return new Date(+p[2], +p[1] - 1, +p[0]); };
       const keys = Object.keys(dayMap).sort((a, b) => parseKey(a) - parseKey(b));
 
-      const mins = keys.map(k => +(Math.min(...dayMap[k].vals).toFixed(1)));
-      const maxs = keys.map(k => +(Math.max(...dayMap[k].vals).toFixed(1)));
-      const avgs = keys.map(k => {
-        const v = dayMap[k].vals;
-        return +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1);
-      });
+      for (const k of keys) dayMap[k].summary = numericSummary(dayMap[k].vals);
+      const mins = keys.map(k => +dayMap[k].summary.min.toFixed(1));
+      const maxs = keys.map(k => +dayMap[k].summary.max.toFixed(1));
+      const avgs = keys.map(k => +dayMap[k].summary.avg.toFixed(1));
 
       // Graf – pás MIN-MAX + průměrová čára
       el("ovChartTitle").textContent = m.label + " za poslední dny (" + m.unit + ")";
@@ -4565,11 +4627,11 @@
       // Tabulka – nejnovější nahoře
       const todayStr = fmtDateShort(now);
       el("ovTableBody").innerHTML = [...keys].reverse().map(k => {
-        const v = dayMap[k].vals;
-        const mn = Math.min(...v).toFixed(1);
-        const mx = Math.max(...v).toFixed(1);
-        const av = (v.reduce((a, b) => a + b, 0) / v.length).toFixed(1);
-        const cnt = v.length;
+        const summary = dayMap[k].summary;
+        const mn = summary.min.toFixed(1);
+        const mx = summary.max.toFixed(1);
+        const av = summary.avg.toFixed(1);
+        const cnt = summary.count;
         const tod = k === todayStr;
         return `<tr class="${tod ? "ov-today" : ""}">
       <td>${k}${tod ? " ← dnes" : ""}</td>
@@ -4704,7 +4766,7 @@
           if (!rainByDay[dk] || r.rain > rainByDay[dk].val) rainByDay[dk] = { val: r.rain, ts: r.ts };
         });
         const totalRain = Object.values(rainByDay).length
-          ? Math.max(...Object.values(rainByDay).map(v => v.val))
+          ? numericSummary(Object.values(rainByDay).map(v => v.val)).max
           : 0;
 
         // Max srážkový přírůstek za hodinu (= max rainInc za jeden záznam, protože záznamy ≈ hodinové)
@@ -4900,6 +4962,9 @@
             rain: pf(o.dest ?? o.rain ?? o.r), tank: pf(o.nadrz ?? o.tank),
             voltage: pf(o.napeti ?? o.voltage ?? o.v)
           });
+          invalidateDerivedData();
+          store._lastQuickCsv = null;
+          store._lastFullCsv = null;
           refreshUI();
         } catch (e) { }
       };

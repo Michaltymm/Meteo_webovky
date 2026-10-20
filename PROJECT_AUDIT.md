@@ -14,10 +14,12 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (44/44 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (54/54 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
-- Další priority: AUD-010 (lokální dny/UTC), AUD-013 (statistiky před downsamplingem), výkon dlouhé historie.
+- AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (59 METEO ID); další P0 cache stanic/pozadí, P1 AUD-010 a analytika.
+- Benchmark Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
 - Živá data nebyla ověřena: onboarding proxy vracela CONNECT 403; neplést s chybou aplikace.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
@@ -103,7 +105,7 @@ Priority: P0 = bezprostředně kritické; P1 = bezpečnost/funkční spolehlivos
 | AUD-010 / P2 / TODO | `buildCompare` seskupuje dny přes UTC `toISOString().slice(0,10)`, hodiny přes lokální `getHours`. Pro Prague 00:30 je UTC předchozí den. | Půlnoční měření v nesprávném dni; stejné UTC datum používají date inputy/UV cache. Definovat časovou zónu a konzistentní denní klíče, testovat DST. |
 | AUD-011 / P2 / DONE | Volba Vše (0) původně spadla do výchozího limitu 500. | Rozlišena platná nula a neplatný/negativní limit; test s 501 řádky ověřuje Vše i limity. Stránkování velkých historií zůstává návrh, nikoli nezbytná součást této opravy. |
 | AUD-012 / P2 / DONE | Staré panely při přepnutí již řešil předchozí balík; zbýval prázdný rozsah ve stejné stanici. | `_drawExplorerPts([])` vyčistí labely/datasety/statistiky a ukáže prázdný stav. Ověřeno jednotkově i skutečným prázdným datem v browseru. |
-| AUD-013 / P2 / TODO | `buildExplorer` redukuje body na nejvýše 800 před voláním `_drawExplorerPts` → `buildExpStats`. Ověřeno datovým tokem, ne benchmarkem. | Min/max/průměr se počítají jen z vybraných bodů; krátký extrém může zmizet. Statistiky počítat z plného filtrovaného rozsahu, downsampling použít jen pro vykreslení. |
+| AUD-013 / P0 dle nového zadání / DONE | Browser reprodukoval ztrátu extrému i počet pouze 800 místo 100k ve statistikách. | METEO-033: min/max redukce až při kreslení, statistiky/regrese z úplných dat, slider řeže plné řádky. 54 Node testů a Chromium/Chart.js ověření; původní chyba reprodukována také regresním testem. |
 
 ## D. IMPROVEMENT IDEAS
 
@@ -111,7 +113,7 @@ Priority: P0 = bezprostředně kritické; P1 = bezpečnost/funkční spolehlivos
 | --- | --- | --- |
 | IMP-001 / P1 | Automatické deterministické testy pro server a datový lifecycle, poté CI; odhalí regrese AUD-001–005 bez závislosti na síti. | Střední; `tests/`, později `.github/workflows/` a testovatelná rozhraní JS |
 | IMP-002 / P2 | Cache po stanici a identitě zdroje s TTL a omezením velikosti; méně stahování při návratu na stanici. Až po AUD-002/004. | Střední; `index.html`: store/fetch/switch |
-| IMP-003 / P2 | Agregace do Map v jednom průchodu, nevykreslovat skryté grafy; zachovat extrema při downsamplingu. | Střední; buildCharts/buildAgg/buildExplorer/buildYearlyStats |
+| IMP-003 / P0–P1 / ČÁSTEČNĚ | METEO-001/002/033 hotové: viditelné grafy, cache rozsahu a min/max. Sdílené denní/hodinové agregace zbývají METEO-038. | Střední; výsledky viz docs/performance, hlavní data zůstávají plná |
 | IMP-004 / P2 | Schema konfigurace: rozsahy lat/lon/port/interval/source a přesně tři stanice; bezpečný wrapper localStorage. | Střední; init, _applyCfgObject, applyConfig. Např. pole >3 v storage přistoupí k neexistujícím STATION_DEFAULTS[i]. |
 | IMP-005 / P2 | Jasně označit lokální heslo nastavení jako UX zámek; bezpečnost vyžaduje serverovou autentizaci pouze pokud bude potřeba chráněný zápis. | Nízká pro dokumentaci; toggleFullCfg/_pwConfirm. Hash na klientu nechrání veřejné konfigurace. |
 | IMP-006 / P2 | Lepší UI stavy, a11y záložek/dialogů (klávesnice/ARIA/focus), touch plochy, mobilní orientace a světlé grafy. | Střední; HTML/CSS a inicializace Chart.js; měřit v prohlížeči |
@@ -126,8 +128,8 @@ Oprava historických předpokladů z `Navrhy_Vylepseni.md` (soubor zatím ponech
 | --- | --- |
 | FUT-001 / budoucí nápad / TODO | PWA/offline shell a poslední známá data, se zřetelným časem/stářím. Vyžaduje cache verze a bezpečnou aktualizaci service workeru. |
 | FUT-002 / hypotéza / TODO | Ověřit účel `Git/MQTT_webovky/index.html`, `config.json`, `remote_parse.txt`; teprve poté navrhnout archivaci. Bez souhlasu nemazat. |
-| FUT-003 / ověřený návrh / TODO | Zjednodušit měření výkonu pomocí reálných CSV fixture (400/20k/100k řádků) a mobilního profilu; neoptimalizovat podle počtu řádků HTML. |
-| FUT-004 / hypotéza / TODO | `Math.max(...array)` na velkých historiích může překročit limit argumentů; změřit mez a použít reduce, pokud se potvrdí pro reálná data. |
+| FUT-003 / ČÁSTEČNĚ | METEO-056: reprodukovatelné browser měření se syntetickými 1k/10k/100k a mobile viewportem hotové. Reálná CSV/síť, RAM a Web Vitals zbývají; data v docs/performance. |
+| FUT-004 / ověřená chyba / DONE | RangeError reprodukován v původním refreshUI při 250k syntetických záznamech. METEO-039 používá iterativní numericSummary pro neomezená pole; test 250k i plné statistiky prošly. Jediný zbývající spread je pevná 24h UV předpověď. |
 | FUT-005 / hypotéza / TODO | Quick dotaz ORDER BY A/B nemusí chronologicky řadit textová česká data; ověřit skutečné typy sloupců v Google Sheets. |
 | FUT-006 / budoucí nápad / TODO | Export filtrovaných dat, indikace výpadků a stáří senzoru; zobrazovat neúplnost historie i ve statistikách. |
 | FUT-007 / hypotéza / TODO | Ověřit denní/kumulativní sémantiku `rain` a `rainInc` pro každou stanici před změnou srážkových výpočtů. Současný max/den předpokládá denní reset. |
@@ -137,7 +139,7 @@ Oprava historických předpokladů z `Navrhy_Vylepseni.md` (soubor zatím ponech
 
 ## F. PRIORITIZED ROADMAP
 
-TOP 10 v doporučeném pořadí (P0 nyní bez potvrzených položek):
+Aktuální rozvojové priority jsou v [centrální roadmapě](docs/NAPADY_A_ROADMAP.md). Následující tabulka zachovává historii stabilizační etapy; P0 výkon nyní doložen benchmarkem (METEO-001/002/033/039 hotové, METEO-004/005 další):
 
 | Pořadí / priorita | ID / stav | Proč teď / závislost |
 | --- | --- | --- |
@@ -152,13 +154,13 @@ TOP 10 v doporučeném pořadí (P0 nyní bez potvrzených položek):
 | 9 / P2 | AUD-008 DONE | Spolehlivé porovnání celého exportu; přenosovou optimalizaci vést samostatně jako FUT-010. |
 | 10 / P2 | AUD-012 + AUD-011 DONE | Prázdné stavy a Vše opraveny; přístupnost/cache zůstávají samostatné návrhy. |
 
-IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. Po datových opravách pokračovat AUD-013 a cache dle měření. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
+IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. AUD-013 je hotové; pokračovat cache/pozadím dle METEO-004/005 a časovým kontraktem AUD-010. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
 
 ## G. RISKS AND DEPENDENCIES
 
 - CORS proxy vidí URL veřejných tabulek a vracená data; nikdy jimi neposílat privátní klíče. Přímé načtení Sheets preferovat.
 - CDN výpadek Chart.js zastaví inicializaci před startAll; MQTT klient může být nedostupný i když Sheets fungují.
-- Líné renderování je záměr; `buildCharts` ale stále aktualizuje několik skrytých grafů najednou. Zachovat dirty tracking, měřit změny.
+- Líné renderování respektuje aktivní tab (METEO-001). Instance Chart.js stále vznikají všechny při startu; lazy konstrukce je samostatné METEO-007. Zachovat dirty tracking.
 - Změny časových klíčů musí sjednotit parser, overview, compare, date inputy, UV cache a kalendářní agregace.
 - Historie bez roku a předpokládané sestupné řazení jsou skrytý datový kontrakt; změna GViz dotazu může ovlivnit odvozování let.
 - Formulář/JSON se ukládá pouze do prohlížeče a po startu může být přepsán dodaným JSON; hash hesla není serverová ochrana.
@@ -190,6 +192,15 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - `_lastFullCsv` aktualizovat jen po úspěšném zparsování celé odpovědi; při resetu relace zahodit, nepersistovat do localStorage. Vyšší přenos je vědomá cena odstranění falešného beze změn; optimalizace pouze FUT-010 s ověřeným protokolem. Raw_Data adaptér se tím neimplementoval.
 
 - Následný okrajový případ: overview nyní přeskočí neplatný kalendářní řádek a hledá další validní měření v prvních šesti logických záznamech, případně zkusí fallback. Samostatný regresní test nejprve selhal (overview zůstalo prázdné), po opravě prošel; celkem 44/44 testů. Balík kvality odeslán v `3244df3`; jeho GitHub run [39477407012](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39477407012) měl úspěšný build a Pages artefakt, ale deploy znovu odmítlo pravidlo github-pages pro codex-dev. Živá verze oprav tím není potvrzená.
+
+### Etapa výkonu a roadmapy (20. 10. 2026)
+
+- Nové uživatelské zadání chce etapový rozvoj, P0 výkon, pak baterii/porovnání/metriky. `docs/NAPADY_A_ROADMAP.md` je centrální živý backlog (59 unikátních ID, 13 kategorií, zdroje/závislosti, návrh analytiky a přijímací kritéria). README/AGENTS na něj odkazují; starší audity zachovány.
+- METEO-001/002/003/033/039 DONE: 1 místo 6 chart update na přehledu, binární výběr rozsahu + cache jednoho pole referencí, quick CSV shoda šetří parse/render, min/max výběr nejvýše 800 pozorovaných bodů, plné statistiky/slider/regrese a iterativní min/max bez argument limitu. Range cache neukládá všechny stanice, nepersistuje a nešetří síť; je třeba ji invalidovat při každé mutaci dat. Volat `invalidateDerivedData` po CSV/MQTT/resetu.
+- `voltageSeries` má volitelný třetí argument pro úplná data regrese; vizuální body nesmí měnit výsledek výpočtu. Prognóza stále jednoduchá extrapolace; ne SOC ani AI. Cache quick i full CSV se ruší po MQTT overlay, aby totožný export neponechal nekonzistentní smíšený store.
+- 54/54 Node testů prošlo (10 nových performance); nové testy na `c0bfddf` selhaly pro 800 místo 100k a RangeError při 250k. Finální skutečné Chromium 154 / Chart.js 4.4.0: 1k/10k/100k, všechny záložky a 8 metrik exploreru, mobil390 bez pageErrors/přetečení. Směrování sítě je fixture; živé služby tím neověřeny.
+- Benchmark medián 5 běhů při100k: refreshUI 148,6→53,8 ms (6→1 chart update), explorer 43,2→14,8 ms, slider 18,2→10,8 ms. Originální data se nemění, extrém85°C z fixture zůstává. Údaje/omezení/metodika a surové JSON v docs/performance; skript scripts/benchmark-browser.py. RAM/LCP/INP/CLS/skutečná síť neměřeny; neuvádět zlepšení těchto metrik jako fakt.
+- Další práce: METEO-004/005 (omezená cache mezi stanicemi a neaktivní karta); AUD-010/METEO-048 (jednotný čas) před novou analytikou. Raw_Data, srážkové jednotky/reset a procentuální dostupnost potřebují skutečný kontrakt. Nic z návrhů firmware/HW neprezentovat jako dostupné měření.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
