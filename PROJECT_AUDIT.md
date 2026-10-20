@@ -14,7 +14,7 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (43/43 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (44/44 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - Další priority: AUD-010 (lokální dny/UTC), AUD-013 (statistiky před downsamplingem), výkon dlouhé historie.
@@ -35,7 +35,7 @@ Projekt zobrazuje aktuální počasí, historii, statistiky srážek a napětí,
 | `server.js` | Statický HTTP server s portem 8080; kořen `__dirname`, export `createServer(rootDir)` pro testy |
 | `tests/server.test.js` | Šest skupin HTTP regresí bez externí sítě/závislostí; dočasné fixture a náhodný port |
 | `tests/station-loading.test.js` | 14 deterministických testů životního cyklu načítání |
-| `tests/data-quality.test.js`, `tests/helpers/app.js` | 19 testů kvality, rendererů, grafů, CSV/datumů a obnovy; společná VM spouští skutečný inline JS s řízeným DOM/Chart/transportem |
+| `tests/data-quality.test.js`, `tests/helpers/app.js` | 20 testů kvality, rendererů, grafů, CSV/datumů a obnovy; společná VM spouští skutečný inline JS s řízeným DOM/Chart/transportem |
 | `AGENTS.md`, `PROJECT_AUDIT.md` | Pravidla práce a projektová paměť s ověřenými nálezy |
 | `.github/workflows/pages.yml`, `scripts/build-pages.js`, `tests/pages.test.js`, `docs/PAGES.md` | Publikování `main` a `codex-dev` jako jednoho Pages artefaktu, allowlist veřejných souborů, testy a aktivační postup |
 | `config_praha_baterie.json`, `config_praha_okno.json`, `config_stanice3.json` | Automaticky načítané konfigurace tří stanic |
@@ -47,7 +47,7 @@ Projekt zobrazuje aktuální počasí, historii, statistiky srážek a napětí,
 
 Závislosti v prohlížeči: Chart.js a Paho přes pevné CDN URL, Google Sheets CSV, Open-Meteo a dva záložní CORS proxy (`corsproxy.io`, `api.allorigins.win`). MQTT je volitelný; dodané konfigurace mají prázdný host a zdroj `sheets`. Není potřeba instalovat balíčky ani sestavovat aplikaci. V repozitáři nebyly před auditem testy ani CI.
 
-Ověřený postup: `node server.js`; HTTP požadavky na `/` a čtyři JSON soubory vracejí obsah projektu, neexistující cesta 404. Ověřeno i spuštění absolutní cestou z `/tmp` (neservíruje pracovní adresář). `node --test tests/*.test.js`: 43/43 prošlo (6 server, 4 Pages, 14 načítání, 19 kvalita dat); žádné přeskočené testy. `node --check server.js` a `git diff --check` prošly. Browser smoke s reálným Chart.js: titul, všechny záložky a změna stanice bez page errors; externí data a volitelný MQTT CDN byly v tomto testu záměrně blokovány, aby test izoloval změnu serveru. Chromium používá důvěryhodné CA prostředí v dočasné NSS databázi, nikoli vypnuté TLS ověřování. Živá data/UV ani skutečné MQTT připojení tím nejsou ověřeny.
+Ověřený postup: `node server.js`; HTTP požadavky na `/` a čtyři JSON soubory vracejí obsah projektu, neexistující cesta 404. Ověřeno i spuštění absolutní cestou z `/tmp` (neservíruje pracovní adresář). `node --test tests/*.test.js`: 44/44 prošlo (6 server, 4 Pages, 14 načítání, 20 kvalita dat); žádné přeskočené testy. `node --check server.js` a `git diff --check` prošly. Browser smoke s reálným Chart.js: titul, všechny záložky a změna stanice bez page errors; externí data a volitelný MQTT CDN byly v tomto testu záměrně blokovány, aby test izoloval změnu serveru. Chromium používá důvěryhodné CA prostředí v dočasné NSS databázi, nikoli vypnuté TLS ověřování. Živá data/UV ani skutečné MQTT připojení tím nejsou ověřeny.
 
 ## B. ARCHITECTURE MAP
 
@@ -185,9 +185,11 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - DEPLOY-001 / IN PROGRESS pro automatické aktualizace vývoje: uživatel musí v Settings → Environments → github-pages povolit codex-dev vedle main (ostatní ochrany zachovat) a v uvedeném běhu zvolit Re-run all jobs. Neobcházet ochranu deployem z jiné větve. Dřívější uživatelské potvrzení se týká dostupnosti stránek; nové nasazení zatím potvrzené není. Postup přidán do docs/PAGES.md.
 - Vývoj a push na codex-dev; do main slučovat až po schválení uživatelem. Před prací fetch a zachovat změny Opusu/uživatele; f2706b5 byl načten fast-forward. Další priority: AUD-010, AUD-013, výkon velkých historií (IMP-003).
 
-- Další balík 2026-10-20: AUD-003/005/006/007/008/011/012 DONE. 43/43 Node testů, inline syntax check a diff check prošly; dřívější RangeError reprodukován před opravou stejným testem. Browser ověřil všechny záložky nad 61 řádky bez napětí, odmítnutí neplatného data, neproveditelné HTML v notes/historii, přesný obsah víceřádkové poznámky s uvozovkami, Vše, změnu starého řádku při neměnných hlavičkách, nezměněný export, chybu/retry a prázdný explorer včetně mobilu. Použit reálný Chart.js a fixture Sheets/UV; reálná síť/broker neověřeny.
+- Další balík 2026-10-20: AUD-003/005/006/007/008/011/012 DONE. 44/44 Node testů, inline syntax check a diff check prošly; dřívější RangeError reprodukován před opravou stejným testem. Browser ověřil všechny záložky nad 61 řádky bez napětí, odmítnutí neplatného data, neproveditelné HTML v notes/historii, přesný obsah víceřádkové poznámky s uvozovkami, Vše, změnu starého řádku při neměnných hlavičkách, nezměněný export, chybu/retry a prázdný explorer včetně mobilu. Použit reálný Chart.js a fixture Sheets/UV; reálná síť/broker neověřeny.
 - CSV parser vrací již dekódované buňky; neodstraňovat z poznámek uvozovky/apostrofy přes stripQ. Overview používá omezení na 6 **logických** záznamů; nesplitovat text na fyzické řádky. Čas parseru nově zachovává sekundy. Neplatný kalendář musí vracet null a neměnit yearState.
 - `_lastFullCsv` aktualizovat jen po úspěšném zparsování celé odpovědi; při resetu relace zahodit, nepersistovat do localStorage. Vyšší přenos je vědomá cena odstranění falešného beze změn; optimalizace pouze FUT-010 s ověřeným protokolem. Raw_Data adaptér se tím neimplementoval.
+
+- Následný okrajový případ: overview nyní přeskočí neplatný kalendářní řádek a hledá další validní měření v prvních šesti logických záznamech, případně zkusí fallback. Samostatný regresní test nejprve selhal (overview zůstalo prázdné), po opravě prošel; celkem 44/44 testů. Balík kvality odeslán v `3244df3`; jeho GitHub run [39477407012](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39477407012) měl úspěšný build a Pages artefakt, ale deploy znovu odmítlo pravidlo github-pages pro codex-dev. Živá verze oprav tím není potvrzená.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

@@ -175,6 +175,14 @@ test('overview can read complete logical CSV records without scanning the rest',
   assert.throws(() => a.run(`parseCSV(${JSON.stringify(text)})`), /CSV:/);
 });
 
+test('overview skips an invalid calendar row and reads the next valid measurement', async () => {
+  const a = app();
+  const load = a.run('fetchOvStation(1)');
+  a.respond(0, headers + '"31.02.2026","12:00",999,1010,60,0,0,0,4.2\n"20.10.2026","11:55",20,1010,60,0,0,0,4.2');
+  await load;
+  assert.equal(a.run('ovStores[1]?.temp'), 20);
+});
+
 test('date/time parsing rejects impossible values and suffix injection', () => {
   const a = app();
   for (const [date, time] of [

@@ -4958,7 +4958,7 @@
           if (!isCurrentStation(context)) return;
           const lines = parseCSV(text, 6);
           for (let i = 0; i < Math.min(lines.length, 6); i++) {
-            const c0 = stripQ(lines[i][0]);
+            const c0 = stripQ(lines[i][0]).replace(/\s+/g, "");
             if (/^\d{1,2}\.\d/.test(c0)) {
               const c = lines[i];
               const ts = parseCSDateTime(stripQ(c[0]), stripQ(c[1]));
@@ -4968,10 +4968,8 @@
                 updateOvBar();
                 return;
               }
-              break;
             }
           }
-          break;
         } catch (e) {
           if (!isCurrentStation(context)) return;
           console.warn("[OV] fetchOvStation", idx, e.message);
