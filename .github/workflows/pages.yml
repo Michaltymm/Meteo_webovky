@@ -7,7 +7,8 @@ on:
       - index.html
       - config*.json
       - scripts/build-pages.js
-      - tests/pages.test.js
+      - tests/**
+      - server.js
       - .github/workflows/pages.yml
   pull_request:
     branches: [main]
@@ -15,7 +16,8 @@ on:
       - index.html
       - config*.json
       - scripts/build-pages.js
-      - tests/pages.test.js
+      - tests/**
+      - server.js
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -39,8 +41,8 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Test Pages assembly
-        run: node --test tests/pages.test.js
+      - name: Test application and Pages assembly
+        run: node --test tests/*.test.js
 
       - name: Check out stable website
         uses: actions/checkout@v4

@@ -5,6 +5,21 @@
 **Větev:** `codex-dev`  
 **Charakter:** statická analýza kódu, bez spuštění v prohlížeči.
 
+## Aktuální stav realizace
+
+Původní audit níže zachycuje stav před opravami; čísla řádků jsou historická. Stav ověřených implementací na `codex-dev`:
+
+| Nález | Stav | Implementace a ověření |
+| --- | --- | --- |
+| W01 | DONE | Generace relace + AbortController, ochrana konfigu/CSV/parseru/UV/overview/FileReader; A → B → A i změna zdroje. Staré panely se při přepnutí skryjí. |
+| W03 | DONE | Parser vrací Promise a validovaný výsledek; fullLoaded/OK/callbacky až po commitu řádků. Chybná HTML/CSV nemůže potvrdit úspěch, čekající callbacky se při selhání uvolní. |
+| W09 | DONE | Plná historie má 30s timeout kombinovaný se zrušením relace. |
+| W08 | ČÁSTEČNĚ | Starý klient se odpojuje; jeho zprávy, callbacky a reconnect se ignorují. Limit počtu zpráv a slučování se Sheets zůstává TODO. |
+| W10 | ČÁSTEČNĚ | Reconnect timer je rušitelný a vázaný na klienta i relaci; exponenciální backoff zůstává TODO. |
+| D02 | DONE | Start načítání konfigurace sjednocen do `loadStationConfig`, bez duplicitních větví `.then`. |
+
+Ověření: `node --test tests/*.test.js` — **24/24 prošlo**, z toho 14 testů načítání stanic nad skutečným inline JS. Původní záměna konfigu byla stejným testem reprodukována před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo startup, pozdní konfig, přepínání, skrytí starých měření, lazy historii, ruční refresh a mobilní viewport bez page errors. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti a další nálezy: `PROJECT_AUDIT.md`, stabilní ID AUD-002/004/009.
+
 ---
 
 ## 0. Shrnutí

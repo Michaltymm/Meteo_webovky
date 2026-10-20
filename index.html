@@ -2217,6 +2217,10 @@
         title="Nastavení zdroje dat">⚙ Nastavení</button>
     </div>
 
+    <p id="stationDataEmpty" hidden style="color:var(--muted);padding:1rem 0">
+      Data vybrané stanice zatím nejsou k dispozici.
+    </p>
+    <div id="stationData">
     <!-- ══ TOP ROW ══ -->
     <div class="top-row">
 
@@ -2659,6 +2663,7 @@
       </div>
     </div>
 
+    </div><!-- /stationData -->
   </div><!-- /page-wrapper -->
 
   <script>
@@ -2710,25 +2715,62 @@
     if (activeIdx < 0 || activeIdx > 2) activeIdx = 0;
 
     let CFG = stations[activeIdx];
+    let stationSession = new AbortController();
+    let sheetsLoad = null;
+
+    function stationContext() {
+      return { index: activeIdx, config: { ...CFG }, signal: stationSession.signal };
+    }
+
+    function isCurrentStation(context) {
+      return context.index === activeIdx && context.signal === stationSession.signal && !context.signal.aborted;
+    }
+
+    function cancelStationWork() {
+      stationSession.abort();
+      stationSession = new AbortController();
+      if (fetchTimer) clearInterval(fetchTimer);
+      if (window._uvTimer) clearInterval(window._uvTimer);
+      stopMQTT();
+      el("refreshBtn").classList.remove("spinning");
+      el("refreshBtn").disabled = false;
+    }
+
+    function resetStationStore() {
+      store.rows = [];
+      store.fullLoaded = false;
+      store._onFullLoad = [];
+      store._fullLoadPending = false;
+      store._lastRawLine = null;
+      uvStore.hourly = null;
+      uvStore.lat = null;
+      el("stationData").hidden = true;
+      el("stationDataEmpty").hidden = false;
+      updatePartialBadge();
+    }
+
+    async function stationText(url, context, timeout = 30000) {
+      const response = await fetch(url, { signal: AbortSignal.any([context.signal, AbortSignal.timeout(timeout)]) });
+      if (!isCurrentStation(context)) return null;
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const text = await response.text();
+      return isCurrentStation(context) ? text : null;
+    }
 
     function saveStations() { preferences.setItem("meteoStations", JSON.stringify(stations)); }
 
     /* ── Přepnutí stanice ── */
     function switchStation(idx) {
       if (idx === activeIdx) { closeAllDD(); return; }
-      if (fetchTimer) clearInterval(fetchTimer);
+      cancelStationWork();
       activeIdx = idx;
       CFG = stations[activeIdx];
       preferences.setItem("meteoActiveIdx", String(activeIdx));
-      store.rows = [];
-      store.fullLoaded = false;
-      store._onFullLoad = [];
-      store._fullLoadPending = false;
-      store._lastRawLine = null;
+      resetStationStore();
       closeAllDD();
       updateStationUI();
       fillConfigUI();
-      tryLoadConfigJson(idx).then(loaded => startAll());
+      loadStationConfig();
     }
 
     function updateStationUI() {
@@ -2817,25 +2859,33 @@
       stations[activeIdx].source = el("gearSource").value;
       CFG = stations[activeIdx];
       saveStations();
+      resetStationStore();
       startAll();
     }
 
     /* Automatické načtení konfiguračního souboru pro danou stanici */
     function cfgFileName(idx) { return "./" + STATION_DEFAULTS[idx ?? activeIdx].cfgFile; }
 
-    async function tryLoadConfigJson(idx) {
+    async function loadStationConfig() {
+      const context = stationContext();
+      await tryLoadConfigJson(context.index, context);
+      if (isCurrentStation(context)) startAll();
+    }
+
+    async function tryLoadConfigJson(idx, context = stationContext()) {
       const i = idx ?? activeIdx;
       const fname = cfgFileName(i);
       try {
-        const r = await fetch(fname + "?_=" + Date.now());
-        if (!r.ok) return false;
-        const obj = await r.json();
+        const text = await stationText(fname + "?_=" + Date.now(), context);
+        if (!isCurrentStation(context) || i !== context.index) return false;
+        const obj = JSON.parse(text.replace(/^\uFEFF/, ""));
         // Validace: je tento konfig určen pro správnou stanici?
         if (obj.stationIdx !== undefined && obj.stationIdx !== i) {
           console.warn("[CFG] Varování: soubor", fname, "má stationIdx=" + obj.stationIdx, "ale načítám pro stanici", i);
           setGsStatus(null, "⚠ Konfig pro stanici " + (obj.stationIdx + 1) + " načten místo " + (i + 1) + "!");
+          return false;
         }
-        _applyCfgObject(obj, fname, false);
+        _applyCfgObject(obj, fname, false, context);
         return true;
       } catch (e) { return false; }
     }
@@ -2844,8 +2894,10 @@
     function loadConfigFromFile(input) {
       const file = input.files[0];
       if (!file) return;
+      const context = stationContext();
       const reader = new FileReader();
       reader.onload = e => {
+        if (!isCurrentStation(context)) return;
         try {
           const obj = JSON.parse(e.target.result);
           _applyCfgObject(obj, file.name, true);
@@ -2869,7 +2921,12 @@
     }
 
     /* Interní: aplikuj objekt do aktivní stanice */
-    function _applyCfgObject(obj, source, runStartAll) {
+    function _applyCfgObject(obj, source, runStartAll, context) {
+      if (context && !isCurrentStation(context)) return;
+      if (!context) {
+        cancelStationWork();
+        resetStationStore();
+      }
       stations[activeIdx] = { ...STATION_DEFAULTS[activeIdx], ...stations[activeIdx], ...obj };
       CFG = stations[activeIdx];
       saveStations();
@@ -3370,16 +3427,17 @@
     const uvStore = { hourly: null, lat: null, lon: null, date: null };
 
     async function fetchUVData() {
-      const lat = CFG.lat ?? 50.08;
-      const lon = CFG.lon ?? 14.42;
+      const context = stationContext();
+      const lat = context.config.lat ?? 50.08;
+      const lon = context.config.lon ?? 14.42;
       const today = new Date().toISOString().slice(0, 10);
       // Neměň zbytečně – stejná poloha i den
       if (uvStore.lat === lat && uvStore.lon === lon && uvStore.date === today && uvStore.hourly) return;
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=uv_index&timezone=auto&forecast_days=1`;
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(r.status);
-        const j = await r.json();
+        const text = await stationText(url, context);
+        if (!isCurrentStation(context)) return;
+        const j = JSON.parse(text);
         uvStore.hourly = j.hourly.uv_index;   // pole 24 hodnot 0–23h
         uvStore.lat = lat;
         uvStore.lon = lon;
@@ -3387,6 +3445,7 @@
         console.log("[UV] Načteno z Open-Meteo pro", lat, lon, uvStore.hourly);
         updateSunBar(); // aktualizuj zobrazeni
       } catch (e) {
+        if (!isCurrentStation(context)) return;
         console.warn("[UV] Chyba načtění:", e);
         uvStore.hourly = null;
       }
@@ -3460,9 +3519,26 @@
     }
 
     async function fetchSheets(forceFullLoad = false) {
-      if (!CFG.sheetId) { setGsStatus(false, "Google Sheets: zadejte Sheet ID v nastavení ↑"); return; }
+      const context = stationContext();
+      // Reuse an in-flight load. A full-history request waits for a quick load,
+      // then upgrades it; periodic refreshes cannot overwrite newer results.
+      if (sheetsLoad && sheetsLoad.context.signal === context.signal) {
+        await sheetsLoad.promise;
+        if (forceFullLoad && isCurrentStation(context) && !store.fullLoaded) return fetchSheets(true);
+        return;
+      }
+      const request = { context };
+      sheetsLoad = request;
+      request.promise = loadSheets(forceFullLoad, context).finally(() => {
+        if (sheetsLoad === request) sheetsLoad = null;
+      });
+      return request.promise;
+    }
 
-      const fullURL = sheetsURL(CFG.sheetId, CFG.sheetName);
+    async function loadSheets(forceFullLoad, context) {
+      if (!context.config.sheetId) { setGsStatus(false, "Google Sheets: zadejte Sheet ID v nastavení ↑"); return; }
+
+      const fullURL = sheetsURL(context.config.sheetId, context.config.sheetName);
       const proxy1 = "https://corsproxy.io/?url=" + encodeURIComponent(fullURL);
       const proxy2 = "https://api.allorigins.win/raw?url=" + encodeURIComponent(fullURL);
       const isFile = location.protocol === "file:";
@@ -3479,16 +3555,19 @@
         let ok = false;
         for (const url of qURLs) {
           try {
-            const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { signal: AbortSignal.timeout(8000) });
-            if (!r.ok) continue;
-            const text = await r.text();
+            const text = await stationText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context, 8000);
+            if (!isCurrentStation(context)) return;
             if (!text || text.length < 10) continue;
-            parseAndStore(text);
+            if (!await parseAndStore(text, context)) {
+              if (!isCurrentStation(context)) return;
+              continue;
+            }
+            if (!isCurrentStation(context)) return;
             updatePartialBadge();
             setGsStatus(true, "Google Sheets: OK – posl. 3 dny (" + fmtTime(new Date()) + ")");
             ok = true;
             break;
-          } catch (e) { }
+          } catch (e) { if (!isCurrentStation(context)) return; }
         }
         if (!ok) {
           // quick load selhal – zkusit plné načtení
@@ -3506,9 +3585,8 @@
           : [checkURL, "https://corsproxy.io/?url=" + encodeURIComponent(checkURL)];
         for (const url of checkURLs) {
           try {
-            const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
-            if (!r.ok) continue;
-            const txt = await r.text();
+            const txt = await stationText(url, context, 5000);
+            if (!isCurrentStation(context)) return;
             const lastLine = txt.split(/\r?\n/).filter(Boolean).pop();
             if (store._lastRawLine && store._lastRawLine === lastLine) {
               setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
@@ -3516,7 +3594,7 @@
             }
             store._lastRawLine = lastLine;
             break;
-          } catch (e) { }
+          } catch (e) { if (!isCurrentStation(context)) return; }
         }
       }
 
@@ -3525,22 +3603,32 @@
       let lastErr = "";
       for (const url of allURLs) {
         try {
-          const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now());
-          if (!r.ok) { lastErr = "HTTP " + r.status; continue; }
-          const text = await r.text();
+          const text = await stationText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context);
+          if (!isCurrentStation(context)) return;
           if (!text || text.length < 10) { lastErr = "prázdná odpověď"; continue; }
-          parseAndStore(text);
+          if (!await parseAndStore(text, context)) {
+            if (!isCurrentStation(context)) return;
+            lastErr = "žádná platná data";
+            continue;
+          }
+          if (!isCurrentStation(context)) return;
           store.fullLoaded = true;
           store._fullLoadPending = false;
           updatePartialBadge();
           setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
           // Spusť čekající callbacky (ensureFullData)
           const cbs = store._onFullLoad.splice(0);
-          cbs.forEach(cb => { try { cb(); } catch (e) { } });
+          cbs.forEach(cb => {
+            if (isCurrentStation(context)) { try { cb(); } catch (e) { } }
+          });
           return;
-        } catch (e) { lastErr = e.message; }
+        } catch (e) {
+          if (!isCurrentStation(context)) return;
+          lastErr = e.message;
+        }
       }
       store._fullLoadPending = false;
+      store._onFullLoad = [];
       setGsStatus(false, "Google Sheets: chyba načtení – " + lastErr);
     }
 
@@ -3566,54 +3654,56 @@
        Sloupce A–I: Datum, Čas, Teplota, Tlak, Vlhkost, Přírůstek, Déšť, nádrž, Napětí
        Přeskočí řádky nadpis + záhlaví (autodetekce)
     ══════════════════════════════════════════════ */
-    function parseAndStore(text) {
+    async function parseAndStore(text, context = stationContext()) {
+      if (!isCurrentStation(context)) return false;
       setGsStatus(null, "Zpracovávám data (" + Math.round(text.length / 1024) + " KB)…");
       
       // Uvolníme Main Thread, aby se status "Zpracovávám data" stihl vykreslit
-      setTimeout(() => {
-        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      await new Promise(resolve => setTimeout(resolve, 10));
+      if (!isCurrentStation(context)) return false;
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-        // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
-        let dataStart = 0;
-        for (let i = 0; i < Math.min(lines.length, 4); i++) {
-          const c0 = stripQ(splitCSV(lines[i])[0]);
-          if (/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
-          dataStart = i + 1;
-        }
+      // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
+      let dataStart = 0;
+      for (let i = 0; i < Math.min(lines.length, 4); i++) {
+        const c0 = stripQ(splitCSV(lines[i])[0]);
+        if (/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
+        dataStart = i + 1;
+      }
 
-        const parsed = [];
-        let yearState = {
-          lastDt: new Date(),
-          inferredYear: new Date().getFullYear()
-        };
+      const parsed = [];
+      let yearState = {
+        lastDt: new Date(),
+        inferredYear: new Date().getFullYear()
+      };
 
-        for (let i = dataStart; i < lines.length; i++) {
-          const c = splitCSV(lines[i]);
-          const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
-          if (!ds || !/\d/.test(ds)) continue;
-          const ts = parseCSDateTime(ds, ts2, yearState);
-          if (!ts || isNaN(ts.getTime())) continue;
-          const noteRaw = stripQ(c[9] || "").trim();
-          parsed.push({
-            date: ds, time: ts2, ts,
-            temp: pf(c[2]),
-            pressure: pf(c[3]),
-            hum: pf(c[4]),
-            rainInc: pf(c[5]),
-            rain: pf(c[6]),
-            tank: pf(c[7]),
-            voltage: stripQ(c[8] || "").replace(/[Vv]/g, "").trim() !== "" ? pf(stripQ(c[8] || "").replace(/[Vv]/g, "")) : null,
-            note: noteRaw || null
-          });
-        }
-        if (!parsed.length) {
-          setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
-          return;
-        }
-        parsed.sort((a, b) => b.ts - a.ts);
-        store.rows = parsed;
-        refreshUI();
-      }, 10);
+      for (let i = dataStart; i < lines.length; i++) {
+        const c = splitCSV(lines[i]);
+        const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
+        if (!ds || !/\d/.test(ds)) continue;
+        const ts = parseCSDateTime(ds, ts2, yearState);
+        if (!ts || isNaN(ts.getTime())) continue;
+        const noteRaw = stripQ(c[9] || "").trim();
+        parsed.push({
+          date: ds, time: ts2, ts,
+          temp: pf(c[2]),
+          pressure: pf(c[3]),
+          hum: pf(c[4]),
+          rainInc: pf(c[5]),
+          rain: pf(c[6]),
+          tank: pf(c[7]),
+          voltage: stripQ(c[8] || "").replace(/[Vv]/g, "").trim() !== "" ? pf(stripQ(c[8] || "").replace(/[Vv]/g, "")) : null,
+          note: noteRaw || null
+        });
+      }
+      if (!parsed.length) {
+        setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
+        return false;
+      }
+      parsed.sort((a, b) => b.ts - a.ts);
+      store.rows = parsed;
+      refreshUI();
+      return true;
     }
 
     function stripQ(s = "") { return String(s).replace(/^["'\s]+|["'\s]+$/g, ""); }
@@ -3655,6 +3745,8 @@
 
     function refreshUI() {
       if (!store.rows.length) return;
+      el("stationData").hidden = false;
+      el("stationDataEmpty").hidden = true;
       const R = store.rows[0];
       // Aktualizuj overview bar pro aktivní stanici přímo z čerstvých dat
       ovStores[activeIdx] = { ts: R.ts, temp: R.temp, pressure: R.pressure, hum: R.hum, voltage: R.voltage };
@@ -4498,19 +4590,19 @@
        MANUAL REFRESH
     ══════════════════════════════════════════════ */
     async function manualRefresh() {
+      const context = stationContext();
       const btn = el("refreshBtn");
       btn.classList.add("spinning");
       btn.disabled = true;
       store._lastRawLine = null;
-      store.fullLoaded = true; // force plné načtení při manuálním refreshi
-      store._fullLoadPending = false;
-      store._onFullLoad = [];
       try {
         if (CFG.source === "sheets" || CFG.source === "both") await fetchSheets(true);
-        if (CFG.source === "mqtt" || CFG.source === "both") connectMQTT();
+        if (isCurrentStation(context) && (CFG.source === "mqtt" || CFG.source === "both")) connectMQTT();
       } finally {
-        btn.classList.remove("spinning");
-        btn.disabled = false;
+        if (isCurrentStation(context)) {
+          btn.classList.remove("spinning");
+          btn.disabled = false;
+        }
       }
     }
 
@@ -4758,13 +4850,41 @@
     /* ══════════════════════════════════════════════
        MQTT  (volitelný živý overlay)
     ══════════════════════════════════════════════ */
-    function connectMQTT() {
-      if (!CFG.mqttHost || CFG.source === "sheets") { setMqttStatus(false, "neaktivní"); return; }
+    let mqttClient = null;
+    let mqttReconnectTimer = null;
+
+    function stopMQTT() {
+      if (mqttReconnectTimer !== null) clearTimeout(mqttReconnectTimer);
+      mqttReconnectTimer = null;
+      const previous = mqttClient;
+      mqttClient = null;
+      if (previous) { try { previous.disconnect(); } catch (e) { } }
+    }
+
+    function connectMQTT(context = stationContext()) {
+      if (!isCurrentStation(context)) return;
+      stopMQTT();
+      const config = context.config;
+      if (!config.mqttHost || config.source === "sheets") { setMqttStatus(false, "neaktivní"); return; }
       setMqttStatus(false, "připojování…");
       const cid = "meteo_" + Math.random().toString(16).slice(2, 8);
-      const mc = new Paho.Client(CFG.mqttHost, CFG.mqttPort, "/mqtt", cid);
-      mc.onConnectionLost = r => { setMqttStatus(false, "odpojeno"); setTimeout(connectMQTT, 5000); };
+      const mc = new Paho.Client(config.mqttHost, config.mqttPort, "/mqtt", cid);
+      mqttClient = mc;
+      const isCurrentClient = () => isCurrentStation(context) && mqttClient === mc;
+      const reconnect = () => {
+        if (mqttReconnectTimer !== null) clearTimeout(mqttReconnectTimer);
+        mqttReconnectTimer = setTimeout(() => {
+          mqttReconnectTimer = null;
+          if (isCurrentClient()) connectMQTT(context);
+        }, 5000);
+      };
+      mc.onConnectionLost = r => {
+        if (!isCurrentClient()) return;
+        setMqttStatus(false, "odpojeno");
+        reconnect();
+      };
       mc.onMessageArrived = msg => {
+        if (!isCurrentClient()) return;
         try {
           const o = JSON.parse(msg.payloadString);
           const now = new Date();
@@ -4779,10 +4899,18 @@
         } catch (e) { }
       };
       mc.connect({
-        useSSL: CFG.mqttPort === 8883 || CFG.mqttPort === 8884,
+        useSSL: config.mqttPort === 8883 || config.mqttPort === 8884,
         timeout: 10,
-        onSuccess: () => { setMqttStatus(true, "připojeno – " + CFG.mqttHost); if (CFG.mqttJson) mc.subscribe(CFG.mqttJson); },
-        onFailure: e => { setMqttStatus(false, "chyba – " + e.errorMessage); setTimeout(connectMQTT, 5000); }
+        onSuccess: () => {
+          if (!isCurrentClient()) { try { mc.disconnect(); } catch (e) { } return; }
+          setMqttStatus(true, "připojeno – " + config.mqttHost);
+          if (config.mqttJson) mc.subscribe(config.mqttJson);
+        },
+        onFailure: e => {
+          if (!isCurrentClient()) return;
+          setMqttStatus(false, "chyba – " + e.errorMessage);
+          reconnect();
+        }
       });
     }
 
@@ -4790,18 +4918,19 @@
        START
     ══════════════════════════════════════════════ */
     function startAll() {
-      if (fetchTimer) clearInterval(fetchTimer);
+      cancelStationWork();
+      const context = stationContext();
       if (CFG.source === "sheets" || CFG.source === "both") {
         fetchSheets();
-        fetchTimer = setInterval(fetchSheets, CFG.interval * 1000);
+        fetchTimer = setInterval(() => { if (isCurrentStation(context)) fetchSheets(); }, CFG.interval * 1000);
       }
       if (CFG.source === "mqtt" || CFG.source === "both") connectMQTT();
       if (CFG.source === "sheets") setMqttStatus(false, "neaktivní");
       // Načti reálný UV index z Open-Meteo pro aktuální souřadnice
       uvStore.lat = null; // vynutit nové načtení při přepnutí stanice
       fetchUVData();
-      if (window._uvTimer) clearInterval(window._uvTimer);
-      window._uvTimer = setInterval(fetchUVData, 3600000);
+      window._uvTimer = setInterval(() => { if (isCurrentStation(context)) fetchUVData(); }, 3600000);
+      fetchAllOv();
     }
 
     /* ══════════════════════════════════════════════
@@ -4810,7 +4939,8 @@
     const ovStores = [null, null, null];
 
     async function fetchOvStation(idx) {
-      const s = stations[idx];
+      const context = stationContext();
+      const s = { ...stations[idx] };
       if (!s.sheetId) { ovStores[idx] = null; updateOvBar(); return; }
       const url = `https://docs.google.com/spreadsheets/d/${s.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s.sheetName || "List1")}`;
       const isFile = location.protocol === "file:";
@@ -4819,9 +4949,8 @@
         : [url, "https://corsproxy.io/?url=" + encodeURIComponent(url)];
       for (const u of urls) {
         try {
-          const r = await fetch(u + (u.includes("?") ? "&" : "?") + "_=" + Date.now(), { signal: AbortSignal.timeout(10000) });
-          if (!r.ok) continue;
-          const text = await r.text();
+          const text = await stationText(u + (u.includes("?") ? "&" : "?") + "_=" + Date.now(), context, 10000);
+          if (!isCurrentStation(context)) return;
           const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
           for (let i = 0; i < Math.min(lines.length, 6); i++) {
             const c0 = stripQ(splitCSV(lines[i])[0]);
@@ -4838,7 +4967,10 @@
             }
           }
           break;
-        } catch (e) { console.warn("[OV] fetchOvStation", idx, e.message); }
+        } catch (e) {
+          if (!isCurrentStation(context)) return;
+          console.warn("[OV] fetchOvStation", idx, e.message);
+        }
       }
     }
 
@@ -4896,13 +5028,9 @@
     initCmpDays();
     updateSunBar();
     setInterval(updateSunBar, 60000); // refresh sunrise/sunset/moon každou minutu
-    fetchAllOv();
     setInterval(fetchAllOv, 5 * 60 * 1000); // overview bar: refresh ostatních stanic každých 5 min
 
-    tryLoadConfigJson().then(loaded => {
-      if (!loaded) startAll();
-      else startAll();
-    });
+    loadStationConfig();
   </script>
 </body>
 
