@@ -24,6 +24,20 @@ ani oddělení datových služeb. Vývojová konfigurace může stále číst st
 Dokud neproběhne úspěšné nasazení, samotná existence workflow nepotvrzuje dostupnost `/dev/`.
 První automatický běh po merge může před změnou Source selhat; po přepnutí použít Run workflow.
 
+### Když build projde, ale deploy odmítne codex-dev
+
+Hláška `Branch "codex-dev" is not allowed to deploy to github-pages due to environment protection rules`
+znamená, že prostředí povoluje jiné větve než workflow. Jde o nastavení prostředí, nikoli chybu sestavení.
+
+1. Otevřít **Settings → Environments → github-pages**.
+2. V **Deployment branches and tags** přidat větev `codex-dev` mezi povolené; `main` ponechat.
+   Pokud je vybráno pouze **Protected branches**, zvolit **Selected branches and tags** a výslovně
+   povolit `main` i `codex-dev`. Zachovat další záměrně povolené větve a ostatní ochrany prostředí.
+3. V odmítnutém běhu Actions zvolit **Re-run all jobs**. Úspěch znamená zelené `build` i `deploy`.
+
+Publikování pouze z `main` může fungovat i v době, kdy toto pravidlo blokuje automatické aktualizace
+vývojové větve. Samotná dostupnost staršího `/dev/` proto nedokazuje úspěch nového nasazení.
+
 ## Každodenní práce
 
 - Push změny webu do `codex-dev` publikuje vývojovou verzi.

@@ -22,7 +22,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- Publikování main + `/dev/` funguje dle potvrzení uživatele; workflow `.github/workflows/pages.yml`, postup `docs/PAGES.md`, DEPLOY-001 DONE v H.
+- Main + `/dev/` dříve potvrzeny uživatelem; nový push codex-dev zablokovala environment policy github-pages. Nutno povolit codex-dev a zopakovat deploy; viz H/docs/PAGES.md.
 
 ## A. PROJECT CONTEXT
 
@@ -177,6 +177,9 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - VIS-001 DONE: test fialového pozadí `c197717` odeslán na `codex/test-background-color`, následně převzat do codex-dev; hlavní web ponechává původní barvu do schváleného merge.
 - DEPLOY-001 DONE dle potvrzení uživatele „už to funguje“. Publikační commit `a024441`, merge PR #2 do main `2405c5d`; vývojová větev codex-dev. Workflow sestavuje obě verze současně z allowlistu pěti veřejných souborů, preview má banner a prefix nastavení meteoDev:. Stejný origin není bezpečnostní izolace.
 - Git fetch/push funguje; čtení/správa Pages a PR/Actions přes API i HTTP na veřejné weby byly v tomto prostředí blokovány 403. Z toho nelze dovozovat chybu nasazení. Při změně dostupnosti ověřit nově, nepožadovat token jen kvůli CLI.
+- Aktualizace dostupnosti: veřejné HTML github.com/actions lze číst přes curl bez API; seznam běhů a anotace dostupné bez přihlášení, podrobné logy vyžadují přihlášení. Pro ověření CI použít tento podporovaný read-only přístup, nikoli extrahování přihlašovacích údajů.
+- Publikované opravy: `fa72a4f` (server/paměť) a `f43d599` (izolace/parser/MQTT/testy) odeslány na codex-dev, vzdálené SHA ověřeny; main zůstává `2405c5d`. Run [39467402153](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39467402153) vytvořil Pages artefakt a build prošel; **deploy selhal** za 2 s s hláškou `Branch "codex-dev" is not allowed to deploy to github-pages due to environment protection rules`. AUD-002/004/009 jsou ověřené opravy kódu, nikoli důkaz jejich nasazení.
+- DEPLOY-001 / IN PROGRESS pro automatické aktualizace vývoje: uživatel musí v Settings → Environments → github-pages povolit codex-dev vedle main (ostatní ochrany zachovat) a v uvedeném běhu zvolit Re-run all jobs. Neobcházet ochranu deployem z jiné větve. Dřívější uživatelské potvrzení se týká dostupnosti stránek; nové nasazení zatím potvrzené není. Postup přidán do docs/PAGES.md.
 - Vývoj a push na codex-dev; do main slučovat až po schválení uživatelem. Před prací fetch a zachovat změny Opusu/uživatele; f2706b5 byl načten fast-forward. Další priority: AUD-003, AUD-005, AUD-008.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
