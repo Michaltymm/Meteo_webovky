@@ -12,13 +12,19 @@ Původní audit níže zachycuje stav před opravami; čísla řádků jsou hist
 | Nález | Stav | Implementace a ověření |
 | --- | --- | --- |
 | W01 | DONE | Generace relace + AbortController, ochrana konfigu/CSV/parseru/UV/overview/FileReader; A → B → A i změna zdroje. Staré panely se při přepnutí skryjí. |
+| W02 / D06 | DONE | Chybný preflight odstraněn; porovnává se celý poslední validní CSV export, otisk se mění až po úspěšném parseru. Detekuje i opravy starých řádků a poznámek. Výměnou za správnost se periodicky přenáší celé CSV; optimalizace vyžaduje spolehlivou revizi/ověřený kontrakt zdroje. |
 | W03 | DONE | Parser vrací Promise a validovaný výsledek; fullLoaded/OK/callbacky až po commitu řádků. Chybná HTML/CSV nemůže potvrdit úspěch, čekající callbacky se při selhání uvolní. |
+| W05 | DONE | Parser podporuje escapované uvozovky, BOM/CRLF i víceřádkové buňky a odmítá neuzavřené/nesprávné uvozovky. Poznámky zachovávají doslovné apostrofy/uvozovky a řádky. |
+| W12 | DONE | Úplná validace kalendáře a času, podpora sekund/přestupných roků/krátkého roku; žádný tichý rollover ani změna yearState při chybě. |
+| W13 | DONE | Neplatná vlhkost/teplota nebo nekonečný výsledek dává null; pf nepřijímá Infinity, platná nula zachována. |
+| W15 | DONE | Denní agregace klíčuje včetně roku a neslučuje stejný den různých let. |
 | W09 | DONE | Plná historie má 30s timeout kombinovaný se zrušením relace. |
 | W08 | ČÁSTEČNĚ | Starý klient se odpojuje; jeho zprávy, callbacky a reconnect se ignorují. Limit počtu zpráv a slučování se Sheets zůstává TODO. |
 | W10 | ČÁSTEČNĚ | Reconnect timer je rušitelný a vázaný na klienta i relaci; exponenciální backoff zůstává TODO. |
 | D02 | DONE | Start načítání konfigurace sjednocen do `loadStationConfig`, bez duplicitních větví `.then`. |
+| AUD-003 / AUD-005 / AUD-011 / AUD-012 | DONE | Další potvrzené chyby z PROJECT_AUDIT.md: HTML z CSV se vykreslí jako text, grafy bez napětí nepadají a nevymýšlejí predikci, Vše skutečně zobrazí celou historii, prázdný explorer nezachová stará data. |
 
-Ověření: `node --test tests/*.test.js` — **24/24 prošlo**, z toho 14 testů načítání stanic nad skutečným inline JS. Původní záměna konfigu byla stejným testem reprodukována před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo startup, pozdní konfig, přepínání, skrytí starých měření, lazy historii, ruční refresh a mobilní viewport bez page errors. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti a další nálezy: `PROJECT_AUDIT.md`, stabilní ID AUD-002/004/009.
+Ověření: `node --test tests/*.test.js` — **43/43 prošlo** (14 načítání, 19 kvalita dat, 10 server/Pages). Testy spouštějí skutečný inline JS; původní záměna konfigu i RangeError bez napětí byly reprodukovány před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo také všechny záložky nad 61 řádky bez napětí, víceřádkové poznámky, bezpečný HTML výstup, chyby/retry, změnu starého řádku při stejných hlavičkách, prázdný rozsah a mobilní viewport. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti: `PROJECT_AUDIT.md`.
 
 ---
 

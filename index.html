@@ -2741,7 +2741,7 @@
       store.fullLoaded = false;
       store._onFullLoad = [];
       store._fullLoadPending = false;
-      store._lastRawLine = null;
+      store._lastFullCsv = null;
       uvStore.hourly = null;
       uvStore.lat = null;
       el("stationData").hidden = true;
@@ -3460,15 +3460,21 @@
       // Příklady: "1 020,6" → 1020.6 | "4,43 V" (V se odstraní zvlášť) | "1017,9" → 1017.9
       const s = String(v).replace(/[\u00A0\u202F\u2009 ]/g, "").replace(",", ".");
       const n = parseFloat(s);
-      if (isNaN(n)) return null;
+      if (!Number.isFinite(n)) return null;
       return n;
     }
     function fmt(v, d = 1) { return v === null || v === undefined ? "–" : Number(v).toFixed(d); }
 
+    function escapeHTML(value) {
+      const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return String(value ?? "").replace(/[&<>"']/g, character => entities[character]);
+    }
+
     function dewPoint(T, RH) {
-      if (T === null || RH === null) return null;
+      if (!Number.isFinite(T) || !Number.isFinite(RH) || RH <= 0 || RH > 100) return null;
       const a = 17.625, b = 243.04, al = Math.log(RH / 100) + (a * T) / (b + T);
-      return parseFloat((b * al / (a - al)).toFixed(1));
+      const result = b * al / (a - al);
+      return Number.isFinite(result) ? +result.toFixed(1) : null;
     }
     const _pad2 = n => n < 10 ? '0' + n : n;
     function fmtTime(d) { return _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()); }
@@ -3478,32 +3484,24 @@
 
     function parseCSDateTime(dateStr, timeStr, yearState) {
       try {
-        // Sanitize: remove all whitespace (including &nbsp;), quotes, trailing dot
-        const d = dateStr.trim().replace(/[\s\u00A0\u200B]+/g, "").replace(/\.$/, "");
-        const dp = d.split(".").filter(Boolean);
-        if (dp.length < 2) return null;
-        const day = parseInt(dp[0], 10), mon = parseInt(dp[1], 10) - 1;
-        if (isNaN(day) || isNaN(mon) || day < 1 || day > 31 || mon < 0 || mon > 11) return null;
-
-        const hasYear = dp.length >= 3 && dp[2].length >= 2;
-        let yr = hasYear ? parseInt(dp[2], 10) : (yearState ? yearState.inferredYear : new Date().getFullYear());
-        // Handle 2-digit years
-        if (hasYear && yr < 100) yr += 2000;
-
-        const tp = (timeStr || "").replace(/[\s\u00A0]+/g, "").split(":");
-        const hrs = parseInt(tp[0] || 0, 10), mins = parseInt(tp[1] || 0, 10);
-        if (isNaN(hrs) || isNaN(mins)) return null;
-
-        const dt = new Date(yr, mon, day, hrs, mins, 0);
-
-        if (!hasYear && yearState) {
-          if (dt.getTime() > yearState.lastDt.getTime() + 5 * 86400000) {
-            yearState.inferredYear--;
-            dt.setFullYear(yearState.inferredYear);
-          }
-          yearState.lastDt = dt;
+        const d = String(dateStr).trim().replace(/[\s\u00A0\u200B]+/g, "");
+        const dp = /^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}|\d{2}))?\.?$/.exec(d);
+        const tp = /^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/.exec(String(timeStr || "00:00").replace(/[\s\u00A0]+/g, ""));
+        if (!dp || !tp) return null;
+        const day = +dp[1], mon = +dp[2] - 1;
+        const hrs = +tp[1], mins = +tp[2], secs = +(tp[3] || 0);
+        if (day < 1 || day > 31 || mon < 0 || mon > 11 || hrs > 23 || mins > 59 || secs > 59) return null;
+        let yr = dp[3] ? +dp[3] : (yearState ? yearState.inferredYear : new Date().getFullYear());
+        if (dp[3]?.length === 2) yr += 2000;
+        let dt = new Date(yr, mon, day, hrs, mins, secs);
+        if (!dp[3] && yearState && dt.getTime() > yearState.lastDt.getTime() + 5 * 86400000) {
+          yr--;
+          dt = new Date(yr, mon, day, hrs, mins, secs);
         }
-
+        // Date normalizes impossible calendar/time values; reject that rollover.
+        if (dt.getFullYear() !== yr || dt.getMonth() !== mon || dt.getDate() !== day ||
+          dt.getHours() !== hrs || dt.getMinutes() !== mins || dt.getSeconds() !== secs) return null;
+        if (yearState) { yearState.inferredYear = yr; yearState.lastDt = dt; }
         return dt;
       } catch (e) { return null; }
     }
@@ -3577,27 +3575,6 @@
         }
       }
 
-      // ── INCREMENTAL CHECK: pokud máme plná data, zkontroluj jen první řádek ──
-      if (store.fullLoaded && store.rows.length > 50) {
-        const checkURL = fullURL + "?tqx=out:csv&range=1:2&_=" + Date.now();
-        const checkURLs = isFile
-          ? ["https://corsproxy.io/?url=" + encodeURIComponent(checkURL), "https://api.allorigins.win/raw?url=" + encodeURIComponent(checkURL)]
-          : [checkURL, "https://corsproxy.io/?url=" + encodeURIComponent(checkURL)];
-        for (const url of checkURLs) {
-          try {
-            const txt = await stationText(url, context, 5000);
-            if (!isCurrentStation(context)) return;
-            const lastLine = txt.split(/\r?\n/).filter(Boolean).pop();
-            if (store._lastRawLine && store._lastRawLine === lastLine) {
-              setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
-              return;
-            }
-            store._lastRawLine = lastLine;
-            break;
-          } catch (e) { if (!isCurrentStation(context)) return; }
-        }
-      }
-
       // ── PLNÉ NAČTENÍ ──
       setGsStatus(null, "Google Sheets: načítám celou historii…");
       let lastErr = "";
@@ -3606,6 +3583,13 @@
           const text = await stationText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context);
           if (!isCurrentStation(context)) return;
           if (!text || text.length < 10) { lastErr = "prázdná odpověď"; continue; }
+          // Header rows, sheet ordering and timestamp types vary between sources.
+          // Compare the complete last validated export rather than guessing a row
+          // range. This also detects edits to older measurements and notes.
+          if (!forceFullLoad && store.fullLoaded && store._lastFullCsv === text) {
+            setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
+            return;
+          }
           if (!await parseAndStore(text, context)) {
             if (!isCurrentStation(context)) return;
             lastErr = "žádná platná data";
@@ -3613,6 +3597,7 @@
           }
           if (!isCurrentStation(context)) return;
           store.fullLoaded = true;
+          store._lastFullCsv = text;
           store._fullLoadPending = false;
           updatePartialBadge();
           setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
@@ -3661,12 +3646,12 @@
       // Uvolníme Main Thread, aby se status "Zpracovávám data" stihl vykreslit
       await new Promise(resolve => setTimeout(resolve, 10));
       if (!isCurrentStation(context)) return false;
-      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const lines = parseCSV(text).filter(row => row.some(value => value.trim() !== ""));
 
       // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
       let dataStart = 0;
       for (let i = 0; i < Math.min(lines.length, 4); i++) {
-        const c0 = stripQ(splitCSV(lines[i])[0]);
+        const c0 = stripQ(lines[i][0]);
         if (/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
         dataStart = i + 1;
       }
@@ -3678,12 +3663,12 @@
       };
 
       for (let i = dataStart; i < lines.length; i++) {
-        const c = splitCSV(lines[i]);
+        const c = lines[i];
         const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
         if (!ds || !/\d/.test(ds)) continue;
         const ts = parseCSDateTime(ds, ts2, yearState);
         if (!ts || isNaN(ts.getTime())) continue;
-        const noteRaw = stripQ(c[9] || "").trim();
+        const noteRaw = (c[9] || "").trim();
         parsed.push({
           date: ds, time: ts2, ts,
           temp: pf(c[2]),
@@ -3709,13 +3694,42 @@
     function stripQ(s = "") { return String(s).replace(/^["'\s]+|["'\s]+$/g, ""); }
 
     function splitCSV(line) {
-      const r = []; let cur = "", inQ = false;
-      for (const c of line) {
-        if (c === '"') { inQ = !inQ; }
-        else if (c === ',' && !inQ) { r.push(cur); cur = ""; }
-        else cur += c;
+      return parseCSV(line, 1)[0] || [];
+    }
+
+    function parseCSV(text, limit = Infinity) {
+      const input = String(text).replace(/^\uFEFF/, "");
+      const records = [];
+      let row = [], value = "", quoted = false, afterQuote = false;
+      const field = () => { row.push(value); value = ""; afterQuote = false; };
+      const record = () => {
+        const present = row.length > 0 || value !== "" || afterQuote;
+        field();
+        if (present) records.push(row);
+        row = [];
+        return records.length >= limit;
+      };
+      for (let i = 0; i < input.length; i++) {
+        const c = input[i];
+        if (quoted) {
+          if (c === '"') {
+            if (input[i + 1] === '"') { value += '"'; i++; }
+            else { quoted = false; afterQuote = true; }
+          } else value += c;
+        } else if (c === ',') field();
+        else if (c === '\r' || c === '\n') {
+          if (record()) return records;
+          if (c === '\r' && input[i + 1] === '\n') i++;
+        } else if (afterQuote) {
+          if (c !== ' ' && c !== '\t') throw new Error("CSV: text za uzavřenými uvozovkami");
+        } else if (c === '"') {
+          if (value !== "") throw new Error("CSV: neočekávané uvozovky");
+          quoted = true;
+        } else value += c;
       }
-      r.push(cur); return r;
+      if (quoted) throw new Error("CSV: neuzavřené uvozovky");
+      if (row.length || value !== "" || afterQuote) record();
+      return records;
     }
 
     /* ══════════════════════════════════════════════
@@ -3895,6 +3909,32 @@
       { label: "Prům. Vlhkost [%]", backgroundColor: "rgba(41,128,185,.7)", yAxisID: "yHum", data: [] }
     ]);
 
+    function voltageSeries(rows, limit = Infinity) {
+      const samples = rows.filter(r => Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()))
+        .sort((a, b) => a.ts - b.ts).slice(-limit);
+      const recent = samples.filter(r => r.ts.getTime() >= Date.now() - 3 * 86400000);
+      let slope = null;
+      if (recent.length >= 2) {
+        const tMean = recent.reduce((sum, r) => sum + r.ts.getTime(), 0) / recent.length;
+        const vMean = recent.reduce((sum, r) => sum + r.voltage, 0) / recent.length;
+        const denominator = recent.reduce((sum, r) => sum + (r.ts.getTime() - tMean) ** 2, 0);
+        if (denominator > 0) {
+          slope = recent.reduce((sum, r) => sum + (r.ts.getTime() - tMean) * (r.voltage - vMean), 0) / denominator;
+        }
+      }
+      // No made-up prediction from a missing sensor or a single timestamp.
+      const steps = slope === null ? 0 : Math.max(12, Math.round(samples.length / 4));
+      const last = samples.at(-1);
+      const predictedTimes = Array.from({ length: steps }, (_, i) => new Date(last.ts.getTime() + (i + 1) * 600000));
+      return {
+        labels: [...samples.map(r => fmtDT(r.ts)), ...predictedTimes.map(fmtDT)],
+        actual: [...samples.map(r => r.voltage), ...Array(steps).fill(null)],
+        predicted: steps
+          ? [...Array(samples.length - 1).fill(null), last.voltage, ...predictedTimes.map(t => +(last.voltage + slope * (t - last.ts)).toFixed(3))]
+          : Array(samples.length).fill(null)
+      };
+    }
+
     function buildCharts() {
       const rows = store.rows;
 
@@ -3916,36 +3956,10 @@
       chartRain.data.datasets[0].data = rk.map(k => rb[k].val);
       chartRain.update();
 
-      // Voltage + predikce
-      const vr = [...rows].filter(r => r.voltage !== null).sort((a, b) => a.ts - b.ts).slice(-500);
-      // Lineární regrese z posledních 3 dní (slope = V/ms)
-      const reg7 = vr.filter(r => r.ts.getTime() >= Date.now() - 3 * 86400000);
-      let slope = 0;
-      if (reg7.length >= 2) {
-        const n = reg7.length;
-        const tMean = reg7.reduce((s, r) => s + r.ts.getTime(), 0) / n;
-        const vMean = reg7.reduce((s, r) => s + r.voltage, 0) / n;
-        const num = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) * (r.voltage - vMean), 0);
-        const den = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) ** 2, 0);
-        slope = den ? num / den : 0;
-      }
-      // Predikce: 1/4 počtu zobrazených bodů dopredu, po 10 min
-      const predSteps = Math.max(12, Math.round(vr.length / 4));
-      const stepMs = 10 * 60 * 1000;
-      const lastReal = vr.length ? vr[vr.length - 1] : null;
-      const predLabels = lastReal
-        ? Array.from({ length: predSteps }, (_, i) => fmtDT(new Date(lastReal.ts.getTime() + (i + 1) * stepMs)))
-        : [];
-      const predVals = lastReal
-        ? Array.from({ length: predSteps }, (_, i) => +(lastReal.voltage + slope * (i + 1) * stepMs).toFixed(3))
-        : [];
-      // Sestav spolené labely
-      const allLabels = [...vr.map(r => fmtDT(r.ts)), ...predLabels];
-      const realData = [...vr.map(r => r.voltage), ...Array(predSteps).fill(null)];
-      const predData = [...Array(vr.length - 1).fill(null), lastReal ? lastReal.voltage : null, ...predVals];
-      chartVoltage.data.labels = allLabels;
-      chartVoltage.data.datasets[0].data = realData;
-      chartVoltage.data.datasets[1].data = predData;
+      const voltage = voltageSeries(rows, 500);
+      chartVoltage.data.labels = voltage.labels;
+      chartVoltage.data.datasets[0].data = voltage.actual;
+      chartVoltage.data.datasets[1].data = voltage.predicted;
       chartVoltage.update();
 
       buildAgg(chartMonthly, rows, "day", 30);
@@ -3957,7 +3971,7 @@
       const b = {};
       rows.forEach(r => {
         const k = unit === "day"
-          ? `${r.ts.getDate()}.${r.ts.getMonth() + 1}.`
+          ? fmtDateShort(r.ts)
           : `${r.ts.getMonth() + 1}/${r.ts.getFullYear()}`;
         if (!b[k]) b[k] = { time: r.ts.getTime(), ts: 0, hs: 0, tn: 0, hn: 0 };
         if (r.temp !== null) { b[k].ts += r.temp; b[k].tn++; }
@@ -4020,10 +4034,11 @@
        HISTORY TABLE
     ══════════════════════════════════════════════ */
     function updateHistoryTable() {
-      const lim = parseInt(el("histLimit").value) || 500;
+      const selected = parseInt(el("histLimit").value, 10);
+      const lim = Number.isFinite(selected) && selected >= 0 ? selected : 500;
       const rows = lim ? store.rows.slice(0, lim) : store.rows;
       el("histTableBody").innerHTML = rows.map(r => `<tr>
-    <td>${r.date}</td><td>${r.time}</td>
+    <td>${escapeHTML(r.date)}</td><td>${escapeHTML(r.time)}</td>
     <td style="color:#e74c3c">${fmt(r.temp)}</td>
     <td style="color:#f39c12">${fmt(r.pressure, 1)}</td>
     <td style="color:#2980b9">${fmt(r.hum)}</td>
@@ -4174,7 +4189,16 @@
     }
 
     function _drawExplorerPts(pts) {
-      if (!pts.length) return;
+      if (!pts.length) {
+        chartExplorer.data.labels = [];
+        chartExplorer.data.datasets = [];
+        chartExplorer.update();
+        el("expStats").innerHTML = "";
+        el("expStats").style.display = "none";
+        el("expInfo").textContent = "Žádná data ve vybraném rozsahu.";
+        el("expChartTitle").textContent = "Žádná data – " + expLabelFor(expRange);
+        return;
+      }
       const metric = el("expMetric").value;
       chartExplorer.config.type = "line";
 
@@ -4204,28 +4228,11 @@
       } else {
         const m = METRICS[metric];
         if (metric === "voltage") {
-          // Lineární regrese z posledních 7 dní → predikce
-          const reg7 = pts.filter(r => r.ts.getTime() >= Date.now() - 3 * 86400000);
-          let slope = 0;
-          if (reg7.length >= 2) {
-            const n = reg7.length;
-            const tMean = reg7.reduce((s, r) => s + r.ts.getTime(), 0) / n;
-            const vMean = reg7.reduce((s, r) => s + r.voltage, 0) / n;
-            const num = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) * (r.voltage - vMean), 0);
-            const den = reg7.reduce((s, r) => s + (r.ts.getTime() - tMean) ** 2, 0);
-            slope = den ? num / den : 0;
-          }
-          const predSteps = Math.max(12, Math.round(pts.length / 4));
-          const stepMs = 10 * 60 * 1000;
-          const lastPt = pts[pts.length - 1];
-          const predLabels = Array.from({ length: predSteps }, (_, i) => fmtDT(new Date(lastPt.ts.getTime() + (i + 1) * stepMs)));
-          const predVals = Array.from({ length: predSteps }, (_, i) => +(lastPt.voltage + slope * (i + 1) * stepMs).toFixed(3));
-          chartExplorer.data.labels = [...labels, ...predLabels];
-          const realData = [...pts.map(r => r.voltage), ...Array(predSteps).fill(null)];
-          const predData = [...Array(pts.length - 1).fill(null), lastPt.voltage, ...predVals];
+          const voltage = voltageSeries(pts);
+          chartExplorer.data.labels = voltage.labels;
           chartExplorer.data.datasets = [
-            { label: "Napětí [V]", borderColor: m.color, backgroundColor: m.color + "26", tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [], yAxisID: "yMain", data: realData },
-            { label: "Predikce [V]", borderColor: "rgba(231,76,60,.8)", backgroundColor: "transparent", tension: .3, pointRadius: 0, borderWidth: 1.5, borderDash: [6, 4], yAxisID: "yMain", data: predData }
+            { label: "Napětí [V]", borderColor: m.color, backgroundColor: m.color + "26", tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [], yAxisID: "yMain", data: voltage.actual },
+            { label: "Predikce [V]", borderColor: "rgba(231,76,60,.8)", backgroundColor: "transparent", tension: .3, pointRadius: 0, borderWidth: 1.5, borderDash: [6, 4], yAxisID: "yMain", data: voltage.predicted }
           ];
         } else {
           chartExplorer.data.labels = labels;
@@ -4594,7 +4601,6 @@
       const btn = el("refreshBtn");
       btn.classList.add("spinning");
       btn.disabled = true;
-      store._lastRawLine = null;
       try {
         if (CFG.source === "sheets" || CFG.source === "both") await fetchSheets(true);
         if (isCurrentStation(context) && (CFG.source === "mqtt" || CFG.source === "both")) connectMQTT();
@@ -4817,10 +4823,9 @@
     }
 
     /* ══════════════════════════════════════════════
-       POZNÁMKY (sloupec O)
+       POZNÁMKY (legacy CSV: sloupec J)
     ══════════════════════════════════════════════ */
     function buildNotesTable() {
-      const esc = s => { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
       const notesRows = store.rows.filter(r => r.note);
       if (!notesRows.length) {
         el("notesTableBody").innerHTML = '<tr><td colspan="3" style="color:var(--muted)">Žádné poznámky.</td></tr>';
@@ -4842,8 +4847,8 @@
 
       el("notesTableBody").innerHTML = filtered.map(r => `<tr>
     <td>${fmtDateShort(r.ts)}</td>
-    <td>${r.time || "–"}</td>
-    <td>${esc(r.note)}</td>
+    <td>${escapeHTML(r.time || "–")}</td>
+    <td style="white-space:pre-wrap">${escapeHTML(r.note)}</td>
   </tr>`).join("") || '<tr><td colspan="3" style="color:var(--muted)">Žádné poznámky pro vybraný rok.</td></tr>';
     }
 
@@ -4951,11 +4956,11 @@
         try {
           const text = await stationText(u + (u.includes("?") ? "&" : "?") + "_=" + Date.now(), context, 10000);
           if (!isCurrentStation(context)) return;
-          const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          const lines = parseCSV(text, 6);
           for (let i = 0; i < Math.min(lines.length, 6); i++) {
-            const c0 = stripQ(splitCSV(lines[i])[0]);
+            const c0 = stripQ(lines[i][0]);
             if (/^\d{1,2}\.\d/.test(c0)) {
-              const c = splitCSV(lines[i]);
+              const c = lines[i];
               const ts = parseCSDateTime(stripQ(c[0]), stripQ(c[1]));
               if (ts && !isNaN(ts.getTime())) {
                 const rawV = stripQ(c[8] || "").replace(/[Vv]/g, "").trim();

@@ -12,11 +12,12 @@
 - Nastavení přes `preferences`: hlavní web zachovává klíče `meteoStations`, `meteoActiveIdx`, `meteoTheme`; `/dev/` přidává prefix `meteoDev:`.
 - Quick load načítá 400 řádků; `ensureFullData` spouští historii na vyžádání.
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
-- `Navrhy_Vylepseni.md` je historický seznam, některé nápady už existují (viz D).
+- `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (24/24 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (43/43 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
-- Další priority: AUD-003 (CSV → HTML/XSS), AUD-005 (chybějící napětí), AUD-008 (inkrementální kontrola).
+- AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
+- Další priority: AUD-010 (lokální dny/UTC), AUD-013 (statistiky před downsamplingem), výkon dlouhé historie.
 - Živá data nebyla ověřena: onboarding proxy vracela CONNECT 403; neplést s chybou aplikace.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
@@ -33,7 +34,8 @@ Projekt zobrazuje aktuální počasí, historii, statistiky srážek a napětí,
 | `index.html` | Produkční vstup; veškeré styly, UI a aplikační JavaScript |
 | `server.js` | Statický HTTP server s portem 8080; kořen `__dirname`, export `createServer(rootDir)` pro testy |
 | `tests/server.test.js` | Šest skupin HTTP regresí bez externí sítě/závislostí; dočasné fixture a náhodný port |
-| `tests/station-loading.test.js` | 14 deterministických testů skutečného inline JS ve VM; řízené fetch/body/timery/MQTT, bez kopírování aplikačních funkcí |
+| `tests/station-loading.test.js` | 14 deterministických testů životního cyklu načítání |
+| `tests/data-quality.test.js`, `tests/helpers/app.js` | 19 testů kvality, rendererů, grafů, CSV/datumů a obnovy; společná VM spouští skutečný inline JS s řízeným DOM/Chart/transportem |
 | `AGENTS.md`, `PROJECT_AUDIT.md` | Pravidla práce a projektová paměť s ověřenými nálezy |
 | `.github/workflows/pages.yml`, `scripts/build-pages.js`, `tests/pages.test.js`, `docs/PAGES.md` | Publikování `main` a `codex-dev` jako jednoho Pages artefaktu, allowlist veřejných souborů, testy a aktivační postup |
 | `config_praha_baterie.json`, `config_praha_okno.json`, `config_stanice3.json` | Automaticky načítané konfigurace tří stanic |
@@ -45,7 +47,7 @@ Projekt zobrazuje aktuální počasí, historii, statistiky srážek a napětí,
 
 Závislosti v prohlížeči: Chart.js a Paho přes pevné CDN URL, Google Sheets CSV, Open-Meteo a dva záložní CORS proxy (`corsproxy.io`, `api.allorigins.win`). MQTT je volitelný; dodané konfigurace mají prázdný host a zdroj `sheets`. Není potřeba instalovat balíčky ani sestavovat aplikaci. V repozitáři nebyly před auditem testy ani CI.
 
-Ověřený postup: `node server.js`; HTTP požadavky na `/` a čtyři JSON soubory vracejí obsah projektu, neexistující cesta 404. Ověřeno i spuštění absolutní cestou z `/tmp` (neservíruje pracovní adresář). `node --test tests/*.test.js`: 24/24 prošlo (6 server, 4 Pages, 14 načítání); žádné přeskočené testy. `node --check server.js` a `git diff --check` prošly. Browser smoke s reálným Chart.js: titul, všechny záložky a změna stanice bez page errors; externí data a volitelný MQTT CDN byly v tomto testu záměrně blokovány, aby test izoloval změnu serveru. Chromium používá důvěryhodné CA prostředí v dočasné NSS databázi, nikoli vypnuté TLS ověřování. Živá data/UV ani skutečné MQTT připojení tím nejsou ověřeny.
+Ověřený postup: `node server.js`; HTTP požadavky na `/` a čtyři JSON soubory vracejí obsah projektu, neexistující cesta 404. Ověřeno i spuštění absolutní cestou z `/tmp` (neservíruje pracovní adresář). `node --test tests/*.test.js`: 43/43 prošlo (6 server, 4 Pages, 14 načítání, 19 kvalita dat); žádné přeskočené testy. `node --check server.js` a `git diff --check` prošly. Browser smoke s reálným Chart.js: titul, všechny záložky a změna stanice bez page errors; externí data a volitelný MQTT CDN byly v tomto testu záměrně blokovány, aby test izoloval změnu serveru. Chromium používá důvěryhodné CA prostředí v dočasné NSS databázi, nikoli vypnuté TLS ověřování. Živá data/UV ani skutečné MQTT připojení tím nejsou ověřeny.
 
 ## B. ARCHITECTURE MAP
 
@@ -91,16 +93,16 @@ Priority: P0 = bezprostředně kritické; P1 = bezpečnost/funkční spolehlivos
 | --- | --- | --- |
 | AUD-001 / P1 / DONE | Původní `server.js`: `path.join(process.cwd(), req.url…)` bez omezení cest. Raw HTTP `GET /../<dočasný-sentinel>` vrátil 200 a obsah neškodného souboru mimo checkout; `/.git/HEAD` také 200. Po opravě raw/encoded traversal a metadata vrací 403, neplatné URL 400. | Opraveno v `server.js`: dekódovat a ověřit segmenty, `realpath` + kontrola relativní cesty včetně skrytých cílů symlinků, pouze běžné soubory, kořen u skriptu místo cwd. `tests/server.test.js`: 6/6 prošlo; HTTP smoke na skutečném projektu zachoval všechny konfigurace a index. |
 | AUD-002 / P1 / DONE | Před opravou opožděný konfig A přepsal B. Nový regresní test reprodukoval `sheet-0` místo `sheet-1` na původním zdroji. | Opraveno generační identitou + AbortControllerem pro konfig, CSV, odložený parser, UV a overview; také import FileReader a změna zdroje na stejném indexu. Staré fallbacky a callbacky se ignorují. Ověřeno Node testy i browserem s odloženou konfigurací. |
-| AUD-003 / P1 / TODO | `updateHistoryTable` vkládá `r.date/r.time` do `innerHTML`, `buildNotesTable` escapuje jen poznámku. VM ověřil, že `parseCSDateTime('20.10.2026<img src=x onerror=…>', '10:00')` projde díky `parseInt`. | HTML z CSV se může dostat do aktivního DOM (XSS). Používat textContent/bezpečné escapování všech řetězců; přísná validace parseru je další vrstva. Důkaz: přijetí payloadu a neescapovaný sink; spuštění skriptu v reálném prohlížeči nebylo testováno. |
-| AUD-004 / P1 / DONE | Původní fullLoaded/OK/callbacky předbíhaly odložený parser; full fetch neměl timeout. | Parser nyní vrací Promise + boolean, volající awaituje commit validních řádků a platnost relace; poté nastaví fullLoaded a spustí aktuální callbacky. Neplatná CSV/HTML nepotvrdí úspěch; při selhání se uvolní pending i callbacky, full request má 30s timeout. Ruční refresh už nenastavuje fullLoaded před stažením. Testováno úspěšné pořadí i chyby všech fallbacků. Přísné CSV schéma zůstává AUD-006. |
-| AUD-005 / P1 / TODO | `buildCharts`: bez napětí `vr=[]`, ale `Array(vr.length - 1)` vyhodí RangeError. VM reprodukce s platným záznamem a `voltage:null`. | Chybějící volitelný senzor přeruší aktualizaci grafů a agregací. Prázdné datové řady a predikci řešit explicitně; testovat null/0/1/více hodnot. |
-| AUD-006 / P2 / TODO | `parseCSDateTime` přijímá přetečení `31.02.2026`, `25:90` (VM: normalizace na březen místo chyby). `splitCSV` přepíná u každé uvozovky a ztrácí escapované `""`; rozdělení po řádcích nezvládne víceřádkové buňky. | Chybné timestampy/poznámky a možné chybné odvozování roku. Přísná kalendářní validace, explicitní kontrakt CSV a fixture testy; rok bez roku nelze vždy spolehlivě určit. |
-| AUD-007 / P2 / TODO | `buildAgg(...,'day',...)` klíčuje jen `d.m.`. VM: 20.10.2025=0 °C + 20.10.2026=20 °C → jediný den s 10 °C. | Směšování ročních historií v denním grafu. Interně klíč YYYY-MM-DD, zobrazovaný popisek oddělit. |
-| AUD-008 / P2 / TODO | `fetchSheets` incremental: `fullURL` už obsahuje `?`, připojuje další `?tqx…`; `sheet` tedy obsahuje přidaný text. `_lastRawLine` se mění před úspěšným plným fetch. | Neúčinná nebo falešná detekce změn. Použít URL/searchParams, platný rozsah/pořadí a validovat odpověď; otisk měnit až po potvrzených datech. |
+| AUD-003 / P1 / DONE | Původně se raw date/time vkládaly do innerHTML a parser přijímal HTML suffix. | `escapeHTML` chrání datum, čas i poznámku (také staré/cachované řádky); aktuální parser suffix odmítá. Browser s vloženým img/svg ověřil nulový počet takových DOM uzlů a nespustil handler; literal HTML entity zůstávají textem. |
+| AUD-004 / P1 / DONE | Původní fullLoaded/OK/callbacky předbíhaly odložený parser; full fetch neměl timeout. | Parser nyní vrací Promise + boolean, volající awaituje commit validních řádků a platnost relace; poté nastaví fullLoaded a spustí aktuální callbacky. Neplatná CSV/HTML nepotvrdí úspěch; při selhání se uvolní pending i callbacky, full request má 30s timeout. Ruční refresh už nenastavuje fullLoaded před stažením. Testováno úspěšné pořadí i chyby všech fallbacků. CSV/datum parser doplněn v AUD-006; adaptér Raw_Data zůstává FUT-008. |
+| AUD-005 / P1 / DONE | Původní Array(-1) při chybějícím napětí reprodukován novým regresním testem nad předchozím HTML. | Sdílená `voltageSeries` pro hlavní graf i explorer: filtr konečných hodnot, platná 0, prázdné řady bez pádu, predikce až pro dvě různá nedávná časová měření. Testy null/0/1/více/duplicitní/staré vzorky a reálný Chart.js bez napěťového senzoru prošly. |
+| AUD-006 / P2 / DONE | Původní CSV ztrácelo dvojité uvozovky/víceřádkové buňky, datum/čas se normalizovaly místo chyby. | `parseCSV` rozumí BOM/CRLF/uvozovkám/prázdným buňkám/víceřádkovým poznámkám; malformed quoting odmítá. `parseCSDateTime` ověřuje celý formát, kalendář a hodiny/minuty/sekundy; aktualizuje yearState jen pro platné datum. `pf` vrací null pro nekonečno; `dewPoint` ošetřuje neplatnou vlhkost/NaN. Rok bez roku zůstává odhad dle stávajícího sestupného kontraktu, ne nová jistota. |
+| AUD-007 / P2 / DONE | Původně se stejný den/měsíc různých let zprůměroval do jedné položky. | `buildAgg` používá denní klíč `fmtDateShort` včetně roku. Test rozlišuje 20.10.2025/2026 a zachovává průměr platné nuly i chybějící vlhkosti. |
+| AUD-008 / P2 / DONE | Původní preflight skládal dvojitý otazník a mohl porovnávat hlavičky; otisk měnil před úspěchem. | Nespolehlivý preflight odstraněn. Celý úspěšně zparsovaný CSV export se uloží jako `store._lastFullCsv`; identická odpověď ušetří parse/render. Změny starších řádků/poznámek i při stejných hlavičkách a posledním timestampu se projeví. Po chybě otisk zůstává původní; ruční refresh parsuje znovu. Cena: plný přenos při periodické obnově; optimalizace až podle ověřeného datového kontraktu/revize, viz FUT-010. |
 | AUD-009 / P1 / DONE | Původní lokální klienti/reconnecty zůstávali aktivní po změně stanice. | `mqttClient` a `mqttReconnectTimer` mají jednoho vlastníka; `stopMQTT` je zruší. Callbacky ověřují relaci i identitu klienta, pozdní onSuccess se odpojí bez subscribe, staré zprávy/chyby/retry se ignorují. Ověřeno fake klientem v regresních testech, nikoli reálným brokerem. Limit historie/backoff zůstávají FUT-009. |
 | AUD-010 / P2 / TODO | `buildCompare` seskupuje dny přes UTC `toISOString().slice(0,10)`, hodiny přes lokální `getHours`. Pro Prague 00:30 je UTC předchozí den. | Půlnoční měření v nesprávném dni; stejné UTC datum používají date inputy/UV cache. Definovat časovou zónu a konzistentní denní klíče, testovat DST. |
-| AUD-011 / P2 / TODO | `updateHistoryTable`: `parseInt(histLimit.value) || 500`; volba Vše má value=0. VM: 501 záznamů → 500 řádků. | Uživatel nedostane celou historii. Rozlišit 0 od neplatného vstupu; u dlouhých tabulek přidat stránkování. |
-| AUD-012 / P2 / TODO (část hotová) | Přepnutí stanice nyní skryje staré panely přes `stationData` a zobrazí `stationDataEmpty`, ověřeno v prohlížeči. `_drawExplorerPts([])` nadále vrací bez vyčištění grafu. | Zbývá opravit prázdný rozsah ve stejné stanici a jeho statistiky; neduplikovat již hotové skrytí dat při přepnutí. |
+| AUD-011 / P2 / DONE | Volba Vše (0) původně spadla do výchozího limitu 500. | Rozlišena platná nula a neplatný/negativní limit; test s 501 řádky ověřuje Vše i limity. Stránkování velkých historií zůstává návrh, nikoli nezbytná součást této opravy. |
+| AUD-012 / P2 / DONE | Staré panely při přepnutí již řešil předchozí balík; zbýval prázdný rozsah ve stejné stanici. | `_drawExplorerPts([])` vyčistí labely/datasety/statistiky a ukáže prázdný stav. Ověřeno jednotkově i skutečným prázdným datem v browseru. |
 | AUD-013 / P2 / TODO | `buildExplorer` redukuje body na nejvýše 800 před voláním `_drawExplorerPts` → `buildExpStats`. Ověřeno datovým tokem, ne benchmarkem. | Min/max/průměr se počítají jen z vybraných bodů; krátký extrém může zmizet. Statistiky počítat z plného filtrovaného rozsahu, downsampling použít jen pro vykreslení. |
 
 ## D. IMPROVEMENT IDEAS
@@ -131,6 +133,7 @@ Oprava historických předpokladů z `Navrhy_Vylepseni.md` (soubor zatím ponech
 | FUT-007 / hypotéza / TODO | Ověřit denní/kumulativní sémantiku `rain` a `rainInc` pro každou stanici před změnou srážkových výpočtů. Současný max/den předpokládá denní reset. |
 | FUT-008 / návrh podložený širším auditem W04 / TODO | Před přechodem na `Raw_Data` zavést explicitní adaptér `legacy` / `raw_v2` a testovací exporty ze skutečného schématu; zachovat poznámky, timestamp, jednotky a kvalitu. Cílově verzovaný kontrakt se `station_id`, `measurement_id` a UTC časem. Vazby viz B.1; migrace nyní není schválenou ani provedenou změnou. |
 | FUT-009 / konkrétní zbývající problém / TODO | Spravovaný MQTT lifecycle je hotový (AUD-009); zbývá omezit počet zpráv, určit deduplikaci a sémantiku Sheets/MQTT overlay a doplnit backoff (Opus W08/W10). Neobnovovat vyřešený nález o neodpojování klienta. |
+| FUT-010 / ověřený návrh / TODO | Optimalizovat pravidelný plný CSV přenos až po ověření typů/pořadí/hlaviček nebo zavedení spolehlivé revize dat. Aktuální raw export cache ušetří parse/render, nikoli přenos, a drží jednu kopii CSV v paměti aktivní relace. Nepoužívat statické hlavičky ani pouze počet/poslední řádek jako důkaz shody celé historie. |
 
 ## F. PRIORITIZED ROADMAP
 
@@ -140,14 +143,14 @@ TOP 10 v doporučeném pořadí (P0 nyní bez potvrzených položek):
 | --- | --- | --- |
 | 1 / P1 | AUD-001 DONE | Uzavřeno a regresně ověřeno; před změnou reprodukované zpřístupnění souborů, bez přepisu UI. |
 | 2 / P1 | AUD-002 DONE | Izolace relací včetně A → B → A, importu a změny zdroje ověřena. |
-| 3 / P1 | AUD-003 TODO | Uzavřít neescapované HTML vstupy před přidáváním dalších datových funkcí. Nezávisí na přestavbě parseru. |
-| 4 / P1 | AUD-005 TODO | Malá reprodukovaná oprava pádu při chybějícím napětí; snadno ověřitelná bez sítě. |
+| 3 / P1 | AUD-003 DONE | Bezpečné vykreslování a přísná validace ověřeny i v browseru. |
+| 4 / P1 | AUD-005 DONE | Grafy i navazující agregace fungují bez napětí, bez vymyšlené predikce. |
 | 5 / P1 | AUD-004 DONE | Úspěch potvrzen až po parseru; úklid po selhání a timeout doplněny. |
 | 6 / P1 | AUD-009 DONE | Jeden spravovaný klient a rušitelný reconnect, testováno mockem. Další MQTT práce FUT-009. |
-| 7 / P2 | AUD-006 TODO | Přísný CSV/datum kontrakt zabrání tiché normalizaci a ztrátě poznámek; využít fixture testy. |
-| 8 / P2 | AUD-007 + AUD-010 TODO | Správná víceroční a lokální denní agregace; otestovat hranice let a DST, závisí na timestamp kontraktu. |
-| 9 / P2 | AUD-008 TODO | Zprovoznit úsporné ověřování změn až po správném fetch/parser lifecycle. |
-| 10 / P2 | AUD-012 + AUD-011 TODO | Odstranit zavádějící stará/prázdná data a nefunkční Vše; pokračovat a11y a cache dle měření. |
+| 7 / P2 | AUD-006 DONE | CSV/datum fixture testy i víceřádkové poznámky v browseru prošly. |
+| 8 / P2 | AUD-007 DONE; AUD-010 TODO | Roky oddělené; zbývá sjednotit lokální dny/UTC a otestovat půlnoc/DST. |
+| 9 / P2 | AUD-008 DONE | Spolehlivé porovnání celého exportu; přenosovou optimalizaci vést samostatně jako FUT-010. |
+| 10 / P2 | AUD-012 + AUD-011 DONE | Prázdné stavy a Vše opraveny; přístupnost/cache zůstávají samostatné návrhy. |
 
 IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. Po datových opravách pokračovat AUD-013 a cache dle měření. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
 
@@ -180,7 +183,11 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Aktualizace dostupnosti: veřejné HTML github.com/actions lze číst přes curl bez API; seznam běhů a anotace dostupné bez přihlášení, podrobné logy vyžadují přihlášení. Pro ověření CI použít tento podporovaný read-only přístup, nikoli extrahování přihlašovacích údajů.
 - Publikované opravy: `fa72a4f` (server/paměť) a `f43d599` (izolace/parser/MQTT/testy) odeslány na codex-dev, vzdálené SHA ověřeny; main zůstává `2405c5d`. Run [39467402153](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39467402153) vytvořil Pages artefakt a build prošel; **deploy selhal** za 2 s s hláškou `Branch "codex-dev" is not allowed to deploy to github-pages due to environment protection rules`. AUD-002/004/009 jsou ověřené opravy kódu, nikoli důkaz jejich nasazení.
 - DEPLOY-001 / IN PROGRESS pro automatické aktualizace vývoje: uživatel musí v Settings → Environments → github-pages povolit codex-dev vedle main (ostatní ochrany zachovat) a v uvedeném běhu zvolit Re-run all jobs. Neobcházet ochranu deployem z jiné větve. Dřívější uživatelské potvrzení se týká dostupnosti stránek; nové nasazení zatím potvrzené není. Postup přidán do docs/PAGES.md.
-- Vývoj a push na codex-dev; do main slučovat až po schválení uživatelem. Před prací fetch a zachovat změny Opusu/uživatele; f2706b5 byl načten fast-forward. Další priority: AUD-003, AUD-005, AUD-008.
+- Vývoj a push na codex-dev; do main slučovat až po schválení uživatelem. Před prací fetch a zachovat změny Opusu/uživatele; f2706b5 byl načten fast-forward. Další priority: AUD-010, AUD-013, výkon velkých historií (IMP-003).
+
+- Další balík 2026-10-20: AUD-003/005/006/007/008/011/012 DONE. 43/43 Node testů, inline syntax check a diff check prošly; dřívější RangeError reprodukován před opravou stejným testem. Browser ověřil všechny záložky nad 61 řádky bez napětí, odmítnutí neplatného data, neproveditelné HTML v notes/historii, přesný obsah víceřádkové poznámky s uvozovkami, Vše, změnu starého řádku při neměnných hlavičkách, nezměněný export, chybu/retry a prázdný explorer včetně mobilu. Použit reálný Chart.js a fixture Sheets/UV; reálná síť/broker neověřeny.
+- CSV parser vrací již dekódované buňky; neodstraňovat z poznámek uvozovky/apostrofy přes stripQ. Overview používá omezení na 6 **logických** záznamů; nesplitovat text na fyzické řádky. Čas parseru nově zachovává sekundy. Neplatný kalendář musí vracet null a neměnit yearState.
+- `_lastFullCsv` aktualizovat jen po úspěšném zparsování celé odpovědi; při resetu relace zahodit, nepersistovat do localStorage. Vyšší přenos je vědomá cena odstranění falešného beze změn; optimalizace pouze FUT-010 s ověřeným protokolem. Raw_Data adaptér se tím neimplementoval.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
