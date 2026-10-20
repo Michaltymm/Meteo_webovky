@@ -2,6 +2,8 @@
 
 Dashboard tří meteostanic, statický web bez npm instalace.
 
+[Přehled verzí a změn](RELEASE_NOTES.md) — číslo aktuálně načtené verze je také v hlavičce webu.
+
 - [Centrální nápady a roadmapa](docs/NAPADY_A_ROADMAP.md) — priority, stav a návrhy analytiky.
 - [Projektová paměť](PROJECT_AUDIT.md) a [pokyny pro vývoj](AGENTS.md).
 - [Publikování hlavní a vývojové verze](docs/PAGES.md).

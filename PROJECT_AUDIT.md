@@ -2,6 +2,7 @@
 
 ## QUICK CONTEXT
 - Aktualizováno 2026-10-20; práce na `codex-dev` po synchronizaci `f2706b5`; výchozí audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.1.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -18,7 +19,7 @@
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
-- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (59 METEO ID); další P0 cache stanic/pozadí, P1 AUD-010 a analytika.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (60 METEO ID); další P0 cache stanic/pozadí, P1 AUD-010 a analytika.
 - Benchmark Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
 - Živá data nebyla ověřena: onboarding proxy vracela CONNECT 403; neplést s chybou aplikace.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
@@ -202,6 +203,12 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Benchmark medián 5 běhů při100k: refreshUI 148,6→53,8 ms (6→1 chart update), explorer 43,2→14,8 ms, slider 18,2→10,8 ms. Originální data se nemění, extrém85°C z fixture zůstává. Údaje/omezení/metodika a surové JSON v docs/performance; skript scripts/benchmark-browser.py. RAM/LCP/INP/CLS/skutečná síť neměřeny; neuvádět zlepšení těchto metrik jako fakt.
 - Další práce: METEO-004/005 (omezená cache mezi stanicemi a neaktivní karta); AUD-010/METEO-048 (jednotný čas) před novou analytikou. Raw_Data, srážkové jednotky/reset a procentuální dostupnost potřebují skutečný kontrakt. Nic z návrhů firmware/HW neprezentovat jako dostupné měření.
 - Publikováno v commitu `0c80c9d770cb85818c050fedd45a7448b8bb8546` na codex-dev; SHA ověřeno přes `git ls-remote`, main stále `2405c5d`. [Actions run #8](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39482044092): build 14 s vytvořil artefakt, deploy 2 s odmítnut: `Branch "codex-dev" is not allowed to deploy to github-pages due to environment protection rules.` Povolení codex-dev v nastavení prostředí a opakování workflow zůstává nutné. Zrychlení je měřeno lokálně, nikoli na nově nasazeném webu.
+
+### Verze a přehled změn (20. 10. 2026)
+
+- METEO-060 DONE: první evidovaná verze 0.1.0 je přímo v HTML pod názvem Meteostanice. Viditelná bez dat i bez dalšího fetch; odkaz vede do sdílených RELEASE_NOTES.md na codex-dev, přímo na kotvu v010. Soubor obsahuje pouze čísla verzí a stručné změny; první záznam shrnuje existující stabilizaci/výkon a novou indikaci verze, nepřiřazuje zpětně neexistující vydání.
+- Další změna webu zvýší X.Y.Z a přidá záznam nahoru; zachovat historii a aktualizovat kotvu odkazu. Dokumentační změny ani merge stejného HTML do main samy číslo nemění. Verze označuje skutečně načtený soubor; není to potvrzení deploymentu. main bude mít štítek až po schváleném merge.
+- 54/54 stávajících testů a diff check prošly. Chromium ověřilo viditelnost/klikatelnost a nulové přetečení při 320/390/1280 px, cestě root i /dev/ a tématech darkblue/light; žádné pageErrors. Release notes jsou na GitHubu, Pages allowlist se nemění.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

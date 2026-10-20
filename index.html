@@ -72,6 +72,16 @@
       font-weight: 600;
     }
 
+    .app-version {
+      display: block;
+      width: fit-content;
+      color: var(--text);
+      font-size: .7rem;
+      font-weight: 400;
+      line-height: 1.4;
+      text-underline-offset: 2px;
+    }
+
     .nav-pills {
       display: flex;
       gap: .4rem;
@@ -1933,7 +1943,11 @@
   </aside>
 
   <header>
-    <span class="site-title" style="min-width:140px">🌤 Meteostanice</span>
+    <span class="site-title" style="min-width:140px">🌤 Meteostanice
+      <a id="appVersion" class="app-version"
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v010"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.1.0</a>
+    </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
     <div class="nav-pills">

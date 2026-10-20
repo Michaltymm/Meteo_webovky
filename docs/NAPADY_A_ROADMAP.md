@@ -167,6 +167,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-054 Validace konfigurace a odolný storage wrapper; lokální zámek jasně popsat | Config/localStorage | S / P1 | Malý, zabrání chybám startu | IMP-004/005; UI heslo není autentizace | Připraveno k realizaci |
 | METEO-055 Závislosti a testovatelné moduly: CDN integrita, malé čisté funkce, Pages allowlist | Zdrojový kód | S / P2 | Méně duplikací; nový build není podmínkou | IMP-007/008; ověřit file: a Pages | K posouzení |
 | METEO-056 Reprodukovatelné výkonnostní scénáře a regresní brány | Syntetické 1k/10k/100k, reálné anonymní CSV později | S / P0 | Vývojový nástroj, žádná produkční režie | FUT-003; metodika níže | Rozpracováno |
+| METEO-060 Verze webu a release notes: rozeznat načtený obsah a změny vydání | Verze v HTML, RELEASE_NOTES.md | N / P1 | Bez fetchů a závislostí, statický odkaz | Pravidla vydávání v AGENTS.md | Dokončeno |
 
 ## 13. Nové senzory a budoucí rozšíření
 
