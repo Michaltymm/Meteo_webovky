@@ -1,0 +1,81 @@
+name: Publish main and development website
+
+on:
+  push:
+    branches: [main, codex-dev]
+    paths:
+      - index.html
+      - config*.json
+      - scripts/build-pages.js
+      - tests/pages.test.js
+      - .github/workflows/pages.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - index.html
+      - config*.json
+      - scripts/build-pages.js
+      - tests/pages.test.js
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A deployment always contains both versions. Do not interrupt an active deployment.
+concurrency:
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'deployment' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out workflow and build tools
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Test Pages assembly
+        run: node --test tests/pages.test.js
+
+      - name: Check out stable website
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: production
+          persist-credentials: false
+
+      - name: Check out development website
+        uses: actions/checkout@v4
+        with:
+          ref: codex-dev
+          path: development
+          persist-credentials: false
+
+      - name: Assemble both websites
+        run: node scripts/build-pages.js production development _site
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex-dev')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy both websites
+        id: deployment
+        uses: actions/deploy-pages@v4
