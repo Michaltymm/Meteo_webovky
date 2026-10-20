@@ -256,6 +256,11 @@ a RangeError ve `refreshUI` při 250k řádcích. Browser/Chart.js ověřil 1k/1
 a šířku 390 px bez JS chyb a horizontálního přetečení v měřených pohledech.
 Reálné Sheets a MQTT nejsou tímto fixture testem ověřeny.
 
+Kód odeslán na `codex-dev` v `0c80c9d`. [Actions #8](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39482044092)
+sestavily Pages artefakt, ale deploy odmítlo pravidlo prostředí `github-pages`
+pro větev `codex-dev`. Živá verze těchto změn zatím není potvrzena;
+[postup povolení vývoje](PAGES.md). `main` zůstává beze změny.
+
 Mediány pěti opakování, Chromium 154.0.8037.57, viewport 1280×900, zóna Prague,
 syntetické měření každých 5 minut. Časy zahrnují synchronní JS + skutečný Chart.js
 update, bez čekání na dokončení animace. Oba běhy na stejném stroji.
