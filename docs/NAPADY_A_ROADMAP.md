@@ -60,7 +60,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-002 Cache rozsahu: jedno pole referencí a binární vyhledání v seřazené historii; rychlá změna veličiny | Současná historie | S / P0 | Bez opakovaného sort/filter celé historie; O(log n + k) | AUD-002/004 hotové | Dokončeno |
 | METEO-003 Stejný rychlý export: opakované CSV do 400 řádků neparsovat a nepřekreslovat | Současné CSV | N / P0 | Méně CPU; přenos zatím stejný | AUD-008 | Dokončeno |
 | METEO-004 Cache historie podle stanice/zdroje: omezená LRU + TTL, čerstvost viditelná, návrat bez čekání | Současné CSV, čas validace | S / P0 | Méně opakovaných přenosů; omezený nárůst RAM | METEO-002, kontrakt invalidace níže | Připraveno k realizaci |
-| METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Méně sítě/CPU na pozadí | Dedup požadavků existuje | Připraveno k realizaci |
+| METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | Méně startovní RAM/JS, možná prodleva prvního otevření | METEO-001, měření startu | Připraveno k realizaci |
 | METEO-008 Worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | Méně blokování UI, cena kopírování/persistence | Benchmark skutečných CSV, METEO-004 | K posouzení |
@@ -128,7 +128,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | Jeden průchod; výsledky dle revize/stanice | METEO-048; odlišit vzorkový a časově vážený průměr | Připraveno k realizaci |
+| METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | v0.2.2 společné hlavní/dnešní souhrny a denní/měsíční T/RH; hodiny/pokrytí zbývají | Invalidace dat a místního dne, METEO-048; průměry vzorkové | Rozpracováno |
 | METEO-039 Bezpečné min/max velkých polí bez spread argumentů | Současná historie | N / P0 | O(n), bez pádu na limitu zásobníku | FUT-004 / Opus W07 | Dokončeno |
 | METEO-040 Historie se stránkováním a vyhledáním rekordů | Současná historie / poznámky | S / P1 | Omezený DOM místo 100k řádků „Vše“ | AUD-011 hotové, zachovat export všech dat | Připraveno k realizaci |
 | METEO-041 Porovnání období např. říjen 2025/2026, absolutně i anomálie | Víceletá historie | S / P2 | Agregované řady | METEO-038/048; neúplné období označit | Nápad |
@@ -667,3 +667,39 @@ Publikováno v [076bc08](https://github.com/Michaltymm/Meteo_webovky/commit/076b
 na codex-dev. [Actions #11](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39593972552)
 **Success** včetně build/deploy, 44s. Main stále2405c5d. Jde o potvrzení workflow
 nasazení; skutečná živá měření na Pages z tohoto prostředí přímo neověřena.
+
+## Etapa 4 — sdílené souhrny a pozadí, v0.2.2 (21. 10. 2026)
+
+**METEO-005 dokončeno:** skrytá karta nepouští periodické Sheets/UV/overview
+požadavky ani astronomický render. Rozpracované přenosy a MQTT se neruší,
+ruční obnova a start zůstávají explicitní akce. Při návratu jedna potřebná
+obnova na zdroj podle posledního pokusu/intervalu, žádný nový MQTT klient.
+Ruční refresh resetuje periodický věk a následující timer nepřidá druhý request.
+UV/overview sdílejí pending Promise; chyby UV se nepokouší znovu při každém
+přepnutí viditelnosti. Čekající konfigurace a staré generační timery jsou chráněny.
+
+**METEO-038 rozpracované:** jeden snapshot odkazuje na úplná originální data;
+společné globální extrémy, denní maxima rain, dnešní souhrny a denní/měsíční
+T/RH součty/počty pro karty a grafy. Invalidace po CSV/MQTT/resetu, výměně pole
+a lokálním dni; in-place opravy vyžadují invalidateDerivedData. Neuchovává tři
+historie, nespočítá statistiky z vizuální redukce. Vzorkové průměry, pořadí
+sčítání a výběr při shodných extrémech zachovány. Procentuální pokrytí bez
+měřicího plánu se nevymýšlí. Hodinové skupiny a sdílení s ročními statistikami
+zůstávají další část, proto není celé ID dokončené.
+
+**Ověření:** 96/96 Node testů (16 nových), skutečný DOM/Chart.js/timery,
+řízené visibility události, všechny tři konfigurace, mobil390, všechny záložky
+a osm metrik. [Metodika, tabulky a surové JSON](performance/ETAPA4.md).
+Při250k refresh po invalidaci89,4→46,3ms, opakovaný79,1→23,1ms,
+denní karty33,0→0,2ms. Heap po GC56,36→56,48MiB, stále osm Chart instancí.
+Malý1k scénář mírně kolísá i opačně, nejde o zrychlení každého snímku.
+Skryto10min/24h:0 periodických fixture HTTP; návrat10min:3, další den:4
+s UV nového dne. Jedná se o lokální kontrolované testy, ne živou síť/OS sleep.
+Konfigurace, workflow, archiv a main nezměněny. Navrhy_Vylepseni.md má jen
+aktualizovanou úvodní evidenci, žádný paralelní backlog.
+
+**Další etapa:** hodinové agregace a kvalita/pokrytí METEO-038 (samostatně
+počet platných vzorků, pozorovaný čas a dostupnost podle ověřeného plánu).
+Potom METEO-019/020/031 bateriový modul z úplných dat; METEO-048 explicitní
+zóna/UV timestampy a METEO-004 omezená cache stanic zůstávají samostatné.
+Před kapacitou baterie a srážkovými událostmi potvrdit potřebné HW/datové kontrakty.

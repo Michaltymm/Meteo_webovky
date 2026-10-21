@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Etapa 4 — sdílené souhrny a obnova na pozadí](ETAPA4.md) navazuje na v0.2.1:
+profil s invalidovanou i opakovaně použitou cache, mobilní viewport, CPU×4,
+heap a kontrola periodických požadavků při změně viditelnosti.
+
 Novější [etapa 2 — historie, paměť a DOM](ETAPA2.md) obsahuje 1k/10k/100k/250k,
 CPU×4, surové JSON, 30 cyklů a integrační ověření tří stanic. Níže zůstává
 původní metodika a historie etapy 1.

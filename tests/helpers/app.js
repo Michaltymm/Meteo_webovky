@@ -5,10 +5,10 @@ const vm = require('node:vm');
 // Execute the actual application code, leaving automatic startup to the tests.
 // UI/Chart.js and transports are replaced; cancellation deliberately does not
 // settle the fake fetch, so late results exercise guards as well as AbortSignal.
-function app({ realRefresh = false } = {}) {
+function app({ realRefresh = false, realStart = false } = {}) {
   const html = fs.readFileSync(process.env.METEO_TEST_HTML || path.join(__dirname, '..', '..', 'index.html'), 'utf8');
   const source = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// Init: téma, stanice, config')[0];
-  const requests = [], timers = new Map(), nodes = new Map(), clients = [], readers = [];
+  const requests = [], timers = new Map(), intervals = new Map(), listeners = new Map(), nodes = new Map(), clients = [], readers = [];
   let timerId = 0;
   const node = id => {
     if (!nodes.has(id)) nodes.set(id, {
@@ -20,7 +20,12 @@ function app({ realRefresh = false } = {}) {
   };
   const storage = new Map();
   const context = vm.createContext({
-    document: { getElementById: node, querySelectorAll: () => [], querySelector: () => null, body: {} },
+    document: { getElementById: node, querySelectorAll: () => [], querySelector: () => null, body: {}, hidden: false,
+      addEventListener(event, fn) {
+        if (!listeners.has(event)) listeners.set(event, []);
+        listeners.get(event).push(fn);
+      }
+    },
     location: { pathname: '/Meteo_webovky/dev/', protocol: 'https:' },
     window: {}, console: { log() {}, warn() {} }, AbortController, AbortSignal,
     localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v) },
@@ -36,7 +41,8 @@ function app({ realRefresh = false } = {}) {
     },
     setTimeout(fn, delay) { const id = ++timerId; timers.set(id, { fn, delay }); return id; },
     clearTimeout(id) { timers.delete(id); },
-    setInterval() { return ++timerId; }, clearInterval() {},
+    setInterval(fn, delay) { const id = ++timerId; intervals.set(id, { fn, delay }); return id; },
+    clearInterval(id) { intervals.delete(id); },
     Paho: { Client: class {
       constructor(...args) { this.args = args; this.disconnected = 0; this.topics = []; clients.push(this); }
       connect(options) { this.options = options; }
@@ -55,10 +61,14 @@ function app({ realRefresh = false } = {}) {
     updateSunBar() {}, updateStationUI() {}, fillConfigUI() {}, updateOvBar() {},
     setGsStatus: (ok, text) => state.gs.push({ ok, text }),
     setMqttStatus: (ok, text) => state.mqtt.push({ ok, text }),
-    startAll: () => { state.starts++; }
+    ...(realStart ? {} : { startAll: () => { state.starts++; } })
   });
   return {
-    run: code => vm.runInContext(code, context), requests, timers, nodes, clients, readers, state,
+    run: code => vm.runInContext(code, context), requests, timers, intervals, nodes, clients, readers, state,
+    visibility(hidden) {
+      context.document.hidden = hidden;
+      for (const listener of listeners.get('visibilitychange') || []) listener();
+    },
     respond(index, body, status = 200) {
       requests[index].resolve({
         ok: status === 200, status,

@@ -1948,8 +1948,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v021"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.2.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v022"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.2.2</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2735,6 +2735,8 @@
     let CFG = stations[activeIdx];
     let stationSession = new AbortController();
     let sheetsLoad = null;
+    let pollAttempts = { sheets: null, uv: null, overview: null };
+    let pollingContext = null;
 
     function stationContext() {
       return { index: activeIdx, config: { ...CFG }, signal: stationSession.signal };
@@ -2747,6 +2749,8 @@
     function cancelStationWork() {
       stationSession.abort();
       stationSession = new AbortController();
+      pollAttempts = { sheets: null, uv: null, overview: null };
+      pollingContext = null;
       if (fetchTimer) clearInterval(fetchTimer);
       if (window._uvTimer) clearInterval(window._uvTimer);
       stopMQTT();
@@ -3445,14 +3449,24 @@
 
     /* UV data z Open-Meteo (reálná data dle polohy) */
     const uvStore = { hourly: null, lat: null, lon: null, date: null };
+    let uvLoad = null;
 
     async function fetchUVData() {
       const context = stationContext();
+      if (uvLoad?.context.signal === context.signal) return uvLoad.promise;
+      const request = { context };
+      uvLoad = request;
+      request.promise = loadUVData(context).finally(() => { if (uvLoad === request) uvLoad = null; });
+      return request.promise;
+    }
+
+    async function loadUVData(context) {
       const lat = context.config.lat ?? 50.08;
       const lon = context.config.lon ?? 14.42;
       const today = localDateKey();
       // Neměň zbytečně – stejná poloha i den
       if (uvStore.lat === lat && uvStore.lon === lon && uvStore.date === today && uvStore.hourly) return;
+      pollAttempts.uv = Date.now();
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=uv_index&timezone=auto&forecast_days=1`;
         const text = await stationText(url, context);
@@ -3578,6 +3592,7 @@
       }
       const request = { context };
       sheetsLoad = request;
+      pollAttempts.sheets = Date.now();
       request.promise = loadSheets(forceFullLoad, context).finally(() => {
         if (sheetsLoad === request) sheetsLoad = null;
       });
@@ -3847,27 +3862,16 @@
       const oldest = store.rows[store.rows.length - 1];
       setNodeText(el("statFrom"), fmtDT(oldest.ts));
 
-      const temps = numericSummary(store.rows.map(r => r.temp));
-      if (temps.count) {
-        const maxT = temps.max, minT = temps.min;
-        const mxR = store.rows.find(r => r.temp === maxT), mnR = store.rows.find(r => r.temp === minT);
-        setNodeText(el("statTempMax"), fmt(maxT) + " °C  " + fmtDT(mxR.ts));
-        setNodeText(el("statTempMin"), fmt(minT) + " °C  " + fmtDT(mnR.ts));
-      }
-
-      // max rain per day
-      const rb = {};
-      store.rows.forEach(r => { if (r.rain === null) return; const k = fmtDateShort(r.ts); if (!rb[k] || r.rain > rb[k]) rb[k] = r.rain; });
-      const rEntries = Object.entries(rb);
-      if (rEntries.length) { const mx = rEntries.reduce((a, b) => b[1] > a[1] ? b : a); setNodeText(el("statRainMax"), fmt(mx[1], 1) + " mm (" + mx[0] + ")"); }
+      const aggregates = dataAggregates();
+      const temps = aggregates.temperature;
+      setNodeText(el("statTempMax"), temps.maxRow ? fmt(temps.max) + " °C  " + fmtDT(temps.maxRow.ts) : "–");
+      setNodeText(el("statTempMin"), temps.minRow ? fmt(temps.min) + " °C  " + fmtDT(temps.minRow.ts) : "–");
+      const rainMax = aggregates.rainMax;
+      setNodeText(el("statRainMax"), rainMax ? fmt(rainMax.value, 1) + " mm (" + rainMax.day + ")" : "–");
 
       // Today
-      const today = localDayBounds(localDateKey());
-      const today_rows = store.rows.filter(r => r.ts >= today.from && r.ts <= today.to);
       setNodeText(el("todayDate"), fmtDate(new Date()));
-      const dt = numericSummary(today_rows.map(r => r.temp));
-      const dh = numericSummary(today_rows.map(r => r.hum));
-      const dr = numericSummary(today_rows.map(r => r.rain));
+      const { temp: dt, hum: dh, rain: dr } = aggregates.today;
       setNodeText(el("dayTempMin"), dt.count ? fmt(dt.min) : "–");
       setNodeText(el("dayTempMax"), dt.count ? fmt(dt.max) : "–");
       setNodeText(el("dayTempAvg"), dt.count ? fmt(dt.avg, 2) : "–");
@@ -4018,11 +4022,11 @@
 
       if (!tab || tab === "rain") {
         // Rain daily totals (max per day)
-        const rb = {};
-        rows.forEach(r => { if (r.rain === null) return; const k = fmtDateShort(r.ts); if (!rb[k] || r.rain > rb[k].val) rb[k] = { val: r.rain, time: r.ts.getTime() }; });
-        const rk = Object.keys(rb).sort((a, b) => rb[a].time - rb[b].time).slice(-30);
+        const rb = dataAggregates().days;
+        const rk = [...rb.keys()].filter(k => rb.get(k).rain !== null)
+          .sort((a, b) => rb.get(a).time - rb.get(b).time).slice(-30);
         chartRain.data.labels = rk;
-        chartRain.data.datasets[0].data = rk.map(k => rb[k].val);
+        chartRain.data.datasets[0].data = rk.map(k => rb.get(k).rain);
         chartRain.update();
 
         const voltage = voltageSeries(rows, 500);
@@ -4037,20 +4041,66 @@
     }
 
     function buildAgg(chart, rows, unit, count) {
-      const b = {};
-      rows.forEach(r => {
-        const k = unit === "day"
-          ? fmtDateShort(r.ts)
-          : `${r.ts.getMonth() + 1}/${r.ts.getFullYear()}`;
-        if (!b[k]) b[k] = { time: r.ts.getTime(), ts: 0, hs: 0, tn: 0, hn: 0 };
-        if (r.temp !== null) { b[k].ts += r.temp; b[k].tn++; }
-        if (r.hum !== null) { b[k].hs += r.hum; b[k].hn++; }
-      });
-      const keys = Object.keys(b).sort((x, y) => b[x].time - b[y].time).slice(-count);
+      const aggregates = dataAggregates(rows);
+      const b = unit === "day" ? aggregates.days : aggregates.months;
+      const keys = [...b.keys()].sort((x, y) => b.get(x).time - b.get(y).time).slice(-count);
       chart.data.labels = keys;
-      chart.data.datasets[0].data = keys.map(k => b[k].tn ? +(b[k].ts / b[k].tn).toFixed(2) : null);
-      chart.data.datasets[1].data = keys.map(k => b[k].hn ? +(b[k].hs / b[k].hn).toFixed(2) : null);
+      chart.data.datasets[0].data = keys.map(k => b.get(k).tn ? +(b.get(k).ts / b.get(k).tn).toFixed(2) : null);
+      chart.data.datasets[1].data = keys.map(k => b.get(k).hn ? +(b.get(k).hs / b.get(k).hn).toFixed(2) : null);
       chart.update();
+    }
+
+    // One current-station snapshot. No copies of raw rows or per-station history.
+    let aggregateCache = null;
+    function dataAggregates(rows = store.rows) {
+      const dayKey = localDateKey(), bounds = localDayBounds(dayKey);
+      if (rows === store.rows && aggregateCache?.source === rows && aggregateCache.length === rows.length &&
+        aggregateCache.dayKey === dayKey && aggregateCache.from === bounds.from && aggregateCache.to === bounds.to) return aggregateCache;
+      const accumulator = () => ({ min: null, max: null, avg: null, count: 0, sum: 0 });
+      const add = (stat, value) => {
+        if (!Number.isFinite(value)) return;
+        if (!stat.count || value < stat.min) stat.min = value;
+        if (!stat.count || value > stat.max) stat.max = value;
+        stat.sum += value; stat.count++;
+      };
+      const days = new Map(), months = new Map();
+      const today = { count: 0, temp: accumulator(), hum: accumulator(), pressure: accumulator(), rain: accumulator(), voltage: null };
+      const temperature = { min: null, max: null, minRow: null, maxRow: null };
+      const bucket = (map, key, time) => {
+        if (!map.has(key)) map.set(key, { time, ts: 0, hs: 0, tn: 0, hn: 0, rain: null });
+        return map.get(key);
+      };
+      let year, month, day, d, m;
+      for (const row of rows) {
+        const time = row.ts.getTime();
+        const y = row.ts.getFullYear(), mo = row.ts.getMonth(), da = row.ts.getDate();
+        // Most adjacent samples share a day: avoid rebuilding keys/Map lookups.
+        if (y !== year || mo !== month) m = bucket(months, `${mo + 1}/${y}`, time);
+        if (y !== year || mo !== month || da !== day) d = bucket(days, fmtDateShort(row.ts), time);
+        year = y; month = mo; day = da;
+        if (Number.isFinite(row.temp)) {
+          d.ts += row.temp; d.tn++; m.ts += row.temp; m.tn++;
+          if (!temperature.minRow || row.temp < temperature.min) { temperature.min = row.temp; temperature.minRow = row; }
+          if (!temperature.maxRow || row.temp > temperature.max) { temperature.max = row.temp; temperature.maxRow = row; }
+        }
+        if (Number.isFinite(row.hum)) { d.hs += row.hum; d.hn++; m.hs += row.hum; m.hn++; }
+        if (Number.isFinite(row.rain) && (d.rain === null || row.rain > d.rain)) d.rain = row.rain;
+        if (time >= bounds.from && time <= bounds.to) {
+          today.count++;
+          add(today.temp, row.temp); add(today.hum, row.hum); add(today.pressure, row.pressure); add(today.rain, row.rain);
+          if (today.voltage === null && Number.isFinite(row.voltage)) today.voltage = row.voltage;
+        }
+      }
+      for (const key of ["temp", "hum", "pressure", "rain"]) {
+        const stat = today[key]; stat.avg = stat.count ? stat.sum / stat.count : null;
+      }
+      let rainMax = null;
+      for (const [day, d] of days) {
+        if (d.rain !== null && (!rainMax || d.rain > rainMax.value)) rainMax = { day, value: d.rain };
+      }
+      const result = { source: rows, length: rows.length, dayKey, ...bounds, days, months, today, temperature, rainMax };
+      if (rows === store.rows) aggregateCache = result;
+      return result;
     }
 
     /* ══════════════════════════════════════════════
@@ -4101,14 +4151,9 @@
        DENNÍ STATISTIKY
     ══════════════════════════════════════════════ */
     function buildDailyGrid() {
-      const today = localDayBounds(localDateKey());
-      const rows = store.rows.filter(r => r.ts >= today.from && r.ts <= today.to);
-      if (!rows.length) { el("dailyGrid").innerHTML = `<p style="color:var(--muted);padding:1rem;grid-column:span 3">Žádná data za dnešní den.</p>`; return; }
-      const dt = numericSummary(rows.map(r => r.temp));
-      const dh = numericSummary(rows.map(r => r.hum));
-      const dp = numericSummary(rows.map(r => r.pressure));
-      const dr = numericSummary(rows.map(r => r.rain));
-      const dv = rows.map(r => r.voltage).filter(v => v !== null);
+      const today = dataAggregates().today;
+      if (!today.count) { el("dailyGrid").innerHTML = `<p style="color:var(--muted);padding:1rem;grid-column:span 3">Žádná data za dnešní den.</p>`; return; }
+      const { temp: dt, hum: dh, pressure: dp, rain: dr } = today;
       const tiles = [
         { l: "Min. teplota", v: dt.count ? fmt(dt.min) + " °C" : "–", c: "var(--blue)" },
         { l: "Prům. teplota", v: dt.count ? fmt(dt.avg, 2) + " °C" : "–", c: "var(--text)" },
@@ -4118,7 +4163,7 @@
         { l: "Max. vlhkost", v: dh.count ? fmt(dh.max) + " %" : "–", c: "var(--teal)" },
         { l: "Prům. tlak", v: dp.count ? fmt(dp.avg, 1) + " hPa" : "–", c: "var(--yellow)" },
         { l: "Celkové srážky", v: dr.count ? fmt(dr.max, 1) + " mm" : "–", c: "var(--blue)" },
-        { l: "Posl. napětí", v: dv.length ? fmt(dv[0], 2) + " V" : "–", c: "var(--purple)" },
+        { l: "Posl. napětí", v: today.voltage !== null ? fmt(today.voltage, 2) + " V" : "–", c: "var(--purple)" },
       ];
       el("dailyGrid").innerHTML = tiles.map(t => `<div class="stat-tile"><div class="stl">${t.l}</div><div class="stv" style="color:${t.c}">${t.v}</div></div>`).join("");
     }
@@ -4151,6 +4196,7 @@
     let explorerRangeCache = null;
 
     function invalidateDerivedData() {
+      aggregateCache = null;
       explorerRangeCache = null;
       expAllPts = [];
       el("expInterval").hidden = true;
@@ -5121,16 +5167,17 @@
     function startAll() {
       cancelStationWork();
       const context = stationContext();
+      pollingContext = context;
       if (CFG.source === "sheets" || CFG.source === "both") {
         fetchSheets();
-        fetchTimer = setInterval(() => { if (isCurrentStation(context)) fetchSheets(); }, CFG.interval * 1000);
+        fetchTimer = setInterval(() => periodicRefresh("sheets", CFG.interval * 1000, fetchSheets, context), CFG.interval * 1000);
       }
       if (CFG.source === "mqtt" || CFG.source === "both") connectMQTT();
       if (CFG.source === "sheets") setMqttStatus(false, "neaktivní");
       // Načti reálný UV index z Open-Meteo pro aktuální souřadnice
       uvStore.lat = null; // vynutit nové načtení při přepnutí stanice
       fetchUVData();
-      window._uvTimer = setInterval(() => { if (isCurrentStation(context)) fetchUVData(); }, 3600000);
+      window._uvTimer = setInterval(() => periodicRefresh("uv", 3600000, fetchUVData, context), 3600000);
       fetchAllOv();
     }
 
@@ -5210,10 +5257,40 @@
       }
     }
 
+    let overviewLoad = null;
     async function fetchAllOv() {
+      const context = stationContext();
+      if (overviewLoad?.context.signal === context.signal) return overviewLoad.promise;
+      const request = { context };
+      overviewLoad = request;
+      pollAttempts.overview = Date.now();
       // Přeskoč aktivní stanici – ta se aktualizuje přes refreshUI
-      await Promise.all([0, 1, 2].filter(i => i !== activeIdx).map(fetchOvStation));
+      request.promise = Promise.all([0, 1, 2].filter(i => i !== activeIdx).map(fetchOvStation))
+        .finally(() => { if (overviewLoad === request) overviewLoad = null; });
+      return request.promise;
     }
+
+    function periodicRefresh(kind, interval, operation, context = stationContext()) {
+      if (document.hidden || !pollingContext || !isCurrentStation(pollingContext) || !isCurrentStation(context)) return;
+      const age = pollAttempts[kind] === null ? Infinity : Date.now() - pollAttempts[kind];
+      // Attempts throttle retries; they never mark failed data as synchronized.
+      if (age >= interval || age < 0) return operation();
+    }
+
+    let visibleDay = localDateKey();
+    function handleVisibilityChange() {
+      if (document.hidden) return;
+      const day = localDateKey();
+      if (day !== visibleDay) { visibleDay = day; refreshUI(); }
+      updateSunBar();
+      updateOvBar();
+      const context = stationContext();
+      if (CFG.source === "sheets" || CFG.source === "both") periodicRefresh("sheets", CFG.interval * 1000, fetchSheets, context);
+      const uvAttemptToday = pollAttempts.uv !== null && localDateKey(new Date(pollAttempts.uv)) === day;
+      periodicRefresh("uv", uvStore.date === day || uvAttemptToday ? 3600000 : 0, fetchUVData, context);
+      periodicRefresh("overview", 300000, fetchAllOv, context);
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Init: téma, stanice, config
     setTheme(theme);
@@ -5226,8 +5303,8 @@
     fillConfigUI();
     initCmpDays();
     updateSunBar();
-    setInterval(updateSunBar, 60000); // refresh sunrise/sunset/moon každou minutu
-    setInterval(fetchAllOv, 5 * 60 * 1000); // overview bar: refresh ostatních stanic každých 5 min
+    setInterval(() => { if (!document.hidden) updateSunBar(); }, 60000);
+    setInterval(() => periodicRefresh("overview", 300000, fetchAllOv), 300000);
 
     loadStationConfig();
   </script>

@@ -17,6 +17,8 @@ Původní audit níže zachycuje stav před opravami; čísla řádků jsou hist
 | W05 | DONE | Parser podporuje escapované uvozovky, BOM/CRLF i víceřádkové buňky a odmítá neuzavřené/nesprávné uvozovky. Poznámky zachovávají doslovné apostrofy/uvozovky a řádky. |
 | W12 | DONE | Úplná validace kalendáře a času, podpora sekund/přestupných roků/krátkého roku; žádný tichý rollover ani změna yearState při chybě. |
 | W13 | DONE | Neplatná vlhkost/teplota nebo nekonečný výsledek dává null; pf nepřijímá Infinity, platná nula zachována. |
+| W06 | DONE (v0.2.1) | Lokální denní klíče, kalendářní posuny a meze 23/25h dne; časový kontrakt stanice dále METEO-048. Viz docs/CAS_A_KALENDAR.md. |
+| W14 | DONE (v0.2.0) | Binární hledání historických protějšků zachovává toleranci a výběr při shodě. |
 | W15 | DONE | Denní agregace klíčuje včetně roku a neslučuje stejný den různých let. |
 | W09 | DONE | Plná historie má 30s timeout kombinovaný se zrušením relace. |
 | W08 | ČÁSTEČNĚ | Starý klient se odpojuje; jeho zprávy, callbacky a reconnect se ignorují. Limit počtu zpráv a slučování se Sheets zůstává TODO. |
@@ -27,9 +29,11 @@ Původní audit níže zachycuje stav před opravami; čísla řádků jsou hist
 | W11 | ČÁSTEČNĚ | Aktualizace pouze grafů aktivní záložky; lazy konstrukce instancí zatím METEO-007. |
 | AUD-003 / AUD-005 / AUD-011 / AUD-012 | DONE | Další potvrzené chyby z PROJECT_AUDIT.md: HTML z CSV se vykreslí jako text, grafy bez napětí nepadají a nevymýšlejí predikci, Vše skutečně zobrazí celou historii, prázdný explorer nezachová stará data. |
 
-Ověření: `node --test tests/*.test.js` — **54/54 prošlo** (14 načítání, 20 kvalita dat, 10 výkon/cache, 10 server/Pages). Testy spouštějí skutečný inline JS; původní záměna konfigu i RangeError bez napětí byly reprodukovány před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo také všechny záložky nad 61 řádky bez napětí, víceřádkové poznámky, bezpečný HTML výstup, chyby/retry, změnu starého řádku při stejných hlavičkách, prázdný rozsah a mobilní viewport. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti: `PROJECT_AUDIT.md`.
+Historické ověření předchozí etapy: `node --test tests/*.test.js` — **54/54 prošlo** (14 načítání, 20 kvalita dat, 10 výkon/cache, 10 server/Pages). Testy spouštějí skutečný inline JS; původní záměna konfigu i RangeError bez napětí byly reprodukovány před opravou. Chromium s reálným Chart.js a řízenými Sheets/UV odpověďmi ověřilo také všechny záložky nad 61 řádky bez napětí, víceřádkové poznámky, bezpečný HTML výstup, chyby/retry, změnu starého řádku při stejných hlavičkách, prázdný rozsah a mobilní viewport. Reálné služby ani MQTT broker tím ověřeny nejsou. CI před publikováním spouští všechny testy; workflow prošlo actionlint. Podrobnosti: `PROJECT_AUDIT.md`.
 
-Centrální pokračování: [docs/NAPADY_A_ROADMAP.md](docs/NAPADY_A_ROADMAP.md), 59 návrhů včetně baterie, tří stanic, metrik a hardwarových závislostí. Měřená etapa P0: při 100k přehled 148,6→53,8 ms, explorer 43,2→14,8 ms; metodika a surová data v [docs/performance](docs/performance/README.md). Historický text níže popisuje stav před opravami.
+Aktuální ověření v0.2.2: **96/96 testů**, sdílené souhrny METEO-038 a obnova na pozadí METEO-005. [Měření a omezení](docs/performance/ETAPA4.md): při 250k opakovaný refresh79,1→23,1ms; skrytá karta bez periodických HTTP, návrat bez duplicit a nového MQTT klienta. METEO-038 zbývají hodiny/pokrytí; nejde o cache historie všech stanic. Historický audit níže zůstává beze změn.
+
+Centrální pokračování: [docs/NAPADY_A_ROADMAP.md](docs/NAPADY_A_ROADMAP.md), 75 návrhů včetně baterie, tří stanic, metrik a hardwarových závislostí. Měřená etapa P0: při 100k přehled 148,6→53,8 ms, explorer 43,2→14,8 ms; metodika a surová data v [docs/performance](docs/performance/README.md). Historický text níže popisuje stav před opravami.
 
 ---
 

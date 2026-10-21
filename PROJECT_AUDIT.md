@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `3e236bc`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.2.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `0ae577a`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.2.2 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,11 +15,11 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (80/80 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (96/96 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
-- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); 15 nových samostatných návrhů, AUD-010 DONE, METEO-048 rozpracované; další etapa sdílené agregace/pozadí a kontrakt času stanice.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); 15 nových samostatných návrhů, AUD-010 DONE, METEO-048 rozpracované; METEO-005 DONE, METEO-038 sdílený základ hotov / hodinové agregace a pokrytí zbývají; kontrakt času stanice dále METEO-048.
 - Historický benchmark etapy 1 Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
 - Živé quick CSV všech tří zdrojů nyní HTTP200 (21. 10.); pouze dostupnost/bytes/doba, bez validace obsahu. Skutečné schema, firmware, MQTT ani dlouhá historie neověřeny.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
@@ -155,7 +155,7 @@ Aktuální rozvojové priority jsou v [centrální roadmapě](docs/NAPADY_A_ROAD
 | 9 / P2 | AUD-008 DONE | Spolehlivé porovnání celého exportu; přenosovou optimalizaci vést samostatně jako FUT-010. |
 | 10 / P2 | AUD-012 + AUD-011 DONE | Prázdné stavy a Vše opraveny; přístupnost/cache zůstávají samostatné návrhy. |
 
-IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. AUD-010/013 jsou hotové; pokračovat METEO-038 sdílenými agregacemi a METEO-005 pozadím, časový kontrakt zdroje/stanice dále METEO-048. METEO-004 cache stanic vyžaduje paměťový limit. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
+IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. AUD-010/013 a METEO-005 jsou hotové. METEO-038 má společné hlavní souhrny, denní/měsíční T/RH; pokračovat hodinami a pokrytím. Časový kontrakt zdroje/stanice dále METEO-048, METEO-004 cache stanic vyžaduje paměťový limit. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
 
 ## G. RISKS AND DEPENDENCIES
 
@@ -235,6 +235,16 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Další implementační krok METEO-038: revizní cache souhrnů s invalidací po CSV/MQTT/resetu i změně dne, srovnání proti plným statistikám a měření před/po. METEO-005 pozastavení pollingu na pozadí poté; bez bezlimitní cache tří velkých historií. Main/konfigurace/workflow/archiv se v této etapě nemění.
 
 - Publikace v0.2.1: [076bc08](https://github.com/Michaltymm/Meteo_webovky/commit/076bc0865a34961ebef4cd14e98062976c3ef956) odeslán na codex-dev, vzdálené SHA ověřeno. [Actions #11](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39593972552) **Success**, 44s, build12s/deploy24s, jeden artefakt. Workflow deployment potvrzen, živá data/browser Pages přímo neověřeny; lokální browser používá řízený transport. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Následující commit aktualizuje pouze dokumentaci a nový deploy nevyžaduje.
+
+### Etapa 4: sdílené souhrny a pozadí, v0.2.2 (21. 10. 2026)
+
+- METEO-005 DONE, METEO-038 rozpracované. `dataAggregates` je jediný snapshot aktuálního zdroje: globální teplotní extrémy s řádky, denní maximum rain, denní/měsíční součty a validní počty T/RH a dnešní T/RH/P/rain/poslední V. Bez kopií raw historie a bez cache tří stanic. Sdílejí refreshUI/buildDailyGrid/buildAgg/srážkový graf. Pořadí součtů i řazení zachovány; žádná statistika z min/max vizuální redukce. Hodinové agregace/procentuální pokrytí a roční statistiky mají další etapu, neoznačovat celý METEO-038 DONE.
+- Cache se ruší v invalidateDerivedData po CSV/MQTT/resetu. Ověření source/length + místního dne a jeho mezí zajišťuje také výměnu pole/půlnoc; in-place změny stále vyžadují explicitní invalidaci. Při neplatných číslech se počítají jen konečné hodnoty, nulové hodnoty se neztrácejí. Chybějící globální extrémy v UI se vyčistí. U sousedních měření stejného dne/měsíce se znovu netvoří textový klíč a nehledá skupina v Map.
+- PeriodicRefresh kontroluje document.hidden, generaci relace a poslední pokus dle intervalu. Konfiguraci nesmí předběhnout pollingContext=null. Návrat obnoví jen zastaralé Sheets/UV/overview, také přepočítá UI po změně dne. UV/overview nově sdílí pending Promise, Sheets již sdílení měly. Pokus nikdy neznamená úspěšnou synchronizaci; nové UV chyby nemají retry na každý visibility event. Staré timery zrušené relace zůstávají neplatné. MQTT se při skrytí/návratu neodpojuje ani nereconnectuje; zprávy a již běžící síť se neruší. Ruční refresh/start zůstávají explicitní akce, intervaly ve skrytí neprovádějí periodické dotazy.
+- 96/96 Node testů (7 souhrny, 9 pozadí nových); nezávislá reference plných dat, 250k bez dalšího čtení řádků pro další konzumenty, in-place oprava/delete/CSV/MQTT/reset, půlnoc, null/nula, reentrance, pending full, staré timery, ruční refresh, both/MQTT-only bez dalšího klienta. Sdílený VM helper nově zachytává intervaly a visibility listener; původní in-place test doplnil již povinné invalidateDerivedData.
+- Výkon a surová data: [ETAPA4](docs/performance/ETAPA4.md). Při 250k refresh po invalidaci89,4→46,3ms, opakovaný79,1→23,1ms, denní karty33,0→0,2ms, denní graf35,4→3,3ms, měsíční27,2→2,4ms. Při 1k malé kolísání i zpomalení, neuvádět univerzální procento. CPU×4/100k cold213,3→136,4ms. JS heap250k56,36→56,48MiB; osm Chart instancí. Není to celá RAM, Web Vitals ani fyzický telefon.
+- Browser skutečný Chart/DOM/timery: skryto10min/24h →0 periodických HTTP; návrat10min→3 požadavky (aktivní Sheets + dvě ostatní), další den→4 s UV. Rychlé přepínání nic nepřidalo, oprava starého extrému85→99 zachovala1000originálů, půlnoc vyčistila dnešek. Viditelnost je řízený document.hidden + event, nejde o nativní uspávání OS. Další browser běh ověřil všechny tři konfigurace, 23/25h, mobil390 a všechny taby/metriky. Živý broker/služby/několikadenní soak neověřeny.
+- Navrhy_Vylepseni.md zůstává historický audit; aktualizovaná pouze úvodní evidence W06/W14 a odkaz na současné výsledky. Backlog jedině docs/NAPADY_A_ROADMAP.md. Konfigurace, workflow, archiv a main neměněny.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

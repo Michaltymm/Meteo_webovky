@@ -107,7 +107,7 @@ test('refresh preserves unchanged text nodes and writes changed values including
   }
   a.run('refreshUI()');
   assert.equal(writes, 0);
-  a.run('store.rows[0].temp=0;refreshUI()');
+  a.run('store.rows[0].temp=0;invalidateDerivedData();refreshUI()');
   assert.ok(writes > 0);
   assert.equal(a.nodes.get('curTemp').textContent, '0.0');
   assert.equal(a.nodes.get('tempTrend').textContent, '↓');
