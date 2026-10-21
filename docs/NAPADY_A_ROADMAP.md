@@ -1039,3 +1039,13 @@ Pro srážky017/049 a skutečnou dostupnost027 zůstávají blokery reset/interv
 schema. Nové podpisy083 jsou pouze nákladný návrh s firmware/backendem,
 nikoliv podmínka dnešního provozu. Původní historie roadmapy zachována;
 starší Navrhy_Vylepseni zůstává pouze referencí, žádný konkurenční backlog.
+
+### Publikace etapy 7
+
+Analýza [d6e343c](https://github.com/Michaltymm/Meteo_webovky/commit/d6e343c472f8cf291c2d191161b763cb1226a7df)
+a implementace [25b7048](https://github.com/Michaltymm/Meteo_webovky/commit/25b7048eba1b806b55b2b195cf70ec402dc69618)
+odeslány na codex-dev, vzdálené SHA ověřeno.
+[Actions #15](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462)
+**Success**, build16s/deploy30s, celkem57s, jeden artefakt. Main stále2405c5d.
+To potvrzuje nasazení workflow, nikoli přímé ověření živých widgetů z tohoto
+prostředí. Následující commit doplňuje pouze dokumentaci; HTML zůstává v0.4.0.

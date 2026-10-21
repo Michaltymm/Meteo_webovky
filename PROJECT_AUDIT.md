@@ -29,7 +29,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: poslední ověřené nasazení v0.3.1 [run39606840157](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39606840157), commit f807173. v0.4.0 implementováno a místně ověřeno, publikace v této etapě následuje. Main stále 2405c5d; živé Pages nejsou v síťové politice prostředí povolené.
+- DEPLOY-001 DONE: v0.4.0 nasazeno úspěšným [run39614305462](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462), commit25b7048, build16s/deploy30s, celkem57s. Main stále2405c5d; přímé živé Pages nejsou v síťové politice prostředí povolené.
 
 ## A. PROJECT CONTEXT
 
@@ -285,6 +285,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - 132/132 Node testů,13 nových, skutečný inline kód v rozšířené VM (motion event). Reference fyzikálních veličin, stabilní dvouprůchodová Pearson/regrese, velký offset, null/0/duplicitní časy,250k plných párů/původní extrémy/omezené grafy, cache/rozsah, CSV/MQTT/reset, živá preference. Browser skutečné tři konfigurace+řízené CSV/UV:924 párů/r≈1, bez V0 párů, 0 V platné/konstantní r null; bez skrytých grafů při full, metadata plné historie, oprava starého CSV V0 → 0,02 při 1000 originálech. Dvě témata, 390px, motion/CSS/start/live, AH/VPD historie, žádný overflow/page error. Screenshot prohlédnut, smoke všech tabů/deseti explorer voleb prošel; jeho časy kvůli souběhu s Node nejsou srovnávány.
 - [ETAPA7 a surové důkazy](docs/performance/ETAPA7.md): sekvenční 1k/10k/100k/250k před/po běžných pohledů; rozdíly oběma směry, ne plošné zrychlení. Při 250k cold refresh61,5 → 54,2 ms, explorer40,4 → 43,5 ms; CPU×4/100k cold130,9 → 139,6 ms. Nová analýza250k cold55,7 ms/warm6,1 ms, VPD29,2 ms; CPU×4/100k141,4/28,8/66,4 ms. Zavřený heap56,72 → 56,68 MiB a8 Chart; otevřená analýza57,55 MiB a10 Chart i po 30 cyklech. Nejde o celou RAM/OS mobil/paint/Web Vitals/síť/parser nebo vícedenní soak. HTML bez komprese+12514 bajtů.
 - Další etapa: potvrdit metadata čidel/epoch a skutečný kontrakt času, potom METEO-019/020/031 podmíněná srovnání a077 vliv dnů, případně malý078 rozklad RH nad061. Planner076 až s ověřenou referenční četností, sezónní082 až s dostatečně dlouhou homogenní historií. Dostupnost027 a srážky017/049 stále mají datové blokery, SOC024 zůstává zamítnuté. Konfigurace, workflow, server, archiv a main nezměněny. Firmware, broker a živé služby zde neověřeny.
+
+- Publikace v0.4.0: analýza [d6e343c](https://github.com/Michaltymm/Meteo_webovky/commit/d6e343c472f8cf291c2d191161b763cb1226a7df), implementace a důkazy [25b7048](https://github.com/Michaltymm/Meteo_webovky/commit/25b7048eba1b806b55b2b195cf70ec402dc69618), obojí na codex-dev se SHA ověřeným proti origin. [Actions #15](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462) **Success**, build16s/deploy30s, celkem57s, jeden Pages artefakt. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Ověřený workflow deployment není přímé načtení živých widgetů. Následující commit mění pouze dokumentaci, HTML stále v0.4.0.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
