@@ -26,7 +26,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001 DONE: v0.2.1 nasazeno úspěšným [run39593972552](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39593972552), commit076bc08, build12s/deploy24s. Main stále2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
+- DEPLOY-001 DONE: v0.2.2 nasazeno úspěšným [run39598503481](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39598503481), commit 83da84c, build 12s/deploy 12s. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
 
 ## A. PROJECT CONTEXT
 
@@ -245,6 +245,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Výkon a surová data: [ETAPA4](docs/performance/ETAPA4.md). Při 250k refresh po invalidaci89,4→46,3ms, opakovaný79,1→23,1ms, denní karty33,0→0,2ms, denní graf35,4→3,3ms, měsíční27,2→2,4ms. Při 1k malé kolísání i zpomalení, neuvádět univerzální procento. CPU×4/100k cold213,3→136,4ms. JS heap250k56,36→56,48MiB; osm Chart instancí. Není to celá RAM, Web Vitals ani fyzický telefon.
 - Browser skutečný Chart/DOM/timery: skryto10min/24h →0 periodických HTTP; návrat10min→3 požadavky (aktivní Sheets + dvě ostatní), další den→4 s UV. Rychlé přepínání nic nepřidalo, oprava starého extrému85→99 zachovala1000originálů, půlnoc vyčistila dnešek. Viditelnost je řízený document.hidden + event, nejde o nativní uspávání OS. Další browser běh ověřil všechny tři konfigurace, 23/25h, mobil390 a všechny taby/metriky. Živý broker/služby/několikadenní soak neověřeny.
 - Navrhy_Vylepseni.md zůstává historický audit; aktualizovaná pouze úvodní evidence W06/W14 a odkaz na současné výsledky. Backlog jedině docs/NAPADY_A_ROADMAP.md. Konfigurace, workflow, archiv a main neměněny.
+
+- Publikace v0.2.2: [83da84c](https://github.com/Michaltymm/Meteo_webovky/commit/83da84ca3eb2a335407c4a9c3b9c011af76e9b83) odeslán na codex-dev, SHA ověřeno. [Actions #12](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39598503481) **Success**, 33s, build 12s/deploy 12s, jeden artefakt. Main zůstává `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Workflow deployment potvrzen, přímé živé widgety Pages neověřeny. Následující aktualizace paměti je pouze dokumentace a nový deployment nevyžaduje.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

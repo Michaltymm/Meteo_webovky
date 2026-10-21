@@ -703,3 +703,9 @@ počet platných vzorků, pozorovaný čas a dostupnost podle ověřeného plán
 Potom METEO-019/020/031 bateriový modul z úplných dat; METEO-048 explicitní
 zóna/UV timestampy a METEO-004 omezená cache stanic zůstávají samostatné.
 Před kapacitou baterie a srážkovými událostmi potvrdit potřebné HW/datové kontrakty.
+
+Publikováno v [83da84c](https://github.com/Michaltymm/Meteo_webovky/commit/83da84ca3eb2a335407c4a9c3b9c011af76e9b83)
+na codex-dev. [Actions #12](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39598503481)
+**Success**, build i deploy prošly, celkem 33s. Main zůstává 2405c5d. Přímé
+živé widgety Pages nebyly z prostředí ověřeny; místní prohlížečové testy jsou
+s řízenými transporty. Následující commit aktualizuje pouze dokumentaci.

@@ -1,7 +1,9 @@
 # Etapa 4: společné souhrny a obnova na pozadí
 
 21. 10. 2026, v0.2.1 (`0ae577a`) → v0.2.2. METEO-005 dokončeno;
-METEO-038 rozpracované. Surová měření jsou v [stage4](stage4/after.json).
+METEO-038 rozpracované. Implementace [83da84c](https://github.com/Michaltymm/Meteo_webovky/commit/83da84ca3eb2a335407c4a9c3b9c011af76e9b83),
+[úspěšný deployment](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39598503481).
+Surová měření jsou v [stage4](stage4/after.json).
 
 ## Co se změnilo
 
