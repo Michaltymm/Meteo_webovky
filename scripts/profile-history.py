@@ -18,6 +18,7 @@ parser.add_argument('--aggregates', action='store_true', help='Also measure cold
 parser.add_argument('--comparison', action='store_true', help='Also measure first and repeated hourly comparison')
 parser.add_argument('--annual', action='store_true', help='Also measure first and repeated annual statistics')
 parser.add_argument('--analysis', action='store_true', help='Measure the new battery module and humidity explorer, when available')
+parser.add_argument('--records', action='store_true', help='After core measurements, profile the original battery record viewer when available')
 args = parser.parse_args()
 html = Path(args.html).read_text().split('// Init: téma, stanice, config')[0] + '</script></body></html>'
 chart = Path(args.chartjs).read_text()
@@ -117,8 +118,36 @@ with sync_playwright() as p:
             page.wait_for_timeout(30)
         page.wait_for_timeout(350)
         repeated = heap()
+        records = None
+        if args.records and page.evaluate("typeof openBatteryRecords==='function'"):
+            page.evaluate("showTab('battery');el('batteryRange').value='all';buildBatteryAnalysis();el('batterySensitivity').open=true;el('batteryRecords').open=true")
+            page.wait_for_timeout(100) # Native toggle opens the first page outside the timed samples.
+            assert page.locator('.battery-record-table').is_visible()
+            record_samples = []
+            for _ in range(5):
+                record_samples.append(page.evaluate('''()=>{
+                  const open=measure(()=>openBatteryRecords());
+                  const next=measure(()=>pageBatteryRecords(1));
+                  return {open,next,rows:el('batteryRecordsBody').children.length,
+                    total:batteryRecordView.end-batteryRecordView.start};
+                }'''))
+                page.wait_for_timeout(350)
+            opened = heap()
+            page.evaluate("el('batteryRecords').open=false;toggleBatteryRecords()")
+            page.wait_for_timeout(100)
+            records = {'samples':record_samples,'opened':opened,'closed':heap()}
+            page.evaluate('''()=>{
+              for(let i=0;i<20;i++){
+                el('batteryRecords').open=true;openBatteryRecords();pageBatteryRecords(1);
+                el('batteryRecords').open=false;toggleBatteryRecords();observer.takeRecords();
+              }
+            }''')
+            page.wait_for_timeout(100)
+            records['after20OpenClose'] = heap()
+            records['closedRows'] = page.locator('#batteryRecordsBody tr').count()
+            assert records['closedRows'] == 0 and page.evaluate('batteryRecordView===null')
         results.append({'rows':count,'empty':empty,'loaded':loaded,'warm':warm,'after30Cycles':repeated,
-                        'samples':samples,'pageErrors':errors,
+                        'samples':samples,'records':records,'pageErrors':errors,
                         'overflow':page.evaluate('document.documentElement.scrollWidth>innerWidth')})
         print('profiled', count, flush=True)
         page.close()
@@ -129,6 +158,7 @@ Path(args.output).write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
     'comparisonScenario':args.comparison,
     'annualScenario':args.annual,
     'analysisScenario':args.analysis,
+    'recordsScenario':args.records,
     'network':'blocked; generated in-memory fixture, no raw CSV retained','results':results},indent=2))
 if any(r['pageErrors'] or r['overflow'] for r in results):
     raise SystemExit('Browser profile failed; inspect output.')

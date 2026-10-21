@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.7.0
+
+- Analýza teploty a napětí nabízí původní záznamy vlivného dne po 50 řádcích. Zobrazuje časy s UTC offsetem, hodnoty bez zaokrouhlení a důvody vynechání neplatných párů.
+- Výpis odpovídá vybranému rozsahu analýzy, zachovává nuly i duplicitní časy a uvádí podklady a vzorce výpočtu. Po změně dat, stanice či rozsahu se starý výpis zavře.
+- Tabulka se načítá až po rozbalení, funguje na mobilu i s klávesnicí a nepřidává síťové požadavky ani grafy.
+
 ## v0.6.0
 
 - Analýza „Teplota × napětí“ nově ukazuje, jak se korelace a sklon změní po vynechání jednotlivých dnů. Uvádí rozsah výsledků, vlivné dny, počty párů a výslovně nedostupné výpočty.

@@ -89,7 +89,7 @@ async def main():
             sensitivity = result['sensitivity']
             assert sensitivity['status'] == ('ok' if station == 0 else 'days' if station == 1 else 'relationship')
             if not await page.locator('#batterySensitivity').evaluate('(node)=>node.open'):
-                await page.locator('#batterySensitivity summary').click()
+                await page.locator('#batterySensitivity > summary').click()
             if station == 0:
                 assert sensitivity['validDays'] == result['days']
                 expected_day = sensitivity['byR']['day']
@@ -104,8 +104,43 @@ async def main():
                 assert len(requests) == before_day
                 assert await page.evaluate('Object.keys(Chart.instances).length') == 10
                 await page.locator('.tab-btn[data-tab="battery"]').click()
+                assert await page.locator('#batteryRecordsBody tr').count() == 0
+                before_records = len(requests)
+                await page.locator('#batteryRecords summary').focus()
+                await page.keyboard.press('Enter')
+                await page.wait_for_function('batteryRecordView!==null')
+                assert await page.locator('#batteryRecordsBody tr').count() == 50
+                assert await page.locator('#appVersion').inner_text() in await page.locator('#batteryRecordsFormula').inner_text()
+                assert 'nikoli pouze tuto stránku' in await page.locator('#batteryRecordsFormula').inner_text()
+                assert await page.evaluate('''(()=>{
+                  const v=batteryRecordView, rows=store.rows.filter(r=>localDateKey(r.ts)===v.day.day);
+                  return rows.length===v.end-v.start && rows.filter(r=>Number.isFinite(r.temp)&&Number.isFinite(r.voltage)).length===v.day.omittedCount;
+                })()''')
+                await page.locator('#batteryRecordsNext').click()
+                assert await page.evaluate('batteryRecordView.page') == 1
+                assert 'Strana 2/' in await page.locator('#batteryRecordsPage').inner_text()
+                await page.select_option('#batteryRecordsKind','bySlope')
+                assert await page.evaluate('batteryRecordView.page') == 0
+                assert await page.evaluate('batteryRecordView.day.day') == sensitivity['bySlope']['day']
+                for width in [320,390]:
+                    await page.set_viewport_size({'width':width,'height':844})
+                    await page.wait_for_timeout(100)
+                    for theme in ['darkblue','light']:
+                        await page.evaluate('(theme)=>setTheme(theme)',theme)
+                        assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+                    region = page.locator('.battery-record-scroll')
+                    assert await region.evaluate('(node)=>node.scrollWidth>node.clientWidth')
+                    await region.focus()
+                    await page.keyboard.press('ArrowRight')
+                await page.locator('#batteryRecords').screenshot(path=str(output.with_name(output.stem+'-records.png')))
+                assert len(requests) == before_records
+                assert await page.evaluate('Object.keys(Chart.instances).length') == 10
+                await page.select_option('#batteryRange','7')
+                assert await page.evaluate('batteryRecordView===null && !el("batteryRecords").open')
+                assert await page.locator('#batteryRecordsBody tr').count() == 0
             else:
                 assert not await page.locator('#batteryRDay').is_visible()
+                assert await page.locator('#batteryRecords').get_attribute('hidden') is not None
             for width in [320,390]:
                 await page.set_viewport_size({'width':width,'height':844})
                 await page.wait_for_timeout(100)
@@ -175,6 +210,11 @@ async def main():
         await page.select_option('#batteryRange','all')
         assert await page.evaluate('batteryAnalysis("all").maxV') == .02
         assert await page.evaluate('store.rows.length') == 1000
+        await page.locator('#batteryRecords summary').click()
+        await page.wait_for_function('batteryRecordView!==null')
+        assert await page.evaluate('batteryRecordsPage().rows.some(r=>r.voltage==="0" && r.reason==="Použitý pár T/V")')
+        await page.locator('#batteryRecords summary').click()
+        await page.wait_for_function('batteryRecordView===null')
         await page.locator('.tab-btn[data-tab="explorer"]').click()
         await page.evaluate('el("expMetric").value="hum"')
         for values, expected in [
@@ -214,10 +254,17 @@ async def main():
           invalidateDerivedData();document.querySelector('.tab-btn[data-tab="battery"]').click();buildBatteryAnalysis();
         }''')
         assert '1 nedostupných' in await page.locator('#batterySensitivityValue').inner_text()
+        await page.locator('#batteryRecords summary').click()
+        await page.wait_for_function('batteryRecordView!==null')
+        await page.select_option('#batteryRecordsKind','undefinedDay')
+        assert await page.locator('#batteryRecordsBody tr').count() == 20
+        assert 'r = –, sklon = –' in await page.locator('#batteryRecordsInfo').inner_text()
         await page.locator('#batteryUndefinedDay').click()
         assert await page.locator('#expDateOne').input_value() == '2026-10-21'
         await page.evaluate('resetStationStore()')
         assert await page.locator('#batterySensitivityValue').text_content() == ''
+        assert await page.locator('#batteryRecordsBody tr').count() == 0
+        assert await page.evaluate('batteryRecordView===null && !el("batteryRecords").open')
         assert await page.locator('#batteryRDay').get_attribute('hidden') is not None
         assert not errors, errors
         await browser.close()
@@ -226,6 +273,7 @@ async def main():
         'themesMobile390':'passed','humidityChangeThreeConfigsSlider320And390':'passed',
         'humidityChangeZeroMissingSaturationClear':'passed',
         'dailySensitivityThreeConfigsMobileDrilldownInfluentialDayConstantRemainderReset':'passed',
+        'originalRecordsKeyboardPaginationMissingValuesRangeReset320And390':'passed',
         'transport':'delayed fixture CSV, UV mocked, MQTT CDN blocked'},indent=2))
     print(output)
 

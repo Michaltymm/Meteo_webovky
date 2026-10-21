@@ -342,7 +342,8 @@ nerovnoměrné timestampy, resize/scroll/touch, jeden aktivní RAF, žádný nov
 
 **Přínos / priorita / obtížnost:** po kliknutí na maximum nebo odvozenou hodnotu
 vidět vzorec/verzi, vstupní řádky a důvody vyloučení; P1, střední. **Stav:**
-Připraveno k realizaci. Dnešní řádky stačí pro přehled původu, trvalé odkazy na
+Rozpracováno — podklady vlivných T/V dnů dokončeny v0.7.0; další výpočty níže.
+Dnešní řádky stačí pro přehled původu, trvalé odkazy na
 opravené řádky potřebují ID/revizi backendu. Vztah METEO-047/050: ty evidují
 kvalitu a počty; toto je dohledatelná cesta konkrétního výsledku.
 **Řešení / výkon:** výsledek nese descriptor výpočtu a indexy/timestampy zdrojů,
@@ -350,6 +351,19 @@ detaily se sestaví až po otevření. Bez kopií celé historie a bez HTML z po
 **Omezení:** timestamp nemusí být unikátní; index je platný jen pro danou revizi.
 Rozlišit měření/výpočet/odhad. **Test:** shodná maxima, duplicity času, změněný
 starý záznam, null vstup rosného bodu, XSS fixture, neplatná reference po refreshi.
+
+**Ověřená etapa10 (T/V077):** rozbalovací výpis původních záznamů dne
+s největší změnou r/sklonu nebo nedostupným zbytkem. Průnik dne a původního
+rozsahu7/30/all, včetně vynechaných nečíselných T/V s důvodem. Zóna/UTC offset,
+nezkrácená číselná hodnota, pořadí v právě načtené historii, počty párů,
+vzorce r/sklonu a verze aplikace. Duplicity času jsou samostatné řádky,
+pořadí není trvalé ID zdroje. Bez kopie dne/historie, binární meze O(log n)
+a nejvýše50 řádků O(p) na stránku nad připravenou T/V analýzou. UI pouze na vyžádání; reference na aktuální
+snapshot/analýzu/rozsah/stanici, při mutaci CSV/MQTT/resetu se výpis vyčistí
+a zavře. Nahrazení pole i změna délky má dodatečnou kontrolu před stránkováním.
+Žádný fetch nebo nový graf. Regrese 12nových/165celkem a skutečný browser.
+**Zbývá:** obdobné podklady maxim, hodinových průměrů a dalších odvozených
+veličin; žádné globální DONE063 ani domnělé backendové ID/epochy071.
 
 #### METEO-064 — Diagnostická časová osa relace a anonymizovaný report
 
@@ -836,7 +850,8 @@ funkce. Původní ID, historie a stavy zůstávají zachované.
 
 - **Přínos / priorita / obtížnost / stav:** rozlišit stabilní vztah T/V od r
   vytvořeného jedinou odlehlou dvojicí nebo jediným dnem. P1, střední,
-  **Rozpracováno — denní citlivost dokončena v0.6.0, přímý výpis párů dále s063.**
+  **Dokončeno v0.7.0 v plánovaném denním rozsahu** — výpočet v0.6.0,
+  dohledání původních záznamů dne s063 v0.7.0.
   METEO-042 hledá podezřelý senzor a074 toleranci měření; zde je vliv vzorku
   na konkrétní analytický závěr bez označení vzorku za chybný.
 - **Vstupy / proveditelnost / nové požadavky:** současné úplné časové páry;
@@ -857,8 +872,11 @@ funkce. Původní ID, historie a stavy zůstávají zachované.
   11 nových regresí včetně jediného vlivného páru/celého posunutého dne,
   konstantního zbytku, duplicit, velkého offsetu, DST a250k. Metadata epoch071
   nejsou dostupná — posunutý den je syntetický scénář, nikoli rozpoznaná změna
-  kalibrace. **Zbývá** přímé zobrazení původních párů s platností reference
-  pro konkrétní datový snapshot podle METEO-063; nepřidávat duplicitní ID.
+  kalibrace. **Doplněno v etapě10/v0.7.0:** přímý stránkovaný výpis všech
+  původních záznamů vybraného dne v analytickém rozsahu, včetně vynechaných
+  řádků/důvodů a platnosti reference pro aktuální snapshot. Tím splněna
+  plánovaná denní funkcionalita077; obecný rodokmen ostatních výpočtů063
+  a metadata071/048 pokračují samostatně, nepřidávat duplicitní ID.
 
 #### METEO-078 — Proč se změnila relativní vlhkost
 
@@ -1173,3 +1191,51 @@ Zároveň veřejné Actions nově potvrdily předchozí
 [#16](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39627880077)
 pro1003743/v0.5.0 jako Success44s; dřívější nejistota etapy8 je uzavřena.
 Následující commit upravuje pouze dokumentaci, HTML zůstává0.6.0.
+
+
+## Etapa 10 — původní záznamy vlivných dnů, v0.7.0 (21. 10. 2026)
+
+Po fetch ověřeno čisté `9c017bb` = origin/codex-dev, main stále2405c5d.
+Hotová denní citlivost077 z etapy9 zachována, navazuje **METEO-063/077**.
+Neprováděl se nový audit83návrhů ani opakování rozsáhlého profilu všech velikostí.
+
+**METEO-077 Dokončeno v plánovaném denním rozsahu:** nativní vnořený výpis
+„Původní záznamy vlivného dne“ pro největší změnu r/sklonu a nedostupný zbytek.
+Přesně průnik místního dne a původního rozsahu analýzy; celý den je nadále
+k dispozici původními tlačítky průzkumníku. Výpis obsahuje všechny původní
+řádky tohoto průniku, včetně nepoužitých, po50 na stránce. Časy s UTC offsetem,
+nezkrácené T/V, důvod použití/vyloučení, pořadí od nejnovějšího v této historii,
+počty plného/zbylého výpočtu, vzorce a verze. Pořadí není backendové ID.
+
+**METEO-063 Rozpracováno:** tato etapa dokončila původ T/V vynechaného dne.
+Maxima, hodinové průměry a další odvozené metriky ještě nemají obecný proklik
+na vstupy. Žádný další METEO ID;077 nyní DONE,063 má konkrétní dílčí důkaz.
+
+Líné sestavení: bez otevření žádné čtení zdrojových řádků pro výpis. Sdílená
+binární `historyRangeBounds` vrací jen meze, neposouvá explorer cache a nekopíruje
+historii. Otevření O(log n+p), další stránka O(p), p≤50; souhrny nejsou z tabulky.
+Výpis drží pouze referenci na aktuální snapshot, identitu analýzy, stanici,
+rozsah a meze/stránku. Při CSV/MQTT, opravě/deleci, změně stanice/rozsahu nebo
+zavření se zahodí a odstraní řádky DOM. Změna identity/délky zdroje má také
+kontrolu při stránkování. Původní nuly/duplicity/sestupné pořadí zachovány,
+HTML z dat escapováno. Neurčuje kalibraci071, SOC ani meteorologickou kauzalitu.
+
+**165/165 Node testů**,12nových: shoda výpisu s originály včetně null/0/duplicit,
+celé a krajní stránky, nezměněné statistiky, inkluzivní7d mez a vynechaný řádek
+na hranici,250k s<100čteními při otevření a50další stránkou, zdroj/rozsah/stanice/
+CSV/MQTT/reset/close invalidace, nedostupný zbytek, chybějící/konstantní V,
+XSS a obě opakované místní02:30 při25h dni s odlišnými UTC offsety.
+Browser se skutečným DOM/Chart a třemi původními konfiguracemi ověřil otevření
+Enterem, stránkování, výběr dnů, missing i0V po opravě starého CSV, zneplatnění
+rozsahu/resetu, horizontální tabulku a obě témata320/390px. Žádný page error,
+fetch nebo nová Chart instance kvůli výpisu; screenshot prohlédnut.
+
+[Měření a surové JSON](performance/ETAPA10.md): cílené1k/250k před/po,
+sekvenční profily; výpis~1,5ms a další stránka~0,6ms v obou velikostech,
+bez tvrzení zrychlení původní analýzy. Původní velké profily etapy9 zachovány.
+Skutečná síť/parser, fyzický mobil, HW/firmware/broker a přímé widgety Pages
+nejsou tímto ověřeny; nasazení dokládat samostatně.
+
+**Další vhodná etapa:** METEO-063 rozšířit dohledání podkladů na hodinové
+průměry Porovnání dnů (původní T/RH, počty a důvody vyloučení, obě DST hodiny),
+se stejným omezením DOM a platností reference. Hotový077 znovu neanalyzovat.

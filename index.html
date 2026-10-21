@@ -88,6 +88,14 @@
     .comparison-data { margin-top: .8rem; padding: .7rem; background: var(--bg2); border-radius: 8px; font-size: .8rem; }
     .comparison-data summary { cursor: pointer; color: var(--text); }
     #cmpDataQuality { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.6; color: var(--muted); }
+    .battery-record-scroll { max-width: 100%; overflow-x: auto; margin: .6rem 0; }
+    .battery-record-table { width: 100%; min-width: 540px; border-collapse: collapse; }
+    .battery-record-table th, .battery-record-table td { padding: .45rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .battery-record-table caption { text-align: left; padding-bottom: .4rem; }
+    .battery-record-table td:nth-child(2) { white-space: nowrap; }
+    .battery-record-nav { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+    .battery-record-nav button:disabled { opacity: .5; cursor: default; }
+    #batteryRecordsInfo { white-space: pre-line; line-height: 1.6; overflow-wrap: anywhere; }
 
     .nav-pills {
       display: flex;
@@ -1959,8 +1967,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v060"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.6.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v070"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.7.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2466,6 +2474,32 @@
           změny umístění či kalibrace nejsou ověřeny. Tlačítka otevřou celý místní den v průzkumníku
           (i případné hodnoty mimo zvolený rozsah analýzy); lze přepnout mezi napětím a teplotou.
           Původní měření se neodstraňují.</p>
+        <details id="batteryRecords" class="comparison-data" hidden ontoggle="toggleBatteryRecords()">
+          <summary>Původní záznamy vlivného dne</summary>
+          <label for="batteryRecordsKind">Vybraný den:
+            <select id="batteryRecordsKind" onchange="openBatteryRecords()"></select>
+          </label>
+          <div id="batteryRecordsContent" hidden>
+            <p id="batteryRecordsInfo"></p>
+            <p>Hodnoty pocházejí z načtené historie, bez zaokrouhlení pro tabulku.
+              Záznamy jsou od nejnovějšího, včetně duplicitních časů; pořadí platí jen pro tuto historii.
+              Po změně dat výpis otevřete znovu. Tabulku lze na úzké obrazovce posunout do strany.</p>
+            <p id="batteryRecordsFormula"></p>
+            <div class="battery-record-nav" aria-label="Stránkování původních záznamů">
+              <button id="batteryRecordsPrev" class="exp-range-btn" onclick="pageBatteryRecords(-1)">Předchozí</button>
+              <span id="batteryRecordsPage" role="status" aria-live="polite"></span>
+              <button id="batteryRecordsNext" class="exp-range-btn" onclick="pageBatteryRecords(1)">Další</button>
+            </div>
+            <div class="battery-record-scroll" tabindex="0" role="region" aria-label="Původní záznamy teploty a napětí">
+              <table class="battery-record-table">
+                <caption id="batteryRecordsCaption"></caption>
+                <thead><tr><th scope="col">Záznam</th><th scope="col">Čas včetně UTC offsetu</th>
+                  <th scope="col">T [°C]</th><th scope="col">V [V]</th><th scope="col">Použití v analýze</th></tr></thead>
+                <tbody id="batteryRecordsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
       </details>
       <div class="chart-card">
         <div class="chart-title">Teplota a napětí v čase · platné páry</div>
@@ -4401,6 +4435,9 @@
       el("batterySummary").textContent = "";
       el("batterySensitivityValue").textContent = "";
       for (const id of ["batteryRDay", "batterySlopeDay", "batteryUndefinedDay"]) el(id).hidden = true;
+      clearBatteryRecords();
+      el("batteryRecords").open = false;
+      el("batteryRecords").hidden = true;
       explorerRangeCache = null;
       expAllPts = [];
       el("expInterval").hidden = true;
@@ -4411,8 +4448,7 @@
 
     // Descending store contract: binary range lookup, then reverse only the
     // selected slice. Cache one view, never an unbounded list of histories.
-    function explorerRows(from, to) {
-      const source = store.rows;
+    function historyRangeBounds(source, from, to) {
       const boundary = (time, inclusive) => {
         let lo = 0, hi = source.length;
         while (lo < hi) {
@@ -4423,6 +4459,11 @@
         return lo;
       };
       const start = boundary(to, false), end = boundary(from, true);
+      return { start, end: Math.max(start, end) };
+    }
+
+    function explorerRows(from, to) {
+      const source = store.rows, { start, end } = historyRangeBounds(source, from, to);
       if (explorerRangeCache && explorerRangeCache.source === source &&
         explorerRangeCache.start === start && explorerRangeCache.end === end) return explorerRangeCache.rows;
       const rows = source.slice(start, end).reverse();
@@ -5155,6 +5196,105 @@
        ROČNÍ STATISTIKY
     ══════════════════════════════════════════════ */
     let chartBatteryTime = null, chartBatteryXY = null;
+    const BATTERY_RECORD_PAGE_SIZE = 50;
+    const BATTERY_RECORD_KINDS = [["byR", "Největší změna r"], ["bySlope", "Největší změna sklonu"], ["undefinedDay", "Nedostupný zbytek"]];
+    let batteryRecordView = null;
+
+    function clearBatteryRecords() {
+      batteryRecordView = null;
+      el("batteryRecordsContent").hidden = true;
+      for (const id of ["batteryRecordsInfo", "batteryRecordsCaption", "batteryRecordsPage", "batteryRecordsFormula"]) setNodeText(el(id), "");
+      el("batteryRecordsBody").innerHTML = "";
+      el("batteryRecordsPrev").disabled = true;
+      el("batteryRecordsNext").disabled = true;
+    }
+
+    function batteryRecordViewIsCurrent() {
+      const v = batteryRecordView;
+      return v && v.snapshot === aggregateCache && v.snapshot.source === store.rows &&
+        v.snapshot.length === store.rows.length && v.snapshot.dayKey === localDateKey() &&
+        v.station === activeIdx && v.analysis === v.snapshot.battery?.result &&
+        v.range === el("batteryRange").value && v.kind === el("batteryRecordsKind").value;
+    }
+
+    function syncBatteryRecordChoices(s) {
+      const box = el("batteryRecords"), select = el("batteryRecordsKind");
+      const choices = BATTERY_RECORD_KINDS.filter(([key]) => s.sensitivity[key]);
+      const previous = select.value;
+      const options = choices.map(([key, label]) => `<option value="${key}">${escapeHTML(label + " · " + s.sensitivity[key].day)}</option>`).join("");
+      if (select.innerHTML !== options) select.innerHTML = options;
+      select.value = choices.some(([key]) => key === previous) ? previous : choices[0]?.[0] || "";
+      if (batteryRecordView && !batteryRecordViewIsCurrent()) {
+        clearBatteryRecords(); box.open = false;
+      }
+      box.hidden = !choices.length;
+      if (box.hidden) { clearBatteryRecords(); box.open = false; }
+    }
+
+    function toggleBatteryRecords() {
+      if (el("batteryRecords").open && !el("batteryRecords").hidden) openBatteryRecords();
+      else clearBatteryRecords();
+    }
+
+    function openBatteryRecords() {
+      clearBatteryRecords();
+      if (!el("batteryRecords").open || el("batteryRecords").hidden) return;
+      const range = el("batteryRange").value, kind = el("batteryRecordsKind").value;
+      if (!BATTERY_RECORD_KINDS.some(([key]) => key === kind)) return;
+      const snapshot = dataAggregates(), analysis = batteryAnalysis(range);
+      const day = analysis.sensitivity[kind], bounds = day && localDayBounds(day.day);
+      if (!bounds || !snapshot.source.length) return;
+      const to = +snapshot.source[0].ts;
+      const from = range === "all" ? -Infinity : to - Number(range) * 86400000;
+      const { start, end } = historyRangeBounds(snapshot.source, Math.max(bounds.from, from), Math.min(bounds.to, to));
+      if (start === end) return;
+      // Only bounds and the current snapshot identity, never copies of a day/history.
+      batteryRecordView = { snapshot, analysis, range, kind, day, start, end, page: 0, station: activeIdx };
+      const count = end - start, scope = range === "all" ? "celá načtená historie" : `posledních ${range} × 24 h do nejnovějšího záznamu`;
+      const mv = value => value !== null && Number.isFinite(value * 1000) ? fmt(value * 1000, 3) : "–";
+      setNodeText(el("batteryRecordsInfo"), `Den ${day.day} • rozsah: ${scope}.\n` +
+        `${count} původních záznamů v průniku dne a rozsahu • ${day.omittedCount} použitých párů • ${count - day.omittedCount} vynechaných řádků.\n` +
+        `Plný výpočet: ${analysis.count} párů, r = ${fmt(analysis.r, 3)}, sklon = ${mv(analysis.slope)} mV/°C.\n` +
+        `Bez tohoto dne: ${day.count} párů, r = ${fmt(day.r, 3)}, sklon = ${mv(day.slope)} mV/°C.\n` +
+        `Zóna: ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`);
+      setNodeText(el("batteryRecordsCaption"), `Původní záznamy ${day.day} · T/V · nejvýše ${BATTERY_RECORD_PAGE_SIZE} řádků na stránce`);
+      setNodeText(el("batteryRecordsFormula"), `${el("appVersion").textContent}. ` +
+        "Pearson r = C / √M2T / √M2V; sklon = C / M2T (V/°C). C je součet součinů odchylek T a V od průměrů, M2 součet čtverců odchylek. " +
+        "Výpočty zahrnují všechny platné páry rozsahu, nikoli pouze tuto stránku. „–“ označuje nedostupný výsledek nebo číselný rozsah převodu jednotek.");
+      el("batteryRecordsContent").hidden = false;
+      pageBatteryRecords(0);
+    }
+
+    function batteryRecordsPage(page = 0) {
+      if (!batteryRecordViewIsCurrent()) return null;
+      const v = batteryRecordView, total = v.end - v.start, pages = Math.ceil(total / BATTERY_RECORD_PAGE_SIZE);
+      page = Number.isInteger(page) ? Math.max(0, Math.min(pages - 1, page)) : 0;
+      const first = v.start + page * BATTERY_RECORD_PAGE_SIZE, end = Math.min(v.end, first + BATTERY_RECORD_PAGE_SIZE);
+      const rows = [];
+      for (let i = first; i < end; i++) {
+        const row = v.snapshot.source[i], missing = [];
+        if (!Number.isFinite(row.temp)) missing.push("T");
+        if (!Number.isFinite(row.voltage)) missing.push("V");
+        rows.push({ index: i + 1, time: intervalTimestamp(row.ts),
+          temp: Number.isFinite(row.temp) ? String(row.temp) : "–",
+          voltage: Number.isFinite(row.voltage) ? String(row.voltage) : "–",
+          reason: missing.length ? "Vynecháno: chybí nebo není číselná " + missing.join(" a ") : "Použitý pár T/V" });
+      }
+      return { page, pages, total, first: first - v.start + 1, last: end - v.start, rows };
+    }
+
+    function pageBatteryRecords(delta) {
+      if (!Number.isInteger(delta) || Math.abs(delta) > 1) return;
+      const data = batteryRecordsPage((batteryRecordView?.page || 0) + delta);
+      if (!data) { clearBatteryRecords(); el("batteryRecords").open = false; return; }
+      batteryRecordView.page = data.page;
+      const markup = data.rows.map(row => `<tr>${[row.index, row.time, row.temp, row.voltage, row.reason]
+        .map(value => `<td>${escapeHTML(value)}</td>`).join("")}</tr>`).join("");
+      if (el("batteryRecordsBody").innerHTML !== markup) el("batteryRecordsBody").innerHTML = markup;
+      setNodeText(el("batteryRecordsPage"), `Strana ${data.page + 1}/${data.pages} • záznamy ${data.first}–${data.last} z ${data.total}`);
+      el("batteryRecordsPrev").disabled = data.page === 0;
+      el("batteryRecordsNext").disabled = data.page === data.pages - 1;
+    }
 
     function pairRelationship({ count, m2T, m2V, covariance }) {
       if (count >= 3 && m2T > 0 && m2V > 0 && [m2T, m2V, covariance].every(Number.isFinite)) {
@@ -5270,6 +5410,7 @@
     }
 
     function renderBatterySensitivity(s) {
+      syncBatteryRecordChoices(s);
       const d = s.sensitivity, mv = value => Number.isFinite(value * 1000) ? fmt(value * 1000, 3) : "–";
       for (const [id, key] of [["batteryRDay", "byR"], ["batterySlopeDay", "bySlope"], ["batteryUndefinedDay", "undefinedDay"]]) {
         el(id).hidden = !d[key];
