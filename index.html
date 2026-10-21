@@ -82,6 +82,9 @@
       text-underline-offset: 2px;
     }
 
+    #expInterval { white-space: pre-line; font-size: .8rem; line-height: 1.5; padding: .6rem .7rem; }
+    #expInterval[hidden] { display: none; }
+
     .nav-pills {
       display: flex;
       gap: .4rem;
@@ -1945,8 +1948,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v010"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.1.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v020"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.2.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2475,6 +2478,7 @@
       </div>
 
       <div id="expStats" class="day-summary" style="margin-bottom:.5rem;display:none"></div>
+      <div id="expInterval" class="day-summary" hidden aria-label="Porovnání krajních měření"></div>
       <div class="chart-wrapper" style="margin-top:.6rem">
         <div class="chart-title" id="expChartTitle">Graf</div>
         <div class="chart-canvas-wrap" style="height:320px;padding-bottom:4px"><canvas id="chartExplorer"></canvas>
@@ -3788,55 +3792,55 @@
       ovStores[activeIdx] = { ts: R.ts, temp: R.temp, pressure: R.pressure, hum: R.hum, voltage: R.voltage };
       updateOvBar();
 
-      el("curTemp").textContent = fmt(R.temp);
-      el("curHum").textContent = fmt(R.hum);
-      el("curDew").textContent = fmt(dewPoint(R.temp, R.hum));
-      el("curPressure").textContent = fmt(R.pressure, 1);
-      el("curRainInc").textContent = fmt(R.rainInc, 1);
-      el("curRainTotal").textContent = fmt(R.rain, 1);
-      el("curTank").textContent = fmt(R.tank, 1);
-      el("curVoltage").textContent = fmt(R.voltage, 2);
-      el("curTime").textContent = fmtDT(R.ts);
+      setNodeText(el("curTemp"), fmt(R.temp));
+      setNodeText(el("curHum"), fmt(R.hum));
+      setNodeText(el("curDew"), fmt(dewPoint(R.temp, R.hum)));
+      setNodeText(el("curPressure"), fmt(R.pressure, 1));
+      setNodeText(el("curRainInc"), fmt(R.rainInc, 1));
+      setNodeText(el("curRainTotal"), fmt(R.rain, 1));
+      setNodeText(el("curTank"), fmt(R.tank, 1));
+      setNodeText(el("curVoltage"), fmt(R.voltage, 2));
+      setNodeText(el("curTime"), fmtDT(R.ts));
 
       if (store.rows.length > 1) {
         const P = store.rows[1];
-        el("tempTrend").textContent = arrow(R.temp, P.temp, .2);
-        el("humTrend").textContent = arrow(R.hum, P.hum, 1);
+        setNodeText(el("tempTrend"), arrow(R.temp, P.temp, .2));
+        setNodeText(el("humTrend"), arrow(R.hum, P.hum, 1));
       }
 
       // Statistika
-      el("statLocation").textContent = CFG.name || stations[activeIdx].name;
-      el("pillStationName").textContent = CFG.name || stations[activeIdx].name;
-      if (el("headerStationName")) el("headerStationName").textContent = CFG.name || stations[activeIdx].name;
-      el("statCount").textContent = store.rows.length.toLocaleString("cs-CZ");
+      setNodeText(el("statLocation"), CFG.name || stations[activeIdx].name);
+      setNodeText(el("pillStationName"), CFG.name || stations[activeIdx].name);
+      if (el("headerStationName")) setNodeText(el("headerStationName"), CFG.name || stations[activeIdx].name);
+      setNodeText(el("statCount"), store.rows.length.toLocaleString("cs-CZ"));
       const oldest = store.rows[store.rows.length - 1];
-      el("statFrom").textContent = fmtDT(oldest.ts);
+      setNodeText(el("statFrom"), fmtDT(oldest.ts));
 
       const temps = numericSummary(store.rows.map(r => r.temp));
       if (temps.count) {
         const maxT = temps.max, minT = temps.min;
         const mxR = store.rows.find(r => r.temp === maxT), mnR = store.rows.find(r => r.temp === minT);
-        el("statTempMax").textContent = fmt(maxT) + " °C  " + fmtDT(mxR.ts);
-        el("statTempMin").textContent = fmt(minT) + " °C  " + fmtDT(mnR.ts);
+        setNodeText(el("statTempMax"), fmt(maxT) + " °C  " + fmtDT(mxR.ts));
+        setNodeText(el("statTempMin"), fmt(minT) + " °C  " + fmtDT(mnR.ts));
       }
 
       // max rain per day
       const rb = {};
       store.rows.forEach(r => { if (r.rain === null) return; const k = fmtDateShort(r.ts); if (!rb[k] || r.rain > rb[k]) rb[k] = r.rain; });
       const rEntries = Object.entries(rb);
-      if (rEntries.length) { const mx = rEntries.reduce((a, b) => b[1] > a[1] ? b : a); el("statRainMax").textContent = fmt(mx[1], 1) + " mm (" + mx[0] + ")"; }
+      if (rEntries.length) { const mx = rEntries.reduce((a, b) => b[1] > a[1] ? b : a); setNodeText(el("statRainMax"), fmt(mx[1], 1) + " mm (" + mx[0] + ")"); }
 
       // Today
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const today_rows = store.rows.filter(r => r.ts >= today);
-      el("todayDate").textContent = fmtDate(new Date());
+      setNodeText(el("todayDate"), fmtDate(new Date()));
       if (today_rows.length) {
         const dt = numericSummary(today_rows.map(r => r.temp));
         const dh = numericSummary(today_rows.map(r => r.hum));
         const dr = numericSummary(today_rows.map(r => r.rain));
-        if (dt.count) { el("dayTempMin").textContent = fmt(dt.min); el("dayTempMax").textContent = fmt(dt.max); el("dayTempAvg").textContent = fmt(dt.avg, 2); }
-        if (dh.count) { el("dayHumMin").textContent = fmt(dh.min); el("dayHumMax").textContent = fmt(dh.max); el("dayHumAvg").textContent = fmt(dh.avg, 2); }
-        if (dr.count) el("dayRain").textContent = fmt(dr.max, 1);
+        if (dt.count) { setNodeText(el("dayTempMin"), fmt(dt.min)); setNodeText(el("dayTempMax"), fmt(dt.max)); setNodeText(el("dayTempAvg"), fmt(dt.avg, 2)); }
+        if (dh.count) { setNodeText(el("dayHumMin"), fmt(dh.min)); setNodeText(el("dayHumMax"), fmt(dh.max)); setNodeText(el("dayHumAvg"), fmt(dh.avg, 2)); }
+        if (dr.count) setNodeText(el("dayRain"), fmt(dr.max, 1));
       }
 
       markAllTabsDirty();
@@ -3844,6 +3848,11 @@
       
       const activeBtn = document.querySelector(".tab-btn.active");
       if (activeBtn) refreshTab(activeBtn.dataset.tab);
+    }
+
+    function setNodeText(node, value) {
+      const text = String(value);
+      if (node && node.textContent !== text) node.textContent = text;
     }
 
     function arrow(a, b, thr) { if (a === null || b === null) return "→"; const d = a - b; return d > thr ? "↑" : d < -thr ? "↓" : "→"; }
@@ -4014,6 +4023,27 @@
     /* ══════════════════════════════════════════════
        DŘÍVE TOUTO DOBOU
     ══════════════════════════════════════════════ */
+    function nearestHistoryRow(rows, target, tolerance) {
+      if (!rows.length || !Number.isFinite(target)) return null;
+      const firstAtOrBefore = time => {
+        let lo = 0, hi = rows.length;
+        while (lo < hi) {
+          const mid = (lo + hi) >>> 1;
+          if (rows[mid].ts.getTime() > time) lo = mid + 1;
+          else hi = mid;
+        }
+        return lo;
+      };
+      const i = firstAtOrBefore(target);
+      let best = i < rows.length ? rows[i] : null;
+      // The previous linear scan chose the newer timestamp on equal distances.
+      if (i > 0 && (!best || Math.abs(rows[i - 1].ts - target) <= Math.abs(best.ts - target))) best = rows[i - 1];
+      if (!best || !(Math.abs(best.ts - target) < tolerance)) return null;
+      // Preserve the first row among duplicate timestamps, including before i.
+      return rows[firstAtOrBefore(best.ts.getTime())];
+    }
+
+    let renderedHistoryMarkup = null;
     function buildHistoryRows() {
       const now = Date.now(), tol = 30 * 60 * 1000;
       const offs = [
@@ -4022,13 +4052,16 @@
         { l: "Před týdnem", ms: 7 * 86400e3 },
         { l: "Včera", ms: 86400e3 }
       ];
-      el("historyRows").innerHTML = offs.map(o => {
+      const markup = offs.map(o => {
         const t = now - o.ms;
-        let best = null, bd = Infinity;
-        store.rows.forEach(r => { const d = Math.abs(r.ts.getTime() - t); if (d < tol && d < bd) { best = r; bd = d; } });
+        const best = nearestHistoryRow(store.rows, t, tol);
         if (!best) return `<tr><td style="color:var(--muted)">${o.l}</td><td colspan="2" style="color:var(--border)">–</td></tr>`;
         return `<tr><td style="color:var(--muted)">${o.l}</td><td style="color:var(--accent);font-weight:700;text-align:right">${fmt(best.temp)} °C</td><td style="color:var(--blue);text-align:right">${fmt(best.hum)} %</td></tr>`;
       }).join("");
+      if (markup !== renderedHistoryMarkup) {
+        el("historyRows").innerHTML = markup;
+        renderedHistoryMarkup = markup;
+      }
     }
 
     /* ══════════════════════════════════════════════
@@ -4087,6 +4120,8 @@
     function invalidateDerivedData() {
       explorerRangeCache = null;
       expAllPts = [];
+      el("expInterval").hidden = true;
+      el("expInterval").textContent = "";
     }
 
     // Descending store contract: binary range lookup, then reverse only the
@@ -4231,6 +4266,7 @@
 
       // Pro srážky denní – agregace max na den
       if (metric === "rain") {
+        renderIntervalComparison([]);
         const rb = {};
         rows.forEach(r => {
           if (r.rain === null) return;
@@ -4267,6 +4303,7 @@
     }
 
     function _drawExplorerPts(rows) {
+      renderIntervalComparison(rows);
       if (!rows.length) {
         chartExplorer.data.labels = [];
         chartExplorer.data.datasets = [];
@@ -4349,6 +4386,50 @@
       }
 
       chartExplorer.update("none");
+    }
+
+    // Only the two original endpoints are compared. Missing values stay missing;
+    // do not substitute nearby samples or infer rates across unobserved gaps.
+    function intervalComparison(rows) {
+      if (rows.length < 2) return null;
+      const start = rows[0], end = rows[rows.length - 1];
+      const elapsedMs = end.ts - start.ts;
+      if (!Number.isFinite(start.ts.getTime()) || !Number.isFinite(end.ts.getTime()) || elapsedMs < 0) return null;
+      const delta = {};
+      for (const key of ["temp", "hum", "pressure", "voltage"]) {
+        const value = Number.isFinite(start[key]) && Number.isFinite(end[key]) ? end[key] - start[key] : null;
+        delta[key] = Number.isFinite(value) ? value : null;
+      }
+      return { start, end, elapsedMs, delta };
+    }
+
+    function renderIntervalComparison(rows) {
+      const box = el("expInterval"), metric = el("expMetric").value;
+      const fields = {
+        temp: ["Teplota", "°C", "°C", 2], hum: ["Vlhkost", "%", "p. b.", 2],
+        pressure: ["Tlak", "hPa", "hPa", 2], voltage: ["Napětí", "V", "V", 3]
+      };
+      const keys = metric === "temp_hum" ? ["temp", "hum"] : fields[metric] ? [metric] : [];
+      const comparison = intervalComparison(rows);
+      box.hidden = !comparison || !keys.length;
+      if (box.hidden) { box.textContent = ""; return; }
+      const { start, end, elapsedMs, delta } = comparison;
+      const stamp = d => {
+        const offset = -d.getTimezoneOffset(), sign = offset < 0 ? "−" : "+";
+        return fmtDT(d) + ":" + _pad2(d.getSeconds()) + " UTC" + sign +
+          _pad2(Math.floor(Math.abs(offset) / 60)) + ":" + _pad2(Math.abs(offset) % 60);
+      };
+      const hours = Math.floor(elapsedMs / 3600000), minutes = Math.floor(elapsedMs / 60000) % 60;
+      const seconds = +(elapsedMs % 60000 / 1000).toFixed(3);
+      const lines = keys.map(key => {
+        const [label, unit, deltaUnit, digits] = fields[key];
+        const value = v => Number.isFinite(v) ? fmt(v, digits) + " " + unit : "nedostupné";
+        const change = delta[key] === null ? "nedostupná" : (delta[key] > 0 ? "+" : "") + fmt(delta[key], digits) + " " + deltaUnit;
+        return label + ": " + value(start[key]) + " → " + value(end[key]) + " · změna " + change;
+      });
+      box.textContent = "Krajní měření úseku · " + hours + " h " + minutes + " min " + seconds + " s\n" +
+        stamp(start.ts) + " → " + stamp(end.ts) + "\n" + lines.join("\n") +
+        "\nRozdíl krajních měření nepopisuje průběh ani výpadky mezi nimi. Časy v zóně prohlížeče.";
     }
 
     function expLabelFor(r) {
@@ -5068,27 +5149,27 @@
         const vltEl = el("ovVolt" + i);
         const lstEl = el("ovLast" + i);
         const stEl = el("ovSt" + i);
-        if (nameEl) nameEl.textContent = stations[i] ? stations[i].name : "–";
+        if (nameEl) setNodeText(nameEl, stations[i] ? stations[i].name : "–");
         if (stEl) stEl.classList.toggle("ov-active", i === activeIdx);
         if (!ov) {
           if (dot) dot.className = "ov-dot";
-          if (tmpEl) tmpEl.textContent = "–";
-          if (humEl) humEl.textContent = "–";
-          if (preEl) preEl.textContent = "–";
-          if (vltEl) vltEl.textContent = "–";
-          if (lstEl) lstEl.textContent = "načítám…";
+          if (tmpEl) setNodeText(tmpEl, "–");
+          if (humEl) setNodeText(humEl, "–");
+          if (preEl) setNodeText(preEl, "–");
+          if (vltEl) setNodeText(vltEl, "–");
+          if (lstEl) setNodeText(lstEl, "načítám…");
           continue;
         }
         const ageMs = now - ov.ts.getTime();
         const fresh = ageMs < 3600000; // < 1 hodina
         if (dot) dot.className = "ov-dot " + (fresh ? "ok" : "warn");
-        if (tmpEl) tmpEl.textContent = fmt(ov.temp) + " °C";
-        if (humEl) humEl.textContent = fmt(ov.hum, 0) + " %";
-        if (preEl) preEl.textContent = fmt(ov.pressure, 0) + " hPa";
-        if (vltEl) vltEl.textContent = ov.voltage !== null ? fmt(ov.voltage, 2) + " V" : "–";
+        if (tmpEl) setNodeText(tmpEl, fmt(ov.temp) + " °C");
+        if (humEl) setNodeText(humEl, fmt(ov.hum, 0) + " %");
+        if (preEl) setNodeText(preEl, fmt(ov.pressure, 0) + " hPa");
+        if (vltEl) setNodeText(vltEl, ov.voltage !== null ? fmt(ov.voltage, 2) + " V" : "–");
         if (lstEl) {
           const min = Math.round(ageMs / 60000);
-          lstEl.textContent = min < 2 ? "právě teď" : min < 60 ? "(" + min + " min)" : "(" + Math.round(min / 60) + " h)";
+          setNodeText(lstEl, min < 2 ? "právě teď" : min < 60 ? "(" + min + " min)" : "(" + Math.round(min / 60) + " h)");
         }
       }
     }
