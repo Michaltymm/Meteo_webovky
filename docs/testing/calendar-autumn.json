@@ -1,0 +1,99 @@
+{
+  "results": [
+    {
+      "station": 0,
+      "fullRequestsForTwoCalls": 1,
+      "rows": 1000,
+      "checks": "passed"
+    },
+    {
+      "station": 1,
+      "fullRequestsForTwoCalls": 1,
+      "rows": 1000,
+      "checks": "passed"
+    },
+    {
+      "station": 2,
+      "fullRequestsForTwoCalls": 1,
+      "rows": 1000,
+      "checks": "passed"
+    }
+  ],
+  "requests": [
+    {
+      "station": 0,
+      "quick": true,
+      "bytes": 16730
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "bytes": 42206
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "bytes": 41582
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "bytes": 42726
+    },
+    {
+      "station": 1,
+      "quick": true,
+      "bytes": 16626
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "bytes": 42726
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "bytes": 41582
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "bytes": 42206
+    },
+    {
+      "station": 2,
+      "quick": true,
+      "bytes": 16418
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "bytes": 42726
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "bytes": 42206
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "bytes": 41582
+    }
+  ],
+  "pageErrors": [],
+  "clock": "2026-10-25T23:30:00+01:00",
+  "calendar": [
+    {
+      "date": "2026-03-29",
+      "hours": 23,
+      "oneDayAndBlankEnd": "passed"
+    },
+    {
+      "date": "2026-10-25",
+      "hours": 25,
+      "oneDayAndBlankEnd": "passed"
+    }
+  ],
+  "transport": "fixture CSV delayed 250ms; MQTT CDN blocked, UV mocked"
+}

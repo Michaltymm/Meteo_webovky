@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `1473437`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.2.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `3e236bc`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.2.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,11 +15,11 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (63/63 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (80/80 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
-- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); 15 nových samostatných návrhů, další etapa AUD-010/čas + sdílené agregace, cache stanic/pozadí a analytika.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); 15 nových samostatných návrhů, AUD-010 DONE, METEO-048 rozpracované; další etapa sdílené agregace/pozadí a kontrakt času stanice.
 - Historický benchmark etapy 1 Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
 - Živé quick CSV všech tří zdrojů nyní HTTP200 (21. 10.); pouze dostupnost/bytes/doba, bez validace obsahu. Skutečné schema, firmware, MQTT ani dlouhá historie neověřeny.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
@@ -103,7 +103,7 @@ Priority: P0 = bezprostředně kritické; P1 = bezpečnost/funkční spolehlivos
 | AUD-007 / P2 / DONE | Původně se stejný den/měsíc různých let zprůměroval do jedné položky. | `buildAgg` používá denní klíč `fmtDateShort` včetně roku. Test rozlišuje 20.10.2025/2026 a zachovává průměr platné nuly i chybějící vlhkosti. |
 | AUD-008 / P2 / DONE | Původní preflight skládal dvojitý otazník a mohl porovnávat hlavičky; otisk měnil před úspěchem. | Nespolehlivý preflight odstraněn. Celý úspěšně zparsovaný CSV export se uloží jako `store._lastFullCsv`; identická odpověď ušetří parse/render. Změny starších řádků/poznámek i při stejných hlavičkách a posledním timestampu se projeví. Po chybě otisk zůstává původní; ruční refresh parsuje znovu. Cena: plný přenos při periodické obnově; optimalizace až podle ověřeného datového kontraktu/revize, viz FUT-010. |
 | AUD-009 / P1 / DONE | Původní lokální klienti/reconnecty zůstávali aktivní po změně stanice. | `mqttClient` a `mqttReconnectTimer` mají jednoho vlastníka; `stopMQTT` je zruší. Callbacky ověřují relaci i identitu klienta, pozdní onSuccess se odpojí bez subscribe, staré zprávy/chyby/retry se ignorují. Ověřeno fake klientem v regresních testech, nikoli reálným brokerem. Limit historie/backoff zůstávají FUT-009. |
-| AUD-010 / P2 / TODO | `buildCompare` seskupuje dny přes UTC `toISOString().slice(0,10)`, hodiny přes lokální `getHours`. Pro Prague 00:30 je UTC předchozí den. | Půlnoční měření v nesprávném dni; stejné UTC datum používají date inputy/UV cache. Definovat časovou zónu a konzistentní denní klíče, testovat DST. |
+| AUD-010 / P2 / DONE (v0.2.1) | Původní UTC klíče přesouvaly místní půlnoční měření do sousedního dne. Nový regresní test na 3e236bc vrátil null místo 10; další vynechal konec dne. | localDateKey + kalendářní posuny + meze další půlnoci; porovnání, vstupy, dnešní statistiky a datum UV cache sjednoceny v dosavadní zóně prohlížeče. 80 testů, pět zón a skutečné datumové vstupy 23/25h. Explicitní zóna stanice/CSV offset a UV hourly kontrakt zůstávají METEO-048; viz docs/CAS_A_KALENDAR.md. |
 | AUD-011 / P2 / DONE | Volba Vše (0) původně spadla do výchozího limitu 500. | Rozlišena platná nula a neplatný/negativní limit; test s 501 řádky ověřuje Vše i limity. Stránkování velkých historií zůstává návrh, nikoli nezbytná součást této opravy. |
 | AUD-012 / P2 / DONE | Staré panely při přepnutí již řešil předchozí balík; zbýval prázdný rozsah ve stejné stanici. | `_drawExplorerPts([])` vyčistí labely/datasety/statistiky a ukáže prázdný stav. Ověřeno jednotkově i skutečným prázdným datem v browseru. |
 | AUD-013 / P0 dle nového zadání / DONE | Browser reprodukoval ztrátu extrému i počet pouze 800 místo 100k ve statistikách. | METEO-033: min/max redukce až při kreslení, statistiky/regrese z úplných dat, slider řeže plné řádky. 54 Node testů a Chromium/Chart.js ověření; původní chyba reprodukována také regresním testem. |
@@ -151,7 +151,7 @@ Aktuální rozvojové priority jsou v [centrální roadmapě](docs/NAPADY_A_ROAD
 | 5 / P1 | AUD-004 DONE | Úspěch potvrzen až po parseru; úklid po selhání a timeout doplněny. |
 | 6 / P1 | AUD-009 DONE | Jeden spravovaný klient a rušitelný reconnect, testováno mockem. Další MQTT práce FUT-009. |
 | 7 / P2 | AUD-006 DONE | CSV/datum fixture testy i víceřádkové poznámky v browseru prošly. |
-| 8 / P2 | AUD-007 DONE; AUD-010 TODO | Roky oddělené; zbývá sjednotit lokální dny/UTC a otestovat půlnoc/DST. |
+| 8 / P2 | AUD-007/010 DONE | Roky i denní klíče sjednocené v zóně prohlížeče; vlastní zóna stanice a UTC kontrakt zdroje dále METEO-048. |
 | 9 / P2 | AUD-008 DONE | Spolehlivé porovnání celého exportu; přenosovou optimalizaci vést samostatně jako FUT-010. |
 | 10 / P2 | AUD-012 + AUD-011 DONE | Prázdné stavy a Vše opraveny; přístupnost/cache zůstávají samostatné návrhy. |
 
@@ -224,6 +224,15 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Kód v0.2.0 uložen v [14af6c8](https://github.com/Michaltymm/Meteo_webovky/commit/14af6c8084716811b9ff6514168a2107740974c7); úspěch nasazení ověřovat samostatně podle nového Actions běhu, ne podle čísla verze.
 
 - Publikace této etapy: aplikační commit `14af6c8` a analytická dokumentace `c5fe1bf50c196eb4b62bd88a7cb5e72c8cc3b0fb` odeslány na codex-dev; vzdálené SHA ověřeno. [Actions #10](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39589555415) pro c5fe1bf skončilo **Success**, 27s, build8s/deploy9s, jeden Pages artefakt. Workflow sestavilo stávající main + vývoj v0.2.0. Větev main zůstala `2405c5d7326909a24c41e7066bfdc4a9d1622208`. To potvrzuje deployment workflow; načtení živé stránky a skutečné widgety zde nebyly přímo vizuálně ověřeny. Následná aktualizace této paměti mění pouze dokumentaci a nový deployment nevyžaduje. Anotace Node20 action runtime/ubuntu-latest jsou varování, ne neúspěch běhu; modernizaci workflow řešit samostatně v METEO-055.
+
+### Etapa 3: kalendářní dny a DST, v0.2.1 (21. 10. 2026)
+
+- AUD-010 DONE, METEO-048 rozpracované. [Časový model a testy](docs/CAS_A_KALENDAR.md) popisují přesnou hranici změny. Legacy CSV se nadále parsuje v zóně prohlížeče, nic se nepřevádí podle domnělé zóny stanice. Uživatel v jiné zóně a nerozlišená podzimní CSV hodina potřebují následný datový kontrakt.
+- `localDateKey` pro denní YYYY-MM-DD, `localCalendarDay` pro rychlé volby, `localDayBounds` pro inkluzivní rozsah do příští půlnoci minus1ms. Nepřidávat 86400s k počátku kalendářního dne; pevné 24h/7d intervaly v exploreru zůstávají klouzavé doby. Porovnání používá lokální den i hodinu, opakovanou hodinu průměruje ve stejné hodinové skupině a UI uvádí zónu.
+- Dnešní karty/denní panel vylučují sousední dny; při chybějícím dnešku či veličině se starý text vyčistí na „–“, nula zůstává platná. UV cache používá lokální datum, hodinový polling/počet zdrojových requestů se nemění. UV timezone=auto vs browser hodinový index a DST pole 23/25 zůstávají nevyřešené v METEO-048; tato oprava samotná nezaručuje správnost UV v jiné zóně.
+- `tests/calendar-days.test.js`: 17 nových testů v oddělených TZ procesech; celkem 80/80. Na původním 3e236bc stejné dvě regrese selhaly (půlnoc null místo10, konec dne2 místo3 řádků). Prague/NY 23/25h, UTC, UTC+14, São Paulo posun o půlnoci, přelom roku/leap day, neplatné/obrácené datum, chybějící data a UV datum cache.
+- Browser skript rozšířen o --at (pevný Date), kontrolu init vstupů/kalendářních voleb a skutečné filtry 23/25h; fixture čas počítá přes UTC, aby nevytvářel neexistující jarní hodinu. Dva běhy se třemi konfiguracemi, reálný Chart.js, mobil390, zpožděné CSV/UV fixture. Výsledky docs/testing/calendar-*.json. Skutečné externí služby/firmware tím ověřeny nejsou; výkon není předmětem této opravy.
+- Další implementační krok METEO-038: revizní cache souhrnů s invalidací po CSV/MQTT/resetu i změně dne, srovnání proti plným statistikám a měření před/po. METEO-005 pozastavení pollingu na pozadí poté; bez bezlimitní cache tří velkých historií. Main/konfigurace/workflow/archiv se v této etapě nemění.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

@@ -3,7 +3,7 @@ Requires Python Playwright and Chromium, just like benchmark-browser.py.
 """
 import argparse
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -13,6 +13,7 @@ from playwright.async_api import async_playwright
 parser = argparse.ArgumentParser()
 parser.add_argument('--chartjs', required=True)
 parser.add_argument('--output', required=True)
+parser.add_argument('--at', help='Optional ISO timestamp with UTC offset to fix the browser clock')
 args = parser.parse_args()
 
 async def main():
@@ -20,17 +21,25 @@ async def main():
     chart = Path(args.chartjs).read_text()
     files = ['config_praha_baterie.json', 'config_praha_okno.json', 'config_stanice3.json']
     configs = [json.loads(Path(f).read_text(encoding='utf-8-sig')) for f in files]
-    bodies = {}
-    now = datetime.now(ZoneInfo('Europe/Prague')).replace(microsecond=0)
+    bodies, current_hour_values = {}, {}
+    now = (datetime.fromisoformat(args.at).astimezone(ZoneInfo('Europe/Prague'))
+           if args.at else datetime.now(ZoneInfo('Europe/Prague'))).replace(microsecond=0)
     for station in range(3):
         lines = ['Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti']
+        current_hour_values[station] = []
         for i in range(1000):
-            d = now-timedelta(minutes=5*i)
+            # Generate real elapsed instants; wall-clock arithmetic creates
+            # nonexistent spring hours before formatting the legacy CSV.
+            d = (now.astimezone(timezone.utc)-timedelta(minutes=5*i)).astimezone(ZoneInfo('Europe/Prague'))
             lines.append(f'{d:%d.%m.%Y},{d:%H:%M:%S},{10+station*10+i/100},1010,60,0,0,,4')
+            if d.date() == now.date() and d.hour == now.hour:
+                current_hour_values[station].append(10+station*10+i/100)
         bodies[station] = lines
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path='/usr/bin/chromium', headless=True)
         page = await browser.new_page(viewport={'width':390,'height':844}, timezone_id='Europe/Prague')
+        if args.at:
+            await page.clock.set_fixed_time(now)
         errors, requests, results = [], [], []
         page.on('pageerror', lambda e: errors.append(str(e)))
         async def route(r):
@@ -55,6 +64,11 @@ async def main():
                 await r.abort()
         await page.route('**/*',route)
         await page.goto('http://meteo.test/dev/')
+        today = now.date().isoformat()
+        for field in ['expDateFrom','expDateTo','expDateOne','cmpAddDate']:
+            assert await page.locator('#'+field).input_value() == today
+        expected_dates = [(now.date()-timedelta(days=i)).isoformat() for i in range(8)]
+        assert await page.locator('#cmpDayBtns button').evaluate_all('(buttons)=>buttons.map(b=>b.title)') == expected_dates
         for station in range(3):
             if station:
                 await page.evaluate('(i)=>switchStation(i)',station)
@@ -79,8 +93,34 @@ async def main():
             for theme in ['darkblue','light']:
                 await page.evaluate('(t)=>setTheme(t)',theme)
                 assert await box.is_visible()
+            await page.locator('.tab-btn[data-tab="compare"]').click()
+            await page.evaluate('el("cmpMetric").value="temp";buildCompare()')
+            value = await page.evaluate('(hour)=>chartCompare.data.datasets[0].data[hour]',now.hour)
+            expected = sum(current_hour_values[station])/len(current_hour_values[station])
+            assert value is not None and abs(value-expected) <= .051
+            assert 'Europe/Prague' in await page.locator('#cmpInfo').inner_text()
+            assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+            await page.locator('.tab-btn[data-tab="explorer"]').click()
             results.append({'station':station,'fullRequestsForTwoCalls':len(requests)-before,
                             'rows':await page.evaluate('store.rows.length'),'checks':'passed'})
+        calendar_results = []
+        for month, day, hours in [(3,29,23),(10,25,25)]:
+            key = f'2026-{month:02}-{day:02}'
+            await page.evaluate('''([month,day])=>{
+              const start=new Date(2026,month-1,day).getTime();
+              const next=new Date(2026,month-1,day+1).getTime();
+              store.rows=[next,next-1,start,start-1].map((t,i)=>({ts:new Date(t),temp:i,hum:60}));
+              store.fullLoaded=true;invalidateDerivedData();el('expMetric').value='temp';
+            }''',[month,day])
+            for mode, field in [('oneday','expDateOne'),('custom','expDateFrom')]:
+                await page.evaluate('(mode)=>setExpRange(mode)',mode)
+                if mode == 'custom':
+                    await page.locator('#expDateTo').fill('')
+                await page.locator('#'+field).fill(key)
+                await page.locator('#'+field).dispatch_event('change')
+                assert await page.evaluate('expAllPts.length') == 2
+                assert await page.evaluate('(expAllPts.at(-1).ts-expAllPts[0].ts+1)/3600000') == hours
+            calendar_results.append({'date':key,'hours':hours,'oneDayAndBlankEnd':'passed'})
         await page.evaluate('renderIntervalComparison([{ts:new Date("2026-10-25T02:30:00+02:00"),temp:10},{ts:new Date("2026-10-25T02:30:00+01:00"),temp:11}])')
         text = await page.locator('#expInterval').inner_text()
         assert '1 h 0 min 0 s' in text and 'UTC+02:00' in text and 'UTC+01:00' in text
@@ -88,6 +128,7 @@ async def main():
         await page.screenshot(path='/tmp/meteo-interval-mobile.png',full_page=True)
         await browser.close()
     Path(args.output).write_text(json.dumps({'results':results,'requests':requests,'pageErrors':errors,
+        'clock':now.isoformat() if args.at else 'system','calendar':calendar_results,
         'transport':'fixture CSV delayed 250ms; MQTT CDN blocked, UV mocked'},indent=2))
     print(args.output)
 

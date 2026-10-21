@@ -1948,8 +1948,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v020"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.2.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v021"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.2.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3450,7 +3450,7 @@
       const context = stationContext();
       const lat = context.config.lat ?? 50.08;
       const lon = context.config.lon ?? 14.42;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localDateKey();
       // Neměň zbytečně – stejná poloha i den
       if (uvStore.lat === lat && uvStore.lon === lon && uvStore.date === today && uvStore.hourly) return;
       try {
@@ -3501,6 +3501,37 @@
     function fmtDT(d) { return _pad2(d.getDate()) + '. ' + _pad2(d.getMonth() + 1) + '. ' + d.getFullYear() + ' ' + _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()); }
     function fmtDate(d) { return d.toLocaleDateString("cs-CZ", { weekday: "long", day: "numeric", month: "long" }); }
     function fmtDateShort(d) { return _pad2(d.getDate()) + '. ' + _pad2(d.getMonth() + 1) + '. ' + d.getFullYear(); }
+
+    // Legacy CSV timestamps and chart hours use the browser's local timezone.
+    // Calendar keys must use the same zone, never the UTC date from ISO strings.
+    function localDateKey(date = new Date()) {
+      return String(date.getFullYear()).padStart(4, '0') + '-' + _pad2(date.getMonth() + 1) + '-' + _pad2(date.getDate());
+    }
+
+    function localCalendarDay(offset, reference = new Date()) {
+      // Noon avoids midnight offset changes when generating calendar labels.
+      return new Date(reference.getFullYear(), reference.getMonth(), reference.getDate() + offset, 12);
+    }
+
+    function localDayBounds(key) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+      if (!match) return null;
+      const year = +match[1], month = +match[2] - 1, day = +match[3];
+      const start = new Date(0);
+      start.setFullYear(year, month, day);
+      start.setHours(0, 0, 0, 0);
+      if (start.getFullYear() !== year || start.getMonth() !== month || start.getDate() !== day) return null;
+      const next = new Date(start);
+      next.setDate(next.getDate() + 1);
+      next.setHours(0, 0, 0, 0);
+      // explorerRows has inclusive endpoints. Calendar days can last 23 or 25 h.
+      return { from: start.getTime(), to: next.getTime() - 1 };
+    }
+
+    function calendarDayLabel(key, reference = new Date()) {
+      return key === localDateKey(reference) ? "Dnes" :
+        key === localDateKey(localCalendarDay(-1, reference)) ? "Včera" : key.slice(5).replace("-", ".");
+    }
 
     function parseCSDateTime(dateStr, timeStr, yearState) {
       try {
@@ -3831,17 +3862,19 @@
       if (rEntries.length) { const mx = rEntries.reduce((a, b) => b[1] > a[1] ? b : a); setNodeText(el("statRainMax"), fmt(mx[1], 1) + " mm (" + mx[0] + ")"); }
 
       // Today
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const today_rows = store.rows.filter(r => r.ts >= today);
+      const today = localDayBounds(localDateKey());
+      const today_rows = store.rows.filter(r => r.ts >= today.from && r.ts <= today.to);
       setNodeText(el("todayDate"), fmtDate(new Date()));
-      if (today_rows.length) {
-        const dt = numericSummary(today_rows.map(r => r.temp));
-        const dh = numericSummary(today_rows.map(r => r.hum));
-        const dr = numericSummary(today_rows.map(r => r.rain));
-        if (dt.count) { setNodeText(el("dayTempMin"), fmt(dt.min)); setNodeText(el("dayTempMax"), fmt(dt.max)); setNodeText(el("dayTempAvg"), fmt(dt.avg, 2)); }
-        if (dh.count) { setNodeText(el("dayHumMin"), fmt(dh.min)); setNodeText(el("dayHumMax"), fmt(dh.max)); setNodeText(el("dayHumAvg"), fmt(dh.avg, 2)); }
-        if (dr.count) setNodeText(el("dayRain"), fmt(dr.max, 1));
-      }
+      const dt = numericSummary(today_rows.map(r => r.temp));
+      const dh = numericSummary(today_rows.map(r => r.hum));
+      const dr = numericSummary(today_rows.map(r => r.rain));
+      setNodeText(el("dayTempMin"), dt.count ? fmt(dt.min) : "–");
+      setNodeText(el("dayTempMax"), dt.count ? fmt(dt.max) : "–");
+      setNodeText(el("dayTempAvg"), dt.count ? fmt(dt.avg, 2) : "–");
+      setNodeText(el("dayHumMin"), dh.count ? fmt(dh.min) : "–");
+      setNodeText(el("dayHumMax"), dh.count ? fmt(dh.max) : "–");
+      setNodeText(el("dayHumAvg"), dh.count ? fmt(dh.avg, 2) : "–");
+      setNodeText(el("dayRain"), dr.count ? fmt(dr.max, 1) : "–");
 
       markAllTabsDirty();
       buildHistoryRows(); // Historie "Dříve touto dobou" je nahoře ve sdíleném panelu
@@ -4068,8 +4101,8 @@
        DENNÍ STATISTIKY
     ══════════════════════════════════════════════ */
     function buildDailyGrid() {
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const rows = store.rows.filter(r => r.ts >= today);
+      const today = localDayBounds(localDateKey());
+      const rows = store.rows.filter(r => r.ts >= today.from && r.ts <= today.to);
       if (!rows.length) { el("dailyGrid").innerHTML = `<p style="color:var(--muted);padding:1rem;grid-column:span 3">Žádná data za dnešní den.</p>`; return; }
       const dt = numericSummary(rows.map(r => r.temp));
       const dh = numericSummary(rows.map(r => r.hum));
@@ -4212,7 +4245,7 @@
     }
 
     function expSetToday() {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localDateKey();
       el("expDateFrom").value = today;
       el("expDateTo").value = today;
       buildExplorer();
@@ -4222,7 +4255,7 @@
       buildExplorer();
     }
     function expOneSetToday() {
-      el("expDateOne").value = new Date().toISOString().slice(0, 10);
+      el("expDateOne").value = localDateKey();
       buildExplorer();
     }
 
@@ -4245,13 +4278,15 @@
       if (expRange === "custom") {
         const fv = el("expDateFrom").value, tv = el("expDateTo").value;
         if (!fv) return;
-        cutFrom = new Date(fv + "T00:00:00").getTime();
-        cutTo = tv ? new Date(tv + "T23:59:59").getTime() : cutFrom + 86399000;
+        const first = localDayBounds(fv), last = localDayBounds(tv || fv);
+        cutFrom = first && last ? first.from : 1;
+        cutTo = first && last ? last.to : 0;
       } else if (expRange === "oneday") {
         const dv = el("expDateOne").value;
         if (!dv) return;
-        cutFrom = new Date(dv + "T00:00:00").getTime();
-        cutTo = new Date(dv + "T23:59:59").getTime();
+        const day = localDayBounds(dv);
+        cutFrom = day?.from ?? 1;
+        cutTo = day?.to ?? 0;
       } else if (expRange === "all") {
         cutFrom = 0;
         cutTo = now + 60000;
@@ -4525,24 +4560,24 @@
     let cmpSelectedDays = [];
 
     function initCmpDays() {
-      const today = new Date().toISOString().slice(0, 10);
-      const yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const now = new Date();
+      const today = localDateKey(now);
+      const yest = localDateKey(localCalendarDay(-1, now));
       if (!cmpSelectedDays.length) cmpSelectedDays = [today, yest];
       el("cmpAddDate").value = today;
       renderCmpDayBtns();
     }
 
     function renderCmpDayBtns() {
-      const today = new Date().toISOString().slice(0, 10);
+      const now = new Date();
       const quick = Array.from({ length: 8 }, (_, i) =>
-        new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
+        localDateKey(localCalendarDay(-i, now)));
       cmpSelectedDays.forEach(d => { if (!quick.includes(d)) quick.push(d); });
       el("cmpDayBtns").innerHTML = quick.map(d => {
         const idx = cmpSelectedDays.indexOf(d);
         const active = idx >= 0;
         const color = active ? CMP_COLORS[idx % CMP_COLORS.length] : "";
-        const off = Math.round((new Date(today).getTime() - new Date(d).getTime()) / 86400000);
-        const lbl = off === 0 ? "Dnes" : off === 1 ? "Včera" : d.slice(5).replace("-", ".");
+        const lbl = calendarDayLabel(d, now);
         const st = active ? `border-color:${color};color:${color}` : "";
         return `<button class="cmp-day-btn${active ? " active" : ""}" onclick="cmpToggleDay('${d}')" style="${st}" title="${d}">${lbl}</button>`;
       }).join("");
@@ -4571,7 +4606,7 @@
       /* Seskupit řádky podle data (YYYY-MM-DD) */
       const byDate = {};
       store.rows.forEach(r => {
-        const d = r.ts.toISOString().slice(0, 10);
+        const d = localDateKey(r.ts);
         if (!byDate[d]) byDate[d] = [];
         byDate[d].push(r);
       });
@@ -4579,14 +4614,13 @@
       /* 24 hodinových štítků */
       const hours = Array.from({ length: 24 }, (_, i) => (i < 10 ? "0" : "") + i + ":00");
 
-      const today = new Date().toISOString().slice(0, 10);
+      const now = new Date();
       const datasets = [];
 
       cmpSelectedDays.forEach((date, di) => {
         const rows = (byDate[date] || []).sort((a, b) => a.ts - b.ts);
         const color = CMP_COLORS[di % CMP_COLORS.length];
-        const off = Math.round((new Date(today).getTime() - new Date(date).getTime()) / 86400000);
-        const lbl = off === 0 ? "Dnes" : off === 1 ? "Včera" : date.slice(5).replace("-", ".");
+        const lbl = calendarDayLabel(date, now);
 
         const hourAvg = fn => hours.map((_, hi) => {
           const vals = rows.filter(r => r.ts.getHours() === hi).map(fn).filter(v => v !== null);
@@ -4639,7 +4673,9 @@
       }
 
       el("cmpChartTitle").textContent = "Porovnání " + mc.title + " – " + cmpSelectedDays.length + " dní";
-      el("cmpInfo").textContent = "Hodinové průměry; vybráno " + cmpSelectedDays.length + " dní";
+      el("cmpInfo").textContent = "Hodinové průměry; vybráno " + cmpSelectedDays.length +
+        " dní · čas prohlížeče (" + Intl.DateTimeFormat().resolvedOptions().timeZone +
+        "). Opakovaná hodina při změně času se průměruje společně.";
       chartCompare.update();
     }
 
@@ -5183,7 +5219,7 @@
     setTheme(theme);
     updateStationUI();
     // Výchozí data pro vlastní rozsah = dnes
-    const _today = new Date().toISOString().slice(0, 10);
+    const _today = localDateKey();
     el("expDateFrom").value = _today;
     el("expDateTo").value = _today;
     el("expDateOne").value = _today;

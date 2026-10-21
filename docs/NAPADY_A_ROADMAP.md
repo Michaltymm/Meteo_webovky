@@ -148,7 +148,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-047 Flagy kvality a deduplikace: původní/opravované/odvozené údaje odděleně | Timestamp, ID pokud dostupné, validace | V / P1 | O(n), omezené indexy | FUT-009, definice duplicit před slučováním | Připraveno k realizaci |
-| METEO-048 Časový kontrakt: lokální den, UTC, DST, explicitní zóna stanice | Současné A/B + konfigurace; nové UTC vyžaduje backend | S / P1 | Nízký, cache formatteru | AUD-010; test půlnoci, 23/25h dní | Připraveno k realizaci |
+| METEO-048 Časový kontrakt: lokální den, UTC, DST, explicitní zóna stanice | Současné A/B + konfigurace; nové UTC vyžaduje backend | S / P1 | Nízký, cache formatteru | AUD-010 DONE v0.2.1; další zóna stanice/CSV offset a UV hourly kontrakt | Rozpracováno |
 | METEO-049 Verzovaný adaptér legacy/Raw_Data, kontrola schema a jednotek | Skutečné anonymizované exporty obou backendů | V / P1 | O(n), validace před commitem | FUT-008; nikdy pouhá změna názvu listu | K posouzení |
 | METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | Čítače během parseru | METEO-009/047 | Připraveno k realizaci |
 
@@ -628,3 +628,37 @@ Vývojový HTML obsah má v0.2.0, main zůstává 2405c5d. Přímá kontrola ži
 widgetů z prostředí nebyla provedena; rozlišovat lokální prohlížečový test,
 úspěšný GitHub deployment a uživatelské zobrazení skutečných měření.
 Následující commit projektové paměti obsahuje pouze dokumentaci.
+
+## Etapa 3 — kalendářní dny, v0.2.1 (21. 10. 2026)
+
+Pokračování prvního bodu roadmapy: **AUD-010 dokončeno**, **METEO-048
+rozpracované**. [Časový model](CAS_A_KALENDAR.md) odlišuje dnešní zónu
+prohlížeče od budoucí explicitní zóny stanice a nerozlišitelného CSV času.
+
+- Denní klíče porovnání, „Dnes“, startovní datumy a datum UV cache používají
+  místní rok/měsíc/den, stejně jako parser a hodinové popisky. Žádné UTC datum
+  připojené k lokální hodině. Zóna je vidět v informaci u porovnání.
+- Osm rychlých voleb a „Včera“ se odvozují kalendářně, neopakují/vynechávají
+  den při DST. Jeden den/vlastní rozsah s prázdným „do“ zahrne celých 23/25h
+  až po milisekundu před další půlnocí; i explicitní datum „do“ je celý den.
+- Dnešní statistiky nezahrnují sousední den. Chybějící dnešní hodnoty smažou
+  starý text, nula zůstává platná. Původní řádky a plné výpočty zachovány.
+- 24 hodinových skupin porovnání zůstává vzorkovým průměrem. Dvě podzimní
+  hodiny se průměrují společně, jarní mezera je null; UI to vysvětluje.
+
+**Ověření:** 80/80 Node testů, 17 nových. Pět zón, půlnoc, přelom roku,
+leap day, 23/25h i historický posun o půlnoci, chybějící a neplatná data.
+Dvě regrese prokazatelně selhaly na 3e236bc. Skutečný Chromium/Chart.js se
+všemi třemi konfiguracemi a řízenou sítí ověřil startovní datumy, osm voleb,
+sloučení požadavků a skutečné datumové vstupy. [Jarní](testing/calendar-spring.json)
+a [podzimní](testing/calendar-autumn.json) výsledky; přesná reprodukce v časovém
+modelu. Žádný nový fetch, závislost nebo změna konfigurace. Tato etapa není
+optimalizace výkonu, nedeklaruje nové zrychlení a nemění main.
+
+**Otevřeno pod METEO-048:** potvrdit zónu firmware/Sheets a DST kontrakt;
+explicitní zóna stanice vyžaduje migraci parseru a výstupů. UV API používá zónu
+podle polohy, zatímco současný hodinový index je zóna prohlížeče; musí přejít
+na ověřené časové značky odpovědi včetně 23/25h, pouhá oprava cache nestačí.
+METEO-038 sdílené agregace navážou na nyní jednotný lokální den, s revizní
+invalidací i půlnocí; poté METEO-005 obnova na pozadí. Výsledky nesmí vycházet
+z vizuální redukce a cache nesmí maskovat opravy starých dat.
