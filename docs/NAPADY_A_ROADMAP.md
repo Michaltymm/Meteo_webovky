@@ -1160,3 +1160,16 @@ po stránkách a sestavený až na vyžádání; invalidovat reference při CSV/
 opravě historie a změně stanice. Poté dokončit návazný detail077.
 Nedělat souběžný konkurenční backlog ani znovu rozsáhlý audit.
 Uložení na GitHub a deployment evidovat odděleně; produkční main se nemění.
+
+### Uložení a publikace etapy 9
+
+Implementace a důkazy v
+[8457fde](https://github.com/Michaltymm/Meteo_webovky/commit/8457fdeb6ca8e6ecfdad22f4ae823c9f43361f9d)
+odeslány na codex-dev; vzdálené SHA ověřeno. Publikační
+[Actions #17](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39638764748)
+pro8457fde **Success**, build14s/deploy10s/celkem34s, jeden Pages artefakt.
+Main stále2405c5d. To potvrzuje nasazení workflow, ne přímou kontrolu widgetů.
+Zároveň veřejné Actions nově potvrdily předchozí
+[#16](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39627880077)
+pro1003743/v0.5.0 jako Success44s; dřívější nejistota etapy8 je uzavřena.
+Následující commit upravuje pouze dokumentaci, HTML zůstává0.6.0.
