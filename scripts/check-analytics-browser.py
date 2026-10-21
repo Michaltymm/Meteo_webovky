@@ -86,18 +86,42 @@ async def main():
                 assert await page.evaluate('chartBatteryXY.data.datasets[0].data.length') == 0
             if station == 2:
                 assert result['minV'] == 0
+            sensitivity = result['sensitivity']
+            assert sensitivity['status'] == ('ok' if station == 0 else 'days' if station == 1 else 'relationship')
+            if not await page.locator('#batterySensitivity').evaluate('(node)=>node.open'):
+                await page.locator('#batterySensitivity summary').click()
+            if station == 0:
+                assert sensitivity['validDays'] == result['days']
+                expected_day = sensitivity['byR']['day']
+                before_day = len(requests)
+                await page.locator('#batteryRDay').click()
+                assert await page.locator('#expDateOne').input_value() == expected_day
+                assert await page.evaluate('expRange') == 'oneday'
+                assert await page.evaluate('el("expMetric").value') == 'voltage'
+                assert await page.evaluate('expAllPts.length') > 0
+                assert await page.evaluate('expAllPts.every(row=>localDateKey(row.ts)===el("expDateOne").value)')
+                await page.select_option('#expMetric','temp')
+                assert len(requests) == before_day
+                assert await page.evaluate('Object.keys(Chart.instances).length') == 10
+                await page.locator('.tab-btn[data-tab="battery"]').click()
+            else:
+                assert not await page.locator('#batteryRDay').is_visible()
+            for width in [320,390]:
+                await page.set_viewport_size({'width':width,'height':844})
+                await page.wait_for_timeout(100)
+                assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
             network_before = len(requests)
             for range_value in ['7','30','all']:
                 await page.select_option('#batteryRange',range_value)
             assert len(requests) == network_before
-            await page.locator('#tab-battery details summary').click()
-            assert 'SOC, kapacita ani energie' in await page.locator('#tab-battery details').inner_text()
+            await page.locator('#batteryMethod summary').click()
+            assert 'SOC, kapacita ani energie' in await page.locator('#batteryMethod').inner_text()
             for theme in ['darkblue','light']:
                 await page.evaluate('(theme)=>setTheme(theme)',theme)
                 assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
             if station == 0:
                 await page.locator('#tab-battery').screenshot(path=str(output.with_suffix('.png')))
-            await page.locator('#tab-battery details summary').click()
+            await page.locator('#batteryMethod summary').click()
             await page.locator('.tab-btn[data-tab="explorer"]').click()
             for metric in ['absHum','vpd']:
                 await page.select_option('#expMetric',metric)
@@ -169,12 +193,39 @@ async def main():
         await page.evaluate('el("expMetric").value="hum";expRange="oneday";el("expDateOne").value="1900-01-01";buildExplorer()')
         assert not await page.locator('#expHumidityChange').is_visible()
         assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+        # An entire shifted day; then a constant remainder after omission.
+        await page.evaluate('''()=>{
+          store.rows=Array.from({length:80},(_,i)=>({
+            ts:new Date(2026,9,21-Math.floor(i/20),12,i%20),
+            temp:i<20?70+i/100:12+Math.sin(i/11)*8,
+            voltage:i<20?6+i/1000:4+.03*Math.sin(i/9),hum:50
+          })).sort((a,b)=>b.ts-a.ts);
+          store.fullLoaded=true;invalidateDerivedData();el('batteryRange').value='all';
+          document.querySelector('.tab-btn[data-tab="battery"]').click();buildBatteryAnalysis();
+        }''')
+        assert await page.evaluate('batteryAnalysis("all").sensitivity.byR.day') == '2026-10-21'
+        assert 'vynecháno 20, zbývá 60 párů' in await page.locator('#batterySensitivityValue').inner_text()
+        await page.locator('#batterySensitivity').screenshot(path=str(output.with_name(output.stem+'-sensitivity.png')))
+        await page.locator('#batterySlopeDay').click()
+        assert await page.locator('#expDateOne').input_value() == '2026-10-21'
+        assert await page.evaluate('expAllPts.length') == 20
+        await page.evaluate('''()=>{
+          store.rows.forEach(row=>{if(row.ts.getDate()!==21){row.temp=20;row.voltage=4;}});
+          invalidateDerivedData();document.querySelector('.tab-btn[data-tab="battery"]').click();buildBatteryAnalysis();
+        }''')
+        assert '1 nedostupných' in await page.locator('#batterySensitivityValue').inner_text()
+        await page.locator('#batteryUndefinedDay').click()
+        assert await page.locator('#expDateOne').input_value() == '2026-10-21'
+        await page.evaluate('resetStationStore()')
+        assert await page.locator('#batterySensitivityValue').text_content() == ''
+        assert await page.locator('#batteryRDay').get_attribute('hidden') is not None
         assert not errors, errors
         await browser.close()
     output.write_text(json.dumps({'results':results,'pageErrors':errors,'requests':requests,
         'motionInitialAndLive':'passed','hiddenFullLoadNoChartConstruction':'passed','oldCsvCorrection':'passed',
         'themesMobile390':'passed','humidityChangeThreeConfigsSlider320And390':'passed',
         'humidityChangeZeroMissingSaturationClear':'passed',
+        'dailySensitivityThreeConfigsMobileDrilldownInfluentialDayConstantRemainderReset':'passed',
         'transport':'delayed fixture CSV, UV mocked, MQTT CDN blocked'},indent=2))
     print(output)
 

@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `7aa843e`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.5.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `21e0f3f`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.6.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,11 +15,12 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (142/142 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (153/153 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
 - Centrální plán: `docs/NAPADY_A_ROADMAP.md` (83 METEO ID); etapa7 přidala8nových076–083 a12skupin doplnění starších návrhů. METEO-078 DONE v0.5.0; METEO-019/031 základní T/V, METEO-013 AH/VPD a METEO-010 motion hotové ve v0.4.0, další části těchto ID rozpracované. Plán dostupnosti a zóna stále027/038/048.
+- METEO-077 denní etapa v0.6.0 ověřena: leave-one-day-out r/sklon, O(n+d) centrované souhrny/prefix/suffix; nejméně3 místní dny, po vynechání≥3páry a oba rozptyly>0. Samostatný vliv na r/sklon, počet nedostupných výsledků, průzkumník celého dne bez fetch. Cache pouze meze/počty/max3dny, nikoliv souhrny nebo kopie historie. METEO-077 zůstává rozpracované kvůli přímému výpisu jednotlivých párů s063; další vhodná etapa právě063/077, bez opakování hotové statistiky.
 - METEO-078: rozbalovací rozklad RH v průzkumníku (T/RH/dew/AH/VPD). Pouze původní krajní řádky aktuálního slideru, O(1), 2čtení i při250k; vodní Magnus jako013, faktory/logaritmická identita, žádná kauzální atribuce či vodní bilance. RH0/nuly T odlišit, nevybírat náhradní endpoint. Kalibrace/umístění mezi body neověřeny, vždy uvedeno; metadata epoch071 dále.
 - Nová batteryAnalysis: pouze páry stejného řádku, plné Welford r/sklon a n/časy/dny. Cache jediného rozsahu7/30/all v dataAggregates, grafy lazy +2 (start stále8, po použití10). Max800 časových a582 skutečných XY reprezentantů, počet bodů není hustota. Žádné p-value/SOC/energie ani záměna T čidla za T baterie.
 - AH/VPD mají vzorec/obor/jednotky v UI; Magnus nad kapalnou vodou i pod0°C, T−45..60°C, RH0..100%. RH0 je validní zde, nikoli pro Td. Originály ani stávající průměry se nemění.
@@ -300,6 +301,16 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Konfigurace, workflow, závislosti, server, archiv, původní měření i main nezměněny. Další vhodná etapa077 vliv jednotlivých dnů na T/V vztah;071 metadata a048 zóna dále, bez slibů o kapacitě baterie nebo srážkových úhrnech017/049.
 
 - Uložení v0.5.0: [1003743](https://github.com/Michaltymm/Meteo_webovky/commit/100374322a4b675c74c904afe56831ca7a8ff724) odeslán do codex-dev, ověřeno přes ls-remote i veřejnou stránku commitu. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Veřejné Actions i konkrétní pages.yml při závěrečné kontrole zobrazovaly jako nejnovější run #15 pro25b7048/v0.4.0, nový běh pro1003743 nebyl nalezen. To není potvrzení chyby CI ani důkaz deploymentu v0.5.0; důvod z read-only veřejných podkladů nezjištěn. Místní142testy a browser prošly, deployment zatím NEOVĚŘENÝ. Další dokumentační commit toto pouze zaznamenává, kód neopakovat ani netestovat znovu jen kvůli kontrole publikace.
+
+### Etapa 9: METEO-077 denní citlivost T/V, v0.6.0 (21. 10. 2026)
+
+- Po fetch ověřen čistý21e0f3f = origin/codex-dev; origin/main stále2405c5d. Zvolen navazující P1 úkol077, rozdělen na hotovou denní analytiku a budoucí přímé dohledání párů063. Žádné nové ID ani falešné globální DONE; předchozí078 zůstává DONE.
+- `batteryAnalysis` zachovává původní plný Welford průchod a grafické reprezentanty; navíc po místních dnech vytváří centrované souhrny. `mergePairMoments` skládá dva souhrny bez odečítání velkých téměř stejných čtverců; `batteryDaySensitivity` prefix/suffix O(n+d), žádné d kopií/skenů historie. Do výsledku jediné battery cache pouze meze/počty amax3příklady dnů; dočasné souhrny se uvolní. Zůstávají null/0/duplicity i úplné páry ze stejného řádku.
+- Panel potřebuje≥3 místní dny, po vynechání≥3páry a nenulový rozptyl T/V; neplatný číselný rozsah také nedostupný. Rozsah je jen přes dostupné výsledky, neplatné vynechání se nezamlčí. Vlivný den zvlášť absolutníΔr aΔsklonu, při přesné shodě novější den. Nejde o interval spolehlivosti nebo důkaz chyby čidla. Kalibrace/umístění neověřeny, dny mají nestejné N, časová závislost trvá; žádné SOC/kapacita/energie.
+- Native details + tři tlačítka (r/sklon/nedostupný zbytek), přechod do existujícího průzkumníku celého místního dne, napětí s možností přepnout T. Žádný fetch nebo konstrukce grafu, nové datum dostane fokus. UI výslovně uvádí případné řádky mimo okraj analytického rozsahu. Nejde o přímý výpis všech T/V párů; ten zbývá s063 a platností reference po refreshi. Invalidace/reset vyčistí texty i akce.
+- 153/153 Node testů,11 nových v battery-sensitivity: nezávislý dvouprůchodový přepočet každého vynechání, lineární±, jediná vlivná dvojice, posunutý celý den (nikoli ověřená epocha), konstantní zbytek/malé N, null/0/duplicity, velké offsety a numerický rozsah,250k s jediným čtením zdroje/cache,7d/reset, přesné shody, DST Europe/Prague. Browser tři původní konfigurace+řízené CSV/UV/Chart: všechny nové stavy, přechod dne bez requestů, původní AH/VPD/078/motion/oprava starého CSV zachovány,320/390px/obě témata, žádný page error; screenshot nové analýzy prohlédnut.
+- [ETAPA9](docs/performance/ETAPA9.md): skutečný sekvenční profil před/po1k/10k/100k/250k,5vzorků/medián. První otevření250k57,2→71,1ms (nová práce navíc), opakované6,6→6,3ms. Stále10grafů po30cyklech; přibližně+56KiB heapu v teplém250k scénáři, nikoli měření celé RAM/vícedenního úniku. Pozorovatel opakovaného battery buildu0změn uzlů/textu (atributy nesleduje), přidány stálé prvky panelu. HTML+7392bajtů. Nové API/worker/knihovna se nepřidávají; reálný slabý mobil by bylo třeba změřit před dalším offloadem.
+- Změněny jen index, test077, browser dev script, release notes, roadmapa/audit a výkonové důkazy. Konfigurace, server, workflow, archiv, původní data a main nezměněny. Neověřeny živé služby/broker/HW/firmware/OS mobil ani widgety Pages. Deployment dokládat samostatně.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.6.0
+
+- Analýza „Teplota × napětí“ nově ukazuje, jak se korelace a sklon změní po vynechání jednotlivých dnů. Uvádí rozsah výsledků, vlivné dny, počty párů a výslovně nedostupné výpočty.
+- Vlivný den lze otevřít v průzkumníku bez nového stahování. Výpočet zachovává všechna měření; vysvětluje minimální podklady, použitou zónu a omezení interpretace.
+
 ## v0.5.0
 
 - Průzkumník má rozbalovací „Rozklad změny relativní vlhkosti“ pro krajní měření vybraného úseku. Ukazuje vstupní T/RH a časy, teplotní faktor, faktor parního tlaku a kontrolní RH při nezměněném parním tlaku.

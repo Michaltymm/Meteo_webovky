@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 9 — denní citlivost T/V](ETAPA9.md) měří cenu nového výpočtu,
+cache a stav DOM/heap/grafů při1k/10k/100k/250k původních párů.
+
 [Etapa 8 — rozklad změny RH](ETAPA8.md) ověřuje navazující endpointový výpočet,
 dvě čtení i při250k a cílené srovnání průzkumníku/slideru před a po změně.
 

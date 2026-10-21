@@ -1959,8 +1959,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v050"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.5.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v060"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.6.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2437,7 +2437,7 @@
         </select>
       </label>
       <p id="batterySummary" style="white-space:pre-line;font-size:.85rem;line-height:1.6">Čekám na data…</p>
-      <details class="comparison-data">
+      <details id="batteryMethod" class="comparison-data">
         <summary>Jak číst tuto analýzu</summary>
         <p>Rozsah končí nejnovějším měřením. Párují se pouze teplota a napětí ze stejného původního řádku;
           chybějící hodnoty se nedoplňují. r i lineární sklon vycházejí ze všech platných párů.
@@ -2447,6 +2447,25 @@
         <p>Souvislost sama neprokazuje vliv teploty na baterii. Vzorky v čase nejsou nezávislé;
           tato explorativní analýza nemá test významnosti. Teplota čidla není ověřená teplota článku,
           nabíjení a zátěž mohou ovlivňovat oba průběhy. Z napětí se neurčuje SOC, kapacita ani energie.</p>
+      </details>
+      <details id="batterySensitivity" class="comparison-data">
+        <summary>Citlivost vztahu na jednotlivé dny</summary>
+        <p id="batterySensitivityValue" style="white-space:pre-line;line-height:1.6">Čekám na data…</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+          <button id="batteryRDay" class="exp-range-btn" hidden onclick="openBatteryDay('byR')">Den s největší změnou r</button>
+          <button id="batterySlopeDay" class="exp-range-btn" hidden onclick="openBatteryDay('bySlope')">Den s největší změnou sklonu</button>
+          <button id="batteryUndefinedDay" class="exp-range-btn" hidden onclick="openBatteryDay('undefinedDay')">Den s nedostupným zbytkem</button>
+        </div>
+        <p>Výpočet pokaždé vynechá všechny platné páry jednoho místního dne z vybraného rozsahu.
+          Potřebuje alespoň 3 dny; po vynechání alespoň 3 páry a nenulový rozptyl T i V.
+          Zobrazený rozsah zahrnuje jen dostupné výsledky, jejich počet je uveden zvlášť.
+          Největší vliv se určuje podle absolutní změny r a sklonu samostatně;
+          při přesné shodě se volí novější den. Nuly mohou být po zaokrouhlení.</p>
+        <p>Jde o popisnou citlivost, nikoli interval spolehlivosti, důkaz chyby čidla nebo příčiny změny napětí.
+          Vzorky nejsou nezávislé a dny mají různý počet párů. Zóna je shodná se souhrnem výše;
+          změny umístění či kalibrace nejsou ověřeny. Tlačítka otevřou celý místní den v průzkumníku
+          (i případné hodnoty mimo zvolený rozsah analýzy); lze přepnout mezi napětím a teplotou.
+          Původní měření se neodstraňují.</p>
       </details>
       <div class="chart-card">
         <div class="chart-title">Teplota a napětí v čase · platné páry</div>
@@ -4380,6 +4399,8 @@
       aggregateCache = null;
       el("cmpDataQuality").textContent = "";
       el("batterySummary").textContent = "";
+      el("batterySensitivityValue").textContent = "";
+      for (const id of ["batteryRDay", "batterySlopeDay", "batteryUndefinedDay"]) el(id).hidden = true;
       explorerRangeCache = null;
       expAllPts = [];
       el("expInterval").hidden = true;
@@ -5135,13 +5156,66 @@
     ══════════════════════════════════════════════ */
     let chartBatteryTime = null, chartBatteryXY = null;
 
+    function pairRelationship({ count, m2T, m2V, covariance }) {
+      if (count >= 3 && m2T > 0 && m2V > 0 && [m2T, m2V, covariance].every(Number.isFinite)) {
+        const r = covariance / Math.sqrt(m2T) / Math.sqrt(m2V), slope = covariance / m2T;
+        if (Number.isFinite(r) && Number.isFinite(slope)) return { r: Math.max(-1, Math.min(1, r)), slope };
+      }
+      return { r: null, slope: null };
+    }
+
+    // Merge centred moments without subtracting nearly equal raw squares.
+    // Inputs are immutable once the daily pass has finished.
+    function mergePairMoments(a, b) {
+      if (!a) return b;
+      if (!b) return a;
+      const count = a.count + b.count, fraction = b.count / count;
+      const weight = a.count * fraction, dt = b.meanT - a.meanT, dv = b.meanV - a.meanV;
+      return { count, meanT: a.meanT + dt * fraction, meanV: a.meanV + dv * fraction,
+        m2T: a.m2T + b.m2T + dt * (dt * weight),
+        m2V: a.m2V + b.m2V + dv * (dv * weight),
+        covariance: a.covariance + b.covariance + dt * (dv * weight) };
+    }
+
+    function batteryDaySensitivity(days, full) {
+      const result = { status: days.size < 3 ? "days" : full.r === null ? "relationship" : "ok",
+        totalDays: days.size, validDays: 0, unavailableDays: 0,
+        minR: null, maxR: null, minSlope: null, maxSlope: null,
+        byR: null, bySlope: null, undefinedDay: null };
+      if (result.status !== "ok") return result;
+      const groups = [...days.values()], prefix = [null];
+      for (const group of groups) prefix.push(mergePairMoments(prefix[prefix.length - 1], group));
+      let suffix = null;
+      // Prefix/suffix merging: O(n+d), without retaining all omissions.
+      for (let i = groups.length - 1; i >= 0; i--) {
+        const rest = mergePairMoments(prefix[i], suffix);
+        suffix = mergePairMoments(groups[i], suffix);
+        const { r, slope } = pairRelationship(rest);
+        const day = { day: localDateKey(new Date(groups[i].time)), count: rest.count,
+          omittedCount: groups[i].count, r, slope };
+        if (r === null) {
+          result.unavailableDays++;
+          result.undefinedDay = day; // Newer group wins a tie.
+          continue;
+        }
+        result.validDays++;
+        result.minR = result.minR === null ? r : Math.min(result.minR, r);
+        result.maxR = result.maxR === null ? r : Math.max(result.maxR, r);
+        result.minSlope = result.minSlope === null ? slope : Math.min(result.minSlope, slope);
+        result.maxSlope = result.maxSlope === null ? slope : Math.max(result.maxSlope, slope);
+        if (!result.byR || Math.abs(r - full.r) >= Math.abs(result.byR.r - full.r)) result.byR = day;
+        if (!result.bySlope || Math.abs(slope - full.slope) >= Math.abs(result.bySlope.slope - full.slope)) result.bySlope = day;
+      }
+      return result; // Only extrema/counts/three example days are cached: O(1).
+    }
+
     function batteryAnalysis(range = "7") {
       range = ["7", "30", "all"].includes(range) ? range : "7";
       const snapshot = dataAggregates();
       if (snapshot.battery?.range === range) return snapshot.battery.result;
       const rows = snapshot.source, end = rows.length ? +rows[0].ts : null;
       const from = range === "all" ? -Infinity : end - Number(range) * 86400000;
-      const pairs = [], days = new Set(); // Transient references, not cached history.
+      const pairs = [], days = new Map(); // Transient references/moments, not cached history.
       let eligible = 0, uniqueTimes = 0, previousTime = null;
       let meanT = 0, meanV = 0, m2T = 0, m2V = 0, covariance = 0;
       let minT = null, maxT = null, minV = null, maxV = null;
@@ -5164,14 +5238,15 @@
         if (maxV === null || row.voltage > maxV) { maxV = row.voltage; maxVRow = row; }
         if (time !== previousTime) uniqueTimes++;
         previousTime = time;
-        days.add(row.ts.getFullYear() * 10000 + row.ts.getMonth() * 100 + row.ts.getDate());
+        const key = row.ts.getFullYear() * 10000 + row.ts.getMonth() * 100 + row.ts.getDate();
+        if (!days.has(key)) days.set(key, { time, count: 0, meanT: 0, meanV: 0, m2T: 0, m2V: 0, covariance: 0 });
+        const day = days.get(key), dT = row.temp - day.meanT, dV = row.voltage - day.meanV;
+        day.count++; day.meanT += dT / day.count; day.meanV += dV / day.count;
+        day.m2T += dT * (row.temp - day.meanT); day.m2V += dV * (row.voltage - day.meanV);
+        day.covariance += dT * (row.voltage - day.meanV);
       }
-      let r = null, slope = null;
-      if (pairs.length >= 3 && m2T > 0 && m2V > 0 && [m2T, m2V, covariance].every(Number.isFinite)) {
-        const value = covariance / Math.sqrt(m2T) / Math.sqrt(m2V);
-        const gradient = covariance / m2T;
-        if (Number.isFinite(value) && Number.isFinite(gradient)) { r = Math.max(-1, Math.min(1, value)); slope = gradient; }
-      }
+      const { r, slope } = pairRelationship({ count: pairs.length, m2T, m2V, covariance });
+      const sensitivity = batteryDaySensitivity(days, { r, slope });
       // One real representative per XY cell, plus global extremes/endpoints.
       // No bin centroid can masquerade as a measurement; no density inference.
       const bins = new Map();
@@ -5186,7 +5261,7 @@
       const timeRows = sampleExtrema(pairs, [row => row.temp, row => row.voltage]).slice().reverse();
       const result = { eligible, count: pairs.length, excluded: eligible - pairs.length, uniqueTimes, days: days.size,
         from: pairs.length ? +pairs[pairs.length - 1].ts : null, to: pairs.length ? +pairs[0].ts : null,
-        minT, maxT, minV, maxV, r, slope,
+        minT, maxT, minV, maxV, r, slope, sensitivity,
         timeTemp: timeRows.map(row => ({ x: +row.ts, y: row.temp })),
         timeVoltage: timeRows.map(row => ({ x: +row.ts, y: row.voltage })),
         xy: [...representatives].map(row => ({ x: row.temp, y: row.voltage, ts: +row.ts })) };
@@ -5194,8 +5269,41 @@
       return result;
     }
 
+    function renderBatterySensitivity(s) {
+      const d = s.sensitivity, mv = value => Number.isFinite(value * 1000) ? fmt(value * 1000, 3) : "–";
+      for (const [id, key] of [["batteryRDay", "byR"], ["batterySlopeDay", "bySlope"], ["batteryUndefinedDay", "undefinedDay"]]) {
+        el(id).hidden = !d[key];
+      }
+      let text;
+      if (d.status === "days") text = `Nelze posoudit: ${d.totalDays} místních dnů s platnými páry; potřeba alespoň 3.`;
+      else if (d.status === "relationship") text = "Nelze posoudit: plný vztah není dostupný (málo párů, nulový rozptyl nebo číselný rozsah).";
+      else {
+        text = `Vynechání jednoho dne: ${d.validDays} dostupných výsledků z ${d.totalDays}; ${d.unavailableDays} nedostupných.\n`;
+        if (d.validDays) text += `r bez jednoho dne: ${fmt(d.minR, 3)} až ${fmt(d.maxR, 3)} • Sklon: ${mv(d.minSlope)} až ${mv(d.maxSlope)} mV/°C\n` +
+          `Největší |Δr|: ${d.byR.day} • vynecháno ${d.byR.omittedCount}, zbývá ${d.byR.count} párů • r = ${fmt(d.byR.r, 3)} (|Δr| = ${fmt(Math.abs(d.byR.r - s.r), 3)})\n` +
+          `Největší |Δsklonu|: ${d.bySlope.day} • vynecháno ${d.bySlope.omittedCount}, zbývá ${d.bySlope.count} párů • sklon = ${mv(d.bySlope.slope)} mV/°C (|Δ| = ${mv(Math.abs(d.bySlope.slope - s.slope))} mV/°C)\n`;
+        if (d.undefinedDay) text += `Např. bez ${d.undefinedDay.day} zbývá ${d.undefinedDay.count} párů: nedostatek párů, nulový rozptyl nebo číselný rozsah. Tento výsledek není součástí rozsahu.`;
+      }
+      setNodeText(el("batterySensitivityValue"), text);
+    }
+
+    function openBatteryDay(key) {
+      if (!["byR", "bySlope", "undefinedDay"].includes(key)) return;
+      const day = batteryAnalysis(el("batteryRange").value).sensitivity[key];
+      if (!day || !localDayBounds(day.day)) return;
+      el("expDateOne").value = day.day;
+      // Set controls without an intermediate build, fetch or new chart.
+      expRange = "oneday";
+      document.querySelectorAll(".exp-range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === "oneday"));
+      el("expCustomWrap").style.display = "none";
+      el("expOneDayWrap").style.display = "flex";
+      openExplorerWith("voltage");
+      el("expDateOne").focus();
+    }
+
     function buildBatteryAnalysis() {
       const s = batteryAnalysis(el("batteryRange").value);
+      renderBatterySensitivity(s);
       const period = s.count ? fmtDT(new Date(s.from)) + " – " + fmtDT(new Date(s.to)) : "žádné platné páry T/V";
       const mvSlope = s.slope === null ? null : s.slope * 1000;
       const slope = Number.isFinite(mvSlope) ? fmt(mvSlope, 3) + " mV/°C" : "–";

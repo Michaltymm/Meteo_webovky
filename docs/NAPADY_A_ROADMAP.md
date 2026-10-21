@@ -835,7 +835,8 @@ funkce. Původní ID, historie a stavy zůstávají zachované.
 #### METEO-077 — Jak moc závěr stojí na jediném měření
 
 - **Přínos / priorita / obtížnost / stav:** rozlišit stabilní vztah T/V od r
-  vytvořeného jedinou odlehlou dvojicí nebo jediným dnem. P1, střední, Nápad.
+  vytvořeného jedinou odlehlou dvojicí nebo jediným dnem. P1, střední,
+  **Rozpracováno — denní citlivost dokončena v0.6.0, přímý výpis párů dále s063.**
   METEO-042 hledá podezřelý senzor a074 toleranci měření; zde je vliv vzorku
   na konkrétní analytický závěr bez označení vzorku za chybný.
 - **Vstupy / proveditelnost / nové požadavky:** současné úplné časové páry;
@@ -848,6 +849,16 @@ funkce. Původní ID, historie a stavy zůstávají zachované.
   základ a nulový rozptyl po vynechání musí být výslovně nedostupný.
 - **Test:** lineární vztah, jediná vlivná dvojice, extrémní celý den,
   konstantní zbytek, změna epochy; proti nezávislému opakovanému přepočtu.
+- **Ověřeno v etapě9:** plné denní vynechání, samostatné vlivy na r/sklon,
+  počty dostupných/nedostupných výsledků, explicitní hranice≥3dnů a≥3párů
+  po vynechání. Stabilní Welford + prefix/suffix O(n+d), malá cachovaná odpověď,
+  bez změny plného r/sklonu či vyřazení měření. Přechod do průzkumníku celého
+  dne bez fetch; neznamená výpis všech jednotlivých dvojic nebo měření epoch.
+  11 nových regresí včetně jediného vlivného páru/celého posunutého dne,
+  konstantního zbytku, duplicit, velkého offsetu, DST a250k. Metadata epoch071
+  nejsou dostupná — posunutý den je syntetický scénář, nikoli rozpoznaná změna
+  kalibrace. **Zbývá** přímé zobrazení původních párů s platností reference
+  pro konkrétní datový snapshot podle METEO-063; nepřidávat duplicitní ID.
 
 #### METEO-078 — Proč se změnila relativní vlhkost
 
@@ -1102,3 +1113,50 @@ pro25b7048/v0.4.0; nový běh pro1003743 nebyl nalezen. Nasazení v0.5.0 je
 proto **neověřené**; z toho nelze usuzovat na chybu CI nebo její důvod.
 Přímé widgety Pages nejsou z prostředí ověřeny. Následující commit upravuje
 pouze paměť; kontrola publikace nevyžaduje opakovat hotovou implementaci/testy.
+
+
+## Etapa 9 — denní citlivost T/V vztahu, v0.6.0 (21. 10. 2026)
+
+Výchozí čistý `21e0f3f` ověřen proti origin; METEO-078 i předchozí hotové
+souhrny zachovány. Vybrána navazující **denní etapa METEO-077 (P1/střední)**
+nad existujícími páry019/031 a cache038. Žádné nové ID, počet zůstává83.
+
+**Dokončeno a ověřeno:** nativní rozbalovací panel v T/V, rozsah r/sklonů
+po vynechání každého dne, počet dostupných/nedostupných výpočtů a zvlášť den
+s největší absolutní změnou r a sklonu. Každý uvádí zbývající/vynechané páry;
+ukazuje i příklad dne s nedostupným zbytkem. Při přesné shodě novější den.
+Nejde o interval spolehlivosti, test významnosti ani označení čidla za chybné.
+Minimum3 místní dny; po vynechání≥3páry a nenulový rozptyl obou veličin.
+
+Ve stejném průchodu plných párů vznikají centrované denní souhrny;
+prefix/suffix skládání O(n+d) neodečítá téměř shodné surové čtverce.
+Do cache jednoho rozsahu jdou jen počty, meze a nejvýše3 příklady dnů;
+páry a denní/prefixové souhrny se neuchovávají. Původní plné r/sklon,
+nuly, duplicity, pořadí a reprezentanti grafů zachováni. Bez dalších závislostí.
+
+Tlačítka otevřou existující průzkumník celého místního dne v napětí, lze
+přepnout na teplotu. Žádný nový fetch, graf nebo odhad epoch. Den může
+obsahovat i hodnoty mimo okraj klouzavého rozsahu T/V, UI to vysvětluje.
+**METEO-077 zůstává rozpracované:** přímý výpis původních jednotlivých párů
+s referencí platnou pro snapshot dokončit společně s existujícím METEO-063.
+Prohlédnutí grafu dne se za tento výpis nevydává; není potřeba znovu dělat
+hotový denní výpočet. Metadata kalibrace071 a zóna048 stále vlastní úkoly.
+
+**153/153 Node testů**,11 nových; nezávislé opakované přepočty nad originály,
+lineární vztahy, jeden vlivný pár i celý posunutý den, konstantní zbytek,
+malé N, null/0/duplicity, velký offset, číselný rozsah,250k/jeden průchod/cache,
+rozsah/reset a dvojí místní hodina při DST. Chromium se skutečným DOM/Chart.js
+ověřilo tři konfigurace s řízeným CSV/UV, přechod dne, nulový/chybějící senzor,
+opravu starého CSV, reset a obě témata při320/390px. Žádné page errors ani
+přidané požadavky. Screenshot otevřené analýzy prohlédnut.
+
+[Měření před/po a JSON](performance/ETAPA9.md): první T/V otevření při250k
+57,2→71,1ms, opakované6,6→6,3ms. Nová funkce má měřitelnou cenu, nejde o
+zrychlení. Po30cyklech stále10grafů, žádná historie kopií v nové cache.
+Reálný mobil, síť/parser, firmware, broker a živé Pages tím nejsou ověřeny.
+
+**Další etapa:** METEO-063 omezený výpis původních párů vlivného dne,
+po stránkách a sestavený až na vyžádání; invalidovat reference při CSV/MQTT,
+opravě historie a změně stanice. Poté dokončit návazný detail077.
+Nedělat souběžný konkurenční backlog ani znovu rozsáhlý audit.
+Uložení na GitHub a deployment evidovat odděleně; produkční main se nemění.
