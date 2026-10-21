@@ -1089,3 +1089,16 @@ s použitím existujících plných párů a stabilních souhrnů. Epochy071 a
 časový kontrakt048 nadále samostatně; srážky017/049 a dostupnost027 čekají
 na datové kontrakty. METEO-013/019/031/010 zůstávají v dosavadním dílčím
 stavu, nedostávají neoprávněné globální DONE. Počet stabilních ID stále 83.
+
+### Uložení a stav nasazení etapy 8
+
+Kód, testy a dokumentace odeslány v
+[1003743](https://github.com/Michaltymm/Meteo_webovky/commit/100374322a4b675c74c904afe56831ca7a8ff724)
+na codex-dev; vzdálené SHA i veřejná stránka commitu ověřeny. Main stále2405c5d.
+Místní testy a browser úspěšné. Veřejné Actions i přehled pages.yml při
+závěrečné kontrole zobrazovaly jako nejnovější
+[run #15](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462)
+pro25b7048/v0.4.0; nový běh pro1003743 nebyl nalezen. Nasazení v0.5.0 je
+proto **neověřené**; z toho nelze usuzovat na chybu CI nebo její důvod.
+Přímé widgety Pages nejsou z prostředí ověřeny. Následující commit upravuje
+pouze paměť; kontrola publikace nevyžaduje opakovat hotovou implementaci/testy.

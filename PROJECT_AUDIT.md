@@ -30,7 +30,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: poslední ověřené nasazení v0.4.0 [run39614305462](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462), commit25b7048. v0.5.0 implementováno a místně ověřeno, publikace v této etapě následuje. Main stále2405c5d; přímé živé Pages nejsou v síťové politice povolené.
+- DEPLOY-001: poslední ověřené nasazení v0.4.0 [run39614305462](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462), commit25b7048. v0.5.0 implementováno/testováno a odesláno v1003743; nový běh při závěrečné kontrole veřejných Actions nebyl viditelný, nasazení nepotvrzeno. Main stále2405c5d; přímé živé Pages nejsou v síťové politice povolené.
 
 ## A. PROJECT CONTEXT
 
@@ -298,6 +298,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Skutečný browser/Chart.js se třemi původními konfiguracemi a řízeným CSV/UV: správné faktory při stejném RH a různém T, UTC offsety, slider, žádné další požadavky;0/missing/nasycení, unrelated/empty clear, dvě témata a320/390 px bez trvalého přetečení/page errors. Screenshot prohlédnut. Po změně viewportu test čeká 100 ms na existující Chart ResizeObserver; okamžitý scrollWidth během resize není ustálený layout. Zachována i integrační kontrola T/V/motion a opravy starého CSV.
 - [ETAPA8 — cílené měření a JSON](docs/performance/ETAPA8.md): před/po 1k a 250k,5 vzorků, sekvenčně bez souběžných testů. Slider1k5,4 → 5,7 ms,250k 23,5 → 20,3 ms; explorer 1k 6,0 → 6,9 ms,250k 47,7 → 39,5 ms. Nejde o tvrzení zrychlení grafů; nový výpočet O(1) nemění staré O(n) statistiky/sampling. Opakovaný široký audit ani čtyři velikosti/CPU×4 z etapy 7 neprováděny. Síť/parser/OS mobil/živé Pages tím neověřeny.
 - Konfigurace, workflow, závislosti, server, archiv, původní měření i main nezměněny. Další vhodná etapa077 vliv jednotlivých dnů na T/V vztah;071 metadata a048 zóna dále, bez slibů o kapacitě baterie nebo srážkových úhrnech017/049.
+
+- Uložení v0.5.0: [1003743](https://github.com/Michaltymm/Meteo_webovky/commit/100374322a4b675c74c904afe56831ca7a8ff724) odeslán do codex-dev, ověřeno přes ls-remote i veřejnou stránku commitu. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Veřejné Actions i konkrétní pages.yml při závěrečné kontrole zobrazovaly jako nejnovější run #15 pro25b7048/v0.4.0, nový běh pro1003743 nebyl nalezen. To není potvrzení chyby CI ani důkaz deploymentu v0.5.0; důvod z read-only veřejných podkladů nezjištěn. Místní142testy a browser prošly, deployment zatím NEOVĚŘENÝ. Další dokumentační commit toto pouze zaznamenává, kód neopakovat ani netestovat znovu jen kvůli kontrole publikace.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
