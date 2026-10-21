@@ -27,7 +27,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: poslední ověřené nasazení v0.3.0 [run39602279948](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948), commit 07e63b1. v0.3.1 implementováno a místně ověřeno, publikace v této etapě následuje. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
+- DEPLOY-001 DONE: v0.3.1 nasazeno úspěšným [run39606840157](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39606840157), commit f807173, build16s/deploy9s, celkem33s. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
 
 ## A. PROJECT CONTEXT
 
@@ -270,6 +270,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Skutečný browser DOM/Chart.js, tři původní konfigurace a řízené CSV/UV: 1000 řádků/tři roky, všechny tabulky a čísla shodné s bf31182 i po opravě starého záznamu. Přepínání roku bez requestů, filtr/empty/removed year, tooltip, dvě témata a 390/1280px bez přetečení/page errors. Mobilní screenshot prohlédnut. Živé služby, firmware, broker a dlouhý provoz tím ověřeny nejsou.
 - [ETAPA6 — metodika a surové JSON](docs/performance/ETAPA6.md): 1k/10k/100k/250k, sekvenční běhy; při 250k roční po invalidaci 177,2→98,9ms a opakované 160,7→1,2ms. CPU×4/100k 384,9→204,3ms a 368,6→3,7ms. Cold refresh250k 54,1→54,2ms (bez zrychlení), heap po GC 56,88→56,83MiB (malý rozdíl), DOM 3307→3307 a Chart 8→8 po 30 cyklech. Měří synchronní volání a DOM, ne pozdější paint, celou RAM, Web Vitals, síť/parser nebo fyzický mobil. První výpočet stále může blokovat hlavní vlákno.
 - METEO-038 má dokončené sdílení hodin/denních/měsíčních/ročních výsledků a rozlišení pozorovaných časů/počtů. Celé ID zůstává rozpracované: dostupnost potřebuje ověřený plán senzoru. Následuje METEO-019/020/031 teplota×napětí s kvalitou párování; před fyzikální interpretací ověřit umístění čidla, bez SOC/kapacity/energie jen z V. Zóna/UV METEO-048 a omezená cache004 samostatně. Konfigurace, workflow, archiv a main nezměněny; Navrhy_Vylepseni pouze aktuální úvodní evidence.
+
+- Publikace v0.3.1: [f807173](https://github.com/Michaltymm/Meteo_webovky/commit/f807173f77a033a4648ab4af1667798649941d10) odeslán na codex-dev, vzdálené SHA ověřeno. [Actions #14](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39606840157) **Success**, build 16s/deploy 9s, celkem 33s, jeden Pages artefakt. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. To potvrzuje deployment workflow; přímé widgety živých Pages zde nejsou ověřeny. Následující commit mění pouze dokumentaci.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

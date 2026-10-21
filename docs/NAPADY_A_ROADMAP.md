@@ -791,3 +791,9 @@ senzoru. Nikdy neodvozovat SOC, kapacitu či energii pouze z V (METEO-024).
 Sdílení všech současných souhrnů METEO-038 je hotové; procenta dostupnosti
 čekají na ověřený plán senzoru, nikoliv CFG.interval HTTP pollingu. Explicitní
 zóna/UV METEO-048 a omezená cache stanic METEO-004 zůstávají samostatné.
+
+Publikováno v [f807173](https://github.com/Michaltymm/Meteo_webovky/commit/f807173f77a033a4648ab4af1667798649941d10)
+na codex-dev. [Actions #14](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39606840157)
+**Success**, build 16s/deploy 9s, celkem 33s, jeden artefakt. Main zůstává
+2405c5d. Přímé živé widgety Pages nebyly z prostředí ověřeny. Následující
+commit aktualizuje pouze dokumentaci; verze HTML zůstává0.3.1.
