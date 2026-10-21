@@ -1,6 +1,7 @@
 # Čas a kalendář v meteostanici
 
-Stav v0.2.1, 21. 10. 2026. AUD-010 opraveno; METEO-048 je rozpracované.
+Základní model zaveden ve v0.2.1, hodinové podklady doplněny ve v0.3.0
+(21. 10. 2026). AUD-010 opraveno; METEO-048 je rozpracované.
 
 ## Platný současný model
 
@@ -61,7 +62,7 @@ nedokazuje odstranění nejednoznačnosti CSV.
 4. Pro nové agregace METEO-038 klíč cache obsahuje revizi dat i místní den.
    Oprava historie, změna stanice a půlnoc musí invalidovat správné výsledky.
 
-## Ověření a reprodukce
+## Ověření a reprodukce původní opravy v0.2.1
 
 `tests/calendar-days.test.js` přidává 17 testů. Procesy s vlastní proměnnou
 TZ se neovlivňují s ostatními testy. Zóny: Europe/Prague, America/New_York,
@@ -90,3 +91,18 @@ místnímu „dnes“, osm rychlých dnů je správně, skutečné vstupy filtru
 23/25 hodin pro jeden den i prázdné datum „do“. Průběžně zůstává ověřené
 sloučení full požadavků, změna stanice, metriky, témata a prázdný rozsah.
 Nejde o výkonnostní úpravu; nový benchmark rychlosti nebyl prováděn.
+
+## Hodinové podklady od v0.3.0
+
+Porovnání sdílí hodinové agregace T/RH/P v LRU osmi dnů, se zachováním
+vzorkových průměrů a pořadí duplicit. Tooltip a rozbalovací podklady ukazují
+číselné hodnoty, různé časy, skupiny místní hodiny+UTC offsetu s daty oproti
+existujícím skupinám dne, rozsah časů a nejdelší rozestup. Na jaře nevznikají
+neexistující hodiny, na podzim se počítají i odlišné offsety. U půlhodinového
+posunu může být počet skupin jiný než délka dne v hodinách. Nejde o souvislé
+pozorování ani procento dostupnosti podle plánu senzoru. Prázdné hodiny se
+nepřemosťují čarou. Legacy CSV bez offsetu nadále nerozliší dva výskyty stejného
+podzimního času; statistiky tím nezískávají novou jistotu o původu měření.
+
+Celá sada nyní 110/110 testů. Aktuální algoritmus, omezení a benchmark:
+[ETAPA5](performance/ETAPA5.md), centrální stav METEO-038/048 v roadmapě.

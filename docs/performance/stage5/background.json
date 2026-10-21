@@ -1,0 +1,73 @@
+{
+  "hidden10minRequests": 0,
+  "return10minRequests": 3,
+  "hidden24hRequests": 0,
+  "return24hRequests": 4,
+  "historicalCorrection": "85 \u2192 99, all 1000 original rows retained",
+  "pageErrors": [],
+  "charts": 8,
+  "transport": "offline fixtures; real browser timers, synthetic document.hidden + visibilitychange",
+  "requests": [
+    {
+      "kind": "sheets",
+      "station": 0,
+      "quick": true
+    },
+    {
+      "kind": "uv"
+    },
+    {
+      "kind": "sheets",
+      "station": 1,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 2,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 0,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 0,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 1,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 2,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 0,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 0,
+      "quick": false
+    },
+    {
+      "kind": "uv"
+    },
+    {
+      "kind": "sheets",
+      "station": 1,
+      "quick": false
+    },
+    {
+      "kind": "sheets",
+      "station": 2,
+      "quick": false
+    }
+  ]
+}

@@ -1,5 +1,12 @@
 # Přehled změn
 
+## v0.3.0
+
+- Porovnání dnů má rychlejší hodinové výpočty z úplných původních měření a omezenou cache posledních osmi použitých dnů.
+- Nový rozbalovací přehled „Podklady hodinových průměrů“ ukazuje počty záznamů, různých časů, číselných hodnot a hodin s daty, časový rozsah i nejdelší rozestup mezi záznamy.
+- Tooltipy hodinových průměrů uvádějí počet hodnot a různých časů. Chybějící hodiny se nepřemosťují čarou.
+- Přehled rozlišuje 23/25hodinové dny i půlhodinový posun času; počty hodin nejsou vydávány za procento dostupnosti senzoru.
+
 ## v0.2.2
 
 - Přehled, denní karty a denní i měsíční grafy sdílejí vypočtené souhrny. Opakované vykreslení rozsáhlé historie je rychlejší; statistiky stále používají všechna původní měření.

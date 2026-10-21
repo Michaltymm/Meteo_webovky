@@ -98,8 +98,17 @@ async def main():
             value = await page.evaluate('(hour)=>chartCompare.data.datasets[0].data[hour]',now.hour)
             expected = sum(current_hour_values[station])/len(current_hour_values[station])
             assert value is not None and abs(value-expected) <= .051
+            count = await page.evaluate('(hour)=>chartCompare.data.datasets[0].sampleCounts[hour]',now.hour)
+            assert count == len(current_hour_values[station])
+            await page.locator('.comparison-data summary').click()
+            assert await page.locator('#cmpDataQuality').is_visible()
+            assert 'celá dostupná historie' in await page.locator('#cmpDataQuality').inner_text()
+            assert 'nejsou dostupnost senzoru' in await page.locator('#cmpDataQuality').inner_text()
+            tooltip = await page.evaluate('(hour)=>compareTooltip({dataset:chartCompare.data.datasets[0],dataIndex:hour})',now.hour)
+            assert f'Číselné hodnoty: {count}' in tooltip
             assert 'Europe/Prague' in await page.locator('#cmpInfo').inner_text()
             assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+            await page.locator('.comparison-data summary').click()
             await page.locator('.tab-btn[data-tab="explorer"]').click()
             results.append({'station':station,'fullRequestsForTwoCalls':len(requests)-before,
                             'rows':await page.evaluate('store.rows.length'),'checks':'passed'})
@@ -124,11 +133,38 @@ async def main():
         await page.evaluate('renderIntervalComparison([{ts:new Date("2026-10-25T02:30:00+02:00"),temp:10},{ts:new Date("2026-10-25T02:30:00+01:00"),temp:11}])')
         text = await page.locator('#expInterval').inner_text()
         assert '1 h 0 min 0 s' in text and 'UTC+02:00' in text and 'UTC+01:00' in text
+        hourly_results = []
+        for key, stamps, hour, slots in [
+            ('2026-10-25',['2026-10-25T02:30:00+01:00','2026-10-25T02:30:00+02:00'],2,25),
+            ('2026-03-29',['2026-03-29T03:30:00+02:00','2026-03-29T01:30:00+01:00'],3,23)
+        ]:
+            await page.evaluate('''([key,stamps])=>{
+              store.rows=stamps.map((stamp,i)=>({ts:new Date(stamp),temp:10+i*10,hum:60,pressure:1010}));
+              store.fullLoaded=true;invalidateDerivedData();markAllTabsDirty();
+              cmpSelectedDays=[key];el('cmpMetric').value='temp';
+            }''',[key,stamps])
+            await page.locator('.tab-btn[data-tab="compare"]').click()
+            await page.evaluate('buildCompare()')
+            await page.locator('.comparison-data').evaluate('(d)=>d.open=true')
+            quality = await page.locator('#cmpDataQuality').inner_text()
+            assert f'2/{slots}' in quality
+            assert await page.evaluate('chartCompare.data.datasets[0].spanGaps') is False
+            assert await page.evaluate('(key)=>hourlyDay(key).maxGapMs',key) == 3600000
+            if slots == 25:
+                assert await page.evaluate('(hour)=>chartCompare.data.datasets[0].data[hour]',hour) == 15
+            else:
+                assert await page.evaluate('chartCompare.data.datasets[0].data[2]') is None
+            for theme in ['darkblue','light']:
+                await page.evaluate('(theme)=>setTheme(theme)',theme)
+                assert await page.locator('#cmpDataQuality').is_visible()
+                assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+            hourly_results.append({'date':key,'observedGroups':2,'possibleGroups':slots,'gapMs':3600000,'checks':'passed'})
         assert not errors, errors
         await page.screenshot(path='/tmp/meteo-interval-mobile.png',full_page=True)
         await browser.close()
     Path(args.output).write_text(json.dumps({'results':results,'requests':requests,'pageErrors':errors,
         'clock':now.isoformat() if args.at else 'system','calendar':calendar_results,
+        'hourly':hourly_results,
         'transport':'fixture CSV delayed 250ms; MQTT CDN blocked, UV mocked'},indent=2))
     print(args.output)
 

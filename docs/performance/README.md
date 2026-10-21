@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 5 — hodinové agregace a podklady](ETAPA5.md) přidává porovnání dnů,
+LRU osmi dnů a počty/rozložení záznamů; měření první i opakované návštěvy.
+
 [Etapa 4 — sdílené souhrny a obnova na pozadí](ETAPA4.md) navazuje na v0.2.1:
 profil s invalidovanou i opakovaně použitou cache, mobilní viewport, CPU×4,
 heap a kontrola periodických požadavků při změně viditelnosti.

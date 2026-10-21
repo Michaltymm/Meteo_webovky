@@ -1,0 +1,239 @@
+{
+  "browser": "154.0.8037.57",
+  "results": [
+    {
+      "rows": 1000,
+      "samples": [
+        {
+          "current": {
+            "ms": 41.2,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 7.5,
+            "points": 280,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.1 \u00b0C | Max: 85.0 \u00b0C | 1000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.4 % | Max: 80.0 % | 1000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 6
+          }
+        },
+        {
+          "current": {
+            "ms": 33.3,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 8.6,
+            "points": 280,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.1 \u00b0C | Max: 85.0 \u00b0C | 1000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.4 % | Max: 80.0 % | 1000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 5.9
+          }
+        },
+        {
+          "current": {
+            "ms": 20.7,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 4.7,
+            "points": 280,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.1 \u00b0C | Max: 85.0 \u00b0C | 1000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.4 % | Max: 80.0 % | 1000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 4.5
+          }
+        },
+        {
+          "current": {
+            "ms": 22.2,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 4.6,
+            "points": 280,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.1 \u00b0C | Max: 85.0 \u00b0C | 1000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.4 % | Max: 80.0 % | 1000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 5.8
+          }
+        },
+        {
+          "current": {
+            "ms": 19.9,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 4.5,
+            "points": 280,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.1 \u00b0C | Max: 85.0 \u00b0C | 1000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.4 % | Max: 80.0 % | 1000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 3.7
+          }
+        }
+      ],
+      "pageErrors": [],
+      "smokeFailures": [],
+      "mobileOverflow": false
+    },
+    {
+      "rows": 10000,
+      "samples": [
+        {
+          "current": {
+            "ms": 61.1,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 11.3,
+            "points": 410,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 10000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.1 % | Max: 80.0 % | 10000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 4.1
+          }
+        },
+        {
+          "current": {
+            "ms": 25.7,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 12.8,
+            "points": 410,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 10000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.1 % | Max: 80.0 % | 10000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 7.8
+          }
+        },
+        {
+          "current": {
+            "ms": 20.3,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 9.8,
+            "points": 410,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 10000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.1 % | Max: 80.0 % | 10000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 4.6
+          }
+        },
+        {
+          "current": {
+            "ms": 19.8,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 6.9,
+            "points": 410,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 10000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.1 % | Max: 80.0 % | 10000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 6.4
+          }
+        },
+        {
+          "current": {
+            "ms": 22.4,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 8.9,
+            "points": 410,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 10000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.1 % | Max: 80.0 % | 10000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 4.8
+          }
+        }
+      ],
+      "pageErrors": [],
+      "smokeFailures": [],
+      "mobileOverflow": false
+    },
+    {
+      "rows": 100000,
+      "samples": [
+        {
+          "current": {
+            "ms": 64.3,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 30.4,
+            "points": 534,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 100000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.0 % | Max: 80.0 % | 100000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 15.9
+          }
+        },
+        {
+          "current": {
+            "ms": 22.2,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 19.6,
+            "points": 534,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 100000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.0 % | Max: 80.0 % | 100000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 13
+          }
+        },
+        {
+          "current": {
+            "ms": 23.6,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 19.7,
+            "points": 534,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 100000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.0 % | Max: 80.0 % | 100000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 19.8
+          }
+        },
+        {
+          "current": {
+            "ms": 24.4,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 23,
+            "points": 534,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 100000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.0 % | Max: 80.0 % | 100000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 14.7
+          }
+        },
+        {
+          "current": {
+            "ms": 24,
+            "updates": 1
+          },
+          "explorer": {
+            "ms": 22,
+            "points": 534,
+            "stats": "\ud83c\udf21 Teplota Min: 2.0 \u00b0C | Pr\u016fm: 10.0 \u00b0C | Max: 85.0 \u00b0C | 100000 m\u011b\u0159en\u00ed \ud83d\udca7 Vlhkost Min: 40.0 % | Pr\u016fm: 60.0 % | Max: 80.0 % | 100000 m\u011b\u0159en\u00ed"
+          },
+          "slider": {
+            "ms": 10.1
+          }
+        }
+      ],
+      "pageErrors": [],
+      "smokeFailures": [],
+      "mobileOverflow": false
+    }
+  ]
+}

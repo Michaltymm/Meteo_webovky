@@ -85,6 +85,10 @@
     #expInterval { white-space: pre-line; font-size: .8rem; line-height: 1.5; padding: .6rem .7rem; }
     #expInterval[hidden] { display: none; }
 
+    .comparison-data { margin-top: .8rem; padding: .7rem; background: var(--bg2); border-radius: 8px; font-size: .8rem; }
+    .comparison-data summary { cursor: pointer; color: var(--text); }
+    #cmpDataQuality { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.6; color: var(--muted); }
+
     .nav-pills {
       display: flex;
       gap: .4rem;
@@ -1948,8 +1952,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v022"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.2.2</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v030"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.3.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2538,6 +2542,10 @@
         <div class="chart-canvas-wrap" style="height:340px"><canvas id="chartCompare"></canvas></div>
       </div>
       <div id="cmpInfo" style="font-size:.78rem;color:var(--muted);margin-top:.3rem;text-align:right"></div>
+      <details class="comparison-data">
+        <summary>Podklady hodinových průměrů</summary>
+        <div id="cmpDataQuality"></div>
+      </details>
     </div>
 
     <!-- ════ Přehled teplot ════ -->
@@ -4070,7 +4078,7 @@
         if (!map.has(key)) map.set(key, { time, ts: 0, hs: 0, tn: 0, hn: 0, rain: null });
         return map.get(key);
       };
-      let year, month, day, d, m;
+      let year, month, day, d, m, index = 0;
       for (const row of rows) {
         const time = row.ts.getTime();
         const y = row.ts.getFullYear(), mo = row.ts.getMonth(), da = row.ts.getDate();
@@ -4078,6 +4086,8 @@
         if (y !== year || mo !== month) m = bucket(months, `${mo + 1}/${y}`, time);
         if (y !== year || mo !== month || da !== day) d = bucket(days, fmtDateShort(row.ts), time);
         year = y; month = mo; day = da;
+        if (d.start === undefined) d.start = index;
+        d.end = ++index;
         if (Number.isFinite(row.temp)) {
           d.ts += row.temp; d.tn++; m.ts += row.temp; m.tn++;
           if (!temperature.minRow || row.temp < temperature.min) { temperature.min = row.temp; temperature.minRow = row; }
@@ -4098,9 +4108,91 @@
       for (const [day, d] of days) {
         if (d.rain !== null && (!rainMax || d.rain > rainMax.value)) rainMax = { day, value: d.rain };
       }
-      const result = { source: rows, length: rows.length, dayKey, ...bounds, days, months, today, temperature, rainMax };
+      const result = { source: rows, length: rows.length, dayKey, ...bounds, days, months, today, temperature, rainMax, hourly: new Map() };
       if (rows === store.rows) aggregateCache = result;
       return result;
+    }
+
+    const HOURLY_CACHE_LIMIT = 8;
+    function hourlyDay(key) {
+      const snapshot = dataAggregates();
+      if (snapshot.hourly.has(key)) {
+        const cached = snapshot.hourly.get(key);
+        snapshot.hourly.delete(key); snapshot.hourly.set(key, cached);
+        return cached;
+      }
+      const bounds = localDayBounds(key);
+      const slots = new Set(), observed = new Set();
+      const values = Object.fromEntries(["temp", "hum", "pressure"].map(metric => [metric,
+        Array.from({ length: 24 }, () => ({ sum: 0, count: 0, unique: 0, lastTime: null, avg: null }))]));
+      const metricSlots = { temp: new Set(), hum: new Set(), pressure: new Set() };
+      const result = { key, values, count: 0, unique: 0, first: null, last: null, maxGapMs: null,
+        durationMs: bounds ? bounds.to + 1 - bounds.from : 0, slots: 0, observedSlots: 0, metricSlots: {} };
+      const slotKey = date => date.getHours() + ":" + date.getTimezoneOffset();
+      if (bounds) {
+        // Count existing civil hour/offset groups, including half-hour DST changes.
+        for (let time = bounds.from; time <= bounds.to; time += 60000) slots.add(slotKey(new Date(time)));
+        const day = snapshot.days.get(fmtDateShort(new Date(bounds.from)));
+        const rows = snapshot.source;
+        // Ascending timestamps, retaining original order inside equal-time groups:
+        // this matches the old stable sort and preserves floating-point sums.
+        for (let i = day ? day.end - 1 : -1; day && i >= day.start;) {
+          const time = rows[i].ts.getTime();
+          let start = i;
+          while (start > day.start && rows[start - 1].ts.getTime() === time) start--;
+          for (let j = start; j <= i; j++) {
+            const row = rows[j], hour = row.ts.getHours(), slot = slotKey(row.ts);
+            result.count++;
+            if (result.first === null) result.first = time;
+            if (time !== result.last) {
+              if (result.last !== null) result.maxGapMs = Math.max(result.maxGapMs ?? 0, time - result.last);
+              result.unique++;
+            }
+            result.last = time; observed.add(slot);
+            for (const metric of ["temp", "hum", "pressure"]) {
+              if (!Number.isFinite(row[metric])) continue;
+              const stat = values[metric][hour];
+              stat.sum += row[metric]; stat.count++;
+              if (stat.lastTime !== time) stat.unique++;
+              stat.lastTime = time; metricSlots[metric].add(slot);
+            }
+          }
+          i = start - 1;
+        }
+      }
+      for (const metric of ["temp", "hum", "pressure"]) {
+        for (const stat of values[metric]) stat.avg = stat.count ? +(stat.sum / stat.count).toFixed(1) : null;
+        result.metricSlots[metric] = metricSlots[metric].size;
+      }
+      result.slots = slots.size; result.observedSlots = observed.size;
+      if (bounds) {
+        snapshot.hourly.set(key, result);
+        if (snapshot.hourly.size > HOURLY_CACHE_LIMIT) snapshot.hourly.delete(snapshot.hourly.keys().next().value);
+      }
+      return result;
+    }
+
+    function compareTooltip(context) {
+      const count = context.dataset.sampleCounts?.[context.dataIndex];
+      const unique = context.dataset.uniqueCounts?.[context.dataIndex];
+      return count === undefined ? "" : "Číselné hodnoty: " + count + " · různé časy: " + unique;
+    }
+
+    function renderComparisonQuality(days, metrics) {
+      const names = { temp: "T", hum: "RH", pressure: "P" };
+      const lines = days.map(day => {
+        if (!day.count) return day.key + ": žádné záznamy v načtených datech.";
+        const duration = ms => fmt(ms / 3600000, 2) + " h";
+        const counts = metrics.map(metric => names[metric] + ": " + day.values[metric].reduce((n, s) => n + s.count, 0) +
+          " číselných hodnot, hodiny " + day.metricSlots[metric] + "/" + day.slots).join(" · ");
+        return day.key + " · délka dne " + duration(day.durationMs) + "\n" +
+          "Záznamy: " + day.count + " · různé časy: " + day.unique + " · hodiny se záznamem: " + day.observedSlots + "/" + day.slots + "\n" +
+          counts + "\n" + "Rozsah časů: " + duration(day.last - day.first) + " · nejdelší rozestup: " +
+          (day.maxGapMs === null ? "nelze určit" : duration(day.maxGapMs));
+      });
+      el("cmpDataQuality").textContent = (days.length ? "Načtená data: " + (store.fullLoaded ? "celá dostupná historie." : "částečná historie.") + "\n\n" : "") +
+        lines.join("\n\n") + (days.length ?
+        "\n\nPočítají se skupiny místní hodiny a UTC offsetu s alespoň jedním záznamem, i neúplné hodiny při změně času. Počty nejsou dostupnost senzoru ani souvislé pokrytí dne. Rozestup nezahrnuje okraje dne a není sám o sobě výpadek. Průměry zahrnují všechny číselné záznamy včetně shodných časů." : "");
     }
 
     /* ══════════════════════════════════════════════
@@ -4197,6 +4289,7 @@
 
     function invalidateDerivedData() {
       aggregateCache = null;
+      el("cmpDataQuality").textContent = "";
       explorerRangeCache = null;
       expAllPts = [];
       el("expInterval").hidden = true;
@@ -4646,57 +4739,57 @@
     }
 
     function buildCompare() {
-      if (!store.rows.length) return;
+      if (!store.rows.length) {
+        chartCompare.data.datasets = [];
+        el("cmpDataQuality").textContent = "";
+        el("cmpInfo").textContent = "Žádná načtená data pro porovnání.";
+        chartCompare.update("none");
+        return;
+      }
       const metric = el("cmpMetric").value;
-
-      /* Seskupit řádky podle data (YYYY-MM-DD) */
-      const byDate = {};
-      store.rows.forEach(r => {
-        const d = localDateKey(r.ts);
-        if (!byDate[d]) byDate[d] = [];
-        byDate[d].push(r);
-      });
 
       /* 24 hodinových štítků */
       const hours = Array.from({ length: 24 }, (_, i) => (i < 10 ? "0" : "") + i + ":00");
 
       const now = new Date();
       const datasets = [];
+      const daySummaries = [];
+      const selectedMetrics = metric === "temp_hum" ? ["temp", "hum"] : [metric === "hum" || metric === "pressure" ? metric : "temp"];
 
       cmpSelectedDays.forEach((date, di) => {
-        const rows = (byDate[date] || []).sort((a, b) => a.ts - b.ts);
+        const day = hourlyDay(date);
+        daySummaries.push(day);
         const color = CMP_COLORS[di % CMP_COLORS.length];
         const lbl = calendarDayLabel(date, now);
 
-        const hourAvg = fn => hours.map((_, hi) => {
-          const vals = rows.filter(r => r.ts.getHours() === hi).map(fn).filter(v => v !== null);
-          return vals.length ? +(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
-        });
+        const hourData = key => ({ data: day.values[key].map(s => s.avg),
+          sampleCounts: day.values[key].map(s => s.count), uniqueCounts: day.values[key].map(s => s.unique) });
 
         if (metric === "temp_hum") {
           const colH = CMP_COLORS[(di * 2 + 1) % CMP_COLORS.length];
           datasets.push({
             label: "Teplota – " + lbl, borderColor: color, backgroundColor: color + "22",
-            tension: .4, pointRadius: 2, borderWidth: 2.5, yAxisID: "yMain", spanGaps: true,
-            data: hourAvg(r => r.temp)
+            tension: .4, pointRadius: 2, borderWidth: 2.5, yAxisID: "yMain", spanGaps: false,
+            ...hourData("temp")
           });
           datasets.push({
             label: "Vlhkost – " + lbl, borderColor: colH, backgroundColor: "transparent",
-            tension: .4, pointRadius: 1, borderWidth: 1.5, borderDash: [5, 3], yAxisID: "ySec", spanGaps: true,
-            data: hourAvg(r => r.hum)
+            tension: .4, pointRadius: 1, borderWidth: 1.5, borderDash: [5, 3], yAxisID: "ySec", spanGaps: false,
+            ...hourData("hum")
           });
         } else {
-          const fn = metric === "hum" ? r => r.hum : metric === "pressure" ? r => r.pressure : r => r.temp;
           datasets.push({
             label: lbl, borderColor: color, backgroundColor: color + "22",
-            tension: .4, pointRadius: 2, borderWidth: 2.5, yAxisID: "yMain", spanGaps: true,
-            data: hourAvg(fn)
+            tension: .4, pointRadius: 2, borderWidth: 2.5, yAxisID: "yMain", spanGaps: false,
+            ...hourData(selectedMetrics[0])
           });
         }
       });
 
       chartCompare.data.labels = hours;
       chartCompare.data.datasets = datasets;
+      chartCompare.options.plugins.tooltip.callbacks = { afterLabel: compareTooltip };
+      renderComparisonQuality(daySummaries, selectedMetrics);
 
       const metricCfg = {
         temp: { unit: "°C", color: "#e74c3c", title: "Teploty" },

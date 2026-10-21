@@ -1,0 +1,10 @@
+{
+  "before": {
+    "missingHour": null,
+    "spanGaps": true
+  },
+  "after": {
+    "missingHour": null,
+    "spanGaps": false
+  }
+}

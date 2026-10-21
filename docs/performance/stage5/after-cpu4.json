@@ -1,0 +1,151 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "aggregateScenario": false,
+  "comparisonScenario": true,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2560768,
+        "nodes": 1865,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24209380,
+        "nodes": 1865,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 26232456,
+        "nodes": 1932,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26661880,
+        "nodes": 1933,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 3.2,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 229,
+            "mutations": 34
+          },
+          "explorer": {
+            "ms": 141.7,
+            "mutations": 4
+          },
+          "coldCompare": {
+            "ms": 104.7,
+            "mutations": 3
+          },
+          "compare": {
+            "ms": 30.2,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 125.8,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 105.7,
+            "mutations": 4
+          },
+          "coldCompare": {
+            "ms": 52.7,
+            "mutations": 5
+          },
+          "compare": {
+            "ms": 21.8,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.9,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 104.8,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 82.9,
+            "mutations": 4
+          },
+          "coldCompare": {
+            "ms": 51.8,
+            "mutations": 5
+          },
+          "compare": {
+            "ms": 23.5,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 121,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 130.5,
+            "mutations": 4
+          },
+          "coldCompare": {
+            "ms": 71.2,
+            "mutations": 5
+          },
+          "compare": {
+            "ms": 20.8,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 105,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 88.2,
+            "mutations": 4
+          },
+          "coldCompare": {
+            "ms": 53.5,
+            "mutations": 5
+          },
+          "compare": {
+            "ms": 19.1,
+            "mutations": 3
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}

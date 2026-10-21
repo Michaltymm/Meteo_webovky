@@ -121,14 +121,14 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-033 Min/max redukce pro průzkumník, plné statistiky a zoom | Současná historie | S / P0 | Max 800 pozorovaných bodů; bez animace; zachová extrémy každé veličiny | AUD-013 / Opus P07 | Dokončeno |
 | METEO-034 Kalendářní a hodinová heatmapa T/RH/srážek/pokrytí | Současné denní/hodinové agregace | S / P2 | Malá mřížka, lazy render | METEO-038/048, srážky METEO-017 | Nápad |
 | METEO-035 Histogram a teplotní profil hodiny/dne/měsíce | Současná historie | S / P2 | O(n) agregace, desítky sloupců | METEO-038; volba časového vážení | Nápad |
-| METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | Lineární timestamp osa bez nové date knihovny | METEO-033/048; nyní category osa | Připraveno k realizaci |
+| METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | v0.3.0 Porovnání nespojuje prázdné hodiny; časová osa ostatních grafů dále | METEO-033/048; nyní category osa | Rozpracováno |
 | METEO-037 Fullscreen a PNG export grafu | Aktuální vykreslený graf | N / P2 | Export jen na kliknutí | METEO-010; popisek rozsahu/stanice | Nápad |
 
 ## 8. Historická data a statistiky
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | v0.2.2 společné hlavní/dnešní souhrny a denní/měsíční T/RH; hodiny/pokrytí zbývají | Invalidace dat a místního dne, METEO-048; průměry vzorkové | Rozpracováno |
+| METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | v0.3.0 i hodinové T/RH/P a podklady; roční sdílení a plán dostupnosti zbývají | Invalidace dat/dne, LRU8 dnů, METEO-048; vzorkové průměry | Rozpracováno |
 | METEO-039 Bezpečné min/max velkých polí bez spread argumentů | Současná historie | N / P0 | O(n), bez pádu na limitu zásobníku | FUT-004 / Opus W07 | Dokončeno |
 | METEO-040 Historie se stránkováním a vyhledáním rekordů | Současná historie / poznámky | S / P1 | Omezený DOM místo 100k řádků „Vše“ | AUD-011 hotové, zachovat export všech dat | Připraveno k realizaci |
 | METEO-041 Porovnání období např. říjen 2025/2026, absolutně i anomálie | Víceletá historie | S / P2 | Agregované řady | METEO-038/048; neúplné období označit | Nápad |
@@ -709,3 +709,37 @@ na codex-dev. [Actions #12](https://github.com/Michaltymm/Meteo_webovky/actions/
 **Success**, build i deploy prošly, celkem 33s. Main zůstává 2405c5d. Přímé
 živé widgety Pages nebyly z prostředí ověřeny; místní prohlížečové testy jsou
 s řízenými transporty. Následující commit aktualizuje pouze dokumentaci.
+
+## Etapa 5 — hodinové souhrny a podklady, v0.3.0 (21. 10. 2026)
+
+Pokračování **METEO-038**, dílčí **METEO-036**; bez nových ID.
+Porovnání používá hodinové T/RH/P z originálních řádků vybraného dne a LRU
+nejvýše osmi dnů. Indexové meze dne navazují na stávající sdílený snapshot,
+invalidují se s daty, stanicí i dnem. Vzestupné součty zachovávají pořadí
+shodných timestampů původního stabilního sortu; průměry se numericky nemění.
+Nula zůstává validní, null/nekonečno zůstávají chybějící, duplicity se nemažou.
+
+Rozbalovací podklady a tooltip rozlišují počet záznamů, různých časů a číselných
+hodnot veličiny. Počet hodinových skupin s daty má jmenovatel skutečných dvojic
+místní hodiny+offsetu daného dne; podporuje 23/25h i půlhodinové DST. Rozsah
+časů a nejdelší rozestup jsou popsané jako časové rozdíly, ne souvislé pokrytí
+nebo prokázaný výpadek. Bez měřicího plánu se nevydává procento dostupnosti.
+Porovnání nepropojuje null hodiny, zdůrazňuje částečnou/celou načtenou historii.
+Legacy CSV bez offsetu nadále nemůže rozlišit dvojí podzimní čas METEO-048.
+
+**Ověřeno:** 110/110 testů (14 nových), nezávislá reference výpočtů,
+250k lookup/cache bez opakovaných scanů, LRU a invalidace, čtyři zóny včetně
+Lord Howe. Skutečný Chromium/Chart.js se třemi konfiguracemi a řízenou sítí,
+podklady/tooltip, mobil390/dvě témata, 2/25 a2/23 hodinových skupin,
+null jarní hodina a bez pageErrors/přetečení. Původní přemosťování mezery
+reprodukované na c37227f, screenshot nové sekce zkontrolovaný.
+
+[Měření a surové výsledky](performance/ETAPA5.md): při250k cold compare
+35,3→28,4ms a opakované32,7→5,1ms. Nové podklady mají cenu v prvním malém1k
+scénáři7,3→9,2ms; toto není plošné procento zrychlení celé stránky. Heap po GC
+56,31→56,53MiB, osm Chart instancí, žádný nový fetch/závislost/config/workflow.
+
+**Další krok:** sdílení ročních statistik a popis pozorovaného času oproti
+skutečné dostupnosti podle plánu v METEO-038. Plán senzoru není HTTP polling.
+Následně METEO-019/020/031 teplota×napětí s počty a kvalitou časových párů;
+kapacita/SOC/energie z napětí samotného zůstává zamítnutá METEO-024.
