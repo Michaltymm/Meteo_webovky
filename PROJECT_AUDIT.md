@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `fcb8ca4`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.4.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `7aa843e`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.5.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,11 +15,12 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (132/132 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (142/142 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
-- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (83 METEO ID); etapa7 přidává8nových076–083 a rozšiřuje12existujících ID bez duplicit. METEO-019/031 základní explorativní T/V modul, METEO-013 AH/VPD a METEO-010 motion hotové ve v0.4.0; další části těchto ID zůstávají rozpracované. Plán dostupnosti a zóna stanice stále027/038/048.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (83 METEO ID); etapa7 přidala8nových076–083 a12skupin doplnění starších návrhů. METEO-078 DONE v0.5.0; METEO-019/031 základní T/V, METEO-013 AH/VPD a METEO-010 motion hotové ve v0.4.0, další části těchto ID rozpracované. Plán dostupnosti a zóna stále027/038/048.
+- METEO-078: rozbalovací rozklad RH v průzkumníku (T/RH/dew/AH/VPD). Pouze původní krajní řádky aktuálního slideru, O(1), 2čtení i při250k; vodní Magnus jako013, faktory/logaritmická identita, žádná kauzální atribuce či vodní bilance. RH0/nuly T odlišit, nevybírat náhradní endpoint. Kalibrace/umístění mezi body neověřeny, vždy uvedeno; metadata epoch071 dále.
 - Nová batteryAnalysis: pouze páry stejného řádku, plné Welford r/sklon a n/časy/dny. Cache jediného rozsahu7/30/all v dataAggregates, grafy lazy +2 (start stále8, po použití10). Max800 časových a582 skutečných XY reprezentantů, počet bodů není hustota. Žádné p-value/SOC/energie ani záměna T čidla za T baterie.
 - AH/VPD mají vzorec/obor/jednotky v UI; Magnus nad kapalnou vodou i pod0°C, T−45..60°C, RH0..100%. RH0 je validní zde, nikoli pro Td. Originály ani stávající průměry se nemění.
 - Roční srážkové popisky v0.3.1 opravené: denní maximum čítače, přírůstek jednoho záznamu a legacy rozdíl rain do24h. Čísla zachována, nejde o ověřené úhrny; reset/interval/schema stále METEO-017/049.
@@ -29,7 +30,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001 DONE: v0.4.0 nasazeno úspěšným [run39614305462](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462), commit25b7048, build16s/deploy30s, celkem57s. Main stále2405c5d; přímé živé Pages nejsou v síťové politice prostředí povolené.
+- DEPLOY-001: poslední ověřené nasazení v0.4.0 [run39614305462](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462), commit25b7048. v0.5.0 implementováno a místně ověřeno, publikace v této etapě následuje. Main stále2405c5d; přímé živé Pages nejsou v síťové politice povolené.
 
 ## A. PROJECT CONTEXT
 
@@ -287,6 +288,16 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Další etapa: potvrdit metadata čidel/epoch a skutečný kontrakt času, potom METEO-019/020/031 podmíněná srovnání a077 vliv dnů, případně malý078 rozklad RH nad061. Planner076 až s ověřenou referenční četností, sezónní082 až s dostatečně dlouhou homogenní historií. Dostupnost027 a srážky017/049 stále mají datové blokery, SOC024 zůstává zamítnuté. Konfigurace, workflow, server, archiv a main nezměněny. Firmware, broker a živé služby zde neověřeny.
 
 - Publikace v0.4.0: analýza [d6e343c](https://github.com/Michaltymm/Meteo_webovky/commit/d6e343c472f8cf291c2d191161b763cb1226a7df), implementace a důkazy [25b7048](https://github.com/Michaltymm/Meteo_webovky/commit/25b7048eba1b806b55b2b195cf70ec402dc69618), obojí na codex-dev se SHA ověřeným proti origin. [Actions #15](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39614305462) **Success**, build16s/deploy30s, celkem57s, jeden Pages artefakt. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Ověřený workflow deployment není přímé načtení živých widgetů. Následující commit mění pouze dokumentaci, HTML stále v0.4.0.
+
+### Etapa 8: METEO-078 rozklad RH v úseku, v0.5.0 (21. 10. 2026)
+
+- Po kontrole čistého `7aa843e` a shody s origin zvolen navazující P1/nízká 078. Hotové souhrny, T/V, AH/VPD a motion neopakovány. METEO-078 nyní DONE: matematický rozklad dvou stavů nad013/061 bez potřebných nových FW/HW/dat. Žádné nové ID ani plošné dokončení dalších rozpracovaných funkcí. Údaj „12“ v předchozí etapě znamená12skupin rozpracování, ne12unikátních starších ID.
+- `humidityChange(start,end)` sdílí saturationPressure (kapalná voda včetně pod 0 °C, −45..60°C a 0<RH≤100%). e=es·RH/100; RH2/RH1=(es1/es2)·(e2/e1), Δln(RH)=Δln(e)−Δln(es). Vše v plné přesnosti, formátování až v UI. Původní RH/T se nemění, rozdíly nejsou procentní body; neprokazuje zdroj/odtok vody ani příčinu. Při nulové RH, chybějícím/mimooborovém vstupu, shodném/neplatném čase a číselném podtečení vrací důvod nedostupnosti. Kontrolní RH při stejném e nad 100% se označí jako formální překročení nasycení, ne měření či možný setrvalý stav bez kondenzace.
+- Native details v průzkumníku pro temp/hum/temp_hum/dew/absHum/vpd, reaguje na celé původní endpointy slideru. Vstupy i časy s UTC offsetem, faktory a zaokrouhlené logaritmické příspěvky. Platnost kalibrace/umístění mezi body vždy označena neověřená, epoch metadata071 nejsou odhadována. Průběh mezi body ani nepozorované mezery se nehodnotí. Nekompatibilní metrika, prázdný/jednobodový rozsah či invalidace vyčistí/skryje panel.
+- 142/142 Node testů (10 nových): konstantní e/ohřev, izotermická změna páry,400 kombinací v oboru s nezávislým poměrem RH, identické stavy/RH100, nasycení,0/null/NaN/out-of-domain, podtečení/malé číslo, shodný/neplatný čas, DST fold,2 čtení250k, skutečné endpointy slideru/clear/reset. Zaokrouhlená nezávislá es reference vyžaduje 1e−9 toleranci RH, nikoli absolutní 1e−12; samotná algebraická identita testována 1e−12.
+- Skutečný browser/Chart.js se třemi původními konfiguracemi a řízeným CSV/UV: správné faktory při stejném RH a různém T, UTC offsety, slider, žádné další požadavky;0/missing/nasycení, unrelated/empty clear, dvě témata a320/390 px bez trvalého přetečení/page errors. Screenshot prohlédnut. Po změně viewportu test čeká 100 ms na existující Chart ResizeObserver; okamžitý scrollWidth během resize není ustálený layout. Zachována i integrační kontrola T/V/motion a opravy starého CSV.
+- [ETAPA8 — cílené měření a JSON](docs/performance/ETAPA8.md): před/po 1k a 250k,5 vzorků, sekvenčně bez souběžných testů. Slider1k5,4 → 5,7 ms,250k 23,5 → 20,3 ms; explorer 1k 6,0 → 6,9 ms,250k 47,7 → 39,5 ms. Nejde o tvrzení zrychlení grafů; nový výpočet O(1) nemění staré O(n) statistiky/sampling. Opakovaný široký audit ani čtyři velikosti/CPU×4 z etapy 7 neprováděny. Síť/parser/OS mobil/živé Pages tím neověřeny.
+- Konfigurace, workflow, závislosti, server, archiv, původní měření i main nezměněny. Další vhodná etapa077 vliv jednotlivých dnů na T/V vztah;071 metadata a048 zóna dále, bez slibů o kapacitě baterie nebo srážkových úhrnech017/049.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

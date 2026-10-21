@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 8 — rozklad změny RH](ETAPA8.md) ověřuje navazující endpointový výpočet,
+dvě čtení i při250k a cílené srovnání průzkumníku/slideru před a po změně.
+
 [Etapa 7 — analytika T/V, AH/VPD a omezení pohybu](ETAPA7.md) odděluje
 měření běžných pohledů před/po od provozní ceny nového analytického modulu.
 

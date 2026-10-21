@@ -1959,8 +1959,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v040"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.4.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v050"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.5.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2541,6 +2541,15 @@
 
       <div id="expStats" class="day-summary" style="margin-bottom:.5rem;display:none"></div>
       <div id="expInterval" class="day-summary" hidden aria-label="Porovnání krajních měření"></div>
+      <details id="expHumidityChange" class="comparison-data" hidden>
+        <summary>Rozklad změny relativní vlhkosti</summary>
+        <div id="expHumidityChangeValue" style="white-space:pre-line;overflow-wrap:anywhere"></div>
+        <p>Součin teplotního faktoru a faktoru parního tlaku odpovídá poměru konečné a počáteční RH.
+          Faktory nejsou procentní body. Výpočet používá stejný vztah nad kapalnou vodou jako AH/VPD,
+          v oboru −45 až 60 °C a RH větší než 0 až 100 %.</p>
+        <p>Jde o porovnání dvou stavů, nikoliv důkaz příčiny změny nebo průběhu mezi nimi.
+          Neurčuje množství přidané či odstraněné vody. Umístění a kalibrace čidla mezi body nejsou ověřeny.</p>
+      </details>
       <div class="chart-wrapper" style="margin-top:.6rem">
         <div class="chart-title" id="expChartTitle">Graf</div>
         <div class="chart-canvas-wrap" style="height:320px;padding-bottom:4px"><canvas id="chartExplorer"></canvas>
@@ -4375,6 +4384,8 @@
       expAllPts = [];
       el("expInterval").hidden = true;
       el("expInterval").textContent = "";
+      el("expHumidityChange").hidden = true;
+      el("expHumidityChangeValue").textContent = "";
     }
 
     // Descending store contract: binary range lookup, then reverse only the
@@ -4660,6 +4671,64 @@
       return { start, end, elapsedMs, delta };
     }
 
+    function intervalTimestamp(d) {
+      const offset = -d.getTimezoneOffset(), sign = offset < 0 ? "−" : "+";
+      return fmtDT(d) + ":" + _pad2(d.getSeconds()) + " UTC" + sign +
+        _pad2(Math.floor(Math.abs(offset) / 60)) + ":" + _pad2(Math.abs(offset) % 60);
+    }
+
+    // Exact endpoint identity: RH2/RH1 = (es1/es2) * (e2/e1).
+    // It is a thermodynamic decomposition, not a causal attribution.
+    function humidityChange(start, end) {
+      const from = start?.ts?.getTime?.(), to = end?.ts?.getTime?.();
+      if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from) return { status: "time" };
+      const es1 = saturationPressure(start.temp, start.hum), es2 = saturationPressure(end.temp, end.hum);
+      if (es1 === null || es2 === null) return { status: "values" };
+      if (start.hum === 0 || end.hum === 0) return { status: "zero" };
+      const e1 = es1 * (start.hum / 100), e2 = es2 * (end.hum / 100);
+      const temperatureFactor = es1 / es2, vaporFactor = e2 / e1, rhFactor = end.hum / start.hum;
+      const counterRH = start.hum * temperatureFactor;
+      const temperatureLog = Math.log(temperatureFactor), vaporLog = Math.log(vaporFactor), rhLog = Math.log(rhFactor);
+      if (![e1, e2, temperatureFactor, vaporFactor, rhFactor, counterRH].every(v => Number.isFinite(v) && v > 0) ||
+        ![temperatureLog, vaporLog, rhLog].every(Number.isFinite)) return { status: "numeric" };
+      return { status: "ok", e1, e2, temperatureFactor, vaporFactor, rhFactor, counterRH,
+        temperatureLog, vaporLog, rhLog, aboveSaturation: counterRH > 100 + 1e-9 };
+    }
+
+    function renderHumidityChange(comparison, metric) {
+      const box = el("expHumidityChange"), value = el("expHumidityChangeValue");
+      box.hidden = !comparison || !["temp", "hum", "temp_hum", "dew", "absHum", "vpd"].includes(metric);
+      if (box.hidden) { value.textContent = ""; return; }
+      const { start, end } = comparison, result = humidityChange(start, end);
+      const number = (v, digits = 2) => !Number.isFinite(v) ? "nedostupné" :
+        v !== 0 && (Math.abs(v) < .01 || Math.abs(v) >= 10000) ? v.toExponential(3) : fmt(v, digits);
+      const lines = [
+        `Počáteční: ${intervalTimestamp(start.ts)} · ${number(start.temp)} °C · RH ${number(start.hum)} %`,
+        `Konečné: ${intervalTimestamp(end.ts)} · ${number(end.temp)} °C · RH ${number(end.hum)} %`
+      ];
+      if (result.status !== "ok") {
+        const reasons = {
+          time: "Krajní časy musí být různé a vzestupné. Shodný čas nepopisuje vývoj.",
+          values: "Chybí platná T/RH nebo je vstup mimo uvedený obor výpočtu.",
+          zero: "RH je v jednom z krajních měření 0 %. Logaritmický rozklad zde není definován; nula se nenahrazuje.",
+          numeric: "Hodnoty jsou mimo bezpečný číselný rozsah rozkladu."
+        };
+        lines.push("Rozklad není dostupný: " + reasons[result.status]);
+      } else {
+        lines.push(
+          `Parciální tlak páry e: ${number(result.e1, 3)} → ${number(result.e2, 3)} hPa (vypočteno)`,
+          `Teplotní faktor při stejném e: ×${number(result.temperatureFactor, 4)}`,
+          `Faktor parního tlaku e: ×${number(result.vaporFactor, 4)}`,
+          `Výsledný poměr RH: ×${number(result.rhFactor, 4)}`,
+          `Kontrolní RH při změně pouze teploty a stejném e: ${result.aboveSaturation
+            ? ">100 % — překročeno nasycení; formální model bez kondenzace"
+            : number(result.counterRH) + " % (formální výpočet)"}`,
+          `Logaritmický rozklad Δln(RH), zaokrouhleno: ${number(result.rhLog, 6)} ≈ ${number(result.vaporLog, 6)} (pára) + ${number(result.temperatureLog, 6)} (teplota)`
+        );
+      }
+      setNodeText(value, lines.join("\n"));
+    }
+
     function renderIntervalComparison(rows) {
       const box = el("expInterval"), metric = el("expMetric").value;
       const fields = {
@@ -4668,14 +4737,10 @@
       };
       const keys = metric === "temp_hum" ? ["temp", "hum"] : fields[metric] ? [metric] : [];
       const comparison = intervalComparison(rows);
+      renderHumidityChange(comparison, metric);
       box.hidden = !comparison || !keys.length;
       if (box.hidden) { box.textContent = ""; return; }
       const { start, end, elapsedMs, delta } = comparison;
-      const stamp = d => {
-        const offset = -d.getTimezoneOffset(), sign = offset < 0 ? "−" : "+";
-        return fmtDT(d) + ":" + _pad2(d.getSeconds()) + " UTC" + sign +
-          _pad2(Math.floor(Math.abs(offset) / 60)) + ":" + _pad2(Math.abs(offset) % 60);
-      };
       const hours = Math.floor(elapsedMs / 3600000), minutes = Math.floor(elapsedMs / 60000) % 60;
       const seconds = +(elapsedMs % 60000 / 1000).toFixed(3);
       const lines = keys.map(key => {
@@ -4685,7 +4750,7 @@
         return label + ": " + value(start[key]) + " → " + value(end[key]) + " · změna " + change;
       });
       box.textContent = "Krajní měření úseku · " + hours + " h " + minutes + " min " + seconds + " s\n" +
-        stamp(start.ts) + " → " + stamp(end.ts) + "\n" + lines.join("\n") +
+        intervalTimestamp(start.ts) + " → " + intervalTimestamp(end.ts) + "\n" + lines.join("\n") +
         "\nRozdíl krajních měření nepopisuje průběh ani výpadky mezi nimi. Časy v zóně prohlížeče.";
     }
 

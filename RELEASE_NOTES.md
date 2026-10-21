@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.5.0
+
+- Průzkumník má rozbalovací „Rozklad změny relativní vlhkosti“ pro krajní měření vybraného úseku. Ukazuje vstupní T/RH a časy, teplotní faktor, faktor parního tlaku a kontrolní RH při nezměněném parním tlaku.
+- Rozklad reaguje na posuvník, používá původní měření a rozlišuje chybějící vstupy, RH=0, shodné časy a formální překročení nasycení. Vysvětluje omezení výpočtu a neověřenou platnost kalibrace či umístění mezi body.
+
 ## v0.4.0
 
 - Nová záložka „Teplota × napětí“ porovnává původní páry ve společném časovém a XY grafu. Ukazuje počty párů, různých časů a dnů, popisnou korelaci a lineární sklon; bez odhadů kapacity či stavu nabití baterie.

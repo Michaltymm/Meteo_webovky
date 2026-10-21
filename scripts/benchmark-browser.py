@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--html", default="index.html")
 parser.add_argument("--chartjs", required=True)
 parser.add_argument("--output", required=True)
+parser.add_argument("--counts", default="1000,10000,100000", help="Comma-separated fixture sizes")
 args = parser.parse_args()
 html = Path(args.html).read_text()
 # Keep real UI and application, suppress automatic configuration/network startup.
@@ -22,7 +23,7 @@ chart = Path(args.chartjs).read_text()
 results = []
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path="/usr/bin/chromium", headless=True)
-    for count in (1000, 10000, 100000):
+    for count in map(int, args.counts.split(',')):
         page = browser.new_page(viewport={"width": 1280, "height": 900}, timezone_id="Europe/Prague")
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))

@@ -852,7 +852,8 @@ funkce. Původní ID, historie a stavy zůstávají zachované.
 #### METEO-078 — Proč se změnila relativní vlhkost
 
 - **Přínos / priorita / obtížnost / stav:** vysvětlit, zda pokles RH odpovídá
-  hlavně ohřevu, nebo změně množství páry. P1, nízká, Připraveno k realizaci.
+  hlavně ohřevu, nebo změně parního tlaku. P1, nízká, **Dokončeno v0.5.0**
+  (krajní měření úseku v průzkumníku; platnost kalibrace/umístění označena jako neověřená).
   METEO-013 dává stavové veličiny; toto rozkládá změnu mezi dvěma stavy.
 - **Vstupy / proveditelnost / nové požadavky:** dvě původní T/RH se známými
   časy, bez nového zdroje. RH musí být>0 pro logaritmický rozklad.
@@ -1049,3 +1050,42 @@ odeslány na codex-dev, vzdálené SHA ověřeno.
 **Success**, build16s/deploy30s, celkem57s, jeden artefakt. Main stále2405c5d.
 To potvrzuje nasazení workflow, nikoli přímé ověření živých widgetů z tohoto
 prostředí. Následující commit doplňuje pouze dokumentaci; HTML zůstává v0.4.0.
+
+## Etapa 8 — rozklad změny RH, v0.5.0 (21. 10. 2026)
+
+Po ověření shody čistého `7aa843e` s origin vybrán **METEO-078 (P1/nízká)**,
+navazující na hotové výpočty013 a endpointy061. Není potřeba nový firmware,
+senzor ani externí zdroj. Hotová předchozí práce zachována; žádný nový audit
+ani opakování čtyřvelikostních/CPU profilů etapy 7.
+
+**METEO-078 Dokončeno:** rozbalovací „Rozklad změny relativní vlhkosti“
+v průzkumníku pro T/RH/T+RH/Td/AH/VPD, s původními krajními T/RH a časy,
+teplotním faktorem es1/es2, faktorem parního tlaku e2/e1, jejich výsledným
+poměrem RH, kontrolní RH při stejném e a logaritmickými příspěvky. Výpočty
+v plné přesnosti, původní měření a stávající statistiky beze změny.
+
+Kalibrace/umístění mezi body je vždy označeno jako neověřené (metadata071
+nejsou vymyšlená). Nejde o kauzální atribuci, přírůstek hmotnosti vody ani
+průběh mezi endpointy. RH 0, chybějící/mimooborové hodnoty, shodné časy
+či číselné podtečení mají důvod nedostupnosti. Kontrolní RH nad 100 % pouze
+formální překročení nasycení, nikoliv měření. Prázdný/jednobodový úsek,
+nesouvisející metrika a invalidace vyčistí/skryjí panel; slider stále používá
+plné originály, nikoliv nakreslené reprezentanty.
+
+**Ověřeno 142/142 Node testů (10 nových)**, skutečný DOM/Chart.js/tři původní
+konfigurace s řízeným CSV/UV, pohyb slideru, stejné RH při různých T,
+UTC offsety,0/missing/nasycení/clear a obě témata při 320/390 px. Žádné další
+requesty či page errors, screenshot rozbaleného panelu prohlédnut. Smoke
+všech tabů/deseti explorer voleb prošel při 1k/250k.
+
+[Cílené měření a JSON](performance/ETAPA8.md): výpočet přečte pouze2 krajní
+řádky i při 250k, O(1). Sekvenční srovnání5 vzorků před/po: slider 1k 5,4 → 5,7 ms,
+250k 23,5 → 20,3 ms; explorer 1k 6,0 → 6,9 ms,250k 47,7 → 39,5 ms. Není to tvrzení
+zrychlení grafů, jejich původní O(n) práce se nemění. Reálná síť/parser,
+HW/firmware/broker/OS mobil ani živé widgety Pages nejsou tímto ověřeny.
+
+Další vhodný krok **METEO-077**: citlivost T/V vztahu na jednotlivé dny,
+s použitím existujících plných párů a stabilních souhrnů. Epochy071 a
+časový kontrakt048 nadále samostatně; srážky017/049 a dostupnost027 čekají
+na datové kontrakty. METEO-013/019/031/010 zůstávají v dosavadním dílčím
+stavu, nedostávají neoprávněné globální DONE. Počet stabilních ID stále 83.

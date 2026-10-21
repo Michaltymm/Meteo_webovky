@@ -105,6 +105,31 @@ async def main():
                 assert '1000 měření' in await page.locator('#expInfo').inner_text()
                 assert 'vypočteno' in await page.locator('#expChartTitle').inner_text()
                 assert await page.evaluate('chartExplorer.data.labels.length') <= 800
+            await page.select_option('#expMetric','hum')
+            await page.evaluate('setExpRange("all")')
+            humidity_panel = page.locator('#expHumidityChange')
+            assert await humidity_panel.is_visible()
+            await humidity_panel.locator('summary').click()
+            initial_text = await page.locator('#expHumidityChangeValue').inner_text()
+            assert 'Výsledný poměr RH: ×1.0000' in initial_text
+            assert 'UTC+02:00' in initial_text
+            assert 'kalibrace čidla mezi body nejsou ověřeny' in await humidity_panel.inner_text()
+            before_slider = len(requests)
+            await page.evaluate('el("expSliderL").value="20";el("expSliderR").value="80";expSliderUpdate()')
+            assert initial_text != await page.locator('#expHumidityChangeValue').inner_text()
+            assert 'Výsledný poměr RH: ×1.0000' in await page.locator('#expHumidityChangeValue').inner_text()
+            assert len(requests) == before_slider
+            for width in [320,390]:
+                await page.set_viewport_size({'width':width,'height':844})
+                await page.wait_for_timeout(100) # Allow Chart.js ResizeObserver to settle.
+                for theme in ['darkblue','light']:
+                    await page.evaluate('(theme)=>setTheme(theme)',theme)
+                    assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth'), await page.evaluate('''[...document.querySelectorAll('body *')]
+                      .filter(node=>node.getBoundingClientRect().right>innerWidth+1)
+                      .map(node=>({id:node.id,cls:node.className,right:node.getBoundingClientRect().right})).slice(0,20)''')
+            if station == 0:
+                await humidity_panel.screenshot(path=str(output.with_name(output.stem+'-humidity.png')))
+            await humidity_panel.locator('summary').click()
             results.append({'station':station,'pairs':result['count'],'r':result['r'],
                 'fullRequestsOnOpen':len(requests)-before,'rangeAddsRequests':0,'checks':'passed'})
         assert await page.evaluate('chart24.options.animation===false && chartExplorer.options.animation===false')
@@ -126,12 +151,31 @@ async def main():
         await page.select_option('#batteryRange','all')
         assert await page.evaluate('batteryAnalysis("all").maxV') == .02
         assert await page.evaluate('store.rows.length') == 1000
+        await page.locator('.tab-btn[data-tab="explorer"]').click()
+        await page.evaluate('el("expMetric").value="hum"')
+        for values, expected in [
+            ([20,80,0,80],'překročeno nasycení'),
+            ([20,0,20,50],'RH je v jednom z krajních měření 0 %'),
+            ([20,50,None,50],'Chybí platná T/RH')
+        ]:
+            await page.evaluate('''([t1,h1,t2,h2])=>{
+              store.rows=[{ts:new Date(Date.now()),temp:t2,hum:h2},{ts:new Date(Date.now()-3600000),temp:t1,hum:h1}];
+              invalidateDerivedData();setExpRange('all');
+            }''',values)
+            assert expected in await page.locator('#expHumidityChangeValue').text_content()
+        await page.evaluate('el("expMetric").value="pressure";buildExplorer()')
+        assert not await page.locator('#expHumidityChange').is_visible()
+        assert await page.locator('#expHumidityChangeValue').text_content() == ''
+        await page.evaluate('el("expMetric").value="hum";expRange="oneday";el("expDateOne").value="1900-01-01";buildExplorer()')
+        assert not await page.locator('#expHumidityChange').is_visible()
         assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
         assert not errors, errors
         await browser.close()
     output.write_text(json.dumps({'results':results,'pageErrors':errors,'requests':requests,
         'motionInitialAndLive':'passed','hiddenFullLoadNoChartConstruction':'passed','oldCsvCorrection':'passed',
-        'themesMobile390':'passed','transport':'delayed fixture CSV, UV mocked, MQTT CDN blocked'},indent=2))
+        'themesMobile390':'passed','humidityChangeThreeConfigsSlider320And390':'passed',
+        'humidityChangeZeroMissingSaturationClear':'passed',
+        'transport':'delayed fixture CSV, UV mocked, MQTT CDN blocked'},indent=2))
     print(output)
 
 asyncio.run(main())

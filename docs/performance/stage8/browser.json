@@ -1,0 +1,90 @@
+{
+  "results": [
+    {
+      "station": 0,
+      "pairs": 924,
+      "r": 0.999999999999999,
+      "fullRequestsOnOpen": 1,
+      "rangeAddsRequests": 0,
+      "checks": "passed"
+    },
+    {
+      "station": 1,
+      "pairs": 0,
+      "r": null,
+      "fullRequestsOnOpen": 1,
+      "rangeAddsRequests": 0,
+      "checks": "passed"
+    },
+    {
+      "station": 2,
+      "pairs": 924,
+      "r": null,
+      "fullRequestsOnOpen": 1,
+      "rangeAddsRequests": 0,
+      "checks": "passed"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "station": 0,
+      "quick": true
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    }
+  ],
+  "motionInitialAndLive": "passed",
+  "hiddenFullLoadNoChartConstruction": "passed",
+  "oldCsvCorrection": "passed",
+  "themesMobile390": "passed",
+  "humidityChangeThreeConfigsSlider320And390": "passed",
+  "humidityChangeZeroMissingSaturationClear": "passed",
+  "transport": "delayed fixture CSV, UV mocked, MQTT CDN blocked"
+}
