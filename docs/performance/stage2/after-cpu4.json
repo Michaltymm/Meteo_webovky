@@ -1,0 +1,109 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2557596,
+        "nodes": 1850,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24206400,
+        "nodes": 1850,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 25851320,
+        "nodes": 1911,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26101860,
+        "nodes": 1911,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 3.1,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 369.2,
+            "mutations": 34
+          },
+          "explorer": {
+            "ms": 123.8,
+            "mutations": 4
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.2,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 267.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 102.5,
+            "mutations": 4
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 293.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 101.5,
+            "mutations": 4
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 261.2,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 91.9,
+            "mutations": 4
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 219.9,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 58.6,
+            "mutations": 4
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}

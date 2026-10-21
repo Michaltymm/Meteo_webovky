@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-20; práce na `codex-dev` po synchronizaci `f2706b5`; výchozí audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.1.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `1473437`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.2.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,18 +15,18 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (54/54 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (63/63 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
-- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (60 METEO ID); další P0 cache stanic/pozadí, P1 AUD-010 a analytika.
-- Benchmark Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
-- Živá data nebyla ověřena: onboarding proxy vracela CONNECT 403; neplést s chybou aplikace.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); 15 nových samostatných návrhů, další etapa AUD-010/čas + sdílené agregace, cache stanic/pozadí a analytika.
+- Historický benchmark etapy 1 Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
+- Živé quick CSV všech tří zdrojů nyní HTTP200 (21. 10.); pouze dostupnost/bytes/doba, bez validace obsahu. Skutečné schema, firmware, MQTT ani dlouhá historie neověřeny.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- Main + `/dev/` dříve potvrzeny uživatelem; nový push codex-dev zablokovala environment policy github-pages. Nutno povolit codex-dev a zopakovat deploy; viz H/docs/PAGES.md.
+- DEPLOY-001: dřívější blokace codex-dev již není aktuální. Run 39483058506 pro v0.1.0 skončil Success včetně deploymentu; přímé HTTP ověření Pages zde není dostupné. Nasazení v0.2.0 evidovat samostatně níže.
 
 ## A. PROJECT CONTEXT
 
@@ -44,7 +44,7 @@ Projekt zobrazuje aktuální počasí, historii, statistiky srážek a napětí,
 | `config_praha_baterie.json`, `config_praha_okno.json`, `config_stanice3.json` | Automaticky načítané konfigurace tří stanic |
 | `config.json` | Starší konfigurace jedné stanice, současný automatický start ji nečte |
 | `Git/MQTT_webovky/index.html` | Druhá odlišná implementace (3219 řádků oproti 4878); kořenová stránka na ni neodkazuje |
-| `setup.txt`, `README.md` | Postup pro Windows Live Server; README obsahuje pouze název |
+| `setup.txt`, `README.md` | Starší postup pro Windows Live Server; README odkazuje na audit, roadmapu a provoz |
 | `remote_parse.txt` | UTF-16 úryvek staršího parseru; není načítán aplikací |
 | `Navrhy_Vylepseni.md` | Audit Opusu z f2706b5 a tabulka aktuálního stavu implementace; Wxx číslování odlišné od workspace auditu |
 
@@ -185,7 +185,7 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Git fetch/push funguje; čtení/správa Pages a PR/Actions přes API i HTTP na veřejné weby byly v tomto prostředí blokovány 403. Z toho nelze dovozovat chybu nasazení. Při změně dostupnosti ověřit nově, nepožadovat token jen kvůli CLI.
 - Aktualizace dostupnosti: veřejné HTML github.com/actions lze číst přes curl bez API; seznam běhů a anotace dostupné bez přihlášení, podrobné logy vyžadují přihlášení. Pro ověření CI použít tento podporovaný read-only přístup, nikoli extrahování přihlašovacích údajů.
 - Publikované opravy: `fa72a4f` (server/paměť) a `f43d599` (izolace/parser/MQTT/testy) odeslány na codex-dev, vzdálené SHA ověřeny; main zůstává `2405c5d`. Run [39467402153](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39467402153) vytvořil Pages artefakt a build prošel; **deploy selhal** za 2 s s hláškou `Branch "codex-dev" is not allowed to deploy to github-pages due to environment protection rules`. AUD-002/004/009 jsou ověřené opravy kódu, nikoli důkaz jejich nasazení.
-- DEPLOY-001 / IN PROGRESS pro automatické aktualizace vývoje: uživatel musí v Settings → Environments → github-pages povolit codex-dev vedle main (ostatní ochrany zachovat) a v uvedeném běhu zvolit Re-run all jobs. Neobcházet ochranu deployem z jiné větve. Dřívější uživatelské potvrzení se týká dostupnosti stránek; nové nasazení zatím potvrzené není. Postup přidán do docs/PAGES.md.
+- Historický stav 20. 10. — DEPLOY-001 / IN PROGRESS pro automatické aktualizace vývoje (vyřešeno úspěšným během 21. 10., viz etapa 2): uživatel musí v Settings → Environments → github-pages povolit codex-dev vedle main (ostatní ochrany zachovat) a v uvedeném běhu zvolit Re-run all jobs. Neobcházet ochranu deployem z jiné větve. Dřívější uživatelské potvrzení se týká dostupnosti stránek; nové nasazení zatím potvrzené není. Postup přidán do docs/PAGES.md.
 - Vývoj a push na codex-dev; do main slučovat až po schválení uživatelem. Před prací fetch a zachovat změny Opusu/uživatele; f2706b5 byl načten fast-forward. Další priority: AUD-010, AUD-013, výkon velkých historií (IMP-003).
 
 - Další balík 2026-10-20: AUD-003/005/006/007/008/011/012 DONE. 44/44 Node testů, inline syntax check a diff check prošly; dřívější RangeError reprodukován před opravou stejným testem. Browser ověřil všechny záložky nad 61 řádky bez napětí, odmítnutí neplatného data, neproveditelné HTML v notes/historii, přesný obsah víceřádkové poznámky s uvozovkami, Vše, změnu starého řádku při neměnných hlavičkách, nezměněný export, chybu/retry a prázdný explorer včetně mobilu. Použit reálný Chart.js a fixture Sheets/UV; reálná síť/broker neověřeny.
@@ -209,6 +209,19 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - METEO-060 DONE: první evidovaná verze 0.1.0 je přímo v HTML pod názvem Meteostanice. Viditelná bez dat i bez dalšího fetch; odkaz vede do sdílených RELEASE_NOTES.md na codex-dev, přímo na kotvu v010. Soubor obsahuje pouze čísla verzí a stručné změny; první záznam shrnuje existující stabilizaci/výkon a novou indikaci verze, nepřiřazuje zpětně neexistující vydání.
 - Další změna webu zvýší X.Y.Z a přidá záznam nahoru; zachovat historii a aktualizovat kotvu odkazu. Dokumentační změny ani merge stejného HTML do main samy číslo nemění. Verze označuje skutečně načtený soubor; není to potvrzení deploymentu. main bude mít štítek až po schváleném merge.
 - 54/54 stávajících testů a diff check prošly. Chromium ověřilo viditelnost/klikatelnost a nulové přetečení při 320/390/1280 px, cestě root i /dev/ a tématech darkblue/light; žádné pageErrors. Release notes jsou na GitHubu, Pages allowlist se nemění.
+
+### Etapa 2: nové podněty, měření a v0.2.0 (21. 10. 2026)
+
+- Roadmapa rozšířena o 15 samostatných METEO-061–075 (celkem 75). Původní ID/stavy/historie zachovány, baterie/lagy/události/mobil/export rozpracovány pod existujícími ID. `Navrhy_Vylepseni.md` je historická reference, v této etapě neměněn. Každý nový návrh obsahuje vstupy/proveditelnost, techniku, náklady, prioritu, omezení, závislosti a test; měření/výpočet/odhad jsou rozlišeny.
+- Právě tři změny aplikace: METEO-061 porovnání krajních originálních měření exploreru; METEO-002 binární historické protějšky místo čtyř skenů + žádný shodný innerHTML; METEO-001 zápis textů společného přehledu jen při změně. Žádné nové fetch/deps, konfigurace a main beze změn. Verze 0.2.0 + release notes.
+- `nearestHistoryRow` předpokládá sestupné řazení; ostrá tolerance <30 min, při stejné vzdálenosti novější čas a při duplicitě první řádek. Porovnáno s původní lineární referencí. `renderedHistoryMarkup` uchovává pouze malý string, nikoli historii; korekce hodnot se projeví.
+- `intervalComparison` bere vzestupné **úplné** řádky výběru před samplingem, ne chart points. Null na kraji nenahradí vnitřním vzorkem; RH Δ v procentních bodech, žádná rychlost, srážkový úhrn/SOC. Dva časy/offsety, Δt a varování o mezerách; v současné zóně prohlížeče. Nejde o opravu AUD-010. Invalidace/změna stanice skryje panel, metriky rain/rainInc/dew nejsou podporované.
+- Ověření: 63/63 Node testů (9 nových), nové DOM regrese selhaly na baseline 1473437. Reálný Chromium/Chart.js: všechny záložky/metriky, startup tří konfigurací s fixture CSV +250 ms, souběžné full load → jeden request, slider20/80, prázdná data, témata/mobil390, DST fold +02/+01 správně 1h. Syntax/diff check prošly. Skripty `profile-history.py` a `check-interval-browser.py` jsou volitelné dev nástroje, CI stále Node.
+- Výkon: [docs/performance/ETAPA2.md](docs/performance/ETAPA2.md), kompletní raw před/po. 1k/10k/100k/250k, CPU×4, JS heap po GC a 30 cyklů, osm Chart instancí. Historické protějšky při250k 17,3→0,1 ms; stejné refresh texty 46→0 childList/characterData mutací. Celkový refresh kolísá, v první100k sérii i zpomalil; neuvádět plošné procento zrychlení. Při250k ~56 MiB JS heap, raw CSV a procesní RAM zde nezměřeny. Žádný důkaz několikadenní stability nebo fyzického mobilu.
+- Zbylá úzká místa: O(n) statistiky/dešťové agregace v refreshUI, více samostatných agregací, plné CSV přenosy včetně overview, polling na pozadí. Nejbližší etapa AUD-010/METEO-048 + METEO-038; cache stanic004 až s limitem paměti. Vyžádat kontrakt času/srážek, umístění a specifikace senzorů před pokročilou interpretací.
+- Aktualizace nasazení: veřejné Actions HTML potvrzuje [39483058506](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39483058506), commit1473437, **Success**, 49s, jeden artefakt. Dřívější chyby environment policy jsou historické, nepovažovat je znovu za aktivní blocker. Přímé Pages HTTP v prostředí není povoleno; workflow úspěch není vizuální kontrola live webu.
+
+- Kód v0.2.0 uložen v [14af6c8](https://github.com/Michaltymm/Meteo_webovky/commit/14af6c8084716811b9ff6514168a2107740974c7); úspěch nasazení ověřovat samostatně podle nového Actions běhu, ne podle čísla verze.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

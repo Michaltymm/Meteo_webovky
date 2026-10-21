@@ -1,0 +1,23 @@
+[
+  {
+    "station": 0,
+    "status": 200,
+    "bytes": 27530,
+    "contentType": "text/csv; charset=utf-8",
+    "seconds": 1.23
+  },
+  {
+    "station": 1,
+    "status": 200,
+    "bytes": 34624,
+    "contentType": "text/csv; charset=utf-8",
+    "seconds": 1.35
+  },
+  {
+    "station": 2,
+    "status": 200,
+    "bytes": 28320,
+    "contentType": "text/csv; charset=utf-8",
+    "seconds": 0.69
+  }
+]

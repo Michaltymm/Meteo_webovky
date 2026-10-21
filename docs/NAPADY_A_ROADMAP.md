@@ -1,6 +1,6 @@
 # Rozvoj meteorologického dashboardu
 
-Aktualizováno 20. 10. 2026. Centrální živý backlog pro `codex-dev`.
+Aktualizováno 21. 10. 2026. Centrální živý backlog pro `codex-dev`.
 Zadání: postupný rozvoj; nejprve doložené problémy výkonu, potom analytika.
 Produkční `main` se mění až po schválení. Dokončený kód není důkaz nasazení.
 
@@ -298,3 +298,323 @@ Worker/IndexedDB/migrace knihovny zatím nejsou odůvodněny tímto měřením.
 5. P2: heatmapy, diagnostika anomálií; P3 predikce až po backtestech.
 
 Žádná z těchto budoucích funkcí není vydávána za implementovanou.
+
+## Etapa 2 — analýza nad rámec původních 60 návrhů (21. 10. 2026)
+
+Výchozí kód `1473437` / v0.1.0, čistá větev codex-dev. Znovu porovnány oba
+audity, konfigurace, skutečné načítání/CSV/MQTT, renderery a výpočty, 54 testů,
+Pages workflow a dosavadní benchmark. Níže je **15 samostatných nových návrhů**
+METEO-061–075. Samotná korelace, posun řad, sezónnost, heatmapy, alerty, export
+CSV ani offline cache nové ID nedostávají. Jejich rozpracování je uvedeno zvlášť.
+
+### Nové návrhy: interakce a důvěryhodnost výsledků
+
+#### METEO-061 — Porovnání krajních měření vybraného úseku
+
+**Přínos / priorita / obtížnost:** konkrétní rozdíl T/RH/P/V a uplynulý čas
+mezi dvěma měřeními; P1, nízká. **Stav:** Dokončeno ve v0.2.0 (slider).
+**Vstupy / proveditelnost:** současné timestampy a naměřené hodnoty, bez nového
+HW/firmwaru/backendu. Rozšiřuje ovládání METEO-033, není další průměr METEO-014.
+**Řešení / výkon:** použít první a poslední originální řádek intervalu z obou
+úchytů slideru; ukázat oba časy/vstupy, Δ a Δt. O(1) navíc při každém posunu,
+žádný fetch; příště lze doplnit přesné A/B kliknutí a klávesnici.
+**Omezení:** chybějící krajní hodnota zůstane nedostupná, neposouvat tajně endpoint
+k nejbližšímu validnímu vzorku. RH rozdíl v procentních bodech. Žádné SOC, energie,
+srážkový úhrn ani důkaz monotónního průběhu mezi body. Duplikované časy nedovolí
+počítat rychlost; první verze ukáže jen rozdíl a dobu. Závisí na METEO-033/047;
+časový údaj platí v současném modelu Date, zóna stanice METEO-048 zůstává otevřená.
+**Test:** nulové/null hodnoty, jedna položka, shodné timestampy, převrácený slider,
+250k originálů proti 800 vizuálním bodům, změna metriky/stanice a prázdný rozsah.
+
+#### METEO-062 — Společný časový kurzor více grafů
+
+**Přínos / priorita / obtížnost:** číst T/P/V téhož okamžiku bez hledání na každém
+grafu; P2, střední. **Stav:** Nápad. Současná data postačí, bez nového zdroje.
+Samostatná interakce nad METEO-036/025; neznamená synchronizaci měření METEO-029.
+**Řešení / výkon:** sdílet timestamp, ne pixel ani index downsamplingu; najít
+nejbližší originál binárně, zobrazit jeho časovou odchylku. Jeden requestAnimationFrame
+pro viditelné grafy, jeden draw na snímek; ukazatel na dotyku uzamknout tapnutím.
+**Rizika:** různá měřicí četnost, mezery, tooltip k redukovanému bodu může lhát.
+Nedostupné protějšky zobrazit jako chybějící. **Test:** dvě různě velké osy,
+nerovnoměrné timestampy, resize/scroll/touch, jeden aktivní RAF, žádný nový fetch.
+
+#### METEO-063 — Rodokmen výpočtu až k původním řádkům
+
+**Přínos / priorita / obtížnost:** po kliknutí na maximum nebo odvozenou hodnotu
+vidět vzorec/verzi, vstupní řádky a důvody vyloučení; P1, střední. **Stav:**
+Připraveno k realizaci. Dnešní řádky stačí pro přehled původu, trvalé odkazy na
+opravené řádky potřebují ID/revizi backendu. Vztah METEO-047/050: ty evidují
+kvalitu a počty; toto je dohledatelná cesta konkrétního výsledku.
+**Řešení / výkon:** výsledek nese descriptor výpočtu a indexy/timestampy zdrojů,
+detaily se sestaví až po otevření. Bez kopií celé historie a bez HTML z poznámek.
+**Omezení:** timestamp nemusí být unikátní; index je platný jen pro danou revizi.
+Rozlišit měření/výpočet/odhad. **Test:** shodná maxima, duplicity času, změněný
+starý záznam, null vstup rosného bodu, XSS fixture, neplatná reference po refreshi.
+
+#### METEO-064 — Diagnostická časová osa relace a anonymizovaný report
+
+**Přínos / priorita / obtížnost:** reprodukovat postup k chybě a rozlišit fetch,
+parser a render; P1, střední. **Stav:** Připraveno k realizaci. Vstupy jsou události
+webu, dostupné dnes; žádné HW/backend změny. METEO-050 je aktuální stav dat,
+zde jde o časové pořadí operací a export kontextu chyby.
+**Řešení / výkon:** kruhový buffer max 200 strukturovaných událostí, délka/doba,
+generace relace, kód chyby a verze. Export JSON pouze na kliknutí, allowlist polí;
+nevkládat URL/Sheet ID/poznámky/polohu/tokeny ani raw exception s URL. O(1) zápis,
+omezená RAM, bez automatického odesílání. Závislosti METEO-009/050/060.
+**Rizika/test:** i timestampy mohou identifikovat používání; uživatel musí vidět
+exportovaný obsah. Test 10k událostí, pořadí A→B→A, chyby fází a redakce citlivých
+hodnot v uměle škodlivé chybě; report musí být verzovaný a znovu čitelný.
+
+#### METEO-065 — Co se změnilo od poslední návštěvy
+
+**Přínos / priorita / obtížnost:** nové rekordy, doplněná historie a opravy starých
+výsledků bez ručního porovnání; P2, střední. **Stav:** Nápad. Současné agregace
+stačí pro změnu souhrnů, úplný seznam změn/smazání vyžaduje revize backendu.
+METEO-004 řeší rychlost cache, toto uživatelský rozdíl dvou verzí výsledku.
+**Řešení / výkon:** malý snapshot statistik dle zdroje/verze algoritmu v lokálním
+úložišti; zobrazit staré→nové a dobu srovnání. Žádná druhá kopie historie.
+Závisí na METEO-038/054/060. **Rizika:** nový rekord nesmí být zaměněn s novým
+výpočtem po upgradu; partial/full nemíchat. **Test:** oprava starého extrému,
+backfill, smazání, nový algoritmus, jiná stanice a odvolání lokální persistence.
+
+### Nové návrhy: využití dlouhodobých měření
+
+#### METEO-066 — Vyhledávání podobných dnů
+
+**Přínos / priorita / obtížnost:** najít historické dny se srovnatelným ranním
+vývojem a prohlédnout, jak pokračovaly; P2, vysoká. **Stav:** K posouzení.
+Současná T/RH/P a časy postačí po ověření pokrytí; bez HW/backendu. METEO-041
+porovnává uživatelem zvolené období, zde je vyhledání podle tvaru.
+**Řešení / výkon:** na vyžádání hodinové vektory, robustní standardizace zvlášť
+T/RH/P, vážená vzdálenost jen společných pozorovaných hodin; top 5 dnů a skóre
+pokrytí. Cache denních vektorů METEO-038, O(počet dní × 24 × veličiny), bez
+kvadratického DTW. METEO-048/071 jsou nutné pro lokální den a homogenní úsek.
+**Rizika:** shoda rána není předpověď odpoledne; filtr kandidátů pouze podle
+informace dostupné k referenční hodině, pozdější vývoj ukázat jako historii.
+**Test:** vložené podobné dny, chybějící hodiny, změna umístění, absence vhodné
+shody; časově oddělený backtest proti náhodnému výběru bez úniku budoucích dat.
+
+#### METEO-067 — Teplotní sumy a expozice nad zvoleným prahem
+
+**Přínos / priorita / obtížnost:** kvantifikovat intenzitu i trvání tepla/chladu,
+např. stupňohodiny nad 25 °C; P2, střední. **Stav:** Nápad. Současná T/čas,
+bez nového zdroje. METEO-015 počítá dobu/dny; toto integrál max(T−práh,0)·dt.
+**Řešení / výkon:** po částech lineární integrace s přesným průsečíkem prahu,
+gap limit, platný/nezahrnutý čas vedle výsledku. O(n), sdílený denní cache
+METEO-038/048. Uživatelský práh, jednotka °C·h; GDD až s explicitní metodikou.
+**Omezení:** teplota u okna není teplota plodiny; žádný termín sklizně bez modelu.
+**Test:** konstantní, lineární a práh křížící řada s analytickým integrálem,
+nerovnoměrné intervaly, 23/25h den, velká mezera bez domyšlené expozice.
+
+#### METEO-068 — Teplota mokrého teploměru a potenciál odpařovacího chlazení
+
+**Přínos / priorita / obtížnost:** ukázat fyzikální mez odpařovacího chlazení,
+odlišnou od rosného bodu a RH; P2, střední. **Stav:** K posouzení.
+T/RH/absolutní tlak mohou být dostupné dnes; ověřit typ tlaku a podmínky senzoru,
+nový HW nutný jen pokud tlak chybí. METEO-013 řeší obsah páry/VPD, ne Tw.
+**Řešení / výkon:** validovaný psychrometrický solver s omezeným počtem iterací
+a oborem nad nezamrzající vodou; ukázat „vypočteno“, vzorec a vstupy METEO-063.
+Výpočet nejprve pro aktuální vzorek O(1), historii až po benchmarku.
+**Rizika:** tlak redukovaný na hladinu moře není místní tlak, numerická konvergence,
+ledová fáze, nejde o zdravotní doporučení. **Test:** nezávislé referenční tabulky,
+RH=100 → Tw=T, Td≤Tw≤T ve vymezeném oboru, null/nekonvergence bez náhradní nuly.
+
+#### METEO-069 — Potenciál větrání podle měrné vlhkosti dvou lokalit
+
+**Přínos / priorita / obtížnost:** zjistit, zda by výměna vzduchu teoreticky
+snížila obsah vodní páry; P2, střední. **Stav:** K posouzení. T/RH/P současných
+dvou stanic mohou stačit, ale uživatel musí určit vnitřní/venkovní stanici a
+ověřit umístění. Není doloženo, že dnešní tři profily tento pár tvoří; případně
+nový vnitřní senzor. Závisí na METEO-025/029/013/071.
+**Řešení / výkon:** porovnat měrnou vlhkost kg páry/kg vlhkého vzduchu a vypočtenou RH
+venkovního vzduchu po ohřátí na vnitřní teplotu za daného tlaku; párovat jen
+časově blízké záznamy. O(n+m) lazy, žádné dotazy při běžném přehledu.
+**Rizika:** nejde o odhad průtoku, odstraněných litrů ani kvality vzduchu/CO₂;
+bez validního páru nevydávat doporučení. **Test:** chladný vlhký a teplý suchý
+vzduch, identické stavy, chybějící tlak, stará vnější data a explicitní jednotky.
+
+#### METEO-070 — Přechody mezi režimy mikroklimatu
+
+**Přínos / priorita / obtížnost:** jak dlouho setrvává lokalita ve zvoleném stavu
+a do kterého přechází, místo samotných histogramů; P2, střední. **Stav:** Nápad.
+Současná T/RH/P, uživatelské hranice; bez HW/backendu. METEO-035 popisuje četnosti,
+METEO-042 anomálie; zde matice přechodů a doby setrvání.
+**Řešení / výkon:** deterministická klasifikace s hysterezí a minimálním trváním,
+chybějící úsek jako samostatně neznámý; počítat epizody i pozorovanou dobu O(n).
+METEO-047/048 a jednotný krok pouze s explicitním resamplingem.
+**Rizika:** prahy nejsou univerzální meteorologické klasifikace, delší sampling
+schová krátký přechod. **Test:** známá sekvence stavů, šum kolem prahu, gap
+rozdělující epizody a report nepozorovaného času; bez tvrzení o predikci.
+
+#### METEO-071 — Epochy stanice: umístění, čidlo a kalibrace v čase
+
+**Přínos / priorita / obtížnost:** neplést přemístění čidla s klimatickou změnou;
+P1, střední. **Stav:** Připraveno k realizaci. Uživatel doplní časové intervaly
+umístění/kalibrace, historie dnes postačí; pro sdílení metadata soubor v repu,
+nový firmware není podmínka. METEO-047 řeší řádek, toto platnost konfigurace v čase.
+**Řešení / výkon:** intervalový index O(log e), vizuální přerušení grafu a filtr
+epoch; originály nezměnit. Volitelná korigovaná řada vždy odděleně s verzí korekce.
+Závislosti METEO-054/048/063. **Rizika:** neznámá historie umístění znamená
+„neověřeno“, nikoli homogenitu; samotný detektor skoku není kalibrační důkaz.
+**Test:** mezní okamžik, překryv epoch odmítnout, změna senzoru, chybějící metadata,
+export surových i korigovaných hodnot s jednoznačným označením.
+
+#### METEO-072 — Rozlišení a kvantování senzoru / ADC
+
+**Přínos / priorita / obtížnost:** zjistit, zda drobné údajné trendy tvoří pouze
+kroky rozlišení nebo zaokrouhlení exportu; P2, střední. **Stav:** Nápad.
+Současná V/T/RH a pokud možno specifikace rozlišení; bez HW, pro oddělení ADC
+od zaokrouhlení může být potřeba firmware s raw ADC. Vztah METEO-042: konstanta
+není automaticky zamrzlý senzor; tento nástroj diagnostikuje diskrétní rozlišení.
+**Řešení / výkon:** histogram sousedních nenulových rozdílů v krátkém homogenním
+okně, robustní kandidáti kroku, uvést n a nejistotu; omezený počet binů O(n).
+METEO-071/047. **Rizika:** přirozené stabilní prostředí, desetinný export a noise
+vytvářejí falešné kroky; nevyvozovat počet bitů ADC bez raw hodnot.
+**Test:** známé kroky 0,01/0,05 V, šum, konstantní průběh, změna zaokrouhlení;
+při nedostatku informace vydat „nelze určit“.
+
+### Nové návrhy: reprodukovatelnost a srovnání s okolím
+
+#### METEO-073 — Přehrávání historické situace
+
+**Přínos / priorita / obtížnost:** posunout „teď“ do minulosti a krokovat karty
+a grafy při konkrétní události; P2, vysoká. **Stav:** Nápad. Současná historie,
+bez HW/backendu. METEO-053 offline řeší dostupnost, toto deterministický časový
+kontext celé aplikace. METEO-064 zaznamenává používání, ne počasí.
+**Řešení / výkon:** explicitní referenční clock ve výpočtech, binary slice,
+play/pause s omezením FPS. Oddělený režim s výrazným časem; zastavit živé přepisování,
+UV předpověď ani dnešní astro údaje nevydávat za historické. Cache METEO-002/038,
+čas METEO-048. **Rizika/test:** únik budoucích vzorků do predikce/rekordů, MQTT
+overlay a návrat do live; fixture s extrémem v budoucnu se nesmí zobrazit předčasně.
+
+#### METEO-074 — Rozpočet nejistoty odvozených veličin
+
+**Přínos / priorita / obtížnost:** poznat, zda rozdíl 0,1 °C nebo vypočteného VPD
+převyšuje nejistotu senzorů; P1, střední. **Stav:** K posouzení.
+Současné T/RH/P + specifikace čidel/kalibrace od uživatele; bez nového HW,
+bez specifikací jen výpočet citlivosti, ne interval spolehlivosti.
+**Řešení / výkon:** propagace tolerancí nebo malý deterministický výpočet na
+hranách oboru, nikoli náhodný Monte Carlo na každém refreshi; uvést předpoklady
+závislosti chyb. METEO-013/063/071. Je to metrologická nejistota jednotlivého
+měření, odlišná od statistické nejistoty korelace METEO-031.
+**Rizika:** sdílený bias nelze odstranit velkým n, tolerance není automaticky
+směrodatná odchylka. **Test:** monotónní vztahy, referenční perturbace T/RH,
+nulové/nespecifikované tolerance, korelované chyby a změna kalibrace.
+
+#### METEO-075 — Regionální referenční řada jako kontext lokality
+
+**Přínos / priorita / obtížnost:** odlišit místní odchylku od plošného počasí;
+P2, vysoká. **Stav:** K posouzení. Nový externí zdroj pozorování/reanalýzy,
+nikoli dnešní UV forecast. Vyžaduje výběr licence, API/kvóty a metadata výšky,
+zpravidla cache/backend; žádné automatické nové požadavky v této etapě.
+**Řešení / výkon:** explicitně zvolený hodinový zdroj, cache, převod jednotek,
+samostatná vrstva „referenční pozorování“ / „model“, párování METEO-029/048.
+METEO-025 porovnává vlastní tři stanice; zde jde o nový datový kontrakt/zdroj.
+**Rizika:** vzdálenost, výška, zástavba a modelový grid; rozdíl není důkaz chyby
+senzoru. **Test:** timezone/units fixture, nedostupná licence/API, nepravidelná
+časová řada, odlišná výška a chybějící data bez vyplnění falešnými nulkami.
+
+### Rozpracování existujících ID — žádné duplicitní návrhy
+
+| Existující ID | Nové konkrétní řešení / přijímací kritérium |
+| --- | --- |
+| METEO-001 | Při refreshUI/updateOvBar přepsat textContent jen při změně výsledného textu. Zachovat platnou nulu, šipku trendu i bezpečné zobrazení názvu. Hotovo ve v0.2.0; po zahřátí 46 → 0 childList/characterData mutací ve scénáři nezměněných dat, atributy se tím neměří. |
+| METEO-002 / Opus W14 | Binární vyhledání čtyř protějšků „Dříve touto dobou“ v sestupné historii; zachovat ostrou toleranci <30 min, novější při shodné vzdálenosti a první duplicitní řádek. Neměnit HTML pokud výsledek zůstal stejný; otestovat proti lineární referenci. |
+| METEO-019 | Porovnávat napětí při obdobné T v ranních/večerních oknech, po epochách METEO-071 a délce dne; uvést počet dnů, rozsah T a pravidlo párování, žádná univerzální korekce V podle T. Umělá data s vlivem nabíjení musí odhalit, že prosté r je zavádějící. |
+| METEO-020/021 | Normalizovat čas vzhledem k východu/západu a výšce Slunce (existující calcSolarElevation); hledat opakovaný kladný sklon s hysterezí a souvislým pokrytím. Solární napájení/umístění panelu potvrdit. Skrytý panel, oblačnost a zátěž neumožňují převést růst V na výkon panelu. Test stejné teploty v různém solárním čase, chybějící noci a krátkého dne. |
+| METEO-022/023 | Porovnat noční ΔV s vlastními dny podobné teploty/délky noci, medián + MAD a nejméně stanovený počet referenčních dnů; ukázat důvod odchylky a datum baseline. Nulový MAD i změna baterie musí vrátit nejistotu/reset baseline. Výsledek „neobvyklé chování“, ne diagnóza kapacity. |
+| METEO-031 | Efektivní množství informace: n párů, n různých dnů, pokrytí a interval r z blokového bootstrapu po dnech; bez předpokladu nezávislosti všech vzorků. Výpočet jen na vyžádání s pevným seedem/limitem. Test autokorelovaných řad a Simpsonova paradoxu; žádné p-value z tisíců zdánlivě nezávislých bodů. |
+| METEO-032/043 | Zarovnat okna k počátku ověřené srážkové epizody; souhrn tlakových změn před/po s mediánem a kvantily po událostech. Nedešifrovat začátek z kumulátoru bez METEO-017. Oddělit události minimální pauzou, test vícečetných prohlížených lagů a kontrolní okna bez deště. |
+| METEO-036/043 | Události jako značky na skutečné časové ose, po kliknutí na původní interval METEO-063. Shlukování při oddálení, maximálně omezený počet značek; žádné canvas objekty pro každý z 250k vzorků. |
+| METEO-010/011 | Respektovat prefers-reduced-motion pro Chart animace, CSS i smooth scroll; velké touch cíle slideru, bez animovaného skeletonu. Jeden kompaktní přehled T/RH/P/V s explicitními jednotkami, ne skryté chybějící senzory. Ověřit OS nastavení i 320px. |
+| METEO-038 | Cache souhrnů invalidovat na revizi dat i změně lokálního dne; stejné rows reference bez půlnoční invalidace nestačí. Průměr vzorků nezaměnit s časovým průměrem; mezery ovlivňují pokrytí. Porovnat každý výsledek proti plnému výpočtu. |
+| METEO-050 | U každého odmítnutí parseru kód důvodu a pořadí logického CSV řádku; ne fyzického řádku kvůli víceřádkovým poznámkám. Ukázat omezený bezpečný vzorek, nikdy automaticky celou historii do diagnostiky METEO-064. |
+| METEO-051 | Tiskový denní report z již načtených agregací: stanice/epochy, zóna, čas exportu, verze výpočtu, pokrytí a zdroj. Print CSS a stránkování, žádný screenshot skrytého canvas; test černobílého A4/PDF a null hodnot. |
+| METEO-054 | Před aplikováním importu zobrazit strukturální diff zdroje/stanice, validovat rozsahy a umožnit zrušení bez přerušení relace. Lokální konfigurace má schema version; migrace storage na kopii a rollback, nikdy tajné klíče v exportu. |
+| METEO-056 | Doplněn profil heap po GC, DOM mutací, počtu Chart instancí, 250k a CPU×4. 30 cyklů není vícedenní soak, JSHeapUsedSize není celková RAM. Test parseru přes pomalý transport má oddělit čekání od parse/render. |
+
+### Co jsme nezařadili a proč
+
+Přesné SOC/energie z V zůstává zamítnuté METEO-024. Pseudopřesná lokální předpověď
+deště z tlaku bez validace není nová funkce. Výpočet větru z kolísání tlaku,
+diagnóza plísně bez teploty povrchu a zdravotní rady z mokrého teploměru nejsou
+podložené dostupnými daty. Nová knihovna grafů/worker nejsou automatické cíle.
+
+### Srovnání otevřených projektů
+
+Dne 21. 10. 2026 přečteny veřejné README
+[WeeWX](https://github.com/weewx/weewx/blob/master/README.md) a
+[Belchertown](https://github.com/poblabs/weewx-belchertown/blob/master/README.md).
+WeeWX generuje reporty z archivovaných měření na serveru; přínos zde je princip
+oddělení archivních agregací od UI, nikoli přidání Python serveru na Pages.
+Belchertown popisuje builder grafů, live MQTT, mobilní layout a historické rekordy.
+Volba grafů odpovídá našemu METEO-052, MQTT už máme a regionální reference
+METEO-075 musí výslovně odlišit model od měření. Kopírování forecastů nebo jejich
+závislostí bez potřeby nepřináší důvod k migraci. Jde o srovnání dokumentovaných
+funkcí, ne o benchmark nebo audit kódu těchto projektů.
+
+### Druh výsledku a hranice dostupnosti
+
+Žádná nová položka nevydává odhad za přímé měření. Pro orientaci:
+
+| ID | Výsledek a podmínky |
+| --- | --- |
+| 061 / 062 | Naměřené krajní/nejbližší hodnoty, vypočtený rozdíl/čas; chybějící protějšek není interpolace. |
+| 063 / 064 / 065 | Evidence původu, provozní události a vypočtené rozdíly verzí; nepřidávají meteorologická měření. |
+| 066 | Vypočtená podobnost historických průběhů; pokračování dne je původní pozorování, nikoli předpověď. |
+| 067 | Vypočtený integrál s uvedeným modelem interpolace; nepozorovanou dobu nezapočítat jako naměřenou. |
+| 068 / 069 | Vypočtené psychrometrické veličiny z naměřených vstupů; žádné přímé měření Tw ani odhad skutečného průtoku. |
+| 070 | Vypočtená klasifikace podle explicitních pravidel; není standardizovaný klimatický typ. |
+| 071 | Metadata zadaná uživatelem; případná korekce je oddělená vypočtená řada. |
+| 072 | Odhad kroku rozlišení; bez raw ADC nelze identifikovat jeho původ. |
+| 073 | Původní měření a výpočty v historickém čase; žádné domyšlené chybějící vzorky. |
+| 074 | Vypočtená citlivost/nejistota podle dodaných tolerancí, nikoli nové měření či automatické statistické CI. |
+| 075 | Externí pozorování nebo modelový odhad musí mít odlišný štítek a zdroj. |
+
+### Etapa 2 — implementace a ověřené výsledky
+
+Realizovány právě tři malé změny, bez dalších závislostí, nových síťových volání
+nebo změn konfigurací: METEO-061, rozšíření METEO-002 (historické protějšky)
+a METEO-001 (nezměněné texty). Nová verze **0.2.0**. Původní měření, plné
+statistiky, tolerance historie i výběr při shodné vzdálenosti zůstávají zachované.
+METEO-061 používá oba úchyty existujícího slideru; libovolné kliknutí A/B a
+synchronizovaný kurzor ještě implementované nejsou. Nový panel uvádí časovou
+zónu prohlížeče a offset; neřeší dosud otevřený globální kontrakt METEO-048.
+
+**63/63 Node testů**, devět nových regresí v `tests/interval-history.test.js`.
+Kontroly přepisování DOM prokazatelně selhaly na původním HTML. Skutečné Chromium
+s Chart.js ověřilo tři konfigurace, zpožděné fixture CSV, sloučení dvojího full
+požadavku do jednoho, slider, změnu metriky/stanice,
+prázdný rozsah, dvě témata, mobil390 a oba offsety opakované hodiny DST.
+Jednotkové testy ověřují chybějící hodnoty; prohlížeč navíc všechny záložky a osm
+metrik. Živý quick CSV všech tří zdrojů vrátil HTTP200; schéma/firmware tím
+ověřené nejsou, obsah odpovědí nebyl tímto probe validován.
+
+[Podrobná metodika, výsledky a surová měření](performance/ETAPA2.md).
+Při 250k historie klesl medián samotného hledání protějšků **17,3 → 0,1 ms**;
+nezměněné texty přestaly vytvářet sledované DOM mutace. Celá obnova v první
+sérii **118,7 → 110,8 ms** při 250k, ale **63,4 → 75,1 ms** při 100k.
+CPU×4 opakování potvrzuje kolísání: obnova **233,0 → 213,4 ms**, zatímco první
+CPU×4 série byla pomalejší. Nelze proto slíbit plošné procentuální zrychlení UI.
+Při 250k JS heap po GC zůstává přibližně **56 MiB**; počet Chart instancí je
+stále osm. Neoptimalizovali jsme paměť ani agregace a neměřili Web Vitals.
+
+### Doporučené pořadí po této etapě
+
+1. **METEO-048 / AUD-010:** sjednotit lokální den a zónu; získat časový kontrakt
+   exportu včetně opakované hodiny DST. Předpoklad všech denních analýz.
+2. **METEO-038 + 005:** sdílet agregace dle revize a dne, přerušit polling na
+   pozadí. Zbylé O(n) průchody a hlavní vlákno jsou měřitelný problém; každou
+   cache porovnat s plným výpočtem a invalidovat po opravě starých dat/půlnoci.
+3. **METEO-004:** cache mezi stanicemi až s rozpočtem paměti a eviction; tři
+   plné 250k historie nelze na mobilu bez rozmyslu držet vedle raw CSV.
+4. **METEO-063/071/074:** dohledatelnost výsledku a metadata pro důvěryhodné
+   srovnání. Získat historii umístění, typ tlaku a tolerance čidel.
+5. **METEO-019/020/031 a 067:** první analytická etapa — bateriový panel se
+   společnými časy, vlastní baseline a kvalitou párování; teplotní expozice.
+   Potvrdit solární zapojení, chemii/limity baterie a zda T měří okolí či článek.
+   Potom podobné dny METEO-066 a události METEO-043. Srážkové události blokuje
+   kontrakt rain/rainInc/reset (METEO-017/049), ne chybějící grafová knihovna.
+
+Velké nové moduly zůstávají návrhy. Worker až po profilu skutečného parseru a
+posouzení ceny přenosu; regionální API pouze s licencí, kvótou a cache.

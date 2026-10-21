@@ -1,0 +1,415 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 1000,
+      "empty": {
+        "heapBytes": 2556724,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 2818456,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 3931092,
+        "nodes": 1904,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 4169916,
+        "nodes": 1904,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 1,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 47.9,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 8.5,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0.5,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 24.5,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 7.2,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0.4,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 24.7,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 6.2,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0.6,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 20.2,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 5,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0.4,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 19.5,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 4.4,
+            "mutations": 3
+          },
+          "points": 280
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 10000,
+      "empty": {
+        "heapBytes": 2556852,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 4765568,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 5999440,
+        "nodes": 1908,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 6224460,
+        "nodes": 1908,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 1.5,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 50.8,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 11.3,
+            "mutations": 3
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0.9,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 31.9,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 9.8,
+            "mutations": 3
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0.8,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 26.3,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 8.3,
+            "mutations": 3
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 1,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 26.3,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 8.2,
+            "mutations": 3
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0.6,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 37.7,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 12.8,
+            "mutations": 3
+          },
+          "points": 410
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2556732,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24205464,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 25863068,
+        "nodes": 1908,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26087420,
+        "nodes": 1908,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 5.7,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 75.7,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 19.9,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 6,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 63.4,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 15.6,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 5.4,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 73.4,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 21,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 6.5,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 59.6,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 18.1,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 6.7,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 51.4,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 14.7,
+            "mutations": 3
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 250000,
+      "empty": {
+        "heapBytes": 2556732,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 56605536,
+        "nodes": 1848,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 58871740,
+        "nodes": 1910,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 59088520,
+        "nodes": 1910,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 14.2,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 130.2,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 39.3,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 17.7,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 118.7,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 39.4,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 19.2,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 146.5,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 46,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 17.1,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 99.6,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 24.9,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 17.3,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 99,
+            "mutations": 46
+          },
+          "explorer": {
+            "ms": 26.5,
+            "mutations": 3
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}

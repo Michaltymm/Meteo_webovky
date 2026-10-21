@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+Novější [etapa 2 — historie, paměť a DOM](ETAPA2.md) obsahuje 1k/10k/100k/250k,
+CPU×4, surové JSON, 30 cyklů a integrační ověření tří stanic. Níže zůstává
+původní metodika a historie etapy 1.
+
 Etapa 1, 20. 10. 2026. Výchozí revize `c0bfddf`, výsledná implementace uvedena
 v commitu obsahujícím tento dokument. Surová měření:
 
