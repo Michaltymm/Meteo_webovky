@@ -26,7 +26,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: dřívější blokace codex-dev již není aktuální. Run 39483058506 pro v0.1.0 skončil Success včetně deploymentu; přímé HTTP ověření Pages zde není dostupné. Nasazení v0.2.0 evidovat samostatně níže.
+- DEPLOY-001 DONE: v0.2.0 nasazeno úspěšným [run39589555415](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39589555415), commit c5fe1bf, build8s/deploy9s. Main stále 2405c5d; přímé HTTP/visual ověření Pages zde není dostupné.
 
 ## A. PROJECT CONTEXT
 
@@ -222,6 +222,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Aktualizace nasazení: veřejné Actions HTML potvrzuje [39483058506](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39483058506), commit1473437, **Success**, 49s, jeden artefakt. Dřívější chyby environment policy jsou historické, nepovažovat je znovu za aktivní blocker. Přímé Pages HTTP v prostředí není povoleno; workflow úspěch není vizuální kontrola live webu.
 
 - Kód v0.2.0 uložen v [14af6c8](https://github.com/Michaltymm/Meteo_webovky/commit/14af6c8084716811b9ff6514168a2107740974c7); úspěch nasazení ověřovat samostatně podle nového Actions běhu, ne podle čísla verze.
+
+- Publikace této etapy: aplikační commit `14af6c8` a analytická dokumentace `c5fe1bf50c196eb4b62bd88a7cb5e72c8cc3b0fb` odeslány na codex-dev; vzdálené SHA ověřeno. [Actions #10](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39589555415) pro c5fe1bf skončilo **Success**, 27s, build8s/deploy9s, jeden Pages artefakt. Workflow sestavilo stávající main + vývoj v0.2.0. Větev main zůstala `2405c5d7326909a24c41e7066bfdc4a9d1622208`. To potvrzuje deployment workflow; načtení živé stránky a skutečné widgety zde nebyly přímo vizuálně ověřeny. Následná aktualizace této paměti mění pouze dokumentaci a nový deployment nevyžaduje. Anotace Node20 action runtime/ubuntu-latest jsou varování, ne neúspěch běhu; modernizaci workflow řešit samostatně v METEO-055.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

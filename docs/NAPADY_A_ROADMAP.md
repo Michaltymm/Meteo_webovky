@@ -618,3 +618,13 @@ stále osm. Neoptimalizovali jsme paměť ani agregace a neměřili Web Vitals.
 
 Velké nové moduly zůstávají návrhy. Worker až po profilu skutečného parseru a
 posouzení ceny přenosu; regionální API pouze s licencí, kvótou a cache.
+
+### Publikace etapy 2
+
+Kód `14af6c8` a analýza `c5fe1bf` odeslány na codex-dev.
+[Actions #10](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39589555415)
+pro c5fe1bf: **Success**, build i deploy prošly, celkem 27s, jeden artefakt.
+Vývojový HTML obsah má v0.2.0, main zůstává 2405c5d. Přímá kontrola živých
+widgetů z prostředí nebyla provedena; rozlišovat lokální prohlížečový test,
+úspěšný GitHub deployment a uživatelské zobrazení skutečných měření.
+Následující commit projektové paměti obsahuje pouze dokumentaci.
