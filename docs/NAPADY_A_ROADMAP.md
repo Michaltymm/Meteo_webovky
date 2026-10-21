@@ -26,7 +26,7 @@ Ověřeno v kořenovém `index.html`, `server.js`, čtyřech konfiguracích, `sc
 
 | Vstup | Dostupnost / význam / omezení |
 | --- | --- |
-| A/B datum a čas | České datum, někdy bez roku; lokální JS Date, ne spolehlivý UTC kontrakt. AUD-010 stále otevřeno. |
+| A/B datum a čas | České datum, někdy bez roku; lokální JS Date. AUD-010 DONE v0.2.1, explicitní zóna/UTC kontrakt dále METEO-048. |
 | C teplota, D tlak, E RH | °C, hPa, %; jednotlivé senzory mohou chybět. Žádné dosazování nuly. |
 | F přírůstek, G srážky | Nutno ověřit reset/úhrn a interval pro každou stanici před novou srážkovou analytikou. |
 | H nádrž | Význam/kalibrace vyžadují potvrzení; nepřevádět na litry bez kontraktu. |
@@ -70,15 +70,15 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | Malý DOM update, bez dalších fetchů | METEO-048 | Připraveno k realizaci |
-| METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | Zanedbatelný; bez efektů | IMP-006 | Připraveno k realizaci |
+| METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu v Chart/CSS/scroll i za běhu hotové; další ARIA/fokus/touch zbývají | IMP-006 | Rozpracováno |
 | METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | Méně DOM při menším počtu karet | METEO-054 validace storage | Nápad |
-| METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | Malý, cache formatterů | METEO-048 | Připraveno k realizaci |
+| METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
 
 ## 3. Meteorologické metriky
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-013 Absolutní vlhkost, VPD, rozdíl T−Td: obsah páry a podmínky kondenzace | Současná T + RH ve stejném řádku | N / P1 | O(n), odvozené hodnoty na vyžádání | Testované jednotky/vzorce, RH 0–100 | Připraveno k realizaci |
+| METEO-013 Absolutní vlhkost, VPD, rozdíl T−Td: obsah páry a podmínky kondenzace | Současná T + RH ve stejném řádku | N / P1 | v0.4.0 AH/VPD aktuálně i v průzkumníku hotové; T−Td dále, nulové RH neznamená platný Td | Testované jednotky/vzorce a vodní reference, RH 0–100 | Rozpracováno |
 | METEO-014 Teplotní amplituda, trendy 1/3/6/24 h a rychlost °C/h | Současná T + skutečné Δt | S / P1 | Agregace O(n), cache po revizi | METEO-048, mezery v měření | Připraveno k realizaci |
 | METEO-015 Mrazové/letní/tropické dny a hodiny pod nulou | Současná historie T | S / P2 | O(n), malé denní agregace | METEO-038,048; interpolace jen přes malé mezery | Nápad |
 | METEO-016 Tlakové trendy hPa/h, 3/6/24 h, rekordní vzestupy/poklesy | Současný tlak | S / P1 | O(n), bez nového fetch | Ověřit absolutní/redukovaný tlak, METEO-048 | Připraveno k realizaci |
@@ -89,7 +89,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-019 Teplota × napětí: společný časový graf, XY a korelace | Současná T/V se společným timestampem | S / P1 | Výpočty O(n), nejvýše 800 vizuálních bodů | METEO-031; návrh modulu níže | Připraveno k realizaci |
+| METEO-019 Teplota × napětí: společný časový graf, XY a korelace | Současná T/V se společným timestampem | S / P1 | v0.4.0 základní modul, plné páry, lazy grafy a cache jednoho rozsahu; podmíněná ranní/večerní srovnání dále | METEO-031; čas max800, XY max582 originálů, žádná hustota z reprezentantů | Rozpracováno |
 | METEO-020 Noční pokles / denní nárůst mV/h, min/max napětí | Současná V + čas / poloha | S / P1 | Denní agregace O(n) | METEO-048, dostatečné pokrytí; bez odhadu kapacity | Připraveno k realizaci |
 | METEO-021 Zimní/letní režim a pravděpodobné nabíjecí cykly | Současná V/T; potvrzení solárního napájení | S / P2 | O(n), počítat až v modulu | METEO-019/020; prahy kalibrovat podle zapojení | K posouzení |
 | METEO-022 Nízké napětí a neobvyklý pokles s hysterezí | V, chemie baterie, mezní napětí od uživatele | S / P1 | Inkrementální vyhodnocení | METEO-044, chybějící údaje nezastupovat odhadem | K posouzení |
@@ -111,7 +111,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-029 Časové párování a tolerance: uvést spárované/odmítnuté vzorky | Timestampy dvou řad | S / P1 | Dva ukazatele O(n+m), bez kartézského součinu | METEO-048, policy níže | Připraveno k realizaci |
 | METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | Lazy výpočet, vizualizace oddělená od statistik | METEO-019/029/031 | Připraveno k realizaci |
-| METEO-031 Pearson/regrese a počet validních párů z úplných dat | Současná párovaná data | S / P1 | O(n); stabilní součty, nulový rozptyl → nedostupné | Dokumentace korelace ≠ příčina | Připraveno k realizaci |
+| METEO-031 Pearson/regrese a počet validních párů z úplných dat | Současná párovaná data | S / P1 | v0.4.0 Welford r/sklon z úplných T/V, n/časy/dny; intervaly po dnech/nejistota dále | Korelace ≠ příčina, bez p-value a SOC, při n<3/konstantě nedostupné | Rozpracováno |
 | METEO-032 Časový posun, klouzavé průměry, oddělení den/noc a sezón | Současná historie | V / P2 | Výpočet jen zvolených lagů; cache, žádné n² | METEO-029/048; nepravidelné intervaly | Nápad |
 
 ## 7. Grafy a vizualizace
@@ -985,7 +985,7 @@ Zvolené nejvýše tři změny: první explorativní modul T/V (METEO-019/031),
 AH/VPD aktuálně i v existujícím průzkumníku (METEO-013/012) a omezení pohybu
 (METEO-010). Bez nových závislostí, configů, úprav firmware nebo automatických
 síťových dotazů. Načtení plné historie jen při otevření analytiky využije
-existující ensureFullData. Nové návrhy076–083 zatím zůstávají návrhy.
+existující ensureFullData. Nové návrhy 076–083 zatím zůstávají návrhy.
 
 Nevydávat prosté r za statisticky prokázaný efekt: n vzorků není počet
 nezávislých dnů, teplota senzoru není ověřená teplota baterie, nabíjení/zátěž
@@ -997,3 +997,45 @@ Srovnání WeeWX a Belchertown už je doložené v etapě2; jejich audit ani sí
 oddělení archivu od UI. Nepřebíráme jejich server, forecast API nebo další
 závislosti. Časová zóna/UV048, skutečné srážky017/049 a plán dostupnosti027
 mají stále své datové blokery, neskrývat je novou vizualizací.
+
+### Etapa 7 — implementace a ověřené výsledky
+
+Vydání **v0.4.0**, právě tři výše vybrané změny; podrobnosti a surové důkazy
+v [ETAPA7](performance/ETAPA7.md). Nové návrhy 076–083 nejsou implementované.
+METEO-019/031 mají základní explorativní modul s rozsahem7/30 × 24 h/all,
+časovým a XY pohledem, původními páry, Welford r/sklonem a počty. Měření
+nahraná víckrát zůstávají ve statistikách, různé časy/dny jsou samostatné
+počty; nejde o test nezávislých pozorování. Cache jeden rozsah, +2 lazy grafy,
+čas≤800/XY≤582 skutečných bodů. Žádný p-value, SOC, kapacita či energie.
+METEO-013 AH/VPD v přehledu i průzkumníku včetně vzorců/oboru; T−Td dále.
+METEO-010 motion initial/live hotové, obecné ARIA/fokus/dotyk dále.
+
+**132/132 Node testů**, třináct nových; skutečný browser se třemi konfiguracemi,
+řízeným CSV/UV,924 párů, chybějící V i platné0V, plná historie, oprava starého
+měření a odchod z tabu během full bez tvorby skrytých grafů. AH/VPD,
+motion při startu/změně preference a CSS, dvě témata, 390px, deset explorer
+voleb a všechny taby bez chyb/přetečení. Screenshot zkontrolovaný.
+Nový modul si při explicitním otevření vyžádá jednu plnou historii stejně
+jako existující historické taby; rozsahy 0nových fetch, start/obnova beze změn.
+
+Měřeno sekvenčně 1k/10k/100k/250k. Běžné pohledy mají rozdíly oběma směry:
+250k cold refresh61,5 → 54,2 ms, explorer40,4 → 43,5 ms; CPU×4/100k cold130,9 → 139,6 ms.
+Nejde o plošnou optimalizaci webu. Nový modul250k cold55,7/warm6,1 ms,
+VPD explorer29,2 ms; CPU×4/100k141,4/28,8/66,4 ms. Zavřená analytika8 Chart,
+po otevření10i po 30 cyklech; při 250k heap57,55 MiB není celá RAM. Živá síť,
+skutečný parser velkého CSV, fyzický mobil a několikadenní soak neověřeny.
+
+**Doporučené pořadí:**
+
+1. Metadata čidla/epoch071 a časového kontraktu048; teplota vzduchu není
+   automaticky teplota článku a HTTP interval není měřicí plán.
+2. METEO-019/020/031: srovnání při podobné T a solárním čase až po potvrzení
+   napájení/umístění, bloková nejistota a077 citlivost výsledku na jednotlivé dny.
+3. METEO-078 rozklad RH nad013/061; výpočet bez nového HW a dalších fetchů.
+4. METEO-076 simulátor plánu po ověření četnosti referenční historie.
+5. METEO-082 sezónní profil až s dostatečným počtem homogenních roků.
+
+Pro srážky017/049 a skutečnou dostupnost027 zůstávají blokery reset/interval/
+schema. Nové podpisy083 jsou pouze nákladný návrh s firmware/backendem,
+nikoliv podmínka dnešního provozu. Původní historie roadmapy zachována;
+starší Navrhy_Vylepseni zůstává pouze referencí, žádný konkurenční backlog.

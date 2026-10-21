@@ -1,0 +1,739 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "aggregateScenario": true,
+  "comparisonScenario": false,
+  "annualScenario": false,
+  "analysisScenario": false,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 1000,
+      "empty": {
+        "heapBytes": 2563992,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 2828620,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 4159604,
+        "nodes": 2098,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 4392124,
+        "nodes": 2098,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 25.6,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 7.6,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 45.7,
+            "mutations": 38
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 4.5,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2.3,
+            "mutations": 0
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 16.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 7.3,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 21.7,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 2.1,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.3,
+            "mutations": 0
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 17.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 5.8,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 27.3,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 1.6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.6,
+            "mutations": 0
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 24.3,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 5,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 32.1,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 1.8,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.4,
+            "mutations": 0
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 15.9,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 5.4,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 17.8,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 1.6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.3,
+            "mutations": 0
+          },
+          "points": 280
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 10000,
+      "empty": {
+        "heapBytes": 2564072,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 4772700,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 6293644,
+        "nodes": 2102,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 6483152,
+        "nodes": 2102,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 23.8,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 12.1,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 55.1,
+            "mutations": 38
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2.1,
+            "mutations": 0
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 16.2,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 11.1,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 24.8,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.9,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.5,
+            "mutations": 0
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 19.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 10.4,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 25.5,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.7,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.2,
+            "mutations": 0
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 19,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 6,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 26.6,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 2.6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.2,
+            "mutations": 0
+          },
+          "points": 410
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 16.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 6.4,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 19.6,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 2.5,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.7,
+            "mutations": 0
+          },
+          "points": 410
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2563992,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24212620,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 26200372,
+        "nodes": 2102,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26397692,
+        "nodes": 2102,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 26.8,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 30.7,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 67.9,
+            "mutations": 38
+          },
+          "daily": {
+            "ms": 0.3,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 6.4,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 3.7,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 20.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 23.6,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 39,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.9,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2.4,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 20.1,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 20.1,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 55.8,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.9,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 18.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 22.5,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 25.5,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.8,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2.7,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 20.7,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 14.6,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 26.3,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 2.7,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2.1,
+            "mutations": 0
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 250000,
+      "empty": {
+        "heapBytes": 2564000,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 56612628,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 59256404,
+        "nodes": 2104,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 59438328,
+        "nodes": 2104,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 28.6,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 58.2,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 76.7,
+            "mutations": 38
+          },
+          "daily": {
+            "ms": 0.4,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 5.7,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 4.4,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 22.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 49.6,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 54.2,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 2.8,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.8,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 32.7,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 43.5,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 55.9,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.3,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 19.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 42.7,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 45.3,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 3.4,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 2,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 23.8,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 25.5,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 31.1,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 2.7,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 1.8,
+            "mutations": 0
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}

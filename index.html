@@ -1939,6 +1939,13 @@
     .pw-cancel:hover {
       color: var(--text);
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 
@@ -1952,8 +1959,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v031"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.3.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v040"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.4.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2351,13 +2358,32 @@
         <div class="st-val" id="curVoltage">–</div>
         <div class="st-unit">V</div>
       </div>
+      <div class="sensor-tile" style="border-top-color:var(--teal)" onclick="openExplorerWith('absHum')" title="Vypočteno z teploty a RH: hmotnost páry v objemu vzduchu; zobrazit historii">
+        <div class="st-lbl">Absolutní vlhkost</div>
+        <div class="st-val" id="curAbsHum">–</div>
+        <div class="st-unit">g/m³ · vypočteno</div>
+      </div>
+      <div class="sensor-tile" style="border-top-color:var(--yellow)" onclick="openExplorerWith('vpd')" title="Vypočtený deficit tlaku vodní páry ve vzduchu; zobrazit historii">
+        <div class="st-lbl">VPD vzduchu</div>
+        <div class="st-val" id="curVPD">–</div>
+        <div class="st-unit">kPa · vypočteno</div>
+      </div>
     </div>
+    <details class="comparison-data">
+      <summary>Jak se počítají vlhkostní metriky</summary>
+      <p>Ze stejného původního měření T (°C) a RH (%), nad kapalnou vodou i pod 0 °C:
+        eₛ = 6,112 · exp(17,62 · T / (243,12 + T)) hPa, e = eₛ · RH / 100;
+        absolutní vlhkost = 216,7 · e / (273,15 + T) g/m³, VPD = (eₛ − e) / 10 kPa.
+        Použitý obor: −45 až 60 °C, RH 0–100 %. Chybějící vstup či hodnota mimo obor znamená „–“.
+        Jde o výpočet z čidla, nikoliv měření teploty listu, povrchu ani návod k zálivce.</p>
+    </details>
 
     <!-- ══ TABS ══ -->
     <div class="tabs">
       <button class="tab-btn active" data-tab="now">Aktuálně</button>
       <button class="tab-btn" data-tab="daily">Denní statistiky</button>
       <button class="tab-btn" data-tab="rain">Srážky &amp; Baterie</button>
+      <button class="tab-btn" data-tab="battery">🔬 Teplota × napětí</button>
       <button class="tab-btn" data-tab="explorer">📈 Graf</button>
       <button class="tab-btn" data-tab="compare">📅 Porovnání</button>
       <button class="tab-btn" data-tab="overview">📊 Přehled teplot</button>
@@ -2402,6 +2428,36 @@
       </div>
     </div>
 
+    <div class="tab-pane" id="tab-battery">
+      <label for="batteryRange">Analyzovat:
+        <select id="batteryRange" onchange="buildBatteryAnalysis()">
+          <option value="7">Posledních 7 × 24 h</option>
+          <option value="30">Posledních 30 × 24 h</option>
+          <option value="all">Celá načtená historie</option>
+        </select>
+      </label>
+      <p id="batterySummary" style="white-space:pre-line;font-size:.85rem;line-height:1.6">Čekám na data…</p>
+      <details class="comparison-data">
+        <summary>Jak číst tuto analýzu</summary>
+        <p>Rozsah končí nejnovějším měřením. Párují se pouze teplota a napětí ze stejného původního řádku;
+          chybějící hodnoty se nedoplňují. r i lineární sklon vycházejí ze všech platných párů.
+          Méně než 3 páry nebo nulový rozptyl znamenají nedostupný vztah. Duplicity se automaticky nemažou.
+          Body v grafech jsou původní vzorky redukované pro zobrazení, jejich počet nevyjadřuje hustotu měření.
+          Časový graf ukazuje body bez spojnic přes nepozorované úseky.</p>
+        <p>Souvislost sama neprokazuje vliv teploty na baterii. Vzorky v čase nejsou nezávislé;
+          tato explorativní analýza nemá test významnosti. Teplota čidla není ověřená teplota článku,
+          nabíjení a zátěž mohou ovlivňovat oba průběhy. Z napětí se neurčuje SOC, kapacita ani energie.</p>
+      </details>
+      <div class="chart-card">
+        <div class="chart-title">Teplota a napětí v čase · platné páry</div>
+        <div class="chart-canvas-wrap"><canvas id="chartBatteryTime"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Teplota × napětí · původní reprezentanti XY buněk</div>
+        <div class="chart-canvas-wrap"><canvas id="chartBatteryXY"></canvas></div>
+      </div>
+    </div>
+
     <!-- ════ Denní statistiky ════ -->
     <div class="tab-pane" id="tab-daily">
       <div class="stats-grid" id="dailyGrid">
@@ -2434,6 +2490,8 @@
             <option value="temp_hum">🌡+💧 Teplota &amp; Vlhkost</option>
             <option value="pressure">🌬 Tlak [hPa]</option>
             <option value="dew">🌫 Rosný bod [°C]</option>
+            <option value="absHum">Absolutní vlhkost [g/m³] · vypočteno</option>
+            <option value="vpd">VPD vzduchu [kPa] · vypočteno</option>
             <option value="rain">☔ Srážky denní [mm]</option>
             <option value="rainInc">🌧 Srážky přírůstek [mm]</option>
             <option value="voltage">🔋 Napětí [V]</option>
@@ -2869,7 +2927,7 @@
         const d = el("cfgDetails");
         d.style.display = "block";
         el("cfgPanelStName").textContent = stations[activeIdx].name;
-        d.scrollIntoView({ behavior: "smooth", block: "start" });
+        d.scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
       } else {
         el("pwErr").textContent = "❌ Nesprávné heslo";
         el("pwInput").select();
@@ -3518,6 +3576,20 @@
       const result = b * al / (a - al);
       return Number.isFinite(result) ? +result.toFixed(1) : null;
     }
+    // Magnus over liquid water, including supercooled water below 0°C.
+    // hPa; explicit domain, no replacement of absent sensors with zero.
+    function saturationPressure(T, RH) {
+      if (!Number.isFinite(T) || !Number.isFinite(RH) || T < -45 || T > 60 || RH < 0 || RH > 100) return null;
+      return 6.112 * Math.exp(17.62 * T / (243.12 + T));
+    }
+    function absoluteHumidity(T, RH) {
+      const es = saturationPressure(T, RH);
+      return es === null ? null : 216.7 * es * (RH / 100) / (T + 273.15);
+    }
+    function vaporPressureDeficit(T, RH) {
+      const es = saturationPressure(T, RH);
+      return es === null ? null : es * (1 - RH / 100) / 10;
+    }
     const _pad2 = n => n < 10 ? '0' + n : n;
     function fmtTime(d) { return _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()); }
     function fmtDT(d) { return _pad2(d.getDate()) + '. ' + _pad2(d.getMonth() + 1) + '. ' + d.getFullYear() + ' ' + _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()); }
@@ -3830,6 +3902,7 @@
       if (tab === "compare") { initCmpDays(); buildCompare(); }
       if (tab === "overview") buildTempOverview();
       if (tab === "yearstats") buildYearlyStats();
+      if (tab === "battery") buildBatteryAnalysis();
       if (tab === "hist") updateHistoryTable();
       if (tab === "notes") buildNotesTable();
       
@@ -3849,6 +3922,8 @@
       setNodeText(el("curTemp"), fmt(R.temp));
       setNodeText(el("curHum"), fmt(R.hum));
       setNodeText(el("curDew"), fmt(dewPoint(R.temp, R.hum)));
+      setNodeText(el("curAbsHum"), fmt(absoluteHumidity(R.temp, R.hum), 2));
+      setNodeText(el("curVPD"), fmt(vaporPressureDeficit(R.temp, R.hum), 3));
       setNodeText(el("curPressure"), fmt(R.pressure, 1));
       setNodeText(el("curRainInc"), fmt(R.rainInc, 1));
       setNodeText(el("curRainTotal"), fmt(R.rain, 1));
@@ -3945,8 +4020,10 @@
       yTemp: { position: "left", ticks: { color: "#e74c3c", font: { size: 10 } }, grid: { color: "#34495e" }, title: { display: false, text: "°C", color: "#e74c3c" } },
       yHum: { position: "right", min: 0, max: 100, ticks: { color: "#2980b9", font: { size: 10 } }, grid: { drawOnChartArea: false }, title: { display: false, text: "%", color: "#2980b9" } }
     };
+    const motionPreference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    function chartAnimation() { return motionPreference?.matches ? false : { duration: 300 }; }
     const baseOpts = {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      responsive: true, maintainAspectRatio: false, animation: chartAnimation(),
       plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
       scales: baseScales
     };
@@ -4293,6 +4370,7 @@
     function invalidateDerivedData() {
       aggregateCache = null;
       el("cmpDataQuality").textContent = "";
+      el("batterySummary").textContent = "";
       explorerRangeCache = null;
       expAllPts = [];
       el("expInterval").hidden = true;
@@ -4407,7 +4485,7 @@
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === "explorer"));
       document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab-explorer"));
       buildExplorer();
-      el("tab-explorer").scrollIntoView({ behavior: "smooth", block: "start" });
+      el("tab-explorer").scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
     }
 
     function buildExplorer() {
@@ -4499,6 +4577,8 @@
         hum: { label: "Vlhkost", color: "#2980b9", fn: r => r.hum, unit: "%" },
         pressure: { label: "Tlak", color: "#27ae60", fn: r => r.pressure, unit: "hPa" },
         dew: { label: "Rosný bod", color: "#16a085", fn: r => dewPoint(r.temp, r.hum), unit: "°C" },
+        absHum: { label: "Absolutní vlhkost (vypočteno)", color: "#16a085", fn: r => absoluteHumidity(r.temp, r.hum), unit: "g/m³" },
+        vpd: { label: "VPD vzduchu (vypočteno)", color: "#b9770e", fn: r => vaporPressureDeficit(r.temp, r.hum), unit: "kPa" },
         rainInc: { label: "Přírůstek", color: "#2980b9", fn: r => r.rainInc, unit: "mm" },
         voltage: { label: "Napětí", color: "#8e44ad", fn: r => r.voltage, unit: "V" },
       };
@@ -4675,7 +4755,7 @@
       data: { labels: [], datasets: [] },
       plugins: [crosshairPlugin],
       options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+        responsive: true, maintainAspectRatio: false, animation: chartAnimation(),
         plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
         scales: {
           x: { ticks: { color: "#95a5a6", maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: "#34495e" } },
@@ -4690,7 +4770,7 @@
       data: { labels: [], datasets: [] },
       plugins: [crosshairPlugin],
       options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+        responsive: true, maintainAspectRatio: false, animation: chartAnimation(),
         plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
         scales: {
           x: { ticks: { color: "#95a5a6", font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 20 }, grid: { color: "#34495e" } },
@@ -4956,7 +5036,8 @@
       if (!pane) return;
       const charts = [chart24, chartRain, chartVoltage, chartMonthly, chartYearly,
         chartExplorer, chartCompare, chartOverview];
-      charts.forEach(ch => {
+      charts.push(chartBatteryTime, chartBatteryXY);
+      charts.filter(Boolean).forEach(ch => {
         try {
           // Pouze pokud canvas leží v aktivním pane
           if (pane.contains(ch.canvas)) ch.resize();
@@ -4971,11 +5052,12 @@
         btn.classList.add("active");
         el("tab-" + btn.dataset.tab).classList.add("active");
         const tab = btn.dataset.tab;
-        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer"];
+        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer", "battery"];
         if (heavyTabs.includes(tab) && !store.fullLoaded) {
           el("yearStatsContent") && (el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Načítám celou historii…</p>');
           ensureFullData(() => {
-            refreshTab(tab);
+            tabDirtyState[tab] = true;
+            if (document.querySelector(".tab-btn.active")?.dataset.tab === tab) refreshTab(tab);
           });
           return;
         }
@@ -4986,6 +5068,108 @@
     /* ══════════════════════════════════════════════
        ROČNÍ STATISTIKY
     ══════════════════════════════════════════════ */
+    let chartBatteryTime = null, chartBatteryXY = null;
+
+    function batteryAnalysis(range = "7") {
+      range = ["7", "30", "all"].includes(range) ? range : "7";
+      const snapshot = dataAggregates();
+      if (snapshot.battery?.range === range) return snapshot.battery.result;
+      const rows = snapshot.source, end = rows.length ? +rows[0].ts : null;
+      const from = range === "all" ? -Infinity : end - Number(range) * 86400000;
+      const pairs = [], days = new Set(); // Transient references, not cached history.
+      let eligible = 0, uniqueTimes = 0, previousTime = null;
+      let meanT = 0, meanV = 0, m2T = 0, m2V = 0, covariance = 0;
+      let minT = null, maxT = null, minV = null, maxV = null;
+      let minTRow, maxTRow, minVRow, maxVRow;
+      for (const row of rows) {
+        const time = +row.ts;
+        if (!Number.isFinite(time)) continue;
+        if (time < from) break; // store.rows is descending.
+        if (time > end) continue;
+        eligible++;
+        if (!Number.isFinite(row.temp) || !Number.isFinite(row.voltage)) continue;
+        pairs.push(row);
+        const n = pairs.length, dt = row.temp - meanT, dv = row.voltage - meanV;
+        meanT += dt / n; meanV += dv / n;
+        m2T += dt * (row.temp - meanT); m2V += dv * (row.voltage - meanV);
+        covariance += dt * (row.voltage - meanV);
+        if (minT === null || row.temp < minT) { minT = row.temp; minTRow = row; }
+        if (maxT === null || row.temp > maxT) { maxT = row.temp; maxTRow = row; }
+        if (minV === null || row.voltage < minV) { minV = row.voltage; minVRow = row; }
+        if (maxV === null || row.voltage > maxV) { maxV = row.voltage; maxVRow = row; }
+        if (time !== previousTime) uniqueTimes++;
+        previousTime = time;
+        days.add(row.ts.getFullYear() * 10000 + row.ts.getMonth() * 100 + row.ts.getDate());
+      }
+      let r = null, slope = null;
+      if (pairs.length >= 3 && m2T > 0 && m2V > 0 && [m2T, m2V, covariance].every(Number.isFinite)) {
+        const value = covariance / Math.sqrt(m2T) / Math.sqrt(m2V);
+        const gradient = covariance / m2T;
+        if (Number.isFinite(value) && Number.isFinite(gradient)) { r = Math.max(-1, Math.min(1, value)); slope = gradient; }
+      }
+      // One real representative per XY cell, plus global extremes/endpoints.
+      // No bin centroid can masquerade as a measurement; no density inference.
+      const bins = new Map();
+      const cell = (value, min, max) => max > min && Number.isFinite(max - min)
+        ? Math.min(23, Math.floor((value - min) / (max - min) * 24)) : 0;
+      for (const row of pairs) {
+        const key = cell(row.temp, minT, maxT) * 24 + cell(row.voltage, minV, maxV);
+        if (!bins.has(key)) bins.set(key, row);
+      }
+      const representatives = new Set(bins.values());
+      for (const row of [minTRow, maxTRow, minVRow, maxVRow, pairs[0], pairs[pairs.length - 1]]) if (row) representatives.add(row);
+      const timeRows = sampleExtrema(pairs, [row => row.temp, row => row.voltage]).slice().reverse();
+      const result = { eligible, count: pairs.length, excluded: eligible - pairs.length, uniqueTimes, days: days.size,
+        from: pairs.length ? +pairs[pairs.length - 1].ts : null, to: pairs.length ? +pairs[0].ts : null,
+        minT, maxT, minV, maxV, r, slope,
+        timeTemp: timeRows.map(row => ({ x: +row.ts, y: row.temp })),
+        timeVoltage: timeRows.map(row => ({ x: +row.ts, y: row.voltage })),
+        xy: [...representatives].map(row => ({ x: row.temp, y: row.voltage, ts: +row.ts })) };
+      snapshot.battery = { range, result }; // One range, replaced rather than accumulated.
+      return result;
+    }
+
+    function buildBatteryAnalysis() {
+      const s = batteryAnalysis(el("batteryRange").value);
+      const period = s.count ? fmtDT(new Date(s.from)) + " – " + fmtDT(new Date(s.to)) : "žádné platné páry T/V";
+      const mvSlope = s.slope === null ? null : s.slope * 1000;
+      const slope = Number.isFinite(mvSlope) ? fmt(mvSlope, 3) + " mV/°C" : "–";
+      setNodeText(el("batterySummary"), `${store.fullLoaded ? "Celá dostupná" : "Částečná"} načtená historie • ${period}\n` +
+        `${s.count} platných párů z ${s.eligible} záznamů • ${s.excluded} bez platného T/V • ${s.uniqueTimes} různých časů • ${s.days} místních dnů\n` +
+        `Pearson r (popisný): ${fmt(s.r, 3)} • Lineární sklon (popisný): ${slope}\n` +
+        `Grafy: ${s.timeTemp.length} časových a ${s.xy.length} XY reprezentantů; výpočty ze všech ${s.count} párů. ` +
+        `Zóna: ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`);
+      if (!chartBatteryTime && s.count) {
+        const axis = title => ({ type: "linear", ticks: { color: "#7f8c8d", maxTicksLimit: 7 }, title: { display: true, text: title, color: "#7f8c8d" } });
+        chartBatteryTime = new Chart(el("chartBatteryTime").getContext("2d"), {
+          type: "scatter", data: { datasets: [
+            { label: "Teplota [°C]", data: [], yAxisID: "temp", backgroundColor: "#e74c3c", pointRadius: 2 },
+            { label: "Napětí [V]", data: [], yAxisID: "voltage", backgroundColor: "#8e44ad", pointRadius: 2 }
+          ] }, options: { responsive: true, maintainAspectRatio: false, animation: false,
+            scales: { x: { ...axis("Čas"), ticks: { color: "#7f8c8d", maxTicksLimit: 5, callback: value => fmtDateShort(new Date(value)) } },
+              temp: { ...axis("°C"), position: "left" }, voltage: { ...axis("V"), position: "right", grid: { drawOnChartArea: false } } },
+            plugins: { legend: { labels: { color: "#7f8c8d" } }, tooltip: { callbacks: { title: items => items.length ? fmtDT(new Date(items[0].parsed.x)) : "" } } }
+          }
+        });
+        chartBatteryXY = new Chart(el("chartBatteryXY").getContext("2d"), {
+          type: "scatter", data: { datasets: [{ label: "Původní pár T/V", data: [], backgroundColor: "#8e44ad", pointRadius: 3 }] },
+          options: { responsive: true, maintainAspectRatio: false, animation: false,
+            scales: { x: axis("Teplota [°C]"), y: axis("Napětí [V]") },
+            plugins: { legend: { labels: { color: "#7f8c8d" } }, tooltip: { callbacks: {
+              label: context => `${fmt(context.raw.x, 2)} °C • ${fmt(context.raw.y, 3)} V`,
+              afterLabel: context => fmtDT(new Date(context.raw.ts))
+            } } }
+          }
+        });
+      }
+      if (chartBatteryTime) {
+        chartBatteryTime.data.datasets[0].data = s.timeTemp;
+        chartBatteryTime.data.datasets[1].data = s.timeVoltage;
+        chartBatteryXY.data.datasets[0].data = s.xy;
+        chartBatteryTime.update("none"); chartBatteryXY.update("none");
+      }
+    }
+
     // Lazy summaries of original rows, scoped to the current data snapshot.
     // Monthly means reuse the shared sums; yearly sums retain raw source order.
     function annualStats(year, snapshot = dataAggregates()) {
@@ -5371,6 +5555,17 @@
       periodicRefresh("overview", 300000, fetchAllOv, context);
     }
     document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    function applyMotionPreference() {
+      for (const chart of [chart24, chartRain, chartVoltage, chartMonthly, chartYearly, chartCompare, chartOverview]) {
+        chart.stop?.();
+        chart.options.animation = chartAnimation();
+        chart.update("none");
+      }
+      // Explorer and the large battery plots remain unanimated in either mode.
+    }
+    if (motionPreference?.addEventListener) motionPreference.addEventListener("change", applyMotionPreference);
+    else motionPreference?.addListener?.(applyMotionPreference);
 
     // Init: téma, stanice, config
     setTheme(theme);

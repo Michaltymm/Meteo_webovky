@@ -1,5 +1,12 @@
 # Přehled změn
 
+## v0.4.0
+
+- Nová záložka „Teplota × napětí“ porovnává původní páry ve společném časovém a XY grafu. Ukazuje počty párů, různých časů a dnů, popisnou korelaci a lineární sklon; bez odhadů kapacity či stavu nabití baterie.
+- Absolutní vlhkost a VPD vzduchu jsou dostupné v přehledu i průzkumníku. Vzorce, jednotky, platný obor a původ vypočtených hodnot jsou popsané na stránce.
+- Nastavení systému pro omezení pohybu nyní vypíná animace grafů, CSS a plynulé posouvání, včetně změny preference za běhu.
+- Dokončení načítání historie obnoví pouze právě otevřenou záložku; analytika správně rozlišuje částečnou a celou načtenou historii.
+
 ## v0.3.1
 
 - Roční statistiky sdílejí měsíční souhrny a uchovávají výpočty pro právě načtenou historii. Opakované otevření i přepínání roků je rychlejší, průměry a rekordy stále vycházejí ze všech původních měření.

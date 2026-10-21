@@ -84,12 +84,14 @@ with sync_playwright() as p:
         page.wait_for_timeout(350)
         smoke = page.evaluate("""() => {
           const failures = [];
-          for (const tab of ["now","daily","rain","monthly","yearly","compare","overview","yearstats","hist","notes"]) {
+          for (const tab of ["now","daily","rain","battery","monthly","yearly","compare","overview","yearstats","hist","notes"]) {
+            if (!document.querySelector('.tab-btn[data-tab="'+tab+'"]')) continue;
             try { showTab(tab); tabDirtyState[tab] = true; refreshTab(tab); }
             catch(e) { failures.push(tab + ": " + e); }
           }
           showTab("explorer");
-          for (const metric of ["temp","hum","temp_hum","pressure","dew","rain","rainInc","voltage"]) {
+          for (const metric of ["temp","hum","temp_hum","pressure","dew","absHum","vpd","rain","rainInc","voltage"]) {
+            if (![...el('expMetric').options].some(option=>option.value===metric)) continue;
             try { el("expMetric").value = metric; buildExplorer(); }
             catch(e) { failures.push(metric + ": " + e); }
           }

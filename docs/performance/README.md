@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 7 — analytika T/V, AH/VPD a omezení pohybu](ETAPA7.md) odděluje
+měření běžných pohledů před/po od provozní ceny nového analytického modulu.
+
 [Etapa 6 — sdílené roční statistiky](ETAPA6.md) měří první i opakovaný roční
 pohled, shodu všech tabulek s původní verzí a vysvětluje meze srážkových čítačů.
 

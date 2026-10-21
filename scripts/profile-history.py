@@ -17,6 +17,7 @@ parser.add_argument('--counts', default='1000,10000,100000,250000')
 parser.add_argument('--aggregates', action='store_true', help='Also measure cold refresh and shared summary consumers')
 parser.add_argument('--comparison', action='store_true', help='Also measure first and repeated hourly comparison')
 parser.add_argument('--annual', action='store_true', help='Also measure first and repeated annual statistics')
+parser.add_argument('--analysis', action='store_true', help='Measure the new battery module and humidity explorer, when available')
 args = parser.parse_args()
 html = Path(args.html).read_text().split('// Init: téma, stanice, config')[0] + '</script></body></html>'
 chart = Path(args.chartjs).read_text()
@@ -89,10 +90,19 @@ with sync_playwright() as p:
                 extra.coldAnnual=measure(()=>{invalidateDerivedData();buildYearlyStats()});
                 extra.annual=measure(()=>buildYearlyStats());
               }
+              if (flags.analysis && typeof buildBatteryAnalysis==='function') {
+                showTab('battery');el('batteryRange').value='all';
+                extra.coldBattery=measure(()=>{invalidateDerivedData();buildBatteryAnalysis()});
+                extra.battery=measure(()=>buildBatteryAnalysis());
+                extra.batteryCounts={pairs:batteryAnalysis('all').count,xy:batteryAnalysis('all').xy.length,
+                  time:batteryAnalysis('all').timeTemp.length};
+                showTab('explorer');expRange='all';el('expMetric').value='vpd';
+                extra.vpd=measure(()=>buildExplorer());
+              }
               showTab('explorer');expRange='all';el('expMetric').value='temp_hum';
               const explorer=measure(()=>buildExplorer());
               return {history,refresh,explorer,...extra,points:chartExplorer.data.labels.length};
-            }''', {'aggregates':args.aggregates,'comparison':args.comparison,'annual':args.annual}))
+            }''', {'aggregates':args.aggregates,'comparison':args.comparison,'annual':args.annual,'analysis':args.analysis}))
             page.wait_for_timeout(350)
         warm = heap()
         # Bounded repeated-use scenario; not a claim about a multi-day soak.
@@ -102,6 +112,8 @@ with sync_playwright() as p:
                 page.evaluate("showTab('compare');buildCompare()")
             if args.annual:
                 page.evaluate("showTab('yearstats');buildYearlyStats()")
+            if args.analysis:
+                page.evaluate("if(typeof buildBatteryAnalysis==='function'){showTab('battery');buildBatteryAnalysis()}")
             page.wait_for_timeout(30)
         page.wait_for_timeout(350)
         repeated = heap()
@@ -116,6 +128,7 @@ Path(args.output).write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
     'aggregateScenario':args.aggregates,
     'comparisonScenario':args.comparison,
     'annualScenario':args.annual,
+    'analysisScenario':args.analysis,
     'network':'blocked; generated in-memory fixture, no raw CSV retained','results':results},indent=2))
 if any(r['pageErrors'] or r['overflow'] for r in results):
     raise SystemExit('Browser profile failed; inspect output.')

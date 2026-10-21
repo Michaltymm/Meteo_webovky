@@ -1,0 +1,198 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "aggregateScenario": false,
+  "comparisonScenario": false,
+  "annualScenario": false,
+  "analysisScenario": true,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2564064,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24212676,
+        "nodes": 2001,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 26803292,
+        "nodes": 2062,
+        "charts": 10
+      },
+      "after30Cycles": {
+        "heapBytes": 27087956,
+        "nodes": 2063,
+        "charts": 10
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 2.4,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 237.4,
+            "mutations": 36
+          },
+          "explorer": {
+            "ms": 108.4,
+            "mutations": 4
+          },
+          "coldBattery": {
+            "ms": 269.4,
+            "mutations": 2
+          },
+          "battery": {
+            "ms": 28.8,
+            "mutations": 0
+          },
+          "batteryCounts": {
+            "pairs": 100000,
+            "xy": 65,
+            "time": 534
+          },
+          "vpd": {
+            "ms": 88.9,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 1.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 100.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 115.1,
+            "mutations": 4
+          },
+          "coldBattery": {
+            "ms": 141.4,
+            "mutations": 3
+          },
+          "battery": {
+            "ms": 21.8,
+            "mutations": 0
+          },
+          "batteryCounts": {
+            "pairs": 100000,
+            "xy": 65,
+            "time": 534
+          },
+          "vpd": {
+            "ms": 65.2,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 124.4,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 72.2,
+            "mutations": 4
+          },
+          "coldBattery": {
+            "ms": 135.6,
+            "mutations": 3
+          },
+          "battery": {
+            "ms": 23.7,
+            "mutations": 0
+          },
+          "batteryCounts": {
+            "pairs": 100000,
+            "xy": 65,
+            "time": 534
+          },
+          "vpd": {
+            "ms": 73.5,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 122.3,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 86.4,
+            "mutations": 4
+          },
+          "coldBattery": {
+            "ms": 146.9,
+            "mutations": 3
+          },
+          "battery": {
+            "ms": 29,
+            "mutations": 0
+          },
+          "batteryCounts": {
+            "pairs": 100000,
+            "xy": 65,
+            "time": 534
+          },
+          "vpd": {
+            "ms": 54.4,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 106.9,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 73.9,
+            "mutations": 4
+          },
+          "coldBattery": {
+            "ms": 139.3,
+            "mutations": 3
+          },
+          "battery": {
+            "ms": 30.4,
+            "mutations": 0
+          },
+          "batteryCounts": {
+            "pairs": 100000,
+            "xy": 65,
+            "time": 534
+          },
+          "vpd": {
+            "ms": 66.4,
+            "mutations": 3
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}
