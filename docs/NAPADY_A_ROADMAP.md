@@ -1239,3 +1239,14 @@ nejsou tímto ověřeny; nasazení dokládat samostatně.
 **Další vhodná etapa:** METEO-063 rozšířit dohledání podkladů na hodinové
 průměry Porovnání dnů (původní T/RH, počty a důvody vyloučení, obě DST hodiny),
 se stejným omezením DOM a platností reference. Hotový077 znovu neanalyzovat.
+
+### Uložení a publikace etapy 10
+
+Kód/testy/dokumentace a důkazy v
+[d1e42e3](https://github.com/Michaltymm/Meteo_webovky/commit/d1e42e3f9edb47cf39375b7a893c93a003498509)
+odeslány na codex-dev, vzdálené SHA ověřeno. Publikační
+[Actions #18](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39677857017)
+pro tento commit **Success**, build17s/deploy10s/celkem36s, jeden artefakt.
+Main stále2405c5d. Workflow deployment není přímá kontrola živých widgetů.
+Následující commit doplňuje pouze tuto paměť, HTML zůstává0.7.0 a testy se
+kvůli dokumentaci neopakují. Hotový denní077 dál pouze udržovat; navázat063.

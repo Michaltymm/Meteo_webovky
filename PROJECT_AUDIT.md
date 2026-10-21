@@ -31,7 +31,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: v0.6.0 odesláno v8457fde a ověřeno nasazení [Actions #17](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39638764748), Success34s/build14s/deploy10s/1artefakt. Při této kontrole potvrzeno také předchozí v0.5.0 [#16](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39627880077), Success44s; dřívější neověřený stav uzavřen. Main stále2405c5d. Potvrzení workflow není přímá kontrola živých widgetů Pages, jejich host není v síťové politice povolený.
+- DEPLOY-001: v0.7.0 odesláno v[d1e42e3](https://github.com/Michaltymm/Meteo_webovky/commit/d1e42e3f9edb47cf39375b7a893c93a003498509), ověřeno nasazení [Actions #18](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39677857017), Success36s/build17s/deploy10s/1artefakt. Main stále2405c5d; předchozí nasazení viz historie etap. Workflow potvrzuje deployment, přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice).
 
 ## A. PROJECT CONTEXT
 
@@ -323,6 +323,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - 165/165 Node testů,12nových v battery-records.test.js; originální páry/missing/0/duplicitní časy/plné číselné hodnoty, kompletní stránkování a stejné statistiky, hraniční7d,250k (<100čtení otevření, přesně50další), snapshot/rozsah/delece/station/CSV/MQTT/reset/close, nedostupný zbytek, missing/constant V, escapování a25h den se dvěma02:30/UTCoffsety. Browser skutečné tři konfigurace+řízené CSV/UV/Chart: Enter/stránky/výběr/rozsah a reset, původní AH/VPD/078/motion i oprava starého CSV zachovány;0V platný i ve výpisu. Obě témata320/390px, žádné page errors/extra fetch/Chart; screenshot prohlédnut.
 - [ETAPA10](docs/performance/ETAPA10.md): cílené sekvenční před/po1k/250k, ne opakování celého dřívějšího auditu. Nový výpis1,5ms, stránka0,6ms v obou velikostech, DOM50řádků. Rozdíly původních grafů nejsou tvrzením zrychlení. Konfigurace/server/workflow/archiv/původní měření/main nezměněny; žádná závislost, síťový požadavek nebo nový graf. Živé služby/broker/HW/firmware/OS mobil/Pages widgety neověřeny.
 - Další vhodná etapa063: podklady hodinového průměru v Porovnání dnů s počty, originály a důvody vyloučení; opět líně/po stránkách/pro aktuální snapshot, bez opakování hotové077 analýzy. Metadata071 a explicitní časový kontrakt048 zůstávají vlastními úkoly.
+
+- Uložení/publikace etapy10: [d1e42e3](https://github.com/Michaltymm/Meteo_webovky/commit/d1e42e3f9edb47cf39375b7a893c93a003498509) odeslán na codex-dev a SHA ověřeno proti origin. [Actions #18](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39677857017) **Success**, build17s/deploy10s/celkem36s, jeden Pages artefakt. Main stále2405c5d. Následující commit pouze zaznamenává ověřené nasazení, nemění HTML ani verzi0.7.0; hotové testy/analýzu neopakovat. Přímá kontrola živých widgetů tím není provedena.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
