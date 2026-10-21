@@ -26,7 +26,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001 DONE: v0.2.0 nasazeno úspěšným [run39589555415](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39589555415), commit c5fe1bf, build8s/deploy9s. Main stále 2405c5d; přímé HTTP/visual ověření Pages zde není dostupné.
+- DEPLOY-001 DONE: v0.2.1 nasazeno úspěšným [run39593972552](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39593972552), commit076bc08, build12s/deploy24s. Main stále2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
 
 ## A. PROJECT CONTEXT
 
@@ -155,7 +155,7 @@ Aktuální rozvojové priority jsou v [centrální roadmapě](docs/NAPADY_A_ROAD
 | 9 / P2 | AUD-008 DONE | Spolehlivé porovnání celého exportu; přenosovou optimalizaci vést samostatně jako FUT-010. |
 | 10 / P2 | AUD-012 + AUD-011 DONE | Prázdné stavy a Vše opraveny; přístupnost/cache zůstávají samostatné návrhy. |
 
-IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. AUD-013 je hotové; pokračovat cache/pozadím dle METEO-004/005 a časovým kontraktem AUD-010. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
+IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a načítání stanic jsou hotové a běží v Pages CI; další domény testovat při jejich změnách. AUD-010/013 jsou hotové; pokračovat METEO-038 sdílenými agregacemi a METEO-005 pozadím, časový kontrakt zdroje/stanice dále METEO-048. METEO-004 cache stanic vyžaduje paměťový limit. P3: FUT-001, IMP-008 až po stabilizaci dat. Žádné návrhy nebyly označeny REJECTED; dokončení musí mít důkaz v H.
 
 ## G. RISKS AND DEPENDENCIES
 
@@ -233,6 +233,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - `tests/calendar-days.test.js`: 17 nových testů v oddělených TZ procesech; celkem 80/80. Na původním 3e236bc stejné dvě regrese selhaly (půlnoc null místo10, konec dne2 místo3 řádků). Prague/NY 23/25h, UTC, UTC+14, São Paulo posun o půlnoci, přelom roku/leap day, neplatné/obrácené datum, chybějící data a UV datum cache.
 - Browser skript rozšířen o --at (pevný Date), kontrolu init vstupů/kalendářních voleb a skutečné filtry 23/25h; fixture čas počítá přes UTC, aby nevytvářel neexistující jarní hodinu. Dva běhy se třemi konfiguracemi, reálný Chart.js, mobil390, zpožděné CSV/UV fixture. Výsledky docs/testing/calendar-*.json. Skutečné externí služby/firmware tím ověřeny nejsou; výkon není předmětem této opravy.
 - Další implementační krok METEO-038: revizní cache souhrnů s invalidací po CSV/MQTT/resetu i změně dne, srovnání proti plným statistikám a měření před/po. METEO-005 pozastavení pollingu na pozadí poté; bez bezlimitní cache tří velkých historií. Main/konfigurace/workflow/archiv se v této etapě nemění.
+
+- Publikace v0.2.1: [076bc08](https://github.com/Michaltymm/Meteo_webovky/commit/076bc0865a34961ebef4cd14e98062976c3ef956) odeslán na codex-dev, vzdálené SHA ověřeno. [Actions #11](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39593972552) **Success**, 44s, build12s/deploy24s, jeden artefakt. Workflow deployment potvrzen, živá data/browser Pages přímo neověřeny; lokální browser používá řízený transport. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Následující commit aktualizuje pouze dokumentaci a nový deploy nevyžaduje.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

@@ -662,3 +662,8 @@ na ověřené časové značky odpovědi včetně 23/25h, pouhá oprava cache ne
 METEO-038 sdílené agregace navážou na nyní jednotný lokální den, s revizní
 invalidací i půlnocí; poté METEO-005 obnova na pozadí. Výsledky nesmí vycházet
 z vizuální redukce a cache nesmí maskovat opravy starých dat.
+
+Publikováno v [076bc08](https://github.com/Michaltymm/Meteo_webovky/commit/076bc0865a34961ebef4cd14e98062976c3ef956)
+na codex-dev. [Actions #11](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39593972552)
+**Success** včetně build/deploy, 44s. Main stále2405c5d. Jde o potvrzení workflow
+nasazení; skutečná živá měření na Pages z tohoto prostředí přímo neověřena.
