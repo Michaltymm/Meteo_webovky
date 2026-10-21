@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.3.1
+
+- Roční statistiky sdílejí měsíční souhrny a uchovávají výpočty pro právě načtenou historii. Opakované otevření i přepínání roků je rychlejší, průměry a rekordy stále vycházejí ze všech původních měření.
+- Volba roku se po změně stanice nebo odstranění dat vrací na dostupné roky; prázdná historie nezachovává starý filtr.
+- Srážkové popisky rozlišují maximum čítače, přírůstek jednoho záznamu a rozdíl čítače v okně do 24 hodin. Bez potvrzeného intervalu a resetů je nevydávají za hodinové či 24hodinové úhrny; číselné výsledky se nemění.
+
 ## v0.3.0
 
 - Porovnání dnů má rychlejší hodinové výpočty z úplných původních měření a omezenou cache posledních osmi použitých dnů.

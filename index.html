@@ -1952,8 +1952,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v030"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.3.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v031"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.3.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4071,23 +4071,25 @@
         if (!stat.count || value > stat.max) stat.max = value;
         stat.sum += value; stat.count++;
       };
-      const days = new Map(), months = new Map();
+      const days = new Map(), months = new Map(), years = new Map();
       const today = { count: 0, temp: accumulator(), hum: accumulator(), pressure: accumulator(), rain: accumulator(), voltage: null };
       const temperature = { min: null, max: null, minRow: null, maxRow: null };
       const bucket = (map, key, time) => {
         if (!map.has(key)) map.set(key, { time, ts: 0, hs: 0, tn: 0, hn: 0, rain: null });
         return map.get(key);
       };
-      let year, month, day, d, m, index = 0;
+      let year, month, day, d, m, yr, index = 0;
       for (const row of rows) {
         const time = row.ts.getTime();
         const y = row.ts.getFullYear(), mo = row.ts.getMonth(), da = row.ts.getDate();
         // Most adjacent samples share a day: avoid rebuilding keys/Map lookups.
+        if (y !== year) { yr = { start: index, end: index }; years.set(y, yr); }
         if (y !== year || mo !== month) m = bucket(months, `${mo + 1}/${y}`, time);
         if (y !== year || mo !== month || da !== day) d = bucket(days, fmtDateShort(row.ts), time);
         year = y; month = mo; day = da;
         if (d.start === undefined) d.start = index;
         d.end = ++index;
+        yr.end = index;
         if (Number.isFinite(row.temp)) {
           d.ts += row.temp; d.tn++; m.ts += row.temp; m.tn++;
           if (!temperature.minRow || row.temp < temperature.min) { temperature.min = row.temp; temperature.minRow = row; }
@@ -4108,7 +4110,8 @@
       for (const [day, d] of days) {
         if (d.rain !== null && (!rainMax || d.rain > rainMax.value)) rainMax = { day, value: d.rain };
       }
-      const result = { source: rows, length: rows.length, dayKey, ...bounds, days, months, today, temperature, rainMax, hourly: new Map() };
+      const result = { source: rows, length: rows.length, dayKey, ...bounds, days, months, years, today, temperature, rainMax,
+        hourly: new Map(), annual: new Map() };
       if (rows === store.rows) aggregateCache = result;
       return result;
     }
@@ -4983,112 +4986,96 @@
     /* ══════════════════════════════════════════════
        ROČNÍ STATISTIKY
     ══════════════════════════════════════════════ */
-    function buildYearlyStats() {
-      if (!store.rows.length) { el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Žádná data.</p>'; return; }
+    // Lazy summaries of original rows, scoped to the current data snapshot.
+    // Monthly means reuse the shared sums; yearly sums retain raw source order.
+    function annualStats(year, snapshot = dataAggregates()) {
+      year = Number(year);
+      if (snapshot.annual.has(year)) return snapshot.annual.get(year);
+      const range = snapshot.years.get(year);
+      if (!range) return null;
+      const record = () => ({ min: null, max: null, avg: null, sum: 0, count: 0, minRow: null, maxRow: null });
+      const add = (stat, row, metric) => {
+        const value = row[metric];
+        if (!Number.isFinite(value)) return;
+        if (!stat.count || value < stat.min) { stat.min = value; stat.minRow = row; }
+        if (!stat.count || value > stat.max) { stat.max = value; stat.maxRow = row; }
+        stat.sum += value; stat.count++;
+      };
+      const temperature = record(), humidity = record();
+      const monthly = Array.from({ length: 12 }, () => ({ tMin: null, tMax: null, hMin: null, hMax: null }));
+      const rains = []; // Temporary references only; never retained by the cache.
+      let rainCounterMax = null, maxRainInc = 0, maxRainIncRow = null;
+      for (let i = range.start; i < range.end; i++) {
+        const row = snapshot.source[i], month = monthly[row.ts.getMonth()];
+        add(temperature, row, "temp"); add(humidity, row, "hum");
+        if (Number.isFinite(row.temp)) {
+          if (!month.tMin || row.temp < month.tMin.temp) month.tMin = row;
+          if (!month.tMax || row.temp > month.tMax.temp) month.tMax = row;
+        }
+        if (Number.isFinite(row.hum)) {
+          if (!month.hMin || row.hum < month.hMin.hum) month.hMin = row;
+          if (!month.hMax || row.hum > month.hMax.hum) month.hMax = row;
+        }
+        if (Number.isFinite(row.rain)) {
+          if (rainCounterMax === null || row.rain > rainCounterMax) rainCounterMax = row.rain;
+          rains.push(row);
+        }
+        if (Number.isFinite(row.rainInc) && row.rainInc > maxRainInc) { maxRainInc = row.rainInc; maxRainIncRow = row; }
+      }
+      temperature.avg = temperature.count ? temperature.sum / temperature.count : null;
+      humidity.avg = humidity.count ? humidity.sum / humidity.count : null;
 
-      // Seskupit řádky podle roku
-      const byYear = {};
-      store.rows.forEach(r => {
-        const yr = r.ts.getFullYear();
-        if (!byYear[yr]) byYear[yr] = [];
-        byYear[yr].push(r);
+      // Preserve the legacy counter-difference algorithm and stable timestamp
+      // ties. This is not a verified rainfall total (unknown counter resets).
+      let maxCounterDelta24h = 0, maxCounterDeltaDate = null, start = 0;
+      rains.sort((a, b) => a.ts - b.ts);
+      for (let end = 1; end < rains.length; end++) {
+        while (rains[end].ts - rains[start].ts > 86400000) start++;
+        const diff = rains[end].rain - rains[start].rain;
+        if (diff > maxCounterDelta24h) { maxCounterDelta24h = diff; maxCounterDeltaDate = rains[end].ts; }
+      }
+      const monthNames = ["leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec"];
+      const extremes = (key, metric, descending) => monthly.flatMap((month, m) => month[key]
+        ? [{ val: month[key][metric], ts: month[key].ts, name: monthNames[m] }] : [])
+        .sort((a, b) => descending ? b.val - a.val : a.val - b.val).slice(0, 6);
+      const means = (sum, count) => monthly.flatMap((_, m) => {
+        const group = snapshot.months.get(`${m + 1}/${year}`);
+        return group?.[count] ? [{ m, name: monthNames[m], avg: group[sum] / group[count] }] : [];
       });
+      const tempMonthAvg = means("ts", "tn"), humMonthAvg = means("hs", "hn");
+      const rank = (values, descending) => [...values].sort((a, b) => descending ? b.avg - a.avg : a.avg - b.avg).slice(0, 6);
+      const result = { temperature, humidity, rainCounterMax: rainCounterMax ?? 0, maxRainInc, maxRainIncRow, maxCounterDelta24h, maxCounterDeltaDate,
+        topHotMonths: extremes("tMax", "temp", true), topColdMonths: extremes("tMin", "temp", false),
+        topWetMonths: extremes("hMax", "hum", true), topDryMonths: extremes("hMin", "hum", false),
+        hottestMonths: rank(tempMonthAvg, true), coldestMonths: rank(tempMonthAvg, false),
+        wettestMonths: rank(humMonthAvg, true), driestMonths: rank(humMonthAvg, false) };
+      snapshot.annual.set(year, result);
+      return result;
+    }
 
-      const allYears = Object.keys(byYear).sort((a, b) => b - a); // nejnovější nahoře
-
-      // Naplnit filtr let
+    function buildYearlyStats() {
+      const snapshot = dataAggregates();
+      const allYears = [...snapshot.years.keys()].sort((a, b) => b - a).map(String);
       const sel = el("yearStatsFilter");
       if (sel) {
         const curVal = sel.value;
-        sel.innerHTML = '<option value="0">Všechny roky</option>' + allYears.map(y => `<option value="${y}">${y}</option>`).join("");
-        sel.value = curVal && allYears.includes(curVal) ? curVal : sel.value || "0";
+        const options = '<option value="0">Všechny roky</option>' + allYears.map(y => `<option value="${y}">${y}</option>`).join("");
+        if (sel.innerHTML !== options) sel.innerHTML = options;
+        sel.value = allYears.includes(curVal) ? curVal : "0";
       }
+      if (!store.rows.length) { el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Žádná data.</p>'; return; }
 
       const filterYear = sel ? parseInt(sel.value) : 0;
       const years = filterYear ? allYears.filter(y => +y === filterYear) : allYears;
       let html = "";
 
       for (const yr of years) {
-        const rows = byYear[yr];
-        const temps = rows.filter(r => r.temp !== null);
-        const hums = rows.filter(r => r.hum !== null);
-        const rains = rows.filter(r => r.rain !== null);
-        const rainIncs = rows.filter(r => r.rainInc !== null && r.rainInc > 0);
-
-        // Základní statistiky (bezpečnější oproti Math.max(...array), které přeteče callstack)
-        const tMax = temps.length ? temps.reduce((max, r) => r.temp > max ? r.temp : max, -Infinity) : null;
-        const tMin = temps.length ? temps.reduce((min, r) => r.temp < min ? r.temp : min, Infinity) : null;
-        const tAvg = temps.length ? (temps.reduce((a, r) => a + r.temp, 0) / temps.length) : null;
-        const hMax = hums.length ? hums.reduce((max, r) => r.hum > max ? r.hum : max, -Infinity) : null;
-        const hMin = hums.length ? hums.reduce((min, r) => r.hum < min ? r.hum : min, Infinity) : null;
-        const hAvg = hums.length ? (hums.reduce((a, r) => a + r.hum, 0) / hums.length) : null;
-
-        // Max/min záznamy s daty
-        const tMaxRow = temps.find(r => r.temp === tMax);
-        const tMinRow = temps.find(r => r.temp === tMin);
-        const hMaxRow = hums.find(r => r.hum === hMax);
-        const hMinRow = hums.find(r => r.hum === hMin);
-
-        // Celkové srážky – max déšť za den
-        const rainByDay = {};
-        rains.forEach(r => {
-          const dk = fmtDateShort(r.ts);
-          if (!rainByDay[dk] || r.rain > rainByDay[dk].val) rainByDay[dk] = { val: r.rain, ts: r.ts };
-        });
-        const totalRain = Object.values(rainByDay).length
-          ? numericSummary(Object.values(rainByDay).map(v => v.val)).max
-          : 0;
-
-        // Max srážkový přírůstek za hodinu (= max rainInc za jeden záznam, protože záznamy ≈ hodinové)
-        let maxHourRain = 0, maxHourRainRow = null;
-        rainIncs.forEach(r => { if (r.rainInc > maxHourRain) { maxHourRain = r.rainInc; maxHourRainRow = r; } });
-
-        // Max srážky za 24h (optimalizované sliding okno O(N) namísto O(N^2))
-        let max24hRain = 0, max24hRainDate = null;
-        if (rains.length > 1) {
-          const sorted = [...rains].sort((a, b) => a.ts - b.ts);
-          let start = 0;
-          for (let end = 1; end < sorted.length; end++) {
-            while (sorted[end].ts - sorted[start].ts > 86400000) {
-              start++;
-            }
-            const diff = sorted[end].rain - sorted[start].rain;
-            if (diff > max24hRain) { max24hRain = diff; max24hRainDate = sorted[end].ts; }
-          }
-        }
-
-        // Max/min per měsíc (teplota + vlhkost) – s datem výskytu
-        const monthNames = ["leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec"];
-        const monthTempMax = {}, monthTempMin = {}, monthHumMax = {}, monthHumMin = {};
-        rows.forEach(r => {
-          const m = r.ts.getMonth();
-          if (r.temp !== null) {
-            if (!monthTempMax[m] || r.temp > monthTempMax[m].val) monthTempMax[m] = { val: r.temp, ts: r.ts, name: monthNames[m] };
-            if (!monthTempMin[m] || r.temp < monthTempMin[m].val) monthTempMin[m] = { val: r.temp, ts: r.ts, name: monthNames[m] };
-          }
-          if (r.hum !== null) {
-            if (!monthHumMax[m] || r.hum > monthHumMax[m].val) monthHumMax[m] = { val: r.hum, ts: r.ts, name: monthNames[m] };
-            if (!monthHumMin[m] || r.hum < monthHumMin[m].val) monthHumMin[m] = { val: r.hum, ts: r.ts, name: monthNames[m] };
-          }
-        });
-        const topHotMonths = Object.values(monthTempMax).sort((a, b) => b.val - a.val).slice(0, 6);
-        const topColdMonths = Object.values(monthTempMin).sort((a, b) => a.val - b.val).slice(0, 6);
-        const topWetMonths = Object.values(monthHumMax).sort((a, b) => b.val - a.val).slice(0, 6);
-        const topDryMonths = Object.values(monthHumMin).sort((a, b) => a.val - b.val).slice(0, 6);
-
-        // Průměry po měsících
-        const monthlyTemp = {}, monthlyHum = {};
-        rows.forEach(r => {
-          const m = r.ts.getMonth();
-          if (r.temp !== null) { if (!monthlyTemp[m]) monthlyTemp[m] = []; monthlyTemp[m].push(r.temp); }
-          if (r.hum !== null) { if (!monthlyHum[m]) monthlyHum[m] = []; monthlyHum[m].push(r.hum); }
-        });
-        const tempMonthAvg = Object.entries(monthlyTemp).map(([m, v]) => ({ m: +m, name: monthNames[+m], avg: v.reduce((a, b) => a + b, 0) / v.length }));
-        const humMonthAvg = Object.entries(monthlyHum).map(([m, v]) => ({ m: +m, name: monthNames[+m], avg: v.reduce((a, b) => a + b, 0) / v.length }));
-        const hottestMonths = [...tempMonthAvg].sort((a, b) => b.avg - a.avg).slice(0, 6);
-        const coldestMonths = [...tempMonthAvg].sort((a, b) => a.avg - b.avg).slice(0, 6);
-        const wettestMonths = [...humMonthAvg].sort((a, b) => b.avg - a.avg).slice(0, 6);
-        const driestMonths = [...humMonthAvg].sort((a, b) => a.avg - b.avg).slice(0, 6);
+        const summary = annualStats(yr, snapshot);
+        const { min: tMin, max: tMax, avg: tAvg } = summary.temperature;
+        const { min: hMin, max: hMax, avg: hAvg } = summary.humidity;
+        const { rainCounterMax, maxRainInc, maxRainIncRow, maxCounterDelta24h, maxCounterDeltaDate,
+          topHotMonths, topColdMonths, topWetMonths, topDryMonths,
+          hottestMonths, coldestMonths, wettestMonths, driestMonths } = summary;
 
         html += `<div class="ys-year">`;
         html += `<div class="ys-year-header">
@@ -5101,9 +5088,9 @@
 
         // Srážky souhrn
         html += `<div style="background:var(--bg2);padding:.6rem 1rem;border-bottom:1px solid var(--border);font-size:.82rem;display:flex;gap:2rem;flex-wrap:wrap">
-      <span class="ys-tip">☔ <b>Celk. max déšť (den):</b>&nbsp;${fmt(totalRain, 1)} mm <span class="ys-tip-icon">?</span><span class="ys-tip-box">Největší objem srážek za daný den od 00:00–23:59</span></span>
-      <span class="ys-tip">🌧 <b>Max srážky/h:</b>&nbsp;${maxHourRain > 0 ? fmt(maxHourRain, 1) + " mm (" + fmtDT(maxHourRainRow.ts) + ")" : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Kolik napadlo nejvíce srážek za 1 hodinu</span></span>
-      <span class="ys-tip">🌊 <b>Max za 24h:</b>&nbsp;${max24hRain > 0 ? fmt(max24hRain, 1) + " mm" + (max24hRainDate ? " (" + fmtDT(max24hRainDate) + ")" : "") : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Největší objem srážek za 24 hodin (např. od 12:00 do 12:00 následujícího dne)</span></span>
+      <span class="ys-tip">☔ <b>Max. denní čítač:</b>&nbsp;${fmt(rainCounterMax, 1)} mm <span class="ys-tip-icon">?</span><span class="ys-tip-box">Nejvyšší hodnota pole rain v místních dnech daného roku. Není to součet ročních srážek; význam a reset čítače musí potvrdit zdroj dat.</span></span>
+      <span class="ys-tip">🌧 <b>Max. přírůstek záznamu:</b>&nbsp;${maxRainInc > 0 ? fmt(maxRainInc, 1) + " mm (" + fmtDT(maxRainIncRow.ts) + ")" : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Nejvyšší kladná hodnota pole rainInc v jednom záznamu. Bez ověřeného měřicího intervalu ji nelze označit za hodinový úhrn.</span></span>
+      <span class="ys-tip">🌊 <b>Max. rozdíl čítače (≤24h):</b>&nbsp;${maxCounterDelta24h > 0 ? fmt(maxCounterDelta24h, 1) + " mm" + (maxCounterDeltaDate ? " (" + fmtDT(maxCounterDeltaDate) + ")" : "") : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Největší kladný rozdíl rain mezi nejstarším a posledním dostupným záznamem v posuvném okně do 24 hodin v daném roce. Bez ověření resetů čítače nejde o úhrn srážek za 24 hodin.</span></span>
     </div>`;
 
         html += `<div class="ys-grid">`;

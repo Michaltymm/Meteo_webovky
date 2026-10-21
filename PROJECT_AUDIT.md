@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `c37227f`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.3.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `bf31182`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.3.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,18 +15,19 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (110/110 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (119/119 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
-- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); 15 nových samostatných návrhů, AUD-010 DONE, METEO-048 rozpracované; METEO-005 DONE, METEO-038 hodinové/denní/měsíční souhrny a podklady hotové, roční sdílení a plán dostupnosti zbývají; kontrakt času stanice dále METEO-048.
+- Centrální plán: `docs/NAPADY_A_ROADMAP.md` (75 METEO ID); AUD-010/METEO-005 DONE, METEO-038 sdílení hodin/denních/měsíčních/ročních souhrnů a podklady hotové; dostupnost čeká na měřicí plán senzoru. Dále METEO-019/020/031 a kontrakt času stanice METEO-048.
+- Roční srážkové popisky v0.3.1 opravené: denní maximum čítače, přírůstek jednoho záznamu a legacy rozdíl rain do24h. Čísla zachována, nejde o ověřené úhrny; reset/interval/schema stále METEO-017/049.
 - Historický benchmark etapy 1 Chromium 1k/10k/100k: při 100k přehled 148,6 → 53,8 ms, explorer 43,2 → 14,8 ms; viz docs/performance.
 - Živé quick CSV všech tří zdrojů nyní HTTP200 (21. 10.); pouze dostupnost/bytes/doba, bez validace obsahu. Skutečné schema, firmware, MQTT ani dlouhá historie neověřeny.
 - Nevkládat přístupové údaje do JSON, auditu ani logů. Veřejné Sheet ID není autentizační token.
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001 DONE: v0.3.0 nasazeno úspěšným [run39602279948](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948), commit 07e63b1, build 12s/deploy 10s. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
+- DEPLOY-001: poslední ověřené nasazení v0.3.0 [run39602279948](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948), commit 07e63b1. v0.3.1 implementováno a místně ověřeno, publikace v této etapě následuje. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
 
 ## A. PROJECT CONTEXT
 
@@ -259,6 +260,16 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - METEO-038 zůstává rozpracované kvůli ročním konzumentům a vymezení pozorovaného času/dostupnosti podle ověřeného měřicího plánu. HTTP CFG.interval není měřicí interval senzoru. Poté bateriový modul METEO-019/020/031 bez SOC/energie jen z V; explicitní zóna/UV v METEO-048 samostatně. Konfigurace, workflow, archiv a main neměněny.
 
 - Publikace v0.3.0: [07e63b1](https://github.com/Michaltymm/Meteo_webovky/commit/07e63b1f1808d9dfe97529e6e6f8139f64d6a494) odeslán na codex-dev, vzdálené SHA ověřeno. [Actions #13](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948) **Success**, 30s, build 12s/deploy 10s, jeden Pages artefakt. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Úspěšný deployment workflow není přímá kontrola živých widgetů; lokální browser měl řízené CSV/UV. Následující commit mění pouze dokumentaci.
+
+### Etapa 6: sdílené roční statistiky, v0.3.1 (21. 10. 2026)
+
+- METEO-038: `dataAggregates.years` obsahuje indexové meze v sestupných originálech. Lazy `annualStats(year,snapshot)` cachuje jen skutečně vyžádané roky aktuálního datasetu; měsíční průměry sdílejí původní součty/počty. Roční součty v původním pořadí, rekordové shody vybírají nejnovější řádek a stejné měsíční hodnoty kalendářní pořadí. Žádná statistika z redukovaných grafů. Dočasné odkazy rain pro stable sort se neuchovávají, pouze výsledky; nejde o cache historie dalších stanic.
+- Invalidace přes původní CSV/MQTT/reset/opravy/datum. Opakovaný render nepřepisuje možnosti filtru; zaniklý rok i prázdná historie přejdou na dostupnou volbu. Nonfinite hodnoty se do ročních výsledků nezapočítají, nula zůstává validní.
+- METEO-017/049: potvrzené nepřesné popisky „Max srážky/h“ a „Max za24h“ opraveny při zachování čísel. První je maximum rainInc jednoho záznamu, druhý legacy rozdíl čítače mezi začátkem a koncem okna do 24h v jednom roce. Neřeší reset a není prokázaným úhrnem. Maximum denních rain není roční součet. Skutečné úhrny/intenzity nadále vyžadují ověřený význam rain/rainInc, jednotky, reset a interval měření; CFG.interval je HTTP polling.
+- 119/119 Node testů, devět nových: nezávislá reference ročních hodnot a osmi žebříčků přes několik let, floating-point pořadí, rekordové shody/0/null/nonfinite, lazy výběr roku, 250k bez opakovaného čtení, CSV/MQTT/reset/oprava/delete, filtr/empty, duplicitní rain/reset a lokální hranice roku Prague/Los Angeles. Syntax inline JS/Python, evidence JSON/verze a diff kontrola prošly.
+- Skutečný browser DOM/Chart.js, tři původní konfigurace a řízené CSV/UV: 1000 řádků/tři roky, všechny tabulky a čísla shodné s bf31182 i po opravě starého záznamu. Přepínání roku bez requestů, filtr/empty/removed year, tooltip, dvě témata a 390/1280px bez přetečení/page errors. Mobilní screenshot prohlédnut. Živé služby, firmware, broker a dlouhý provoz tím ověřeny nejsou.
+- [ETAPA6 — metodika a surové JSON](docs/performance/ETAPA6.md): 1k/10k/100k/250k, sekvenční běhy; při 250k roční po invalidaci 177,2→98,9ms a opakované 160,7→1,2ms. CPU×4/100k 384,9→204,3ms a 368,6→3,7ms. Cold refresh250k 54,1→54,2ms (bez zrychlení), heap po GC 56,88→56,83MiB (malý rozdíl), DOM 3307→3307 a Chart 8→8 po 30 cyklech. Měří synchronní volání a DOM, ne pozdější paint, celou RAM, Web Vitals, síť/parser nebo fyzický mobil. První výpočet stále může blokovat hlavní vlákno.
+- METEO-038 má dokončené sdílení hodin/denních/měsíčních/ročních výsledků a rozlišení pozorovaných časů/počtů. Celé ID zůstává rozpracované: dostupnost potřebuje ověřený plán senzoru. Následuje METEO-019/020/031 teplota×napětí s kvalitou párování; před fyzikální interpretací ověřit umístění čidla, bez SOC/kapacity/energie jen z V. Zóna/UV METEO-048 a omezená cache004 samostatně. Konfigurace, workflow, archiv a main nezměněny; Navrhy_Vylepseni pouze aktuální úvodní evidence.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

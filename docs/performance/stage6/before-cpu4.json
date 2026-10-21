@@ -1,0 +1,232 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "aggregateScenario": true,
+  "comparisonScenario": false,
+  "annualScenario": true,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2560840,
+        "nodes": 1865,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24209540,
+        "nodes": 1865,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 26287392,
+        "nodes": 2665,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26567152,
+        "nodes": 2665,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0.9,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 106.6,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 231.1,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 222.3,
+            "mutations": 35
+          },
+          "daily": {
+            "ms": 1.9,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 28.2,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 16.4,
+            "mutations": 0
+          },
+          "coldAnnual": {
+            "ms": 384.9,
+            "mutations": 2
+          },
+          "annual": {
+            "ms": 282.2,
+            "mutations": 2
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 117.9,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 75.2,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 172.1,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 13.6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 11.6,
+            "mutations": 0
+          },
+          "coldAnnual": {
+            "ms": 349.2,
+            "mutations": 2
+          },
+          "annual": {
+            "ms": 328.6,
+            "mutations": 2
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 101.3,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 108.2,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 132.1,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 1.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 18.6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 11.2,
+            "mutations": 0
+          },
+          "coldAnnual": {
+            "ms": 425.3,
+            "mutations": 2
+          },
+          "annual": {
+            "ms": 408.6,
+            "mutations": 2
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 92.9,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 96.9,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 131.6,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 0.9,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 15,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 11.1,
+            "mutations": 0
+          },
+          "coldAnnual": {
+            "ms": 424.7,
+            "mutations": 2
+          },
+          "annual": {
+            "ms": 369.7,
+            "mutations": 2
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 85.2,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 75.1,
+            "mutations": 4
+          },
+          "coldRefresh": {
+            "ms": 121.5,
+            "mutations": 1
+          },
+          "daily": {
+            "ms": 1.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 13.8,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 9.9,
+            "mutations": 0
+          },
+          "coldAnnual": {
+            "ms": 345.9,
+            "mutations": 2
+          },
+          "annual": {
+            "ms": 368.6,
+            "mutations": 2
+          },
+          "points": 534
+        }
+      ],
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}

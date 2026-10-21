@@ -82,7 +82,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-014 Teplotní amplituda, trendy 1/3/6/24 h a rychlost °C/h | Současná T + skutečné Δt | S / P1 | Agregace O(n), cache po revizi | METEO-048, mezery v měření | Připraveno k realizaci |
 | METEO-015 Mrazové/letní/tropické dny a hodiny pod nulou | Současná historie T | S / P2 | O(n), malé denní agregace | METEO-038,048; interpolace jen přes malé mezery | Nápad |
 | METEO-016 Tlakové trendy hPa/h, 3/6/24 h, rekordní vzestupy/poklesy | Současný tlak | S / P1 | O(n), bez nového fetch | Ověřit absolutní/redukovaný tlak, METEO-048 | Připraveno k realizaci |
-| METEO-017 Úhrny, intenzita, srážkové a suché dny | Rain/rainInc + potvrzený reset a interval | S / P1 | Denní cache, bez nového senzoru pokud kontrakt postačí | FUT-007; METEO-049 | K posouzení |
+| METEO-017 Úhrny, intenzita, srážkové a suché dny | Rain/rainInc + potvrzený reset a interval | S / P1 | v0.3.1 roční popisky opravené: přírůstek záznamu a rozdíl čítače nejsou ověřené úhrny; vlastní úhrny dále | FUT-007; METEO-049 | K posouzení |
 | METEO-018 Heat index v platném oboru; wind chill až s větrem | T/RH nyní; vítr nový HW | N / P2 | Nízký výpočet | Dokumentovaný obor vzorce; mimo něj nezobrazovat | K posouzení |
 
 ## 4. Baterie, napájení a energetická analytika
@@ -128,7 +128,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | v0.3.0 i hodinové T/RH/P a podklady; roční sdílení a plán dostupnosti zbývají | Invalidace dat/dne, LRU8 dnů, METEO-048; vzorkové průměry | Rozpracováno |
+| METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | v0.3.1 sdílení i s ročními statistikami hotové; pozorované časy/počty hotové v0.3.0, dostupnost čeká na plán senzoru | Invalidace dat/dne, LRU8 dnů, lazy roky aktuálního snapshotu, METEO-048; vzorkové průměry | Rozpracováno |
 | METEO-039 Bezpečné min/max velkých polí bez spread argumentů | Současná historie | N / P0 | O(n), bez pádu na limitu zásobníku | FUT-004 / Opus W07 | Dokončeno |
 | METEO-040 Historie se stránkováním a vyhledáním rekordů | Současná historie / poznámky | S / P1 | Omezený DOM místo 100k řádků „Vše“ | AUD-011 hotové, zachovat export všech dat | Připraveno k realizaci |
 | METEO-041 Porovnání období např. říjen 2025/2026, absolutně i anomálie | Víceletá historie | S / P2 | Agregované řady | METEO-038/048; neúplné období označit | Nápad |
@@ -749,3 +749,45 @@ na codex-dev. [Actions #13](https://github.com/Michaltymm/Meteo_webovky/actions/
 **Success**, build i deploy prošly, celkem 30s, jeden artefakt. Main zůstává
 2405c5d. Přímé živé widgety Pages nebyly z prostředí ověřeny. Následující
 aktualizace projektové paměti obsahuje jen dokumentaci.
+
+## Etapa 6 — sdílené roční statistiky, v0.3.1 (21. 10. 2026)
+
+Dokončené roční sdílení v **METEO-038**, dílčí oprava interpretace popisků
+**METEO-017/049**, žádné nové ID. Historické návrhy a stavy výše zachovány.
+
+`dataAggregates` eviduje meze originálů jednotlivých let. `annualStats`
+spočítá jen požadované roky a uchovává malé výsledky ve snapshotu aktuální
+stanice; měsíční průměry sdílejí stávající součty/počty. Roční součty zůstávají
+v původním pořadí řádků, stejně jako výběr data při shodě rekordů a kalendářní
+pořadí shodných měsíců. Bez kopií celé historie, bez statistik ze vzorkovaného
+grafu, bez nových požadavků či produkčních závislostí. CSV/MQTT/reset/oprava
+i změna místního dne invalidují i roky. Zaniklý rok/empty vyčistí filtr.
+
+Původní srážkové výpočty zachovány, opravené popisky: maximum denního čítače
+není roční součet; maximum rainInc patří záznamu, ne automaticky hodině;
+legacy rozdíl rain v posuvném okně do 24h není prokázaný 24h úhrn. Algoritmus
+neřeší reset a nepřechází hranici roku. **METEO-017 není tímto dokončené**;
+pro skutečné úhrny potvrdit jednotky, reset, interval a čas měření METEO-049.
+
+**Ověřeno:** 119/119 Node testů (9 nových), nezávislá reference všech osmi
+žebříčků a ročních hodnot přes více let, floating-point pořadí, shody/0/null,
+nonfinite, cache bez opakovaného čtení 250k, výběr roku, oprava/smazání, CSV,
+MQTT, stanice, hranice roku ve dvou zónách a duplicitní/resetované rain.
+Skutečný DOM/Chart.js načetl tři konfigurace s řízeným transportem; všechny
+tabulky i číselné srážkové výsledky se shodují s bf31182 před/po opravě
+starého záznamu. Filtr nepřidává requesty, dvě témata, 390/1280px bez přetečení
+a page errors. Mobilní screenshot vizuálně zkontrolovaný, syntax/diff prošly.
+
+[Metodika a surová data](performance/ETAPA6.md): 1k/10k/100k/250k, po invalidaci
+při 250k **177,2→98,9ms**, opakovaně **160,7→1,2ms**. CPU×4/100k opakovaně
+**368,6→3,7ms**. Cold refresh při 250k 54,1→54,2ms, neuvádět jako zrychlení.
+Heap po GC 56,88→56,83MiB, stále osm Chart instancí a stejný DOM po 30 cyklech.
+První výpočet je stále možný delší blok hlavního vlákna; reálná síť, firmware,
+broker, několikadenní provoz a živé widgety Pages neověřeny.
+
+**Další etapa:** METEO-019/020/031 teplota×napětí z plných časově spárovaných
+měření, s počty a kvalitou párů; nejprve ověřit skutečné umístění teplotního
+senzoru. Nikdy neodvozovat SOC, kapacitu či energii pouze z V (METEO-024).
+Sdílení všech současných souhrnů METEO-038 je hotové; procenta dostupnosti
+čekají na ověřený plán senzoru, nikoliv CFG.interval HTTP pollingu. Explicitní
+zóna/UV METEO-048 a omezená cache stanic METEO-004 zůstávají samostatné.

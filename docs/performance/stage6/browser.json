@@ -1,0 +1,97 @@
+{
+  "results": [
+    {
+      "station": 0,
+      "rows": 1000,
+      "years": [
+        2026,
+        2025,
+        2024
+      ],
+      "baselineValuesMatch": true,
+      "filterAddsRequests": 0,
+      "oldYearCorrection": 99,
+      "checks": "passed"
+    },
+    {
+      "station": 1,
+      "rows": 1000,
+      "years": [
+        2026,
+        2025,
+        2024
+      ],
+      "baselineValuesMatch": true,
+      "filterAddsRequests": 0,
+      "oldYearCorrection": 99,
+      "checks": "passed"
+    },
+    {
+      "station": 2,
+      "rows": 1000,
+      "years": [
+        2026,
+        2025,
+        2024
+      ],
+      "baselineValuesMatch": true,
+      "filterAddsRequests": 0,
+      "oldYearCorrection": 99,
+      "checks": "passed"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "station": 0,
+      "quick": true
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    }
+  ],
+  "emptyAndRemovedYear": "passed",
+  "mobile390AndDesktop1280": "passed",
+  "transport": "fixture CSV/UV, MQTT CDN blocked; baseline startup disabled"
+}

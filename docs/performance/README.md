@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 6 — sdílené roční statistiky](ETAPA6.md) měří první i opakovaný roční
+pohled, shodu všech tabulek s původní verzí a vysvětluje meze srážkových čítačů.
+
 [Etapa 5 — hodinové agregace a podklady](ETAPA5.md) přidává porovnání dnů,
 LRU osmi dnů a počty/rozložení záznamů; měření první i opakované návštěvy.
 

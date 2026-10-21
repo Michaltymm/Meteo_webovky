@@ -35,6 +35,8 @@ Ověření předchozí etapy v0.2.2: **96/96 testů**, sdílené souhrny METEO-0
 
 Aktuální ověření v0.3.0: **110/110 testů**; METEO-038 přidává hodinové výpočty s LRU osmi dnů, počty hodnot/různých časů a rozložení dat do hodin, METEO-036 částečně odstraňuje přemosťování prázdných hodin v Porovnání. Dostupnost v procentech bez měřicího plánu se neodhaduje. [Metodika a výsledky](docs/performance/ETAPA5.md); nový backlog zůstává pouze v roadmapě.
 
+Navazující ověření v0.3.1: **119/119 testů**; METEO-038 sdílí i roční výsledky a měsíční průměry, u všech tří konfigurací tabulky a čísla shodné s původní verzí. Opravené srážkové popisky METEO-017/049 neslibují hodinové/24h úhrny bez ověřeného intervalu a resetů. [Měření](docs/performance/ETAPA6.md): při 250k opakovaný roční pohled 160,7→1,2ms; plán dostupnosti senzoru zbývá. Historický audit ani jeho číslování se nemění, backlog pouze v centrální roadmapě.
+
 Centrální pokračování: [docs/NAPADY_A_ROADMAP.md](docs/NAPADY_A_ROADMAP.md), 75 návrhů včetně baterie, tří stanic, metrik a hardwarových závislostí. Měřená etapa P0: při 100k přehled 148,6→53,8 ms, explorer 43,2→14,8 ms; metodika a surová data v [docs/performance](docs/performance/README.md). Historický text níže popisuje stav před opravami.
 
 ---
