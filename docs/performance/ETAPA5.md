@@ -2,6 +2,8 @@
 
 21. 10. 2026, v0.2.2 (`c37227f`) → v0.3.0. Pokračování METEO-038;
 žádné nové roadmap ID. Tři konfigurace, workflow, archiv a main beze změn.
+Implementace [07e63b1](https://github.com/Michaltymm/Meteo_webovky/commit/07e63b1f1808d9dfe97529e6e6f8139f64d6a494),
+[úspěšný deployment](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948).
 
 ## Výpočty a význam nových údajů
 

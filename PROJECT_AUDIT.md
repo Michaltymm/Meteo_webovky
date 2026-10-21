@@ -26,7 +26,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001 DONE: v0.2.2 nasazeno úspěšným [run39598503481](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39598503481), commit 83da84c, build 12s/deploy 12s. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
+- DEPLOY-001 DONE: v0.3.0 nasazeno úspěšným [run39602279948](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948), commit 07e63b1, build 12s/deploy 10s. Main stále 2405c5d; přímé HTTP/vizuální ověření živých Pages zde není dostupné.
 
 ## A. PROJECT CONTEXT
 
@@ -257,6 +257,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Chromium/Chart.js s řízenými CSV/UV: všechny tři konfigurace, hodinový průměr a n, details/tooltip, dva tématy a mobil390; 2/25 a 2/23 hodinových skupin, skutečný rozdíl1h, prázdná jarní hodina, žádné pageErrors/overflow. Screenshot vizuálně zkontrolován. Smoke všech tabů/metrik a pozadí prošly; živé služby/firmware/broker tím ověřeny nejsou.
 - [Výkon a surová data ETAPA5](docs/performance/ETAPA5.md): 250k cold compare35,3→28,4ms, opakované32,7→5,1ms; CPU×4/100k cold98,0→53,5ms a warm91,3→21,8ms. Malé1k první porovnání7,3→9,2ms kvůli novým podkladům; neuvádět univerzální zrychlení. Heap250k56,31→56,53MiB a osm Chart instancí i po30cyklech. LRU limit není omezení počtu uživatelem vybraných grafových řad; JIT/CSV/síť/Web Vitals/multiday nejsou měřené.
 - METEO-038 zůstává rozpracované kvůli ročním konzumentům a vymezení pozorovaného času/dostupnosti podle ověřeného měřicího plánu. HTTP CFG.interval není měřicí interval senzoru. Poté bateriový modul METEO-019/020/031 bez SOC/energie jen z V; explicitní zóna/UV v METEO-048 samostatně. Konfigurace, workflow, archiv a main neměněny.
+
+- Publikace v0.3.0: [07e63b1](https://github.com/Michaltymm/Meteo_webovky/commit/07e63b1f1808d9dfe97529e6e6f8139f64d6a494) odeslán na codex-dev, vzdálené SHA ověřeno. [Actions #13](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39602279948) **Success**, 30s, build 12s/deploy 10s, jeden Pages artefakt. Main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Úspěšný deployment workflow není přímá kontrola živých widgetů; lokální browser měl řízené CSV/UV. Následující commit mění pouze dokumentaci.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
