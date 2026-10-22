@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 13 — Analytické grafy](ETAPA13.md) měří nový přehled devíti karet,
+zachování hlavního dashboardu a paměť při 1k/10k/100k/250k, včetně CPU×4.
+
 [Etapa 12 — podklady teplotních extrémů](ETAPA12.md) měří cenu doplněných
 čítačů a O(1) zobrazení původního maxima/minima i při250k shodách.
 

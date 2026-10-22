@@ -1,0 +1,275 @@
+{
+  "browser": "154.0.8037.57",
+  "results": [
+    {
+      "station": 0,
+      "originalTemperature": {
+        "count": 2823,
+        "min": 0,
+        "max": 85,
+        "pairs": 2732
+      },
+      "periodSwitchesWithoutFetch": true,
+      "zoomPanReset": true,
+      "legend": true,
+      "expandedEscape": true,
+      "emptyRange": true
+    },
+    {
+      "station": 1,
+      "stationSelection": true,
+      "voltageSamples": 0
+    },
+    {
+      "station": 2,
+      "stationSelection": true,
+      "voltageSamples": 2903
+    },
+    {
+      "station": 0,
+      "stationSelection": true,
+      "voltageSamples": 2903
+    },
+    {
+      "touchTooltip": true,
+      "touchHeatCell": true,
+      "heatKeyboard": true,
+      "mobileLazy": true,
+      "failedRefreshLabel": true,
+      "lateForeignResponseIgnored": true
+    }
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "theme": "darkblue",
+      "columns": 3,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "columns": 3,
+      "overflow": false
+    },
+    {
+      "width": 800,
+      "theme": "darkblue",
+      "columns": 2,
+      "overflow": false
+    },
+    {
+      "width": 800,
+      "theme": "light",
+      "columns": 2,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "darkblue",
+      "columns": 1,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "columns": 1,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "darkblue",
+      "columns": 1,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "columns": 1,
+      "overflow": false
+    }
+  ],
+  "comparison": [
+    {
+      "label": "Praha-baterie PCB [\u00b0C]",
+      "n": 258
+    },
+    {
+      "label": "Praha za oknem [\u00b0C]",
+      "n": 566
+    },
+    {
+      "label": "M\u0161en\u00e9 l\u00e1zn\u011b [\u00b0C]",
+      "n": 566
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "station": 0,
+      "quick": true,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&tq=SELECT%20*%20ORDER%20BY%20A%20DESC%2C%20B%20DESC%20LIMIT%20400&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Hlavni_datovna&_=1792663200000"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 1,
+      "quick": true,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat&tq=SELECT%20*%20ORDER%20BY%20A%20DESC%2C%20B%20DESC%20LIMIT%20400&_=1792663200000"
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 2,
+      "quick": true,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat&tq=SELECT%20*%20ORDER%20BY%20A%20DESC%2C%20B%20DESC%20LIMIT%20400&_=1792663200000"
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 0,
+      "quick": true,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&tq=SELECT%20*%20ORDER%20BY%20A%20DESC%2C%20B%20DESC%20LIMIT%20400&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://corsproxy.io/?url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2F1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA%2Fgviz%2Ftq%3Ftqx%3Dout%3Acsv%26sheet%3DPrijem_dat"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    },
+    {
+      "station": 0,
+      "quick": true,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&tq=SELECT%20*%20ORDER%20BY%20A%20DESC%2C%20B%20DESC%20LIMIT%20400&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Hlavni_datovna&_=1792663200000"
+    },
+    {
+      "station": 2,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 0,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1DM1vf2qyqJ9PxaBKDp0auPkt3aQKhjxyNX-a-KBk7U8/gviz/tq?tqx=out:csv&sheet=Prijem_dat&_=1792663200000"
+    },
+    {
+      "station": 1,
+      "quick": false,
+      "url": "https://docs.google.com/spreadsheets/d/1Sn2kRJi6vRBLLkeNism2VdPjJzFVNxcuvhRYT7KvITA/gviz/tq?tqx=out:csv&sheet=Prijem_dat"
+    }
+  ],
+  "transport": "Original three configs; controlled CSV/UV; MQTT CDN blocked"
+}

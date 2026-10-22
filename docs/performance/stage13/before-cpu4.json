@@ -1,0 +1,201 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "aggregateScenario": true,
+  "comparisonScenario": false,
+  "annualScenario": false,
+  "analysisScenario": false,
+  "recordsScenario": false,
+  "hourRecordsScenario": false,
+  "temperatureRecordScenario": false,
+  "gridScenario": false,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2570332,
+        "nodes": 2309,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24218980,
+        "nodes": 2309,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 26246052,
+        "nodes": 2412,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26446460,
+        "nodes": 2412,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 120.6,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 112.6,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 242.1,
+            "mutations": 39
+          },
+          "daily": {
+            "ms": 1.8,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 27.3,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 17.5,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 84.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 96.6,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 135.2,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 18.6,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 12.8,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 95.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 82,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 119.2,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 1.4,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 13.7,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 14.6,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.9,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 88.7,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 103.3,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 145.2,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 17.4,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 14.4,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 120.1,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 92.5,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 128.1,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 0.1,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 14.4,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 9.3,
+            "mutations": 0
+          },
+          "points": 534
+        }
+      ],
+      "records": null,
+      "hourRecords": null,
+      "temperatureRecord": null,
+      "grid": null,
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}

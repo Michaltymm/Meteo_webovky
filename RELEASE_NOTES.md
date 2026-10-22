@@ -1,5 +1,12 @@
 # Přehled změn
 
+## v0.10.0
+
+- Nová záložka „Analytické grafy“ nabízí devět karet: teplotu s denními extrémy, RH/rosný bod, tlak, srážkový čítač, společný graf T/V, změnu napětí, XY závislost T/V, porovnání tří stanic a hodinovou heatmapu T/RH.
+- Společný výběr období 24 h až celá historie, vlastní datum, synchronizovaný časový výřez a kurzor, zoom/posun, interaktivní legendy, rozšíření na celou šířku a PNG export. Rozložení má tři sloupce na desktopu, dva na tabletu a jeden na telefonu.
+- Statistiky a korelace vycházejí ze všech původních dat; grafické body mají zachované extrémy. Heatmapa má detail buňky a stránkování. Rychlost změny napětí uvádí mV/h bez odhadů proudu či kapacity; srážky přiznávají neověřený význam čítače.
+- Grafy se vytvářejí až při zobrazení a po odchodu se uvolní. Historie ostatních stanic se načítá samostatně až pro porovnání, sdílí omezenou cache a při chybě obnovy zřetelně označí poslední dostupná data.
+
 ## v0.9.0
 
 - Nejvyšší a nejnižší teplota v kartě Statistika mají podklady s původním měřením, přesnou hodnotou a časem s UTC offsetem. Zobrazují počty platných a vynechaných teplot i přesných shod extrému.

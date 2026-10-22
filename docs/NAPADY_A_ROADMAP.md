@@ -59,10 +59,10 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-001 Aktivní grafy: při obnově aktualizovat pouze viditelnou záložku | Současná | N / P0 | 6 → 1 chart update na přehledu | IMP-003 | Dokončeno |
 | METEO-002 Cache rozsahu: jedno pole referencí a binární vyhledání v seřazené historii; rychlá změna veličiny | Současná historie | S / P0 | Bez opakovaného sort/filter celé historie; O(log n + k) | AUD-002/004 hotové | Dokončeno |
 | METEO-003 Stejný rychlý export: opakované CSV do 400 řádků neparsovat a nepřekreslovat | Současné CSV | N / P0 | Méně CPU; přenos zatím stejný | AUD-008 | Dokončeno |
-| METEO-004 Cache historie podle stanice/zdroje: omezená LRU + TTL, čerstvost viditelná, návrat bez čekání | Současné CSV, čas validace | S / P0 | Méně opakovaných přenosů; omezený nárůst RAM | METEO-002, kontrakt invalidace níže | Připraveno k realizaci |
+| METEO-004 Cache historie podle stanice/zdroje: omezená LRU + TTL, čerstvost viditelná, návrat bez čekání | Současné CSV, čas validace | S / P0 | Kompaktní T cache pro porovnání v0.10.0: 8 MiB/stanice, 16 MiB celkem, ruční obnova a stáří; obecný návrat na dashboard/TTL dále | METEO-002, kontrakt invalidace níže | Rozpracováno |
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
-| METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | Méně startovní RAM/JS, možná prodleva prvního otevření | METEO-001, měření startu | Připraveno k realizaci |
+| METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
 | METEO-008 Worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | Méně blokování UI, cena kopírování/persistence | Benchmark skutečných CSV, METEO-004 | K posouzení |
 
 ## 2. Uživatelské rozhraní a responzivita
@@ -89,8 +89,8 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-019 Teplota × napětí: společný časový graf, XY a korelace | Současná T/V se společným timestampem | S / P1 | v0.4.0 základní modul, plné páry, lazy grafy a cache jednoho rozsahu; podmíněná ranní/večerní srovnání dále | METEO-031; čas max800, XY max582 originálů, žádná hustota z reprezentantů | Rozpracováno |
-| METEO-020 Noční pokles / denní nárůst mV/h, min/max napětí | Současná V + čas / poloha | S / P1 | Denní agregace O(n) | METEO-048, dostatečné pokrytí; bez odhadu kapacity | Připraveno k realizaci |
+| METEO-019 Teplota × napětí: společný časový graf, XY a korelace | Současná T/V se společným timestampem | S / P1 | v0.4.0 základní T/V, v0.10.0 společný panel i libovolné časové období a XY den/noc/regrese; podmíněná srovnání dále | METEO-031; čas max800, XY max582 originálů, žádná hustota z reprezentantů | Rozpracováno |
+| METEO-020 Noční pokles / denní nárůst mV/h, min/max napětí | Současná V + čas / poloha | S / P1 | v0.10.0 plné denní min/max V, sousední ΔV/Δt pro0<Δt≤3h a pozorovaný noční úsek; úplné solární cykly dále | METEO-048, dostatečné pokrytí; bez odhadu kapacity | Rozpracováno |
 | METEO-021 Zimní/letní režim a pravděpodobné nabíjecí cykly | Současná V/T; potvrzení solárního napájení | S / P2 | O(n), počítat až v modulu | METEO-019/020; prahy kalibrovat podle zapojení | K posouzení |
 | METEO-022 Nízké napětí a neobvyklý pokles s hysterezí | V, chemie baterie, mezní napětí od uživatele | S / P1 | Inkrementální vyhodnocení | METEO-044, chybějící údaje nezastupovat odhadem | K posouzení |
 | METEO-023 Dlouhodobé stárnutí a energetická bilance | Proud, teplota článku, cykly a kalibrace: HW/firmware | V / P3 | Dlouhodobé agregace | METEO-057; samotné V nestačí | Nápad |
@@ -100,29 +100,29 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-025 Tři stanice v jednom grafu T/RH/V; přehled rozdílů | Současné exporty, různé senzory/intervaly | V / P1 | Až 3 historie; lazy fetch, omezená cache | METEO-004/029/048; návrh níže | Připraveno k realizaci |
+| METEO-025 Tři stanice v jednom grafu T/RH/V; přehled rozdílů | Současné exporty, různé senzory/intervaly | V / P1 | v0.10.0 skutečné časové T všech3stanic, lazy exporty/kompaktní cache; RH/V srovnání dále | METEO-004/029/048; návrh níže | Rozpracováno |
 | METEO-026 Srovnání denních minim/maxim a počtu měření | Současná data všech stanic | S / P1 | Sdílené denní agregace | METEO-025/038 | Nápad |
 | METEO-027 Dostupnost, typický interval a nejdelší výpadek | Timestampy + očekávaný měřicí plán | S / P1 | O(n), malý výsledný souhrn | METEO-045; interval fetch není interval senzoru | K posouzení |
-| METEO-028 Teplotní rozdíl lokalit po párování, kalibrační bias | T, umístění/kalibrace stanic | S / P2 | O(n+m) po seřazení | METEO-025/029; lokalita není senzorová chyba | Nápad |
+| METEO-028 Teplotní rozdíl lokalit po párování, kalibrační bias | T, umístění/kalibrace stanic | S / P2 | v0.10.0 popisné ΔT z časových párů s počty/odchylkami; kalibrační bias bez metadata071 se neodhaduje | METEO-025/029; lokalita není senzorová chyba | Rozpracováno |
 
 ## 6. Analýza závislostí mezi veličinami
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-029 Časové párování a tolerance: uvést spárované/odmítnuté vzorky | Timestampy dvou řad | S / P1 | Dva ukazatele O(n+m), bez kartézského součinu | METEO-048, policy níže | Připraveno k realizaci |
-| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | Lazy výpočet, vizualizace oddělená od statistik | METEO-019/029/031 | Připraveno k realizaci |
+| METEO-029 Časové párování a tolerance: uvést spárované/odmítnuté vzorky | Timestampy dvou řad | S / P1 | v0.10.0 monotónní one-to-one nejbližší čas do10min: O(n log m), přesně sladěná rychlá větev O(n); konfigurovatelná tolerance dále | METEO-048, policy níže | Rozpracováno |
+| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 nová záložka9grafů, sdílené období/zoom, lazy model; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
 | METEO-031 Pearson/regrese a počet validních párů z úplných dat | Současná párovaná data | S / P1 | v0.4.0 Welford r/sklon z úplných T/V, n/časy/dny; intervaly po dnech/nejistota dále | Korelace ≠ příčina, bez p-value a SOC, při n<3/konstantě nedostupné | Rozpracováno |
-| METEO-032 Časový posun, klouzavé průměry, oddělení den/noc a sezón | Současná historie | V / P2 | Výpočet jen zvolených lagů; cache, žádné n² | METEO-029/048; nepravidelné intervaly | Nápad |
+| METEO-032 Časový posun, klouzavé průměry, oddělení den/noc a sezón | Současná historie | V / P2 | v0.10.0 volitelný průměr5měření T/P a odhad den/noc v XY; lagy a sezónní rozklad dále | METEO-029/048; nepravidelné intervaly | Rozpracováno |
 
 ## 7. Grafy a vizualizace
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-033 Min/max redukce pro průzkumník, plné statistiky a zoom | Současná historie | S / P0 | Max 800 pozorovaných bodů; bez animace; zachová extrémy každé veličiny | AUD-013 / Opus P07 | Dokončeno |
-| METEO-034 Kalendářní a hodinová heatmapa T/RH/srážek/pokrytí | Současné denní/hodinové agregace | S / P2 | Malá mřížka, lazy render | METEO-038/048, srážky METEO-017 | Nápad |
+| METEO-034 Kalendářní a hodinová heatmapa T/RH/srážek/pokrytí | Současné denní/hodinové agregace | S / P2 | v0.10.0 vlastní canvas T/RH,14dnů×24hodin na stránku, plné průměry a detail; srážky/pokrytí dále | METEO-038/048, srážky METEO-017 | Rozpracováno |
 | METEO-035 Histogram a teplotní profil hodiny/dne/měsíce | Současná historie | S / P2 | O(n) agregace, desítky sloupců | METEO-038; volba časového vážení | Nápad |
-| METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | v0.3.0 Porovnání nespojuje prázdné hodiny; časová osa ostatních grafů dále | METEO-033/048; nyní category osa | Rozpracováno |
-| METEO-037 Fullscreen a PNG export grafu | Aktuální vykreslený graf | N / P2 | Export jen na kliknutí | METEO-010; popisek rozsahu/stanice | Nápad |
+| METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | v0.10.0 nová analytika na lineární epochové ose, původní tooltipy/UTC offsety a null mezery; starší category grafy dále | METEO-033/048; nyní category osa | Rozpracováno |
+| METEO-037 Fullscreen a PNG export grafu | Aktuální vykreslený graf | N / P2 | v0.10.0 celá šířka/Escape a PNG s metadaty pro analytické karty; ostatní grafy/nativní fullscreen dále | METEO-010; popisek rozsahu/stanice | Rozpracováno |
 
 ## 8. Historická data a statistiky
 
@@ -1374,3 +1374,70 @@ odeslán na codex-dev; [Actions #21](https://github.com/Michaltymm/Meteo_webovky
 Následující dokumentační commit pouze zaznamenává výsledek, verze0.9.0
 se nemění a testy se neopakují. Přímá kontrola živých Pages widgetů z tohoto
 prostředí neproběhla. Další063 etapa: vstupy odvozených Td/AH/VPD.
+
+
+## Etapa 13 — Analytické grafy, v0.10.0 (22. 10. 2026)
+
+Výchozí `df1beb5`, práce výhradně na codex-dev; main stále2405c5d. Realizováno
+nové explicitní zadání uživatele, které má přednost před dřívějším dalším
+krokem063. Zachované hotové funkce i původních83ID, žádný duplicitní návrh.
+
+**Dokončený rozsah tohoto zadání:** nová záložka s devíti analytickými kartami,
+3/2/1 sloupec dle šířky, skutečné názvy stanic, období24h/7/30/90/365d/all
+a vlastní datum, refresh, společný nebo samostatný časový výřez, časový kurzor,
+zoom/pan/reset, dotyk/klávesnice, nativní legendy, rozšíření/Escape a PNG.
+Karty: T s denními extrémy, RH/Td/T, P, srážkový čítač, T/V, mV/h+Vmin/max,
+XY T/V s popisnou regresí/r a odhadem den/noc, porovnání T tří stanic,
+stránkovaná hodinová heatmapa T/RH s detailní buňkou.
+
+**Konkrétní dílčí stavy:**004/007/019/020/025/028/029/030/032/034/036/037
+jsou rozpracované s výše uvedeným důkazem; širší obecné nápady zůstávají.
+030 nemá libovolný X/Y selector,025 nemá historické srovnání RH/V,034 zatím
+neukazuje ověřené srážky nebo dostupnost,037 nerozšířilo starší grafy.
+021/024/048/049/057/071 nepovažovat za vyřešené. Podklady063 zůstávají
+z předchozích etap, nejsou kvůli nové záložce odstraňovány.
+
+[Technický a uživatelský popis](ANALYTICKE_GRAFY.md) uvádí vstupy, vzorce,
+metadata a přesné meze. Srážková karta záměrně diagnostikuje původní čítač
+a maximum přírůstku záznamu: bez resetu a schématu017/049 nelze slibovat
+hodinové/denní úhrny. Růst V nemá automatický štítek potvrzeného nabíjení,
+nevypočítává SOC/proud/energii. Časový kontrakt je stále zóna prohlížeče;
+nejednoznačné CSV bez offsetu nelze zpětně rekonstruovat. Regrese je popisná.
+
+Aktivní historie používá stejný store, parser, relaci a ensureFullData;
+přepnutí stanic nepoužívá skryté přepínání pro získání cizích dat.
+`parseHistoryCSV` je extrakce původního parseru bez globálního commitu.
+Cizí konfigurace/exporty se načítají postupně až pro porovnání, bez duplicit,
+s abortem při odchodu/změně stanice. T cache po16B/záznam,8MiB/stanice,
+16MiB celkem/LRU, viditelné stáří a ruční obnova; chyba obnovy přizná starou
+cache. Obecný TTL/dashboard cache návrh004 tím není hotový.
+
+Grafy vznikají podle viewportu a překreslují se jen viditelné. Při odchodu
+se osm případných Chart instancí zničí, zruší se observery/requesty a model.
+Start pořád8původních grafů. Jeden sdílený model a menší vizualizace, plné
+statistiky před redukcí. Heatmapa14pozorovaných dnů/stránka, bez tisíců DOM
+buněk. Nejbližší monotónní one-to-one párování do10min uvádí počty a odchylky,
+bez interpolace a bez slibu globálního optimálního přiřazení.
+
+**226/226 Node testů**,33nových: parser/rozsahy/statistiky/Welford/mV/h/
+redukce, čtyři DST zóny, kompaktní cache, životní cyklus a opožděné cizí
+odpovědi, A→B→A, změna zdroje, neúspěšná obnova, paměťový limit a250k model.
+Párování navíc400náhodných referencí. Browser ověřil všechny3konfigurace,
+9grafů, intervaly, úplné počty, osamocený85°C bod v grafu i rozsahu XY osy,
+missing/0V, PNG, skutečnou legendu, zoom/pan/reset/rozšíření/Escape,
+heatmapu, dotyk, odchod během requestu a obnovu s chybou. Obě témata
+1440/800/390/320px bez přetečení,0pageerrors, screenshot prohlédnut.
+
+[ETAPA13 a surové JSON](performance/ETAPA13.md): před/po1k/10k/100k/250k,
+sekvenčně,5vzorků/medián. Hlavní250k refresh24,8→22,0ms (nikoli příslib
+zrychlení); úplných9karet při250k poprvé393,7ms, opakovaně21,6ms.
+CPU×4/100k: všechny karty984,1/120,8ms. První velký O(n) model dál umí
+blokovat hlavní vlákno; další vhodná výkonová etapa je dělená příprava nebo
+změřený worker008. Při zavření i po10návštěvách opět8grafů, bez růstu uzlů.
+HTML+62087B; žádná nová produkční knihovna. Není měřen fyzický iPhone,
+Web Vitals, reálné služby/firmware/HW nebo přímé widgety Pages.
+
+**Další doporučení:** rozdělit přípravu opravdu velkých modelů dle profilu008,
+poté konfigurovatelná tolerance a RH/V porovnání025/029, obecný X/Y030.
+Skutečné úhrny či energetiku řešit až po potvrzení metadata017/049/057/071.
+Neopakovat hotové analýzy063/077/078 bez nového důvodu.

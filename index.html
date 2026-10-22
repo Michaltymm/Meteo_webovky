@@ -105,6 +105,37 @@
     #tempRecord { margin: .6rem; }
     #tempRecordInfo { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.6; }
 
+
+    /* Analytical workspace: no chart instances until this tab is visible. */
+    .ana-toolbar { display:flex; flex-wrap:wrap; align-items:end; gap:.7rem; padding:.9rem; background:var(--bg2); border:1px solid var(--border); border-radius:8px; }
+    .ana-toolbar label { display:flex; flex-direction:column; gap:.3rem; font-size:.8rem; max-width:100%; }
+    .ana-toolbar select,.ana-toolbar input,.ana-card select { background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:5px; padding:.4rem; min-height:44px; max-width:100%; }
+    .ana-toolbar input:disabled { opacity:.5; }
+    .ana-toolbar .ana-check { flex-direction:row; align-items:center; }
+    .ana-check input { min-height:24px; }
+    .ana-button { min-height:44px; padding:.4rem .65rem; background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:5px; cursor:pointer; font-size:.8rem; }
+    .ana-button:focus-visible,.ana-card canvas:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .ana-button:disabled { opacity:.5; cursor:default; }
+    #anaStatus { white-space:pre-line; overflow-wrap:anywhere; font-size:.8rem; line-height:1.6; margin:.7rem 0; }
+    .ana-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.85rem; align-items:stretch; }
+    .ana-card { min-width:0; padding:.8rem; background:var(--bg2); border:1px solid var(--border); border-radius:9px; display:flex; flex-direction:column; }
+    .ana-card header { position:static; display:flex; justify-content:space-between; align-items:center; gap:.6rem; background:none; border:0; padding:0; margin:0; box-shadow:none; z-index:auto; }
+    .ana-card h3 { font-size:.95rem; font-weight:600; margin:0; }
+    .ana-description,.ana-note { font-size:.76rem; line-height:1.5; margin:.5rem 0; overflow-wrap:anywhere; }
+    .ana-description { color:var(--muted); min-height:2.3em; }
+    .ana-plot { height:245px; position:relative; min-width:0; }
+    .ana-plot canvas { width:100%; height:100%; max-width:100%; touch-action:pan-y; }
+    .ana-empty { font-size:.8rem; padding:.5rem; text-align:center; color:var(--muted); }
+    .ana-card details { font-size:.78rem; margin-top:auto; padding-top:.6rem; }
+    .ana-card summary { cursor:pointer; }
+    .ana-actions { display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; margin-top:.5rem; }
+    .ana-expanded { grid-column:1/-1; }
+    .ana-expanded .ana-plot { height: min(65vh,600px); min-height:330px; }
+    .ana-heat-legend { height:10px; background:linear-gradient(90deg,#2166ac,#f7f7f7,#b2182b); border:1px solid var(--border); }
+    #anaHeatDetail { min-height:2em; }
+    @media(max-width:1199px) { .ana-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media(max-width:650px) { .ana-grid { grid-template-columns:minmax(0,1fr); } .ana-toolbar { padding:.7rem; } .ana-plot { height:260px; } }
+
     .nav-pills {
       display: flex;
       gap: .4rem;
@@ -1975,8 +2006,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v090"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.9.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0100"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.10.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2424,6 +2455,7 @@
       <button class="tab-btn active" data-tab="now">Aktuálně</button>
       <button class="tab-btn" data-tab="daily">Denní statistiky</button>
       <button class="tab-btn" data-tab="rain">Srážky &amp; Baterie</button>
+      <button class="tab-btn" data-tab="analytics">📊 Analytické grafy</button>
       <button class="tab-btn" data-tab="battery">🔬 Teplota × napětí</button>
       <button class="tab-btn" data-tab="explorer">📈 Graf</button>
       <button class="tab-btn" data-tab="compare">📅 Porovnání</button>
@@ -2468,6 +2500,139 @@
         <div class="chart-canvas-wrap"><canvas id="chart24h"></canvas></div>
       </div>
     </div>
+
+
+    <section class="tab-pane" id="tab-analytics" aria-label="Analytické grafy meteostanic">
+      <div class="ana-toolbar">
+        <label for="anaStation">Stanice<select id="anaStation" onchange="analyticsChooseStation()"></select></label>
+        <label for="anaRange">Období<select id="anaRange" onchange="analyticsControlsChanged()">
+          <option value="24h">24 hodin</option><option value="7" selected>7 dní</option><option value="30">30 dní</option><option value="90">90 dní</option><option value="365">1 rok (365 dní)</option><option value="all">Všechna načtená data</option><option value="custom">Vlastní období</option>
+        </select></label>
+        <label for="anaFrom">Od (vlastní)<input id="anaFrom" type="date" disabled></label>
+        <label for="anaTo">Do (vlastní)<input id="anaTo" type="date" disabled></label>
+        <button id="anaApply" class="ana-button" onclick="analyticsControlsChanged()">Použít období</button>
+        <button id="anaRefresh" class="ana-button" onclick="analyticsRefresh()">Obnovit data</button>
+        <button id="anaReset" class="ana-button" onclick="analyticsReset()">Reset přiblížení</button>
+        <label class="ana-check" for="anaSync"><input id="anaSync" type="checkbox" checked onchange="analyticsSyncChanged()">Společný časový výřez</label>
+      </div>
+      <p id="anaStatus" role="status" aria-live="polite"></p>
+      <div class="ana-grid">
+        <article class="ana-card" id="anaCard0" data-analytics-card="0">
+          <header><h3>1. Teplota</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(0)" aria-expanded="false" aria-label="Zvětšit graf Teplota">Zvětšit</button></header>
+          <p class="ana-description">Původní teplota a denní minima/maxima [°C].</p>
+          <div class="ana-plot"><canvas id="anaCanvas0" tabindex="0" role="img" aria-label="Teplota; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty0" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote0"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(0,.5)" aria-label="Přiblížit graf 1">+</button><button class="ana-button" onclick="analyticsZoom(0,2)" aria-label="Oddálit graf 1">−</button>
+            <button class="ana-button" onclick="analyticsPan(0,-.25)" aria-label="Posunout graf 1 zpět">←</button><button class="ana-button" onclick="analyticsPan(0,.25)" aria-label="Posunout graf 1 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(0)">Reset</button><button class="ana-button" onclick="analyticsExport(0)">PNG</button>
+          </div><label><input id="anaSmooth0" type="checkbox" onchange="analyticsRedraw()"> Klouzavý průměr posledních 5 měření (bez doplňování mezer)</label></details>
+        </article>
+        <article class="ana-card" id="anaCard1" data-analytics-card="1">
+          <header><h3>2. Vlhkost a rosný bod</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(1)" aria-expanded="false" aria-label="Zvětšit graf Vlhkost a rosný bod">Zvětšit</button></header>
+          <p class="ana-description">Relativní vlhkost [%], teplota a vypočtený rosný bod [°C].</p>
+          <div class="ana-plot"><canvas id="anaCanvas1" tabindex="0" role="img" aria-label="Vlhkost a rosný bod; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty1" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote1"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(1,.5)" aria-label="Přiblížit graf 2">+</button><button class="ana-button" onclick="analyticsZoom(1,2)" aria-label="Oddálit graf 2">−</button>
+            <button class="ana-button" onclick="analyticsPan(1,-.25)" aria-label="Posunout graf 2 zpět">←</button><button class="ana-button" onclick="analyticsPan(1,.25)" aria-label="Posunout graf 2 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(1)">Reset</button><button class="ana-button" onclick="analyticsExport(1)">PNG</button>
+          </div></details>
+        </article>
+        <article class="ana-card" id="anaCard2" data-analytics-card="2">
+          <header><h3>3. Atmosférický tlak</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(2)" aria-expanded="false" aria-label="Zvětšit graf Atmosférický tlak">Zvětšit</button></header>
+          <p class="ana-description">Původní tlak [hPa] a rozdíl krajních měření výřezu.</p>
+          <div class="ana-plot"><canvas id="anaCanvas2" tabindex="0" role="img" aria-label="Atmosférický tlak; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty2" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote2"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(2,.5)" aria-label="Přiblížit graf 3">+</button><button class="ana-button" onclick="analyticsZoom(2,2)" aria-label="Oddálit graf 3">−</button>
+            <button class="ana-button" onclick="analyticsPan(2,-.25)" aria-label="Posunout graf 3 zpět">←</button><button class="ana-button" onclick="analyticsPan(2,.25)" aria-label="Posunout graf 3 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(2)">Reset</button><button class="ana-button" onclick="analyticsExport(2)">PNG</button>
+          </div><label><input id="anaSmooth2" type="checkbox" onchange="analyticsRedraw()"> Klouzavý průměr posledních 5 měření (bez doplňování mezer)</label></details>
+        </article>
+        <article class="ana-card" id="anaCard3" data-analytics-card="3">
+          <header><h3>4. Srážkový čítač</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(3)" aria-expanded="false" aria-label="Zvětšit graf Srážkový čítač">Zvětšit</button></header>
+          <p class="ana-description">Diagnostika původního čítače a maxima přírůstku záznamu [mm].</p>
+          <div class="ana-plot"><canvas id="anaCanvas3" tabindex="0" role="img" aria-label="Srážkový čítač; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty3" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote3"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(3,.5)" aria-label="Přiblížit graf 4">+</button><button class="ana-button" onclick="analyticsZoom(3,2)" aria-label="Oddálit graf 4">−</button>
+            <button class="ana-button" onclick="analyticsPan(3,-.25)" aria-label="Posunout graf 4 zpět">←</button><button class="ana-button" onclick="analyticsPan(3,.25)" aria-label="Posunout graf 4 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(3)">Reset</button><button class="ana-button" onclick="analyticsExport(3)">PNG</button>
+          </div></details>
+        </article>
+        <article class="ana-card" id="anaCard4" data-analytics-card="4">
+          <header><h3>5. Baterie a teplota</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(4)" aria-expanded="false" aria-label="Zvětšit graf Baterie a teplota">Zvětšit</button></header>
+          <p class="ana-description">Napětí [V] a teplota vzduchu [°C] na společné časové ose.</p>
+          <div class="ana-plot"><canvas id="anaCanvas4" tabindex="0" role="img" aria-label="Baterie a teplota; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty4" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote4"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(4,.5)" aria-label="Přiblížit graf 5">+</button><button class="ana-button" onclick="analyticsZoom(4,2)" aria-label="Oddálit graf 5">−</button>
+            <button class="ana-button" onclick="analyticsPan(4,-.25)" aria-label="Posunout graf 5 zpět">←</button><button class="ana-button" onclick="analyticsPan(4,.25)" aria-label="Posunout graf 5 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(4)">Reset</button><button class="ana-button" onclick="analyticsExport(4)">PNG</button>
+          </div></details>
+        </article>
+        <article class="ana-card" id="anaCard5" data-analytics-card="5">
+          <header><h3>6. Změna napětí</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(5)" aria-expanded="false" aria-label="Zvětšit graf Změna napětí">Zvětšit</button></header>
+          <p class="ana-description">Napětí [V], pozorovaný sklon [mV/h] a denní min/max.</p>
+          <div class="ana-plot"><canvas id="anaCanvas5" tabindex="0" role="img" aria-label="Změna napětí; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty5" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote5"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(5,.5)" aria-label="Přiblížit graf 6">+</button><button class="ana-button" onclick="analyticsZoom(5,2)" aria-label="Oddálit graf 6">−</button>
+            <button class="ana-button" onclick="analyticsPan(5,-.25)" aria-label="Posunout graf 6 zpět">←</button><button class="ana-button" onclick="analyticsPan(5,.25)" aria-label="Posunout graf 6 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(5)">Reset</button><button class="ana-button" onclick="analyticsExport(5)">PNG</button>
+          </div></details>
+        </article>
+        <article class="ana-card" id="anaCard6" data-analytics-card="6">
+          <header><h3>7. Teplota × napětí</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(6)" aria-expanded="false" aria-label="Zvětšit graf Teplota × napětí">Zvětšit</button></header>
+          <p class="ana-description">Páry stejného záznamu [°C/V]; den/noc je odhad podle polohy.</p>
+          <div class="ana-plot"><canvas id="anaCanvas6" tabindex="0" role="img" aria-label="Teplota × napětí; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty6" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote6"></p>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(6,.5)" aria-label="Přiblížit graf 7">+</button><button class="ana-button" onclick="analyticsZoom(6,2)" aria-label="Oddálit graf 7">−</button>
+            <button class="ana-button" onclick="analyticsPan(6,-.25)" aria-label="Posunout graf 7 zpět">←</button><button class="ana-button" onclick="analyticsPan(6,.25)" aria-label="Posunout graf 7 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(6)">Reset</button><button class="ana-button" onclick="analyticsExport(6)">PNG</button>
+          </div><label><input id="anaRegression" type="checkbox" onchange="analyticsRedraw()"> Zobrazit popisnou regresní přímku</label></details>
+        </article>
+        <article class="ana-card" id="anaCard7" data-analytics-card="7">
+          <header><h3>8. Porovnání stanic</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(7)" aria-expanded="false" aria-label="Zvětšit graf Porovnání stanic">Zvětšit</button></header>
+          <p class="ana-description">Původní teplotní měření na společné časové ose [°C].</p>
+          <div class="ana-plot"><canvas id="anaCanvas7" tabindex="0" role="img" aria-label="Porovnání stanic; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty7" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote7"></p>
+          <button class="ana-button" id="anaCompareLoad" onclick="analyticsLoadStations(true)">Načíst / obnovit ostatní stanice</button>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(7,.5)" aria-label="Přiblížit graf 8">+</button><button class="ana-button" onclick="analyticsZoom(7,2)" aria-label="Oddálit graf 8">−</button>
+            <button class="ana-button" onclick="analyticsPan(7,-.25)" aria-label="Posunout graf 8 zpět">←</button><button class="ana-button" onclick="analyticsPan(7,.25)" aria-label="Posunout graf 8 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(7)">Reset</button><button class="ana-button" onclick="analyticsExport(7)">PNG</button>
+          </div></details>
+        </article>
+        <article class="ana-card" id="anaCard8" data-analytics-card="8">
+          <header><h3>9. Hodinová heatmapa</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(8)" aria-expanded="false" aria-label="Zvětšit graf Hodinová heatmapa">Zvětšit</button></header>
+          <p class="ana-description">Úplné hodinové průměry; opakovaná místní hodina společně.</p>
+          <div class="ana-plot"><canvas id="anaCanvas8" tabindex="0" role="img" aria-label="Hodinová heatmapa; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
+          <p class="ana-empty" id="anaEmpty8" hidden>Pro vybrané období nejsou dostupná data.</p>
+          <p class="ana-note" id="anaNote8"></p>
+          <label for="anaHeatMetric">Barva <select id="anaHeatMetric" onchange="analyticsHeatChanged()"><option value="temp">Teplota [°C]</option><option value="hum">Vlhkost [%]</option></select></label>
+          <div class="ana-heat-legend" aria-hidden="true"></div><p class="ana-note" id="anaHeatLegend"></p>
+          <p class="ana-note" id="anaHeatDetail" aria-live="polite">Vyberte buňku dotykem nebo šipkami na grafu.</p>
+          <div class="ana-actions"><button class="ana-button" id="anaHeatPagePrev" onclick="analyticsHeatPage(-1)">Novější dny</button><button class="ana-button" id="anaHeatPageNext" onclick="analyticsHeatPage(1)">Starší dny</button></div>
+          <details><summary>Možnosti grafu</summary><div class="ana-actions">
+            <button class="ana-button" onclick="analyticsZoom(8,.5)" aria-label="Přiblížit graf 9">+</button><button class="ana-button" onclick="analyticsZoom(8,2)" aria-label="Oddálit graf 9">−</button>
+            <button class="ana-button" onclick="analyticsPan(8,-.25)" aria-label="Posunout graf 9 zpět">←</button><button class="ana-button" onclick="analyticsPan(8,.25)" aria-label="Posunout graf 9 vpřed">→</button>
+            <button class="ana-button" onclick="analyticsReset(8)">Reset</button><button class="ana-button" onclick="analyticsExport(8)">PNG</button>
+          </div></details>
+        </article>
+      </div>
+      <p class="ana-note">Časy jsou v zóně prohlížeče; CSV neobsahuje jednoznačnou zónu stanice. Grafické body se pro velké rozsahy redukují se zachováním extrémů; statistiky se počítají z úplných původních měření. Přetažení vodorovně posouvá čas, svislý pohyb nechává posun stránky. +/− a šipky ovládají graf s fokusem. Regrese ani napětí neurčují kapacitu baterie nebo příčinu změn.</p>
+    </section>
 
     <div class="tab-pane" id="tab-battery">
       <label for="batteryRange">Analyzovat:
@@ -2948,6 +3113,7 @@
     }
 
     function resetStationStore() {
+      analyticsStop(true);
       store.rows = [];
       store.fullLoaded = false;
       store._onFullLoad = [];
@@ -2962,8 +3128,8 @@
       updatePartialBadge();
     }
 
-    async function stationText(url, context, timeout = 30000) {
-      const response = await fetch(url, { signal: AbortSignal.any([context.signal, AbortSignal.timeout(timeout)]) });
+    async function stationText(url, context, timeout = 30000, extraSignal = null) {
+      const response = await fetch(url, { signal: AbortSignal.any([context.signal, AbortSignal.timeout(timeout), ...(extraSignal ? [extraSignal] : [])]) });
       if (!isCurrentStation(context)) return null;
       if (!response.ok) throw new Error("HTTP " + response.status);
       const text = await response.text();
@@ -3010,6 +3176,7 @@
       document.body.className = (t === "darkblue") ? "" : "theme-" + t;
       updateThemeBtns();
       closeAllDD();
+      if (analyticsActive()) analyticsRedraw();
     }
     function updateThemeBtns() {
       document.querySelectorAll(".theme-btn").forEach(b => b.classList.toggle("active", b.dataset.theme === theme));
@@ -3920,6 +4087,18 @@
       // Uvolníme Main Thread, aby se status "Zpracovávám data" stihl vykreslit
       await new Promise(resolve => setTimeout(resolve, 10));
       if (!isCurrentStation(context)) return false;
+      const parsed = parseHistoryCSV(text);
+      if (!parsed.length) {
+        setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
+        return false;
+      }
+      store.rows = parsed;
+      invalidateDerivedData();
+      refreshUI();
+      return true;
+    }
+
+    function parseHistoryCSV(text) {
       const lines = parseCSV(text).filter(row => row.some(value => value.trim() !== ""));
 
       // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
@@ -3955,15 +4134,8 @@
           note: noteRaw || null
         });
       }
-      if (!parsed.length) {
-        setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
-        return false;
-      }
       parsed.sort((a, b) => b.ts - a.ts);
-      store.rows = parsed;
-      invalidateDerivedData();
-      refreshUI();
-      return true;
+      return parsed;
     }
 
     function stripQ(s = "") { return String(s).replace(/^["'\s]+|["'\s]+$/g, ""); }
@@ -4026,6 +4198,7 @@
       if (tab === "overview") buildTempOverview();
       if (tab === "yearstats") buildYearlyStats();
       if (tab === "battery") buildBatteryAnalysis();
+      if (tab === "analytics") buildAnalytics();
       if (tab === "hist") updateHistoryTable();
       if (tab === "notes") buildNotesTable();
       
@@ -4572,6 +4745,7 @@
     let explorerRangeCache = null;
 
     function invalidateDerivedData() {
+      analyticsInvalidate();
       aggregateCache = null;
       clearTemperatureRecord();
       el("tempRecord").open = false;
@@ -5435,7 +5609,7 @@
       if (!pane) return;
       const charts = [chart24, chartRain, chartVoltage, chartMonthly, chartYearly,
         chartExplorer, chartCompare, chartOverview];
-      charts.push(chartBatteryTime, chartBatteryXY);
+      charts.push(chartBatteryTime, chartBatteryXY, ...analyticsCharts.values());
       charts.filter(Boolean).forEach(ch => {
         try {
           // Pouze pokud canvas leží v aktivním pane
@@ -5446,12 +5620,14 @@
 
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
+        if (btn.dataset.tab !== "analytics") analyticsStop();
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
         document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
         btn.classList.add("active");
         el("tab-" + btn.dataset.tab).classList.add("active");
         const tab = btn.dataset.tab;
-        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer", "battery"];
+        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer", "battery", "analytics"];
+        if (tab === "analytics") { tabDirtyState[tab] = false; buildAnalytics(); return; }
         if (heavyTabs.includes(tab) && !store.fullLoaded) {
           el("yearStatsContent") && (el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Načítám celou historii…</p>');
           ensureFullData(() => {
@@ -6152,6 +6328,453 @@
     }
     if (motionPreference?.addEventListener) motionPreference.addEventListener("change", applyMotionPreference);
     else motionPreference?.addListener?.(applyMotionPreference);
+
+    /* ANALYTICAL WORKSPACE — shared raw history, bounded visual models. */
+    const analyticsCharts = new Map(), analyticsStationCache = new Map();
+    const analyticsState = { model: null, range: '7', domain: null, views: new Map(), visible: new Set(),
+      observer: null, heatObserver:null, abort: null, epoch: 0, loading: null, requested: new Set(), errors: new Map(),
+      all: false, expanded: null, heatPage: 0, heat: null, cursor: null, xy: null, drawing: false };
+    const ANA_COLORS = { temp:'#e74c3c', hum:'#2980b9', pressure:'#16a085', voltage:'#9b59b6', dew:'#e67e22', rain:'#3498db' };
+    const ANA_CACHE_LIMIT = 16 * 1024 * 1024;
+
+    function analyticsActive() { return document.querySelector('.tab-btn.active')?.dataset.tab === 'analytics'; }
+    function analyticsRange(rows, range, fromText, toText) {
+      const latest = rows.length ? +rows[0].ts : Date.now();
+      if (range === 'custom') {
+        const a = localDayBounds(fromText), b = localDayBounds(toText);
+        return a && b && a.from <= b.to ? {from:a.from,to:b.to} : null;
+      }
+      if (range === 'all') return {from:rows.length ? +rows[rows.length-1].ts : latest-86400000,to:latest};
+      const days = range === '24h' ? 1 : Number(range);
+      return [1,7,30,90,365].includes(days) ? {from:latest-days*86400000,to:latest} : null;
+    }
+    function analyticsSummarize(rows) {
+      const stats = Object.fromEntries(['temp','hum','pressure','voltage'].map(k=>[k,{count:0,sum:0,min:null,max:null,avg:null}]));
+      const days = new Map(), rateBins = Array.from({length:198},()=>({min:null,max:null}));
+      const pair = {count:0,meanT:0,meanV:0,m2T:0,m2V:0,covariance:0,minT:null,maxT:null,minV:null,maxV:null};
+      const statKeys=Object.keys(stats),dayFields=[['voltageMin','voltage','min'],['voltageMax','voltage','max'],['rainMax','rain','max'],['incMax','rainInc','max']];
+      let count=0, previous=null, rateCount=0, gapCount=0,dayNumber=null,d;
+      for(let i=0;i<rows.length;i++) {
+        const r=rows[i],time=+r.ts;
+        if(!Number.isFinite(time)) { previous=null; continue; }
+        count++;
+        for(const key of statKeys) {
+          const v=r[key],s=stats[key]; if(!Number.isFinite(v)) continue;
+          s.count++;s.sum+=v;s.min=s.min===null?v:Math.min(s.min,v);s.max=s.max===null?v:Math.max(s.max,v);
+        }
+        const number=r.ts.getFullYear()*10000+r.ts.getMonth()*100+r.ts.getDate();
+        if(number!==dayNumber){const key=localDateKey(r.ts);if(!days.has(key))days.set(key,{key,time:localDayBounds(key).from,min:null,max:null,temp:null,count:0,sum:0,total:0,
+          voltageMin:null,voltageMax:null,rainMax:null,incMax:null,voltageCount:0,rainCount:0,incCount:0});d=days.get(key);dayNumber=number;}
+        d.total++;if(Number.isFinite(r.voltage))d.voltageCount++;if(Number.isFinite(r.rain))d.rainCount++;if(Number.isFinite(r.rainInc))d.incCount++;
+        if(Number.isFinite(r.temp)) {d.count++;d.sum+=r.temp;d.min=d.min===null?r.temp:Math.min(d.min,r.temp);d.max=d.max===null?r.temp:Math.max(d.max,r.temp);}
+        for(const [field,metric,method] of dayFields) {
+          if(Number.isFinite(r[metric]))d[field]=d[field]===null?r[metric]:Math[method](d[field],r[metric]);
+        }
+        if(Number.isFinite(r.temp)&&Number.isFinite(r.voltage)) {
+          pair.minT=pair.minT===null?r.temp:Math.min(pair.minT,r.temp);pair.maxT=pair.maxT===null?r.temp:Math.max(pair.maxT,r.temp);pair.minV=pair.minV===null?r.voltage:Math.min(pair.minV,r.voltage);pair.maxV=pair.maxV===null?r.voltage:Math.max(pair.maxV,r.voltage);
+          const n=++pair.count,dt=r.temp-pair.meanT,dv=r.voltage-pair.meanV;
+          pair.meanT+=dt/n;pair.meanV+=dv/n;pair.m2T+=dt*(r.temp-pair.meanT);pair.m2V+=dv*(r.voltage-pair.meanV);pair.covariance+=dt*(r.voltage-pair.meanV);
+        }
+        if(previous) {
+          const elapsed=time-(+previous.ts);
+          if(elapsed>10800000)gapCount++;
+          if(elapsed>0&&elapsed<=10800000&&Number.isFinite(previous.voltage)&&Number.isFinite(r.voltage)) {
+            const y=(r.voltage-previous.voltage)*3600000000/elapsed;
+            if(Number.isFinite(y)) {
+              rateCount++;const p={x:time,y,from:+previous.ts},b=rateBins[Math.min(197,Math.floor(i*198/Math.max(1,rows.length)))];
+              if(!b.min||y<b.min.y)b.min=p;if(!b.max||y>b.max.y)b.max=p;
+            }
+          }
+        }
+        previous=r;
+      }
+      for(const s of Object.values(stats)){s.avg=s.count?s.sum/s.count:null;delete s.sum;}
+      for(const d of days.values())d.temp=d.count?d.sum/d.count:null;
+      Object.assign(pair,pairRelationship(pair));
+      const rates=[...new Set(rateBins.flatMap(b=>[b.min,b.max]).filter(Boolean))].sort((a,b)=>a.x-b.x);
+      return {count,stats,days:[...days.values()],pair,rates,rateCount,gapCount};
+    }
+    function analyticsCompact(rows) {
+      let count=0;for(const r of rows)if(Number.isFinite(+r.ts)&&Number.isFinite(r.temp))count++;
+      const times=new Float64Array(count),temps=new Float64Array(count);let i=0;
+      for(const r of rows)if(Number.isFinite(+r.ts)&&Number.isFinite(r.temp)){times[i]=+r.ts;temps[i++]=r.temp;}
+      return {times,temps,count,bytes:times.byteLength+temps.byteLength};
+    }
+    function analyticsMatch(na,getA,nb,getB,tolerance=600000) {
+      let j=0,count=0,sum=0,min=null,max=null,maxOffsetMs=0;
+      if(!Number.isFinite(tolerance)||tolerance<0)tolerance=0;
+      // Binary boundaries avoid quadratic scans of repeated timestamps. Equal
+      // distance chooses the earlier timestamp, then its first unused record.
+      const lower=(time,lo)=>{let hi=nb;while(lo<hi){const mid=(lo+hi)>>>1;if(+getB(mid).ts<time)lo=mid+1;else hi=mid;}return lo;};
+      for(let i=0;i<na;i++) {
+        const a=getA(i),at=+a.ts;
+        let candidate=null;
+        if(j<nb&&+getB(j).ts===at)candidate=j; // Common aligned exports: O(1) per pair.
+        else{
+          j=lower(at-tolerance,j);if(j>=nb)break;
+          const right=lower(at,j);candidate=right<nb?right:null;
+          if(right>j){const left=lower(+getB(right-1).ts,j);if(candidate===null||at-(+getB(left).ts)<=Math.abs((+getB(candidate).ts)-at))candidate=left;}
+          if(candidate===null)continue;
+        }
+        const b=getB(candidate),offset=Math.abs(+b.ts-at);
+        if(offset>tolerance)continue;
+        const delta=a.temp-b.temp;if(!Number.isFinite(delta))continue;
+        count++;sum+=delta;min=min===null?delta:Math.min(min,delta);max=max===null?delta:Math.max(max,delta);maxOffsetMs=Math.max(maxOffsetMs,offset);
+        j=candidate+1;
+      }
+      return {count,unmatchedA:na-count,unmatchedB:nb-count,maxOffsetMs,deltaAvg:count?sum/count:null,deltaMin:min,deltaMax:max};
+    }
+    function analyticsAlign(a,b,toleranceMs=600000) {
+      const valid=rows=>rows.filter(r=>Number.isFinite(+r.ts)&&Number.isFinite(r.temp));
+      const av=valid(a),bv=valid(b);
+      return analyticsMatch(av.length,i=>av[i],bv.length,i=>bv[i],toleranceMs);
+    }
+    function analyticsInvalidate() { analyticsState.model=null;analyticsState.heat=null; }
+    function analyticsStop(reset=false) {
+      analyticsState.epoch++;analyticsState.abort?.abort();analyticsState.abort=null;analyticsState.loading=null;
+      analyticsState.observer?.disconnect();analyticsState.observer=null;analyticsState.heatObserver?.disconnect();analyticsState.heatObserver=null;
+      for(const chart of analyticsCharts.values())chart.destroy?.();analyticsCharts.clear();
+      if(analyticsState.heat){const c=el('anaCanvas8');c.getContext('2d').clearRect?.(0,0,c.width,c.height);}
+      analyticsState.visible.clear();analyticsState.model=null;analyticsState.heat=null;analyticsState.cursor=null;analyticsState.requested.clear();
+      if(reset){analyticsState.views.clear();analyticsState.domain=null;analyticsState.xy=null;analyticsState.heatPage=0;analyticsState.errors.clear();}
+    }
+    function analyticsChooseStation() {
+      const value=el('anaStation').value;if(!['0','1','2','all'].includes(value))return;analyticsState.all=value==='all';
+      if(value!=='all'&&Number(value)!==activeIdx){switchStation(Number(value));return;}
+      if(value==='all')analyticsLoadStations();buildAnalytics();
+    }
+    function analyticsControlsChanged() {
+      analyticsState.range=el('anaRange').value||'7';
+      const custom=analyticsState.range==='custom';el('anaFrom').disabled=!custom;el('anaTo').disabled=!custom;
+      analyticsState.views.clear();analyticsState.xy=null;analyticsState.heatPage=0;analyticsInvalidate();buildAnalytics();
+    }
+    function analyticsDomain(id) { return el('anaSync').checked?analyticsState.domain:(analyticsState.views.get(id)||analyticsState.domain); }
+    function analyticsSyncChanged(){analyticsState.views.clear();analyticsState.domain=analyticsState.base;analyticsState.xy=null;analyticsInvalidate();analyticsRedraw();}
+    function analyticsSetDomain(id,next) {
+      const base=analyticsState.base;if(!base)return;
+      const width=Math.min(base.to-base.from,Math.max(1000,next.to-next.from));
+      const from=Math.max(base.from,Math.min(base.to-width,next.from));next={from,to:from+width};
+      if(el('anaSync').checked)analyticsState.domain=next;else analyticsState.views.set(id,next);
+      analyticsInvalidate();analyticsRedraw();
+    }
+    function analyticsZoom(id,factor) {
+      if(id===6&&analyticsCharts.has(6)) {
+        const c=analyticsCharts.get(6),x=c.scales.x,y=c.scales.y;
+        const cx=(x.min+x.max)/2,cy=(y.min+y.max)/2;
+        analyticsState.xy={x:{min:cx-(x.max-x.min)*factor/2,max:cx+(x.max-x.min)*factor/2},y:{min:cy-(y.max-y.min)*factor/2,max:cy+(y.max-y.min)*factor/2}};
+        analyticsDrawCard(6);return;
+      }
+      const d=analyticsDomain(id);if(!d)return;const center=(d.from+d.to)/2,half=(d.to-d.from)*factor/2;
+      analyticsSetDomain(id,{from:center-half,to:center+half});
+    }
+    function analyticsPan(id,fraction) {
+      if(id===6&&analyticsState.xy){const x=analyticsState.xy.x,w=x.max-x.min;analyticsState.xy.x={min:x.min+w*fraction,max:x.max+w*fraction};analyticsDrawCard(6);return;}
+      const d=analyticsDomain(id);if(d)analyticsSetDomain(id,{from:d.from+(d.to-d.from)*fraction,to:d.to+(d.to-d.from)*fraction});
+    }
+    function analyticsReset(id) {
+      analyticsState.xy=null;
+      if(id===6){analyticsDrawCard(6);return;}
+      if(id===undefined){analyticsState.domain=analyticsState.base;analyticsState.views.clear();}
+      else if(el('anaSync').checked)analyticsState.domain=analyticsState.base;else analyticsState.views.delete(id);
+      analyticsInvalidate();analyticsRedraw();
+    }
+    function analyticsExpand(id) {
+      const close=analyticsState.expanded===id;
+      for(let i=0;i<9;i++) {const card=el('anaCard'+i);card.classList.toggle('ana-expanded',!close&&i===id);card.querySelector('[data-ana-action="expand"]')?.setAttribute('aria-expanded',String(!close&&i===id));}
+      analyticsState.expanded=close?null:id;analyticsEnsureCard(id);
+      setTimeout(()=>{analyticsCharts.get(id)?.resize();if(id===8)analyticsHeatmap();},60);
+    }
+    function analyticsExport(id) {
+      const canvas=el('anaCanvas'+id),out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height+(id===8?75:55);
+      const ctx=out.getContext('2d');ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--bg2');ctx.fillRect(0,0,out.width,out.height);
+      ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--text');ctx.font='12px sans-serif';
+      ctx.fillText((stations[activeIdx]?.name||'Stanice')+' · '+el('anaCard'+id).querySelector('h3').textContent,8,18);
+      const d=analyticsDomain(id);if(d)ctx.fillText(fmtDT(new Date(d.from))+' – '+fmtDT(new Date(d.to)),8,37);
+      if(id===8)ctx.fillText(el('anaHeatLegend').textContent,8,57);
+      ctx.drawImage(canvas,0,id===8?75:55);const link=document.createElement('a');link.download='meteo-graf-'+(id+1)+'.png';link.href=out.toDataURL('image/png');link.click();
+    }
+    function analyticsBuildModel(domain) {
+      const {start,end}=historyRangeBounds(store.rows,domain.from,domain.to),rows=store.rows.slice(start,end).reverse();
+      const summary=analyticsSummarize(rows),getters=['temp','hum','pressure','voltage','rain','rainInc'].map(k=>r=>r[k]);getters.push(r=>dewPoint(r.temp,r.hum));
+      const gaps=new Map();
+      for(let i=1;i<rows.length;i++)if(+rows[i].ts-(+rows[i-1].ts)>10800000){const bucket=Math.min(148,Math.floor(i*149/rows.length));if(!gaps.has(bucket))gaps.set(bucket,{ts:new Date(+rows[i-1].ts+1),anaGap:true});}
+      const samples=[...sampleExtrema(rows,getters,450),...gaps.values()].sort((a,b)=>a.ts-b.ts);
+      // XY representatives from two-dimensional cells, preserving actual source pairs.
+      const pair=summary.pair,cells=new Map(),{minT,maxT,minV,maxV}=pair;
+      const extremes=[];let loT,hiT,loV,hiV;
+      for(const r of rows)if(Number.isFinite(r.temp)&&Number.isFinite(r.voltage)){
+        const x=Math.min(23,Math.floor((r.temp-minT)/(maxT-minT||1)*24)),y=Math.min(23,Math.floor((r.voltage-minV)/(maxV-minV||1)*24));if(!cells.has(x+':'+y))cells.set(x+':'+y,r);
+        if(!loT||r.temp<loT.temp)loT=r;if(!hiT||r.temp>hiT.temp)hiT=r;if(!loV||r.voltage<loV.voltage)loV=r;if(!hiV||r.voltage>hiV.voltage)hiV=r;
+      }
+      extremes.push(loT,hiT,loV,hiV);
+      const xy=[...new Set([...cells.values(),...extremes].filter(Boolean))].map(r=>({x:r.temp,y:r.voltage,ts:+r.ts}));
+      return {source:store.rows,length:store.rows.length,from:domain.from,to:domain.to,rows,summary,samples,xy,pair,minT,maxT};
+    }
+    function analyticsModel(id) {
+      const d=analyticsDomain(id);if(!d)return null;
+      const current=analyticsState.model;
+      if(current&&current.source===store.rows&&current.length===store.rows.length&&current.from===d.from&&current.to===d.to)return current;
+      const m=analyticsBuildModel(d);
+      // One common model; independent card windows are transient, never an unbounded cache.
+      if(el('anaSync').checked||!analyticsState.model)analyticsState.model=m;
+      return m;
+    }
+    function analyticsMoving(rows,metric) {
+      const points=[],queue=[];let sum=0,prev=null;
+      for(const r of rows){const x=+r.ts,v=r[metric];if(!Number.isFinite(v)||(prev!==null&&x-prev>10800000)){queue.length=0;sum=0;}
+        if(Number.isFinite(v)){queue.push(v);sum+=v;if(queue.length>5)sum-=queue.shift();}
+        points.push({x,y:queue.length===5?sum/5:null});prev=x;}
+      return sampleExtrema(points,[p=>p.y],600);
+    }
+    function analyticsPalette(){const c=getComputedStyle(document.body);return {text:c.getPropertyValue('--text').trim(),grid:c.getPropertyValue('--border').trim()};}
+    const analyticsCursorPlugin={id:'analyticsCursor',afterEvent(chart,args){
+      if(!el('anaSync').checked||chart.$anaId===6||args.event.type!=='mousemove'||!args.inChartArea)return;
+      analyticsState.cursor=chart.scales.x.getValueForPixel(args.event.x);
+      if(analyticsState.drawing)return;analyticsState.drawing=true;
+      requestAnimationFrame(()=>{analyticsState.drawing=false;if(analyticsActive())for(const c of analyticsCharts.values())if(c!==chart&&analyticsState.visible.has(c.$anaId))c.draw();});
+    },afterDraw(chart){
+      const value=analyticsState.cursor;if(value===null||chart.$anaId===6||!el('anaSync').checked)return;
+      const x=chart.scales.x.getPixelForValue(value),a=chart.chartArea;if(!a||x<a.left||x>a.right)return;
+      const ctx=chart.ctx;ctx.save();ctx.strokeStyle=analyticsPalette().text;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(x,a.top);ctx.lineTo(x,a.bottom);ctx.stroke();ctx.restore();
+    }};
+    function analyticsSeries(label,unit,data,color,axis='y',extra={}) {return {label:label+' ['+unit+']',unit,data,borderColor:color,backgroundColor:color+'88',pointRadius:1,pointHitRadius:10,borderWidth:1.5,tension:0,spanGaps:false,yAxisID:axis,...extra};}
+    function analyticsPoints(samples,fn){return samples.map(r=>({x:+r.ts,y:Number.isFinite(fn(r))?fn(r):null}));}
+    function analyticsDrawCard(id) {
+      if(!analyticsActive()||!analyticsState.visible.has(id))return;
+      if(id===8){analyticsHeatmap();return;}
+      const m=analyticsModel(id);if(!m)return;
+      const d=analyticsDomain(id),s=m.summary,axis=(title,position='left')=>({type:'linear',position,title:{display:true,text:title}});
+      const t=r=>r.temp,v=r=>r.voltage,h=r=>r.hum,p=r=>r.pressure;
+      const dayPoints=field=>sampleExtrema(s.days,[r=>r[field]],350).map(r=>({x:Math.max(d.from,Math.min(d.to,r.time+12*3600000)),y:r[field],day:r.key,count:field.startsWith('voltage')?r.voltageCount:field==='rainMax'?r.rainCount:field==='incMax'?r.incCount:r.count}));
+      let datasets=[],axes={y:axis('°C')},note='',hasData=false;
+      if(id===0){datasets=[analyticsSeries('Teplota','°C',analyticsPoints(m.samples,t),ANA_COLORS.temp),analyticsSeries('Denní minimum','°C',dayPoints('min'),'#2980b9','y',{borderDash:[4,3]}),analyticsSeries('Denní maximum','°C',dayPoints('max'),'#e67e22','y',{borderDash:[4,3]})];
+        if(el('anaSmooth0').checked)datasets.push(analyticsSeries('Průměr 5 měření','°C',m.smoothTemp||(m.smoothTemp=analyticsMoving(m.rows,'temp')),'#f1c40f'));
+        note=`${s.stats.temp.count} teplot • min ${fmt(s.stats.temp.min,2)} / max ${fmt(s.stats.temp.max,2)} °C. Denní extrémy platí pro vybraný výřez.`;}
+      if(id===1){axes={y:axis('°C'),rh:{...axis('%','right'),min:0,max:100,grid:{drawOnChartArea:false}}};datasets=[analyticsSeries('Teplota','°C',analyticsPoints(m.samples,t),ANA_COLORS.temp),analyticsSeries('Rosný bod (výpočet)','°C',analyticsPoints(m.samples,r=>dewPoint(r.temp,r.hum)),ANA_COLORS.dew),analyticsSeries('Relativní vlhkost','%',analyticsPoints(m.samples,h),ANA_COLORS.hum,'rh')];note='Rosný bod se počítá pouze z T/RH stejného řádku; RH≤0 nebo >100 % má výsledek nedostupný.';}
+      if(id===2){axes={y:axis('hPa')};datasets=[analyticsSeries('Tlak','hPa',analyticsPoints(m.samples,p),ANA_COLORS.pressure)];if(el('anaSmooth2').checked)datasets.push(analyticsSeries('Průměr 5 měření','hPa',m.smoothPressure||(m.smoothPressure=analyticsMoving(m.rows,'pressure')),'#e67e22'));
+        const a=m.rows[0]?.pressure,b=m.rows.at(-1)?.pressure;note=Number.isFinite(a)&&Number.isFinite(b)?`Krajní změna ${fmt(b-a,2)} hPa (${b>a?'růst':b<a?'pokles':'beze změny'}), bez náhrady chybějících konců.`:'Rozdíl není dostupný: chybí původní krajní tlak.';}
+      if(id===3){axes={y:axis('mm')};datasets=[analyticsSeries('Pozorované denní maximum čítače','mm',dayPoints('rainMax'),ANA_COLORS.rain,'y',{type:'bar',pointRadius:0}),analyticsSeries('Maximum přírůstku jednoho záznamu','mm',dayPoints('incMax'),'#16a085','y',{type:'bar',pointRadius:0}),analyticsSeries('Původní čítač','mm',analyticsPoints(m.samples,r=>r.rain),'#9b59b6')];note='Nejde o ověřené denní/hodinové úhrny ani intenzitu. Reset, význam rain/rainInc a interval nejsou potvrzené; čítač může klesnout.';}
+      if(id===4){axes={y:axis('V'),temp:{...axis('°C','right'),grid:{drawOnChartArea:false}}};datasets=[analyticsSeries('Napětí','V',analyticsPoints(m.samples,v),ANA_COLORS.voltage),analyticsSeries('Teplota vzduchu','°C',analyticsPoints(m.samples,t),ANA_COLORS.temp,'temp')];note=s.stats.voltage.count?`${s.stats.voltage.count} hodnot napětí. Teplota vzduchu není teplota článku. Řady lze skrýt legendou.`:'Napětí není v tomto období dostupné; zobrazena je pouze případná teplota.';}
+      if(id===5){axes={y:axis('V'),rate:{...axis('mV/h','right'),grid:{drawOnChartArea:false}}};datasets=[analyticsSeries('Napětí','V',analyticsPoints(m.samples,v),ANA_COLORS.voltage),analyticsSeries('Pozorovaný sklon','mV/h',s.rates,'#16a085','rate',{showLine:false,pointRadius:2}),analyticsSeries('Denní minimum','V',dayPoints('voltageMin'),'#2980b9','y',{borderDash:[4,3]}),analyticsSeries('Denní maximum','V',dayPoints('voltageMax'),'#e67e22','y',{borderDash:[4,3]})];
+        note=`${s.rateCount} původních sklonů mezi sousedními záznamy (0<Δt≤3 h). Růst může souviset s nabíjením, teplotou či zátěží; mV/h není proud ani stav nabití. `+(m.nightText||(m.nightText=analyticsNight(m.rows)));}
+      if(id===6){axes={y:axis('V')};const lat=Number(CFG.lat),lon=Number(CFG.lon),known=Number.isFinite(lat)&&Math.abs(lat)<=90&&Number.isFinite(lon)&&Math.abs(lon)<=180;
+        const day=[],night=[];for(const point of m.xy)(!known||calcSolarElevation(lat,lon,new Date(point.ts))>0?day:night).push(point);
+        datasets=[analyticsSeries(known?'Den (odhad)':'Původní páry','V',day,'#e67e22','y',{showLine:false,pointRadius:3}),analyticsSeries('Noc (odhad)','V',night,'#8e44ad','y',{showLine:false,pointRadius:3})];
+        if(el('anaRegression').checked&&m.pair.r!==null){const a=m.minT,b=m.maxT;datasets.push(analyticsSeries('Popisná regrese','V',[{x:a,y:m.pair.meanV+m.pair.slope*(a-m.pair.meanT)},{x:b,y:m.pair.meanV+m.pair.slope*(b-m.pair.meanT)}],'#16a085','y',{pointRadius:0,borderDash:[5,3]}));}
+        note=`${m.pair.count} úplných párů • r = ${fmt(m.pair.r,3)} • sklon ${fmt(m.pair.slope===null?null:m.pair.slope*1000,3)} mV/°C. Korelace neprokazuje příčinu; vzorky nejsou nezávislé. r/sklon nedostupné při n<3 nebo konstantní T/V. Body jsou reprezentanti, nikoli mapa hustoty. Den/noc podle nastavené polohy.`;}
+      if(id===7){const result=analyticsComparison(d,m);datasets=result.datasets;note=result.note;axes={y:axis('°C')};}
+      hasData=datasets.some(ds=>ds.data.some(point=>Number.isFinite(point.y)));
+      el('anaEmpty'+id).hidden=hasData;setNodeText(el('anaNote'+id),note);
+      const palette=analyticsPalette();
+      for(const scale of Object.values(axes)){scale.ticks={color:palette.text,maxTicksLimit:6,callback:value=>fmt(Number(value),scale.title.text==='V'||scale.title.text==='mV/h'?3:scale.title.text==='%'?0:1)};scale.grid={color:palette.grid,...scale.grid};scale.title.color=palette.text;}
+      const x=id===6?{type:'linear',title:{display:true,text:'Teplota [°C]',color:palette.text},...analyticsState.xy?.x}:{type:'linear',min:d.from,max:Math.max(d.from+1,d.to),ticks:{callback:value=>fmtDT(new Date(value)),maxTicksLimit:4,maxRotation:0},title:{display:true,text:'Čas (zóna prohlížeče)',color:palette.text}};
+      x.ticks={...x.ticks,color:palette.text};x.grid={color:palette.grid};if(id===6&&analyticsState.xy)Object.assign(axes.y,analyticsState.xy.y);
+      const options={responsive:true,maintainAspectRatio:false,animation:false,parsing:id===6,normalized:false,interaction:{mode:'nearest',intersect:false},
+        scales:{x,...axes},plugins:{legend:{labels:{color:palette.text,boxWidth:10,font:{size:10}}},tooltip:{callbacks:{
+          title:items=>{const point=items[0]?.raw;if(!point)return '';if(point.day)return 'Den '+point.day+' · '+point.count+' hodnot pro tento souhrn';if(id===6)return point.ts?intervalTimestamp(new Date(point.ts)):'Regresní přímka';return (point.from?intervalTimestamp(new Date(point.from))+' → ':'')+intervalTimestamp(new Date(point.x));},
+          label:ctx=>`${ctx.dataset.label}: ${Number.isFinite(ctx.raw.y)?String(ctx.raw.y):'–'}`
+        }}}};
+      let chart=analyticsCharts.get(id);
+      if(!chart){chart=new Chart(el('anaCanvas'+id).getContext('2d'),{type:id===6?'scatter':'line',data:{datasets},options,plugins:[analyticsCursorPlugin]});chart.$anaId=id;analyticsCharts.set(id,chart);}
+      else{const hidden=chart.data.datasets.map((ds,i)=>chart.isDatasetVisible(i)?null:ds.label);chart.data.datasets=datasets;chart.options=options;datasets.forEach((ds,i)=>{if(hidden.includes(ds.label))chart.setDatasetVisibility(i,false);});chart.update('none');}
+    }
+    function analyticsNight(rows) {
+      const lat=Number(CFG.lat),lon=Number(CFG.lon);if(!rows.length||!Number.isFinite(lat)||!Number.isFinite(lon))return 'Noční úsek není dostupný.';
+      const last=rows.at(-1).ts,day=new Date(last.getFullYear(),last.getMonth(),last.getDate());let rise=calcSunTimes(lat,lon,day).rise;
+      if(rise&&rise>last){day.setDate(day.getDate()-1);rise=calcSunTimes(lat,lon,day).rise;}
+      day.setDate(day.getDate()-1);const sunset=calcSunTimes(lat,lon,day).set;
+      if(!rise||!sunset||+rise>+last)return 'Poslední dokončená noc není v rozsahu doložená.';
+      let first=null,end=null,previous=null,broken=false;
+      for(const row of rows){if(row.ts<sunset||row.ts>rise)continue;if(!Number.isFinite(row.voltage)){broken=true;continue;}if(previous&&+row.ts-+previous.ts>10800000)broken=true;if(!first)first=row;end=row;previous=row;}
+      if(!first||!end||+end.ts<=+first.ts||broken)return 'Pro noční změnu chybí souvislý pozorovaný úsek (mezery >3 h nebo chybějící V).';
+      return `Pozorovaný úsek poslední dokončené noci: ${fmt((end.voltage-first.voltage)*1000,2)} mV za ${fmt((end.ts-first.ts)/3600000,2)} h; ${fmtTime(first.ts)}–${fmtTime(end.ts)}. Nepokrývá nutně celou noc.`;
+    }
+    function analyticsColumnBounds(columns,from,to) {
+      const boundary=(value,inclusive)=>{let lo=0,hi=columns.count;while(lo<hi){const mid=(lo+hi)>>>1,t=columns.times[mid];if(inclusive?t>=value:t>value)lo=mid+1;else hi=mid;}return lo;};
+      return {start:boundary(to,false),end:boundary(from,true)};
+    }
+    function analyticsColumnPoints(columns,from,to) {
+      const {start,end}=analyticsColumnBounds(columns,from,to),indices=new Set();
+      if(start<end){indices.add(start);indices.add(end-1);}
+      const width=Math.max(1,Math.ceil((end-start)/298));
+      for(let i=start;i<end;i+=width){let min=i,max=i;for(let j=i+1;j<Math.min(end,i+width);j++){if(columns.temps[j]<columns.temps[min])min=j;if(columns.temps[j]>columns.temps[max])max=j;}indices.add(min);indices.add(max);}
+      return [...indices].sort((a,b)=>b-a).map(i=>({x:columns.times[i],y:columns.temps[i]}));
+    }
+    function analyticsSourceSignature(index) {const s=stations[index];return JSON.stringify([s.sheetId,s.sheetName,s.source,s.cfgFile]);}
+    function analyticsCached(index) {
+      const entry=analyticsStationCache.get(index);
+      if(entry&&entry.preferences===analyticsSourceSignature(index)){analyticsStationCache.delete(index);analyticsStationCache.set(index,entry);return entry;}
+      if(entry)analyticsStationCache.delete(index);return null;
+    }
+    async function analyticsLoadStations(force=false) {
+      if(!analyticsActive())return;
+      if(analyticsState.loading)return analyticsState.loading;
+      const context=stationContext(),epoch=analyticsState.epoch;
+      analyticsState.abort?.abort();const controller=new AbortController();analyticsState.abort=controller;
+      const current=()=>analyticsActive()&&isCurrentStation(context)&&epoch===analyticsState.epoch&&!controller.signal.aborted;
+      const indices=[0,1,2].filter(i=>i!==activeIdx&&(force||!analyticsCached(i))&&(!analyticsState.requested.has(i)||force));
+      if(!indices.length)return;
+      for(const i of indices){analyticsState.requested.add(i);analyticsState.errors.delete(i);}
+      const task=async index=>{
+        const preferences=analyticsSourceSignature(index);let cfg={...stations[index]};
+        try {
+          const configText=await stationText(cfgFileName(index),context,10000,controller.signal);if(!current())return;
+          const obj=JSON.parse(configText.replace(/^\uFEFF/,''));
+          if(obj.stationIdx!==undefined&&obj.stationIdx!==index)throw new Error('Konfigurace patří jiné stanici');
+          cfg={...cfg,...obj};
+          if(cfg.source==='mqtt')throw new Error('Stanice nemá nakonfigurovanou historii Sheets');
+          if(!/^[A-Za-z0-9_-]+$/.test(cfg.sheetId||''))throw new Error('Chybí platný veřejný zdroj Sheets');
+          const url=`https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(cfg.sheetName||'List1')}`;
+          const urls=location.protocol==='file:'?['https://corsproxy.io/?url='+encodeURIComponent(url)]:[url,'https://corsproxy.io/?url='+encodeURIComponent(url)];
+          let parsed,lastError;
+          for(const address of urls){
+            try{const text=await stationText(address,context,30000,controller.signal);if(!current())return;
+              if(text.length>64*1024*1024)throw new Error('Historie přesahuje limit 64 MiB CSV');
+              parsed=parseHistoryCSV(text);if(!parsed.length)throw new Error('Zdroj neobsahuje platnou historii');break;
+            }catch(error){lastError=error;if(!current())return;}
+          }
+          if(!parsed)throw lastError||new Error('Historie není dostupná');
+          const columns=analyticsCompact(parsed);parsed=null;
+          if(columns.bytes>ANA_CACHE_LIMIT/2)throw new Error('Teplotní historie přesahuje limit 8 MiB této stanice');
+          if(!current()||preferences!==analyticsSourceSignature(index))return;
+          analyticsStationCache.delete(index);
+          analyticsStationCache.set(index,{...columns,preferences,name:cfg.name||stations[index].name,loadedAt:Date.now(),source:cfg.sheetId+'/'+cfg.sheetName});
+          let bytes=0;for(const c of analyticsStationCache.values())bytes+=c.bytes;
+          while(bytes>ANA_CACHE_LIMIT){const key=analyticsStationCache.keys().next().value;bytes-=analyticsStationCache.get(key).bytes;analyticsStationCache.delete(key);}
+        }catch(error){if(current())analyticsState.errors.set(index,error.message||'Historie není dostupná');}
+      };
+      // Foreign exports are processed sequentially to cap transient parser memory.
+      analyticsState.loading=(async()=>{for(const index of indices){if(!current())break;await task(index);}})()
+        .finally(()=>{if(current()){analyticsState.loading=null;if(analyticsState.visible.has(7))analyticsDrawCard(7);analyticsUpdateStatus();}});
+      if(analyticsState.visible.has(7))analyticsDrawCard(7);
+      return analyticsState.loading;
+    }
+    function analyticsComparison(domain,m) {
+      const colors=['#e74c3c','#2980b9','#27ae60'],datasets=[],notes=[];
+      const entries=[0,1,2].map(i=>i===activeIdx?null:analyticsCached(i));
+      const signature=[activeIdx,...entries,Boolean(analyticsState.loading),JSON.stringify([...analyticsState.errors])];
+      if(m.comparison&&signature.every((v,i)=>v===m.comparisonSignature[i]))return m.comparison;
+      const a=m.rows.filter(r=>Number.isFinite(r.temp));
+      for(let i=0;i<3;i++){
+        if(i===activeIdx){datasets.push(analyticsSeries(stations[i].name,'°C',analyticsPoints(m.samples,r=>r.temp),colors[i],'y',{showLine:false,pointRadius:2}));continue;}
+        const c=entries[i];
+        if(!c){notes.push((stations[i]?.name||'Stanice')+': '+(analyticsState.errors.get(i)|| (analyticsState.loading?'načítá se historie':'historie není načtená'))+'.');continue;}
+        if(analyticsState.errors.has(i))notes.push(c.name+': obnova selhala ('+analyticsState.errors.get(i)+'); zobrazuji předchozí cache.');
+        const {start,end}=analyticsColumnBounds(c,domain.from,domain.to),n=end-start;
+        datasets.push(analyticsSeries(c.name,'°C',analyticsColumnPoints(c,domain.from,domain.to),colors[i],'y',{showLine:false,pointRadius:2}));
+        const aligned=analyticsMatch(a.length,j=>a[j],n,j=>({ts:c.times[end-1-j],temp:c.temps[end-1-j]}),600000);
+        notes.push(`${c.name}: ${n} teplot, cache ${fmtDT(new Date(c.loadedAt))}. Δ ${stations[activeIdx].name} − ${c.name}: ${fmt(aligned.deltaAvg,2)} °C, ${aligned.count} párů, bez páru ${aligned.unmatchedA}/${aligned.unmatchedB}, max |Δt| ${fmt(aligned.maxOffsetMs/60000,1)} min.`);
+      }
+      m.comparisonSignature=signature;
+      return m.comparison={datasets,note:notes.join(' ')+' Párování: nejbližší čas do10min, každý bod nejvýše jednou; při shodě dřívější. Bez interpolace. Senzory a mikroklima nemusí být srovnatelné. Body jsou původní měření, ne společný čas odběru.'};
+    }
+    function analyticsHeatChanged(){analyticsHeatmap();}
+    function analyticsHeatPage(delta){analyticsState.heatPage=Math.max(0,analyticsState.heatPage+delta);analyticsState.heat=null;analyticsHeatmap();}
+    function analyticsHeatmap() {
+      if(!analyticsActive()||!analyticsState.visible.has(8))return;
+      const m=analyticsModel(8);if(!m)return;
+      const allKeys=m.summary.days.map(d=>d.key).reverse(),pages=Math.max(1,Math.ceil(allKeys.length/14));
+      analyticsState.heatPage=Math.min(pages-1,analyticsState.heatPage);
+      const keys=allKeys.slice(analyticsState.heatPage*14,(analyticsState.heatPage+1)*14),signature=[m.from,m.to,analyticsState.heatPage].join(':');
+      let heat=analyticsState.heat;
+      if(!heat||heat.source!==store.rows||heat.length!==store.rows.length||heat.signature!==signature){
+        const cells=keys.map(()=>Array.from({length:24},()=>({temp:{sum:0,count:0,min:null,max:null},hum:{sum:0,count:0,min:null,max:null}})));
+        if(keys.length){const low=localDayBounds(keys.at(-1)).from,high=localDayBounds(keys[0]).to;
+          const {start,end}=historyRangeBounds(store.rows,Math.max(m.from,low),Math.min(m.to,high)),map=new Map(keys.map((key,i)=>[key,i]));
+          for(let i=end-1;i>=start;i--){const row=store.rows[i],day=map.get(localDateKey(row.ts));if(day===undefined)continue;
+            for(const metric of ['temp','hum']){const v=row[metric],s=cells[day][row.ts.getHours()][metric];if(!Number.isFinite(v))continue;s.sum+=v;s.count++;s.min=s.min===null?v:Math.min(s.min,v);s.max=s.max===null?v:Math.max(s.max,v);}
+          }
+        }
+        heat={source:store.rows,length:store.rows.length,signature,cells,keys,row:0,hour:0};analyticsState.heat=heat;
+      }
+      const metric=el('anaHeatMetric').value==='hum'?'hum':'temp',unit=metric==='temp'?'°C':'%',stat=m.summary.stats[metric];
+      const canvas=el('anaCanvas8'),rect=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(1,rect.width),height=Math.max(1,rect.height);
+      canvas.width=Math.round(w*dpr);canvas.height=Math.round(height*dpr);const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+      const palette=analyticsPalette();ctx.fillStyle=palette.text;ctx.font='10px sans-serif';
+      const left=52,top=20,cw=Math.max(1,(w-left-5)/24),ch=Math.max(1,(height-top-8)/Math.max(1,keys.length));heat.layout={left,top,cw,ch};
+      for(let h=0;h<24;h+=3)ctx.fillText(String(h),left+h*cw,12);
+      keys.forEach((key,row)=>{ctx.fillStyle=palette.text;ctx.fillText(key.slice(8)+'.'+key.slice(5,7),1,top+row*ch+Math.min(ch-1,12));
+        for(let hour=0;hour<24;hour++){const cell=heat.cells[row][hour][metric],value=cell.count?cell.sum/cell.count:null;
+          const f=value===null?0:stat.min===stat.max ? .5 :Math.max(0,Math.min(1,(value-stat.min)/(stat.max-stat.min)));
+          const a=f<=.5?[33,102,172]:[247,247,247],b=f<=.5?[247,247,247]:[178,24,43],mix=f<=.5?f*2:(f-.5)*2;
+          const rgb=a.map((v,i)=>Math.round(v+(b[i]-v)*mix));
+          ctx.fillStyle=value===null?palette.grid:`rgb(${rgb.join(',')})`;ctx.fillRect(left+hour*cw,top+row*ch,Math.max(1,cw-1),Math.max(1,ch-1));
+        }
+      });
+      if(keys.length){ctx.strokeStyle=palette.text;ctx.lineWidth=2;ctx.strokeRect(left+heat.hour*cw,top+heat.row*ch,Math.max(1,cw-1),Math.max(1,ch-1));}
+      el('anaEmpty8').hidden=stat.count>0&&keys.length>0;
+      setNodeText(el('anaNote8'),`Strana ${analyticsState.heatPage+1}/${pages} • ${allKeys.length} dnů se záznamy ve výřezu • průměry ze všech platných měření. Šedá buňka nemá data. Šipky vybírají buňku.`);
+      setNodeText(el('anaHeatLegend'),`${fmt(stat.min,2)} až ${fmt(stat.max,2)} ${unit}; jednotná škála původních hodnot celého výřezu.`);
+      el('anaHeatPagePrev').disabled=analyticsState.heatPage===0;el('anaHeatPageNext').disabled=analyticsState.heatPage===pages-1;
+      analyticsHeatDetail();
+    }
+    function analyticsHeatDetail(){const heat=analyticsState.heat;if(!heat||!heat.keys.length){setNodeText(el('anaHeatDetail'),'Pro vybrané období nejsou dostupná data.');return;}
+      const metric=el('anaHeatMetric').value==='hum'?'hum':'temp',s=heat.cells[heat.row]?.[heat.hour]?.[metric];if(!s)return;
+      setNodeText(el('anaHeatDetail'),`${heat.keys[heat.row]} • ${_pad2(heat.hour)}:00–${_pad2(heat.hour)}:59 • ${s.count} hodnot • průměr ${fmt(s.count?s.sum/s.count:null,2)} ${metric==='temp'?'°C':'%'} • min ${fmt(s.min,2)}, max ${fmt(s.max,2)}. Opakovaná místní hodina se slučuje.`);
+    }
+    function analyticsBindCanvas(id) {
+      const canvas=el('anaCanvas'+id);if(canvas.$anaBound)return;canvas.$anaBound=true;let drag=null;
+      canvas.addEventListener('pointerdown',event=>{drag={x:event.clientX,y:event.clientY};});
+      canvas.addEventListener('pointerup',event=>{
+        if(!drag)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;drag=null;
+        if(Math.abs(dx)>25&&Math.abs(dx)>Math.abs(dy)*1.5){analyticsPan(id,-dx/Math.max(1,canvas.clientWidth));return;}
+        if(id===8&&analyticsState.heat?.layout){const rect=canvas.getBoundingClientRect(),l=analyticsState.heat.layout,h=analyticsState.heat;
+          h.hour=Math.max(0,Math.min(23,Math.floor((event.clientX-rect.left-l.left)/l.cw)));h.row=Math.max(0,Math.min(h.keys.length-1,Math.floor((event.clientY-rect.top-l.top)/l.ch)));analyticsHeatmap();}
+      });
+      canvas.addEventListener('pointercancel',()=>{drag=null;});
+      canvas.addEventListener('keydown',event=>{
+        if(id===8&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)&&analyticsState.heat){
+          const h=analyticsState.heat;h.hour=Math.max(0,Math.min(23,h.hour+(event.key==='ArrowLeft'?-1:event.key==='ArrowRight'?1:0)));
+          h.row=Math.max(0,Math.min(h.keys.length-1,h.row+(event.key==='ArrowUp'?-1:event.key==='ArrowDown'?1:0)));analyticsHeatmap();event.preventDefault();return;}
+        if(event.key==='+'||event.key==='=')analyticsZoom(id,.5);else if(event.key==='-')analyticsZoom(id,2);else if(event.key==='ArrowLeft')analyticsPan(id,-.25);else if(event.key==='ArrowRight')analyticsPan(id,.25);else if(event.key==='0')analyticsReset(id);else return;event.preventDefault();
+      });
+    }
+    function analyticsEnsureCard(id) {
+      if(!analyticsActive())return;analyticsState.visible.add(id);analyticsBindCanvas(id);analyticsDrawCard(id);
+      if(id===8&&!analyticsState.heatObserver&&typeof ResizeObserver!=='undefined'){analyticsState.heatObserver=new ResizeObserver(()=>{if(analyticsActive()&&analyticsState.visible.has(8))analyticsHeatmap();});analyticsState.heatObserver.observe(el('anaCanvas8').parentElement);}
+      if(id===7)analyticsLoadStations();
+    }
+    function analyticsRedraw() {
+      if(!analyticsActive())return;
+      for(const id of analyticsState.visible)analyticsDrawCard(id);analyticsUpdateStatus();
+    }
+    function analyticsUpdateStatus() {
+      if(!analyticsActive())return;
+      const d=analyticsState.domain,last=store.rows[0];
+      setNodeText(el('anaStatus'),`${stations[activeIdx]?.name||'Stanice'}${analyticsState.all?' — společná karta porovnává všechny stanice; ostatní karty používají tuto aktivní stanici':''}\n`+
+        `${store.fullLoaded?'Celá dostupná':'Částečná'} načtená historie: ${store.rows.length.toLocaleString('cs-CZ')} záznamů. Poslední měření: ${last?intervalTimestamp(last.ts):'–'}.\n`+
+        (d?`Výřez: ${intervalTimestamp(new Date(d.from))} až ${intervalTimestamp(new Date(d.to))}.`:'Neplatné vlastní období: zadejte platné datum od–do.')+
+        (analyticsState.loading?' Načítám teplotní historii ostatních stanic…':''));
+    }
+    function buildAnalytics() {
+      if(!analyticsActive())return;
+      const options=stations.map((station,i)=>`<option value="${i}">${escapeHTML(station.name)}</option>`).join('')+'<option value="all">Všechny stanice (porovnání)</option>';
+      if(el('anaStation').innerHTML!==options)el('anaStation').innerHTML=options;
+      el('anaStation').value=analyticsState.all?'all':String(activeIdx);
+      if(!el('anaFrom').value)el('anaFrom').value=localDateKey();if(!el('anaTo').value)el('anaTo').value=localDateKey();
+      analyticsState.range=el('anaRange').value||'7';
+      const base=analyticsRange(store.rows,analyticsState.range,el('anaFrom').value,el('anaTo').value);
+      if(!base){analyticsState.domain=null;analyticsState.model=null;analyticsState.heat=null;const c=el('anaCanvas8');c.getContext('2d').clearRect?.(0,0,c.width,c.height);setNodeText(el('anaHeatDetail'),'Neplatné období.');for(const chart of analyticsCharts.values()){chart.data.datasets=[];chart.update('none');}for(let i=0;i<9;i++)el('anaEmpty'+i).hidden=false;analyticsUpdateStatus();return;}
+      const changed=!analyticsState.base||analyticsState.base.from!==base.from||analyticsState.base.to!==base.to;
+      analyticsState.base=base;if(changed||!analyticsState.domain){analyticsState.domain=base;analyticsState.views.clear();analyticsState.xy=null;analyticsInvalidate();}
+      analyticsUpdateStatus();
+      if(!store.fullLoaded&&!store._fullLoadPending&&(CFG.source==='sheets'||CFG.source==='both')){
+        const context=stationContext();ensureFullData(()=>{if(isCurrentStation(context)&&analyticsActive()){analyticsInvalidate();buildAnalytics();}});
+      }
+      if(!analyticsState.observer){
+        if(typeof IntersectionObserver!=='undefined'){
+          analyticsState.observer=new IntersectionObserver(entries=>{if(!analyticsActive())return;for(const entry of entries){const id=Number(entry.target.dataset.analyticsCard);if(entry.isIntersecting)analyticsEnsureCard(id);else analyticsState.visible.delete(id);}},{rootMargin:'120px'});
+          for(let i=0;i<9;i++)analyticsState.observer.observe(el('anaCard'+i));
+        }else{for(let i=0;i<9;i++)analyticsEnsureCard(i);}
+      }
+      analyticsRedraw();
+    }
+    async function analyticsRefresh() {
+      if(!analyticsActive())return;el('anaRefresh').disabled=true;const context=stationContext();
+      try{await manualRefresh();if(analyticsActive()&&isCurrentStation(context)){analyticsInvalidate();buildAnalytics();if(analyticsState.visible.has(7)||analyticsState.all)await analyticsLoadStations(true);}}
+      finally{el('anaRefresh').disabled=false;}
+    }
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&analyticsState.expanded!==null&&analyticsActive())analyticsExpand(analyticsState.expanded);});
 
     // Init: téma, stanice, config
     setTheme(theme);

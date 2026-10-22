@@ -21,6 +21,7 @@ parser.add_argument('--analysis', action='store_true', help='Measure the new bat
 parser.add_argument('--records', action='store_true', help='After core measurements, profile the original battery record viewer when available')
 parser.add_argument('--hour-records', action='store_true', help='After core measurements, profile hourly original records with a dense single-hour fixture')
 parser.add_argument('--temperature-record', action='store_true', help='After core measurements, profile original global temperature extremes')
+parser.add_argument('--grid', action='store_true', help='After core measurements, profile the analytical grid with cached three-station temperature histories')
 args = parser.parse_args()
 html = Path(args.html).read_text().split('// Init: téma, stanice, config')[0] + '</script></body></html>'
 chart = Path(args.chartjs).read_text()
@@ -211,8 +212,49 @@ with sync_playwright() as p:
             temperature_record['after20OpenClose'] = heap()
             temperature_record['closedRows'] = page.locator('#tempRecordBody tr').count()
             assert temperature_record['closedRows'] == 0 and page.evaluate('temperatureRecordView===null')
+        grid = None
+        if args.grid:
+            page.evaluate('''()=>{
+              for(const index of [1,2]){
+                const c=analyticsCompact(store.rows);for(let i=0;i<c.count;i++)c.temps[i]+=index;
+                analyticsStationCache.set(index,{...c,preferences:analyticsSourceSignature(index),name:stations[index].name,loadedAt:Date.now()});
+              }
+              el('anaRange').value='all';el('anaSync').checked=true;
+            }''')
+            grid_samples = []
+            for _ in range(5):
+                grid_samples.append(page.evaluate('''()=>{
+                  analyticsStop();showTab('analytics');
+                  analyticsState.base=analyticsRange(store.rows,'all');analyticsState.domain=analyticsState.base;
+                  const cold=measure(()=>{for(let i=0;i<9;i++)analyticsEnsureCard(i)});
+                  const warm=measure(()=>analyticsRedraw());
+                  return {cold,warm,charts:analyticsCharts.size,
+                    stats:analyticsState.model.summary.stats,
+                    pairCount:analyticsState.model.pair.count,
+                    samples:analyticsState.model.samples.length,xy:analyticsState.model.xy.length,
+                    rates:analyticsState.model.summary.rates.length,
+                    points:[...analyticsCharts.values()].map(c=>c.data.datasets.reduce((n,d)=>n+d.data.length,0)),
+                    cachedBytes:[...analyticsStationCache.values()].reduce((n,c)=>n+c.bytes,0)};
+                }'''))
+                page.wait_for_timeout(350)
+            opened = heap()
+            page.evaluate("analyticsStop();showTab('now')")
+            page.wait_for_timeout(100)
+            grid = {'scenario':'all nine cards drawn synchronously as worst case; other-station exports already compact/cached',
+                    'samples':grid_samples,'opened':opened,'closed':heap()}
+            for _ in range(10):
+                page.evaluate('''()=>{
+                  showTab('analytics');analyticsState.base=analyticsRange(store.rows,'all');analyticsState.domain=analyticsState.base;
+                  for(let i=0;i<9;i++)analyticsEnsureCard(i);
+                  analyticsStop();showTab('now');observer.takeRecords();
+                }''')
+                page.wait_for_timeout(30)
+            page.wait_for_timeout(100)
+            grid['after10Visits'] = heap()
+            grid['closedCharts'] = page.evaluate('analyticsCharts.size')
+            assert grid['closedCharts'] == 0 and page.evaluate('analyticsState.model===null')
         results.append({'rows':count,'empty':empty,'loaded':loaded,'warm':warm,'after30Cycles':repeated,
-                        'samples':samples,'records':records,'hourRecords':hour_records,'temperatureRecord':temperature_record,'pageErrors':errors,
+                        'samples':samples,'records':records,'hourRecords':hour_records,'temperatureRecord':temperature_record,'grid':grid,'pageErrors':errors,
                         'overflow':page.evaluate('document.documentElement.scrollWidth>innerWidth')})
         print('profiled', count, flush=True)
         page.close()
@@ -226,6 +268,7 @@ Path(args.output).write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
     'recordsScenario':args.records,
     'hourRecordsScenario':args.hour_records,
     'temperatureRecordScenario':args.temperature_record,
+    'gridScenario':args.grid,
     'network':'blocked; generated in-memory fixture, no raw CSV retained','results':results},indent=2))
 if any(r['pageErrors'] or r['overflow'] for r in results):
     raise SystemExit('Browser profile failed; inspect output.')

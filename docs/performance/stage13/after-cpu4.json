@@ -1,0 +1,481 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "aggregateScenario": true,
+  "comparisonScenario": false,
+  "annualScenario": false,
+  "analysisScenario": false,
+  "recordsScenario": false,
+  "hourRecordsScenario": false,
+  "temperatureRecordScenario": false,
+  "gridScenario": true,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 100000,
+      "empty": {
+        "heapBytes": 2581220,
+        "nodes": 2925,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 24229812,
+        "nodes": 2925,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 26256008,
+        "nodes": 3028,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 26457468,
+        "nodes": 3028,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 118.1,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 147.1,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 222.5,
+            "mutations": 39
+          },
+          "daily": {
+            "ms": 1.7,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 26.7,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 17.1,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.6,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 87.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 93.2,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 140.4,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 0.2,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 17.1,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 9.9,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.8,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 70.1,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 85.8,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 94.7,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 2.6,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 18.9,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 8.9,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 91.5,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 86.8,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 139.6,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 0.6,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 19.8,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 12.5,
+            "mutations": 0
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 100.9,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 80.1,
+            "mutations": 5
+          },
+          "coldRefresh": {
+            "ms": 108.3,
+            "mutations": 2
+          },
+          "daily": {
+            "ms": 0.8,
+            "mutations": 1
+          },
+          "monthly": {
+            "ms": 11.5,
+            "mutations": 0
+          },
+          "yearly": {
+            "ms": 8.4,
+            "mutations": 0
+          },
+          "points": 534
+        }
+      ],
+      "records": null,
+      "hourRecords": null,
+      "temperatureRecord": null,
+      "grid": {
+        "scenario": "all nine cards drawn synchronously as worst case; other-station exports already compact/cached",
+        "samples": [
+          {
+            "cold": {
+              "ms": 1240.8,
+              "mutations": 11
+            },
+            "warm": {
+              "ms": 167.1,
+              "mutations": 1
+            },
+            "charts": 8,
+            "stats": {
+              "temp": {
+                "count": 100000,
+                "min": 2.0000000027250353,
+                "max": 85,
+                "avg": 10.001511539045651
+              },
+              "hum": {
+                "count": 100000,
+                "min": 40.000000000865185,
+                "max": 79.99999999565577,
+                "avg": 60.00805122812055
+              },
+              "pressure": {
+                "count": 100000,
+                "min": 1009.0000000004543,
+                "max": 1011,
+                "avg": 1010.0008290607628
+              },
+              "voltage": {
+                "count": 100000,
+                "min": 3.9000000000211905,
+                "max": 4.099999999988642,
+                "avg": 4.000005130280263
+              }
+            },
+            "pairCount": 100000,
+            "samples": 254,
+            "xy": 64,
+            "rates": 396,
+            "points": [
+              950,
+              762,
+              254,
+              950,
+              508,
+              1346,
+              64,
+              1450
+            ],
+            "cachedBytes": 3200000
+          },
+          {
+            "cold": {
+              "ms": 984.1,
+              "mutations": 0
+            },
+            "warm": {
+              "ms": 122.2,
+              "mutations": 0
+            },
+            "charts": 8,
+            "stats": {
+              "temp": {
+                "count": 100000,
+                "min": 2.0000000027250353,
+                "max": 85,
+                "avg": 10.001511539045651
+              },
+              "hum": {
+                "count": 100000,
+                "min": 40.000000000865185,
+                "max": 79.99999999565577,
+                "avg": 60.00805122812055
+              },
+              "pressure": {
+                "count": 100000,
+                "min": 1009.0000000004543,
+                "max": 1011,
+                "avg": 1010.0008290607628
+              },
+              "voltage": {
+                "count": 100000,
+                "min": 3.9000000000211905,
+                "max": 4.099999999988642,
+                "avg": 4.000005130280263
+              }
+            },
+            "pairCount": 100000,
+            "samples": 254,
+            "xy": 64,
+            "rates": 396,
+            "points": [
+              950,
+              762,
+              254,
+              950,
+              508,
+              1346,
+              64,
+              1450
+            ],
+            "cachedBytes": 3200000
+          },
+          {
+            "cold": {
+              "ms": 987.4,
+              "mutations": 0
+            },
+            "warm": {
+              "ms": 120,
+              "mutations": 0
+            },
+            "charts": 8,
+            "stats": {
+              "temp": {
+                "count": 100000,
+                "min": 2.0000000027250353,
+                "max": 85,
+                "avg": 10.001511539045651
+              },
+              "hum": {
+                "count": 100000,
+                "min": 40.000000000865185,
+                "max": 79.99999999565577,
+                "avg": 60.00805122812055
+              },
+              "pressure": {
+                "count": 100000,
+                "min": 1009.0000000004543,
+                "max": 1011,
+                "avg": 1010.0008290607628
+              },
+              "voltage": {
+                "count": 100000,
+                "min": 3.9000000000211905,
+                "max": 4.099999999988642,
+                "avg": 4.000005130280263
+              }
+            },
+            "pairCount": 100000,
+            "samples": 254,
+            "xy": 64,
+            "rates": 396,
+            "points": [
+              950,
+              762,
+              254,
+              950,
+              508,
+              1346,
+              64,
+              1450
+            ],
+            "cachedBytes": 3200000
+          },
+          {
+            "cold": {
+              "ms": 898.2,
+              "mutations": 0
+            },
+            "warm": {
+              "ms": 112.5,
+              "mutations": 0
+            },
+            "charts": 8,
+            "stats": {
+              "temp": {
+                "count": 100000,
+                "min": 2.0000000027250353,
+                "max": 85,
+                "avg": 10.001511539045651
+              },
+              "hum": {
+                "count": 100000,
+                "min": 40.000000000865185,
+                "max": 79.99999999565577,
+                "avg": 60.00805122812055
+              },
+              "pressure": {
+                "count": 100000,
+                "min": 1009.0000000004543,
+                "max": 1011,
+                "avg": 1010.0008290607628
+              },
+              "voltage": {
+                "count": 100000,
+                "min": 3.9000000000211905,
+                "max": 4.099999999988642,
+                "avg": 4.000005130280263
+              }
+            },
+            "pairCount": 100000,
+            "samples": 254,
+            "xy": 64,
+            "rates": 396,
+            "points": [
+              950,
+              762,
+              254,
+              950,
+              508,
+              1346,
+              64,
+              1450
+            ],
+            "cachedBytes": 3200000
+          },
+          {
+            "cold": {
+              "ms": 935,
+              "mutations": 0
+            },
+            "warm": {
+              "ms": 120.8,
+              "mutations": 0
+            },
+            "charts": 8,
+            "stats": {
+              "temp": {
+                "count": 100000,
+                "min": 2.0000000027250353,
+                "max": 85,
+                "avg": 10.001511539045651
+              },
+              "hum": {
+                "count": 100000,
+                "min": 40.000000000865185,
+                "max": 79.99999999565577,
+                "avg": 60.00805122812055
+              },
+              "pressure": {
+                "count": 100000,
+                "min": 1009.0000000004543,
+                "max": 1011,
+                "avg": 1010.0008290607628
+              },
+              "voltage": {
+                "count": 100000,
+                "min": 3.9000000000211905,
+                "max": 4.099999999988642,
+                "avg": 4.000005130280263
+              }
+            },
+            "pairCount": 100000,
+            "samples": 254,
+            "xy": 64,
+            "rates": 396,
+            "points": [
+              950,
+              762,
+              254,
+              950,
+              508,
+              1346,
+              64,
+              1450
+            ],
+            "cachedBytes": 3200000
+          }
+        ],
+        "opened": {
+          "heapBytes": 29461240,
+          "nodes": 3051,
+          "charts": 16
+        },
+        "closed": {
+          "heapBytes": 27335116,
+          "nodes": 3042,
+          "charts": 8
+        },
+        "after10Visits": {
+          "heapBytes": 27272860,
+          "nodes": 3042,
+          "charts": 8
+        },
+        "closedCharts": 0
+      },
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}
