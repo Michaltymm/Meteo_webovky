@@ -1,6 +1,6 @@
 # Bezpečnostní roadmapa Meteo_webovky
 
-Aktualizace: 2026-10-22 · kontrolní bod **SEC-STAGE-05** · větev `codex-dev`.
+Aktualizace: 2026-10-22 · kontrolní bod **SEC-STAGE-06** · větev `codex-dev`.
 Výchozí revize: `ae40f950d5d86d2e99e30a270c09636e8b0d4aa8`. Stav odpovídá dostupnému kódu a výslovně uvedenému rozsahu.
 
 Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez pokusů o zápis či přihlášení. Produkční větev se nemění. Soukromé nálezy a podklady jsou mimo repozitář; nepatří do Pages artefaktu ani veřejných logů.
@@ -12,7 +12,7 @@ Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez
 | 3 | Frontend, JavaScript a XSS | DONE | DOM výstupy a URL prověřeny; XSS v aktivním datovém toku nepotvrzeno. Kandidáti odolnosti evidováni soukromě k lokálnímu ověření; CSP omezuje současná struktura a Pages. |
 | 4 | MQTT a komunikace s ESP32 | DONE | Ověřen lifecycle a subscribe-only kód volitelného MQTT. Žádný dodaný broker není aktivní; ACL, certifikáty a firmware vyžadují ověření vlastníkem. Bez živých připojení. |
 | 5 | Google Sheets a externí API | DONE | Prověřeny čtecí Sheets/UV/proxy cesty a CSV. Aplikace neobsahuje zápisové API ani CSV export; vzdálená oprávnění neověřena. Odolnost odpovědí ověří etapa 8. |
-| 6 | Server a backend | TODO | Dosud neprovedeno. |
+| 6 | Server a backend | DONE | Lokální server: 6/6 regresí cest, metadat a symlinků prošlo. Není součástí Pages runtime; veřejný provoz jiného serveru nedoložen. Doporučeno omezit lokální expozici. |
 | 7 | GitHub a externí závislosti | TODO | Dosud neprovedeno. |
 | 8 | Testy odolnosti dat | TODO | Dosud neprovedeno. |
 | 9 | Postupné opravy zranitelností | TODO | Dosud neprovedeno. |
@@ -42,7 +42,7 @@ Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno 
 
 ## Pokračování
 
-Při dalším spuštění začít etapou **6** a soukromým kontrolním bodem; dokončené oblasti znovu kontrolovat pouze při změně relevantních souborů.
+Při dalším spuštění začít etapou **7** a soukromým kontrolním bodem; dokončené oblasti znovu kontrolovat pouze při změně relevantních souborů.
 Soukromý report: `/workspace/security-private/Meteo_webovky/REPORT.md`; kontrolní otisky souborů a stav jsou ve stejné soukromé složce. Tato složka nemusí přežít zrušení cloudového prostředí; při její nedostupnosti nelze tvrdit, že byly podrobné nálezy znovu ověřeny.
 
 ## Důkazy a historie
