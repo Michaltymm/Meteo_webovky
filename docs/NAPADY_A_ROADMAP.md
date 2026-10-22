@@ -342,7 +342,7 @@ nerovnoměrné timestampy, resize/scroll/touch, jeden aktivní RAF, žádný nov
 
 **Přínos / priorita / obtížnost:** po kliknutí na maximum nebo odvozenou hodnotu
 vidět vzorec/verzi, vstupní řádky a důvody vyloučení; P1, střední. **Stav:**
-Rozpracováno — podklady vlivných T/V dnů dokončeny v0.7.0; další výpočty níže.
+Rozpracováno — podklady vlivných T/V dnů dokončeny v0.7.0 a hodinových průměrů T/RH/P v0.8.0; maxima a další odvozené výpočty dále.
 Dnešní řádky stačí pro přehled původu, trvalé odkazy na
 opravené řádky potřebují ID/revizi backendu. Vztah METEO-047/050: ty evidují
 kvalitu a počty; toto je dohledatelná cesta konkrétního výsledku.
@@ -1250,3 +1250,46 @@ pro tento commit **Success**, build17s/deploy10s/celkem36s, jeden artefakt.
 Main stále2405c5d. Workflow deployment není přímá kontrola živých widgetů.
 Následující commit doplňuje pouze tuto paměť, HTML zůstává0.7.0 a testy se
 kvůli dokumentaci neopakují. Hotový denní077 dál pouze udržovat; navázat063.
+
+
+## Etapa 11 — podklady hodinových průměrů, v0.8.0 (21.–22. 10. 2026)
+
+Navázáno na čistý `26af1c1` na codex-dev. **METEO-063 má dokončenou dílčí
+etapu hodinových průměrů**, širší rodokmen maxim a odvozených hodnot je dál
+rozpracovaný. Hotové077/078 zachovány; žádný opakovaný audit ani nové ID.
+
+Porovnání dnů umí otevřít podklady konkrétního bodu grafu nebo vybraného
+místního dne/hodiny/veličiny. T/RH/tlak mají nezávislou validitu. Tabulka
+ukazuje všechny původní záznamy hodiny po50, i missing, nuly a duplicity,
+s nezaokrouhlenými hodnotami, časem a UTC offsetem, důvody vynechání,
+přesným součtem/počtem/podílem a zaokrouhleným výsledkem grafu. Uvedený
+vzorec/verze, částečná historie i nevážený aritmetický charakter průměru.
+Prázdná hodina nemá vymyšlené měření. Pořadí platí pouze v aktuální historii;
+backendové ID/revize a explicitní zóna zdroje zůstávají samostatnou závislostí.
+
+`hourlyDay` používá stejný úplný průchod a stabilní pořadí sčítání, navíc
+si pamatuje pouze numerické souvislé indexové úseky jednotlivých hodin.
+Nespoléhá na pevný60min UTC interval: opakovaná hodina se stejným průměrem
+může mít více úseků a odlišné offsety. LRU stále8dnů, tabulka O(s+p), p≤50.
+Výpis nemá kopii historie ani pole všech indexů. Změna dat/stanice/výběru
+porovnání ho zavře a vyčistí; stránkování kontroluje aktuální snapshot.
+Žádné další síťové požadavky nebo grafy.
+
+**180/180 Node testů**,15nových. Původní hodinové výsledky dál shodné
+s úplným stabilním výpočtem, T/RH/P nezávislé,0/null/duplicity, přesné
+stránky, prázdné hodiny,250k omezená čtení, LRU, CSV/MQTT/reset/oprava/
+stanice/výběr, XSS a proklik grafu. DST Praha, půlhodinový Lord Howe a
+Troll s dvouhodinovým rollbackem a oddělenými úseky stejné hodiny.
+
+Browser skutečné tři konfigurace + řízené CSV/UV/Chart ověřil původní
+měření i součty, klávesnici, stránky, volby, skutečný bod grafu a CSV opravu.
+Obě témata320/390px, bez celostránkového přetečení nebo page errors;
+vodorovný posun tabulky klávesnicí, screenshot prohlédnut.
+[Měření a důkazy](performance/ETAPA11.md): cíleně1k/250k před/po,
+250k první porovnání23,3→25,0ms, opakované4,7→5,3ms; malá režie nové
+funkce, nikoli tvrzení zrychlení. Hustý250k výpis1,4ms/stránka0,6ms.
+Živé služby/fyzický mobil/firmware/broker ani přímé widgety Pages neověřeny.
+
+**Další vhodná etapa:** v rámci063 dohledání původních teplotních extrémů,
+nejprve malé samostatné řešení se shodami, nulami a invalidací. Explicitní
+časový kontrakt048 a metadata071 nepředstírat. Nasazení dokládat samostatně.

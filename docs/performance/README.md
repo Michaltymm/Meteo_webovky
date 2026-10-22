@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 11 — podklady hodinových průměrů](ETAPA11.md) ověřuje přímý výpis
+původních měření, cenu porovnání před/po a stránkování husté 250k hodiny.
+
 [Etapa 10 — původní T/V záznamy](ETAPA10.md) dokládá líný výpis po50řádcích,
 čtení jen mezí/stránky, cenu otevření a životní cyklus při zavírání.
 

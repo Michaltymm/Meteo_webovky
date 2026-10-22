@@ -19,6 +19,7 @@ parser.add_argument('--comparison', action='store_true', help='Also measure firs
 parser.add_argument('--annual', action='store_true', help='Also measure first and repeated annual statistics')
 parser.add_argument('--analysis', action='store_true', help='Measure the new battery module and humidity explorer, when available')
 parser.add_argument('--records', action='store_true', help='After core measurements, profile the original battery record viewer when available')
+parser.add_argument('--hour-records', action='store_true', help='After core measurements, profile hourly original records with a dense single-hour fixture')
 args = parser.parse_args()
 html = Path(args.html).read_text().split('// Init: téma, stanice, config')[0] + '</script></body></html>'
 chart = Path(args.chartjs).read_text()
@@ -146,8 +147,44 @@ with sync_playwright() as p:
             records['after20OpenClose'] = heap()
             records['closedRows'] = page.locator('#batteryRecordsBody tr').count()
             assert records['closedRows'] == 0 and page.evaluate('batteryRecordView===null')
+        hour_records = None
+        if args.hour_records:
+            # Separate distribution: all rows in one hour, so paging is exercised
+            # even at 1k. This happens only after the unchanged core profile.
+            page.evaluate('''count=>{
+              const end=+new Date(2026,9,21,12,59,59);
+              store.rows=Array.from({length:count},(_,i)=>({ts:new Date(end-i*10),temp:i%13===0?null:i/7,hum:i%101,pressure:1010}));
+              invalidateDerivedData();showTab('compare');cmpSelectedDays=['2026-10-21'];el('cmpMetric').value='temp_hum';buildCompare();
+              el('cmpEvidence').open=true;el('cmpRecordsHour').value='12';el('cmpRecords').open=true;
+            }''', count)
+            page.wait_for_timeout(100)
+            assert page.locator('#cmpRecords table').is_visible()
+            hourly_samples = []
+            for _ in range(5):
+                hourly_samples.append(page.evaluate('''()=>{
+                  const open=measure(()=>openComparisonRecords());
+                  const next=measure(()=>pageComparisonRecords(1));
+                  return {open,next,rows:el('cmpRecordsBody').children.length,total:comparisonRecordsPage().total,
+                    spans:comparisonRecordView.day.records[12].length};
+                }'''))
+                page.wait_for_timeout(350)
+            opened = heap()
+            page.evaluate("el('cmpRecords').open=false;toggleComparisonRecords()")
+            page.wait_for_timeout(100)
+            hour_records = {'distribution':'all rows in one local hour, 10ms spacing; core fixture unchanged',
+                            'samples':hourly_samples,'opened':opened,'closed':heap()}
+            page.evaluate('''()=>{
+              for(let i=0;i<20;i++){
+                el('cmpRecords').open=true;openComparisonRecords();pageComparisonRecords(1);
+                el('cmpRecords').open=false;toggleComparisonRecords();observer.takeRecords();
+              }
+            }''')
+            page.wait_for_timeout(100)
+            hour_records['after20OpenClose'] = heap()
+            hour_records['closedRows'] = page.locator('#cmpRecordsBody tr').count()
+            assert hour_records['closedRows'] == 0 and page.evaluate('comparisonRecordView===null')
         results.append({'rows':count,'empty':empty,'loaded':loaded,'warm':warm,'after30Cycles':repeated,
-                        'samples':samples,'records':records,'pageErrors':errors,
+                        'samples':samples,'records':records,'hourRecords':hour_records,'pageErrors':errors,
                         'overflow':page.evaluate('document.documentElement.scrollWidth>innerWidth')})
         print('profiled', count, flush=True)
         page.close()
@@ -159,6 +196,7 @@ Path(args.output).write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
     'annualScenario':args.annual,
     'analysisScenario':args.analysis,
     'recordsScenario':args.records,
+    'hourRecordsScenario':args.hour_records,
     'network':'blocked; generated in-memory fixture, no raw CSV retained','results':results},indent=2))
 if any(r['pageErrors'] or r['overflow'] for r in results):
     raise SystemExit('Browser profile failed; inspect output.')

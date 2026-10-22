@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-21; práce výhradně na `codex-dev`, výchozí revize této etapy `9c017bb`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.7.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `26af1c1`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.8.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,12 +15,12 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (165/165 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (180/180 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
 - Centrální plán: `docs/NAPADY_A_ROADMAP.md` (83 METEO ID); etapa7 přidala8nových076–083 a12skupin doplnění starších návrhů. METEO-078 DONE v0.5.0; METEO-019/031 základní T/V, METEO-013 AH/VPD a METEO-010 motion hotové ve v0.4.0, další části těchto ID rozpracované. Plán dostupnosti a zóna stále027/038/048.
-- METEO-077 DONE v plánovaném denním rozsahu v0.7.0: původní denní citlivost z0.6.0 + přesný výpis podkladů vlivného dne. METEO-063 rozpracováno: T/V den hotový, maxima/hodinové a další odvozené metriky dále. Výpis50řádků, bez kopie historie; O(log n+p) otevření/O(p) stránka. Při invalidaci CSV/MQTT/reset/rozsah/stanice zavřít a zahodit; pořadí je jen v aktuální historii, není trvalé ID. Původní077 výpočet a plné statistiky se nemění; další vhodná etapa063 podklady hodinových průměrů.
+- METEO-077 DONE v plánovaném denním rozsahu v0.7.0. METEO-063 rozpracováno: T/V dny hotové v0.7.0, původní T/RH/P hodinových průměrů v0.8.0. Kliknutí na bod nebo výběr dne/hodiny/veličiny, součet/počet/podíl a bod grafu, vzorec/verze, důvody vyloučení, UTC offsety. Tabulka po50řádcích, žádná kopie historie. Hodinový souhrn drží jen numerické souvislé rozsahy, i více při dvouhodinovém DST rollbacku; O(s+p) nad hotovou cache. Invalidace CSV/MQTT/reset/výběru/stanice zavře a zahodí referenci. Další vhodná etapa063: vstupy teplotních extrémů; širší odvozené metriky dále. Pořadí řádku není trvalé backendové ID,048/071 zůstávají.
 - METEO-078: rozbalovací rozklad RH v průzkumníku (T/RH/dew/AH/VPD). Pouze původní krajní řádky aktuálního slideru, O(1), 2čtení i při250k; vodní Magnus jako013, faktory/logaritmická identita, žádná kauzální atribuce či vodní bilance. RH0/nuly T odlišit, nevybírat náhradní endpoint. Kalibrace/umístění mezi body neověřeny, vždy uvedeno; metadata epoch071 dále.
 - Nová batteryAnalysis: pouze páry stejného řádku, plné Welford r/sklon a n/časy/dny. Cache jediného rozsahu7/30/all v dataAggregates, grafy lazy +2 (start stále8, po použití10). Max800 časových a582 skutečných XY reprezentantů, počet bodů není hustota. Žádné p-value/SOC/energie ani záměna T čidla za T baterie.
 - AH/VPD mají vzorec/obor/jednotky v UI; Magnus nad kapalnou vodou i pod0°C, T−45..60°C, RH0..100%. RH0 je validní zde, nikoli pro Td. Originály ani stávající průměry se nemění.
@@ -325,6 +325,17 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Další vhodná etapa063: podklady hodinového průměru v Porovnání dnů s počty, originály a důvody vyloučení; opět líně/po stránkách/pro aktuální snapshot, bez opakování hotové077 analýzy. Metadata071 a explicitní časový kontrakt048 zůstávají vlastními úkoly.
 
 - Uložení/publikace etapy10: [d1e42e3](https://github.com/Michaltymm/Meteo_webovky/commit/d1e42e3f9edb47cf39375b7a893c93a003498509) odeslán na codex-dev a SHA ověřeno proti origin. [Actions #18](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39677857017) **Success**, build17s/deploy10s/celkem36s, jeden Pages artefakt. Main stále2405c5d. Následující commit pouze zaznamenává ověřené nasazení, nemění HTML ani verzi0.7.0; hotové testy/analýzu neopakovat. Přímá kontrola živých widgetů tím není provedena.
+
+### Etapa 11: METEO-063 podklady hodinových průměrů, v0.8.0 (21.–22. 10. 2026)
+
+- Navázáno na čistý `26af1c1` = origin/codex-dev, main stále `2405c5d`. Hotové077 a předchozí analýzy zachovány. Dílčí063 pro hodinové průměry DONE; celé063 dál rozpracováno pro maxima a další odvozené hodnoty. Žádné nové ID.
+- Porovnání dnů: kliknutí na bod grafu nese původní den/veličinu/hodinu; stejné volby dostupné klávesnicí v nativním details. T/RH/P používají nezávislou validitu. Výpis všech původních řádků hodiny včetně missing/0/duplicit, hodnoty bez tabulkového zaokrouhlení, čas/UTC offset, důvod vynechání, součet/počet/podíl i jedno desetinné místo grafu, vzorec/verze. Průměr není vážen časem; částečná historie přiznána. Prázdná hodina nedostane řádek ani průměr. Pořadí není trvalé ID, zdrojový CSV text se neuchovává; zobrazení času dosud po sekundách, interní milisekundy zachovány.
+- `hourlyDay` v původním průchodu navíc skládá pro24hodin jen souvislé indexové rozsahy; podporuje rozdělenou hodinu při větším posunu času. Součty ve stejném stabilním vzestupném pořadí jako dříve. Tabulka O(s+p), s počet úseků hodiny, p≤50, bez pole všech řádků/indexů. LRU osmi dnů zachována; otevřený výpis smí držet jeden malý souhrn do zavření/invalidace, i když je vytěsněn z LRU.
+- CSV/MQTT/reset/oprava/delece/stanice nebo změna porovnání výpis zavře, vyprázdní a zahodí referenci. Před stránkou kontrola identity snapshotu, pole/délky, stanice, dne a výběrů. In-place mutace nadále musí invalidovat. Escapované buňky, přístupné hlavičky/status/region posunu; žádný další request, graf ani závislost. Konfigurace/server/workflow/archiv/main neměněny.
+- **180/180 Node testů**,15nových: celé původní stránky/hodnoty, nezávislé senzory,0/null/duplicity, stabilní součet, prázdno,250k se čtením pouze stránky, LRU, všechny životní cykly, XSS, kliknutí do správného datasetu a DST Praha/Lord Howe/Troll (dvě oddělené části stejné hodiny).
+- Browser s reálným DOM/Chart.js a třemi původními konfiguracemi/řízeným CSV/UV: nezávislý úplný součet/počet/průměr, tři veličiny, missing i nuly,480původních záznamů vs50DOMřádků, Enter/stránky/prázdné hodiny/kliknutí na skutečný bod, skutečná CSV oprava zavře starý výpis. Obě témata320/390px, horizontální posun klávesnicí, žádné page errors/extra HTTP/Chart; screenshot prohlédnut. První harness kontroloval šířku před dokončením Chart resize; přidána150ms stabilizace testu, produktová chyba nezjištěna.
+- [ETAPA11](docs/performance/ETAPA11.md): sekvenční1k/250k před/po,5vzorků/medián. První porovnání250k23,3→25,0ms, opakované4,7→5,3ms; nová funkce má režii, nejde o optimalizační tvrzení. Hustá samostatná250k hodina: otevření1,4ms/stránka0,6ms,50DOMřádků,po20cyklech prázdné tělo/nullreference, stejný počet uzlů a8grafů. CDP paměť neklesá ihned po zavření, žádný příslib vícedenního soak. Živé služby/broker/HW/firmware/fyzický mobil a přímé Pages widgety neověřeny.
+- Další vhodná etapa063: dohledání původních teplotních extrémů, s přesným pravidlem shod a platností reference. Explicitní zóna048/revize zdroje a metadata071 zůstávají samostatně; nezavádět srážkovou interpretaci bez017/049.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.8.0
+
+- U hodinových průměrů v Porovnání dnů lze otevřít původní teplotu, vlhkost či tlak kliknutím na bod grafu nebo výběrem dne a hodiny. Výpis uvádí součet, počet, nezaokrouhlený průměr a důvody vynechání hodnot.
+- Tabulka zachovává nuly, duplicity a časy s UTC offsetem včetně opakované hodiny při změně času. Zobrazuje nejvýše 50 záznamů na stránce, bez dalšího stahování.
+- Ovládání funguje klávesnicí i na mobilu. Při změně dat, stanice nebo porovnání se neplatný výpis zavře; dosavadní grafy a statistiky používají stejná úplná měření.
+
 ## v0.7.0
 
 - Analýza teploty a napětí nabízí původní záznamy vlivného dne po 50 řádcích. Zobrazuje časy s UTC offsetem, hodnoty bez zaokrouhlení a důvody vynechání neplatných párů.

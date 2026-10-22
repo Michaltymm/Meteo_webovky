@@ -1,0 +1,197 @@
+{
+  "browser": "154.0.8037.57",
+  "results": [
+    {
+      "station": 0,
+      "checks": [
+        {
+          "metric": "temp",
+          "hour": "11",
+          "count": 437,
+          "sum": 8379.966,
+          "avg": 19.2,
+          "unique": 240,
+          "total": 480
+        },
+        {
+          "metric": "hum",
+          "hour": "11",
+          "count": 443,
+          "sum": 20102.500000000004,
+          "avg": 45.4,
+          "unique": 240,
+          "total": 480
+        },
+        {
+          "metric": "pressure",
+          "hour": "11",
+          "count": 452,
+          "sum": 436105.074,
+          "avg": 964.8,
+          "unique": 240,
+          "total": 480
+        }
+      ],
+      "keyboardOpen": true,
+      "paginationAndEmptyHour": true,
+      "graphPointDrilldown": true,
+      "csvCorrectionClosesStaleView": true,
+      "extraRequests": 0,
+      "extraCharts": 0
+    },
+    {
+      "station": 1,
+      "checks": [
+        {
+          "metric": "temp",
+          "hour": "11",
+          "count": 437,
+          "sum": 12519.966,
+          "avg": 28.6,
+          "unique": 240,
+          "total": 480
+        },
+        {
+          "metric": "hum",
+          "hour": "11",
+          "count": 0,
+          "sum": 0,
+          "avg": null,
+          "unique": 0,
+          "total": 480
+        },
+        {
+          "metric": "pressure",
+          "hour": "11",
+          "count": 452,
+          "sum": 436105.074,
+          "avg": 964.8,
+          "unique": 240,
+          "total": 480
+        }
+      ],
+      "keyboardOpen": true,
+      "paginationAndEmptyHour": true,
+      "graphPointDrilldown": true,
+      "csvCorrectionClosesStaleView": true,
+      "extraRequests": 0,
+      "extraCharts": 0
+    },
+    {
+      "station": 2,
+      "checks": [
+        {
+          "metric": "temp",
+          "hour": "11",
+          "count": 437,
+          "sum": 16659.966000000004,
+          "avg": 38.1,
+          "unique": 240,
+          "total": 480
+        },
+        {
+          "metric": "hum",
+          "hour": "11",
+          "count": 443,
+          "sum": 20102.500000000004,
+          "avg": 45.4,
+          "unique": 240,
+          "total": 480
+        },
+        {
+          "metric": "pressure",
+          "hour": "11",
+          "count": 0,
+          "sum": 0,
+          "avg": null,
+          "unique": 0,
+          "total": 480
+        }
+      ],
+      "keyboardOpen": true,
+      "paginationAndEmptyHour": true,
+      "graphPointDrilldown": true,
+      "csvCorrectionClosesStaleView": true,
+      "extraRequests": 0,
+      "extraCharts": 0
+    }
+  ],
+  "mobile": [
+    {
+      "width": 320,
+      "theme": "darkblue",
+      "horizontalKeyboardScroll": true,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "horizontalKeyboardScroll": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "darkblue",
+      "horizontalKeyboardScroll": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "horizontalKeyboardScroll": true,
+      "overflow": false
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "station": 0,
+      "quick": true
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    }
+  ],
+  "transport": "Three original configs; fixture CSV and UV; MQTT CDN blocked"
+}

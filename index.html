@@ -95,7 +95,11 @@
     .battery-record-table td:nth-child(2) { white-space: nowrap; }
     .battery-record-nav { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
     .battery-record-nav button:disabled { opacity: .5; cursor: default; }
-    #batteryRecordsInfo { white-space: pre-line; line-height: 1.6; overflow-wrap: anywhere; }
+    #batteryRecordsInfo, #cmpRecordsInfo { white-space: pre-line; line-height: 1.6; overflow-wrap: anywhere; }
+    .comparison-record-controls { display: flex; gap: .6rem; flex-wrap: wrap; margin: .6rem 0; }
+    .comparison-record-controls label { display: flex; flex-direction: column; gap: .3rem; max-width: 100%; }
+    .comparison-record-controls select { min-height: 44px; max-width: 100%; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 4px; }
+    #cmpRecords .battery-record-nav button { min-height: 44px; }
 
     .nav-pills {
       display: flex;
@@ -1967,8 +1971,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v070"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.7.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v080"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.8.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2662,9 +2666,37 @@
         <div class="chart-canvas-wrap" style="height:340px"><canvas id="chartCompare"></canvas></div>
       </div>
       <div id="cmpInfo" style="font-size:.78rem;color:var(--muted);margin-top:.3rem;text-align:right"></div>
-      <details class="comparison-data">
+      <p style="font-size:.8rem;color:var(--muted)">Původní měření otevřete kliknutím na bod grafu nebo výběrem dne a hodiny v podkladech níže.</p>
+      <details id="cmpEvidence" class="comparison-data">
         <summary>Podklady hodinových průměrů</summary>
         <div id="cmpDataQuality"></div>
+        <details id="cmpRecords" class="comparison-data" hidden ontoggle="toggleComparisonRecords()">
+          <summary>Původní měření vybrané hodiny</summary>
+          <div class="comparison-record-controls">
+            <label for="cmpRecordsDay">Den<select id="cmpRecordsDay" onchange="openComparisonRecords()"></select></label>
+            <label for="cmpRecordsMetric">Veličina<select id="cmpRecordsMetric" onchange="openComparisonRecords()"></select></label>
+            <label for="cmpRecordsHour">Místní hodina<select id="cmpRecordsHour" onchange="openComparisonRecords()"></select></label>
+          </div>
+          <div id="cmpRecordsContent" hidden>
+            <p id="cmpRecordsInfo"></p>
+            <p id="cmpRecordsFormula"></p>
+            <p>Hodnoty pocházejí z načtené historie a v tabulce se nezaokrouhlují. Nuly i duplicitní časy zůstávají samostatnými měřeními.
+              Pořadí označuje pouze pozici v aktuální historii od nejnovějšího záznamu, nikoli trvalé ID zdroje.
+              Po změně dat výpis otevřete znovu. Širokou tabulku lze posouvat vodorovně.</p>
+            <div class="battery-record-nav" aria-label="Stránkování měření hodiny">
+              <button id="cmpRecordsPrev" class="exp-range-btn" onclick="pageComparisonRecords(-1)">Předchozí</button>
+              <span id="cmpRecordsPage" role="status" aria-live="polite"></span>
+              <button id="cmpRecordsNext" class="exp-range-btn" onclick="pageComparisonRecords(1)">Další</button>
+            </div>
+            <div class="battery-record-scroll" tabindex="0" role="region" aria-label="Původní měření hodinového průměru">
+              <table class="battery-record-table">
+                <caption id="cmpRecordsCaption"></caption>
+                <thead><tr><th scope="col">Záznam</th><th scope="col">Čas včetně UTC offsetu</th><th scope="col" id="cmpRecordsValue">Hodnota</th><th scope="col">Použití v průměru</th></tr></thead>
+                <tbody id="cmpRecordsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
       </details>
     </div>
 
@@ -4268,7 +4300,7 @@
       const values = Object.fromEntries(["temp", "hum", "pressure"].map(metric => [metric,
         Array.from({ length: 24 }, () => ({ sum: 0, count: 0, unique: 0, lastTime: null, avg: null }))]));
       const metricSlots = { temp: new Set(), hum: new Set(), pressure: new Set() };
-      const result = { key, values, count: 0, unique: 0, first: null, last: null, maxGapMs: null,
+      const result = { key, values, records: Array.from({ length: 24 }, () => []), count: 0, unique: 0, first: null, last: null, maxGapMs: null,
         durationMs: bounds ? bounds.to + 1 - bounds.from : 0, slots: 0, observedSlots: 0, metricSlots: {} };
       const slotKey = date => date.getHours() + ":" + date.getTimezoneOffset();
       if (bounds) {
@@ -4282,6 +4314,11 @@
           const time = rows[i].ts.getTime();
           let start = i;
           while (start > day.start && rows[start - 1].ts.getTime() === time) start--;
+          // Retain numeric spans only, including invalid metric values. Civil
+          // hours can recur across offset changes; do not infer one UTC interval.
+          const ranges = result.records[rows[i].ts.getHours()], last = ranges[ranges.length - 1];
+          if (last && last.start === i + 1) last.start = start;
+          else ranges.push({ start, end: i + 1 });
           for (let j = start; j <= i; j++) {
             const row = rows[j], hour = row.ts.getHours(), slot = slotKey(row.ts);
             result.count++;
@@ -4307,6 +4344,7 @@
         result.metricSlots[metric] = metricSlots[metric].size;
       }
       result.slots = slots.size; result.observedSlots = observed.size;
+      for (const ranges of result.records) ranges.reverse(); // Newest-first source order for lazy pages.
       if (bounds) {
         snapshot.hourly.set(key, result);
         if (snapshot.hourly.size > HOURLY_CACHE_LIMIT) snapshot.hourly.delete(snapshot.hourly.keys().next().value);
@@ -4432,6 +4470,9 @@
     function invalidateDerivedData() {
       aggregateCache = null;
       el("cmpDataQuality").textContent = "";
+      clearComparisonRecords();
+      el("cmpRecords").open = false;
+      el("cmpRecords").hidden = true;
       el("batterySummary").textContent = "";
       el("batterySensitivityValue").textContent = "";
       for (const id of ["batteryRDay", "batterySlopeDay", "batteryUndefinedDay"]) el(id).hidden = true;
@@ -4952,6 +4993,7 @@
       if (!store.rows.length) {
         chartCompare.data.datasets = [];
         el("cmpDataQuality").textContent = "";
+        syncComparisonRecordChoices([], []);
         el("cmpInfo").textContent = "Žádná načtená data pro porovnání.";
         chartCompare.update("none");
         return;
@@ -4972,7 +5014,7 @@
         const color = CMP_COLORS[di % CMP_COLORS.length];
         const lbl = calendarDayLabel(date, now);
 
-        const hourData = key => ({ data: day.values[key].map(s => s.avg),
+        const hourData = key => ({ sourceDay: date, sourceMetric: key, data: day.values[key].map(s => s.avg),
           sampleCounts: day.values[key].map(s => s.count), uniqueCounts: day.values[key].map(s => s.unique) });
 
         if (metric === "temp_hum") {
@@ -4999,7 +5041,9 @@
       chartCompare.data.labels = hours;
       chartCompare.data.datasets = datasets;
       chartCompare.options.plugins.tooltip.callbacks = { afterLabel: compareTooltip };
+      chartCompare.options.onClick = (_event, elements) => openComparisonPoint(elements);
       renderComparisonQuality(daySummaries, selectedMetrics);
+      syncComparisonRecordChoices(daySummaries, selectedMetrics);
 
       const metricCfg = {
         temp: { unit: "°C", color: "#e74c3c", title: "Teploty" },
@@ -5026,6 +5070,125 @@
         " dní · čas prohlížeče (" + Intl.DateTimeFormat().resolvedOptions().timeZone +
         "). Opakovaná hodina při změně času se průměruje společně.";
       chartCompare.update();
+    }
+
+    const COMPARISON_RECORD_PAGE_SIZE = 50;
+    const COMPARISON_RECORD_METRICS = { temp: "Teplota [°C]", hum: "Vlhkost [%]", pressure: "Tlak [hPa]" };
+    let comparisonRecordView = null;
+
+    function clearComparisonRecords() {
+      comparisonRecordView = null;
+      el("cmpRecordsContent").hidden = true;
+      for (const id of ["cmpRecordsInfo", "cmpRecordsFormula", "cmpRecordsCaption", "cmpRecordsPage"]) setNodeText(el(id), "");
+      if (el("cmpRecordsBody").innerHTML) el("cmpRecordsBody").innerHTML = "";
+      el("cmpRecordsPrev").disabled = true;
+      el("cmpRecordsNext").disabled = true;
+    }
+
+    function comparisonRecordViewIsCurrent() {
+      const v = comparisonRecordView;
+      return v && v.snapshot === aggregateCache && v.snapshot.source === store.rows &&
+        v.snapshot.length === store.rows.length && v.snapshot.dayKey === localDateKey() &&
+        v.station === activeIdx && v.selection === JSON.stringify(cmpSelectedDays) &&
+        v.comparisonMetric === el("cmpMetric").value && v.key === el("cmpRecordsDay").value &&
+        v.metric === el("cmpRecordsMetric").value && String(v.hour) === el("cmpRecordsHour").value;
+    }
+
+    function syncComparisonRecordChoices(days, metrics) {
+      const options = (id, choices) => {
+        const select = el(id), previous = select.value;
+        const markup = choices.map(([value, label]) => `<option value="${escapeHTML(value)}">${escapeHTML(label)}</option>`).join("");
+        if (select.innerHTML !== markup) select.innerHTML = markup;
+        select.value = choices.some(([value]) => value === previous) ? previous : choices[0]?.[0] || "";
+      };
+      options("cmpRecordsDay", days.map(day => [day.key, day.key]));
+      options("cmpRecordsMetric", metrics.map(metric => [metric, COMPARISON_RECORD_METRICS[metric]]));
+      options("cmpRecordsHour", Array.from({ length: 24 }, (_, h) => [String(h), _pad2(h) + ":00–" + _pad2(h) + ":59"]));
+      const box = el("cmpRecords");
+      box.hidden = !days.length || !metrics.length;
+      if (box.hidden || (comparisonRecordView && !comparisonRecordViewIsCurrent())) {
+        clearComparisonRecords(); box.open = false;
+      }
+    }
+
+    function toggleComparisonRecords() {
+      if (el("cmpRecords").open && !el("cmpRecords").hidden) openComparisonRecords();
+      else clearComparisonRecords();
+    }
+
+    function openComparisonPoint(elements) {
+      const point = elements?.[0], dataset = point && chartCompare.data.datasets[point.datasetIndex];
+      if (!dataset || !Number.isInteger(point.index) || point.index < 0 || point.index > 23 ||
+        !Number.isFinite(dataset.data[point.index]) || el("cmpRecords").hidden) return;
+      el("cmpRecordsDay").value = dataset.sourceDay;
+      el("cmpRecordsMetric").value = dataset.sourceMetric;
+      el("cmpRecordsHour").value = String(point.index);
+      el("cmpEvidence").open = true;
+      el("cmpRecords").open = true;
+      openComparisonRecords();
+    }
+
+    function openComparisonRecords() {
+      clearComparisonRecords();
+      if (!el("cmpRecords").open || el("cmpRecords").hidden) return;
+      const key = el("cmpRecordsDay").value, metric = el("cmpRecordsMetric").value;
+      const hourText = el("cmpRecordsHour").value, hour = Number(hourText), comparisonMetric = el("cmpMetric").value;
+      const allowed = comparisonMetric === "temp_hum" ? ["temp", "hum"] : [comparisonMetric];
+      if (!cmpSelectedDays.includes(key) || !localDayBounds(key) || !allowed.includes(metric) ||
+        !Object.hasOwn(COMPARISON_RECORD_METRICS, metric) || !/^\d{1,2}$/.test(hourText) || hour < 0 || hour > 23) return;
+      const snapshot = dataAggregates(), day = hourlyDay(key), stat = day.values[metric][hour];
+      // A single small day summary can outlive LRU eviction while this view is
+      // open. It shares the current snapshot; never retain a copied row/index list.
+      comparisonRecordView = { snapshot, day, key, metric, hour, page: 0, station: activeIdx,
+        selection: JSON.stringify(cmpSelectedDays), comparisonMetric };
+      const total = day.records[hour].reduce((n, r) => n + r.end - r.start, 0);
+      const number = value => Number.isFinite(value) ? String(value) : "–";
+      const average = stat.count ? stat.sum / stat.count : null;
+      setNodeText(el("cmpRecordsInfo"), `${key} • ${_pad2(hour)}:00–${_pad2(hour)}:59 • ${COMPARISON_RECORD_METRICS[metric]}.\n` +
+        `${store.fullLoaded ? "Celá dostupná" : "Částečná"} načtená historie. ${total} záznamů • ${stat.count} použitých hodnot • ${total - stat.count} vynechaných • ${stat.unique} různých časů použitých hodnot.\n` +
+        (total ? (stat.count ? `Součet = ${number(stat.sum)}; počet = ${stat.count}; součet / počet = ${number(average)}. V grafu: ${number(stat.avg)}.\n` :
+          "Žádná číselná hodnota: průměr není dostupný.\n") : "Pro tuto místní hodinu nejsou v načtených datech žádné záznamy.\n") +
+        `Zóna: ${Intl.DateTimeFormat().resolvedOptions().timeZone}. Opakovaná místní hodina při změně času se průměruje společně; řádky uvádějí svůj UTC offset.`);
+      setNodeText(el("cmpRecordsFormula"), `${el("appVersion").textContent}. Vypočtený aritmetický průměr = součet všech konečných číselných hodnot / jejich počet, v grafu zaokrouhlený na jedno desetinné místo. ` +
+        "Není vážen dobou mezi měřeními. Součet probíhá od nejstaršího času, při shodném čase v původním pořadí; tabulka je od nejnovějšího. Stránkování výpočet neomezuje. „–“ značí nedostupný výsledek.");
+      setNodeText(el("cmpRecordsCaption"), `${key} · ${_pad2(hour)} h · nejvýše ${COMPARISON_RECORD_PAGE_SIZE} původních záznamů na stránce`);
+      setNodeText(el("cmpRecordsValue"), COMPARISON_RECORD_METRICS[metric]);
+      el("cmpRecordsContent").hidden = false;
+      pageComparisonRecords(0);
+    }
+
+    function comparisonRecordsPage(page = 0) {
+      if (!comparisonRecordViewIsCurrent()) return null;
+      const v = comparisonRecordView, ranges = v.day.records[v.hour];
+      const total = ranges.reduce((n, r) => n + r.end - r.start, 0), pages = Math.ceil(total / COMPARISON_RECORD_PAGE_SIZE);
+      page = Number.isInteger(page) ? Math.max(0, Math.min(Math.max(0, pages - 1), page)) : 0;
+      const offset = page * COMPARISON_RECORD_PAGE_SIZE, rows = [];
+      let skip = offset;
+      for (const range of ranges) {
+        const length = range.end - range.start;
+        if (skip >= length) { skip -= length; continue; }
+        for (let i = range.start + skip; i < range.end && rows.length < COMPARISON_RECORD_PAGE_SIZE; i++) {
+          const row = v.snapshot.source[i], valid = Number.isFinite(row[v.metric]);
+          rows.push({ index: i + 1, time: intervalTimestamp(row.ts), value: valid ? String(row[v.metric]) : "–",
+            reason: valid ? "Použitá hodnota" : "Vynecháno: chybí nebo není číselná hodnota" });
+        }
+        skip = 0;
+        if (rows.length === COMPARISON_RECORD_PAGE_SIZE) break;
+      }
+      return { page, pages, total, first: total ? offset + 1 : 0, last: offset + rows.length, rows };
+    }
+
+    function pageComparisonRecords(delta) {
+      if (!Number.isInteger(delta) || Math.abs(delta) > 1) return;
+      const data = comparisonRecordsPage((comparisonRecordView?.page || 0) + delta);
+      if (!data) { clearComparisonRecords(); el("cmpRecords").open = false; return; }
+      comparisonRecordView.page = data.page;
+      const markup = data.rows.map(row => `<tr>${[row.index, row.time, row.value, row.reason]
+        .map(value => `<td>${escapeHTML(value)}</td>`).join("")}</tr>`).join("");
+      if (el("cmpRecordsBody").innerHTML !== markup) el("cmpRecordsBody").innerHTML = markup;
+      setNodeText(el("cmpRecordsPage"), data.total ? `Strana ${data.page + 1}/${data.pages} • záznamy ${data.first}–${data.last} z ${data.total}` : "Žádné záznamy v této hodině.");
+      el("cmpRecordsPrev").disabled = data.page === 0;
+      el("cmpRecordsNext").disabled = data.pages === 0 || data.page === data.pages - 1;
     }
 
     /* ══════════════════════════════════════════════

@@ -1,0 +1,298 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "aggregateScenario": false,
+  "comparisonScenario": true,
+  "annualScenario": false,
+  "analysisScenario": false,
+  "recordsScenario": false,
+  "network": "blocked; generated in-memory fixture, no raw CSV retained",
+  "results": [
+    {
+      "rows": 1000,
+      "empty": {
+        "heapBytes": 2567200,
+        "nodes": 2127,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 2831828,
+        "nodes": 2127,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 4271128,
+        "nodes": 2190,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 4701020,
+        "nodes": 2190,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0.6,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 38.7,
+            "mutations": 36
+          },
+          "explorer": {
+            "ms": 6,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 13.8,
+            "mutations": 5
+          },
+          "compare": {
+            "ms": 5,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 20,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 7,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 7.5,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 3.5,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 18,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 5,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 8.9,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 4,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 19.8,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 4.6,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 7.5,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 4.7,
+            "mutations": 3
+          },
+          "points": 280
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 18.7,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 4.4,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 6,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 3.7,
+            "mutations": 3
+          },
+          "points": 280
+        }
+      ],
+      "records": null,
+      "pageErrors": [],
+      "overflow": false
+    },
+    {
+      "rows": 250000,
+      "empty": {
+        "heapBytes": 2568460,
+        "nodes": 2127,
+        "charts": 8
+      },
+      "loaded": {
+        "heapBytes": 56617088,
+        "nodes": 2127,
+        "charts": 8
+      },
+      "warm": {
+        "heapBytes": 59301372,
+        "nodes": 2196,
+        "charts": 8
+      },
+      "after30Cycles": {
+        "heapBytes": 59761692,
+        "nodes": 2196,
+        "charts": 8
+      },
+      "samples": [
+        {
+          "history": {
+            "ms": 0.5,
+            "mutations": 1
+          },
+          "refresh": {
+            "ms": 64.6,
+            "mutations": 36
+          },
+          "explorer": {
+            "ms": 59.9,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 32.6,
+            "mutations": 5
+          },
+          "compare": {
+            "ms": 5.1,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 26.1,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 41.9,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 26.2,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 4.7,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 39.2,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 46.7,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 23.3,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 5.6,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0.1,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 30.3,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 28.5,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 14.5,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 3.6,
+            "mutations": 3
+          },
+          "points": 534
+        },
+        {
+          "history": {
+            "ms": 0,
+            "mutations": 0
+          },
+          "refresh": {
+            "ms": 23.1,
+            "mutations": 0
+          },
+          "explorer": {
+            "ms": 21.2,
+            "mutations": 5
+          },
+          "coldCompare": {
+            "ms": 11.9,
+            "mutations": 6
+          },
+          "compare": {
+            "ms": 4.1,
+            "mutations": 3
+          },
+          "points": 534
+        }
+      ],
+      "records": null,
+      "pageErrors": [],
+      "overflow": false
+    }
+  ]
+}
