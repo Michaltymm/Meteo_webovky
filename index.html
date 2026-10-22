@@ -137,11 +137,14 @@
     .ana-card header { position:static; display:flex; justify-content:space-between; align-items:center; gap:.6rem; background:none; border:0; padding:0; margin:0; box-shadow:none; z-index:auto; }
     .ana-card h3 { font-size:.95rem; font-weight:600; margin:0; }
     .ana-description,.ana-note { font-size:.76rem; line-height:1.5; margin:.5rem 0; overflow-wrap:anywhere; }
-    .ana-description { color:var(--muted); min-height:2.3em; }
+    .ana-description { color:var(--muted); }
     .ana-plot { height:245px; position:relative; min-width:0; }
     .ana-plot canvas { width:100%; height:100%; max-width:100%; touch-action:pan-y; }
     .ana-empty { font-size:.8rem; padding:.5rem; text-align:center; color:var(--muted); }
-    .ana-card details { font-size:.78rem; margin-top:auto; padding-top:.6rem; }
+    .ana-card details { font-size:.78rem; padding-top:.6rem; }
+    .ana-card > details:last-child { margin-top:auto; }
+    .ana-info > summary { min-height:44px; padding:.65rem 0; color:var(--muted); }
+    .ana-card summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
     .ana-card summary { cursor:pointer; }
     .ana-actions { display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; margin-top:.5rem; }
     .ana-expanded { grid-column:1/-1; }
@@ -2021,8 +2024,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0110"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0111"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2949,10 +2952,13 @@
       <div class="ana-grid" id="anaGrid">
         <article class="ana-card" id="anaCard0" data-analytics-card="0">
           <header><h3>1. Teplota</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(0)" aria-expanded="false" aria-label="Zvětšit graf Teplota">Zvětšit</button></header>
-          <p class="ana-description">Původní teplota a denní minima/maxima [°C].</p>
           <div class="ana-plot"><canvas id="anaCanvas0" tabindex="0" role="img" aria-label="Teplota; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty0" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote0"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Původní teplota a denní minima/maxima [°C].</p>
+            <p class="ana-note" id="anaNote0"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(0,.5)" aria-label="Přiblížit graf 1">+</button><button class="ana-button" onclick="analyticsZoom(0,2)" aria-label="Oddálit graf 1">−</button>
             <button class="ana-button" onclick="analyticsPan(0,-.25)" aria-label="Posunout graf 1 zpět">←</button><button class="ana-button" onclick="analyticsPan(0,.25)" aria-label="Posunout graf 1 vpřed">→</button>
@@ -2961,10 +2967,13 @@
         </article>
         <article class="ana-card" id="anaCard1" data-analytics-card="1">
           <header><h3>2. Vlhkost a rosný bod</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(1)" aria-expanded="false" aria-label="Zvětšit graf Vlhkost a rosný bod">Zvětšit</button></header>
-          <p class="ana-description">Relativní vlhkost [%], teplota a vypočtený rosný bod [°C].</p>
           <div class="ana-plot"><canvas id="anaCanvas1" tabindex="0" role="img" aria-label="Vlhkost a rosný bod; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty1" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote1"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Relativní vlhkost [%], teplota a vypočtený rosný bod [°C].</p>
+            <p class="ana-note" id="anaNote1"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(1,.5)" aria-label="Přiblížit graf 2">+</button><button class="ana-button" onclick="analyticsZoom(1,2)" aria-label="Oddálit graf 2">−</button>
             <button class="ana-button" onclick="analyticsPan(1,-.25)" aria-label="Posunout graf 2 zpět">←</button><button class="ana-button" onclick="analyticsPan(1,.25)" aria-label="Posunout graf 2 vpřed">→</button>
@@ -2973,10 +2982,13 @@
         </article>
         <article class="ana-card" id="anaCard2" data-analytics-card="2">
           <header><h3>3. Atmosférický tlak</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(2)" aria-expanded="false" aria-label="Zvětšit graf Atmosférický tlak">Zvětšit</button></header>
-          <p class="ana-description">Původní tlak [hPa] a rozdíl krajních měření výřezu.</p>
           <div class="ana-plot"><canvas id="anaCanvas2" tabindex="0" role="img" aria-label="Atmosférický tlak; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty2" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote2"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Původní tlak [hPa] a rozdíl krajních měření výřezu.</p>
+            <p class="ana-note" id="anaNote2"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(2,.5)" aria-label="Přiblížit graf 3">+</button><button class="ana-button" onclick="analyticsZoom(2,2)" aria-label="Oddálit graf 3">−</button>
             <button class="ana-button" onclick="analyticsPan(2,-.25)" aria-label="Posunout graf 3 zpět">←</button><button class="ana-button" onclick="analyticsPan(2,.25)" aria-label="Posunout graf 3 vpřed">→</button>
@@ -2985,10 +2997,13 @@
         </article>
         <article class="ana-card" id="anaCard3" data-analytics-card="3">
           <header><h3>4. Srážkový čítač</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(3)" aria-expanded="false" aria-label="Zvětšit graf Srážkový čítač">Zvětšit</button></header>
-          <p class="ana-description">Diagnostika původního čítače a maxima přírůstku záznamu [mm].</p>
           <div class="ana-plot"><canvas id="anaCanvas3" tabindex="0" role="img" aria-label="Srážkový čítač; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty3" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote3"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Diagnostika původního čítače a maxima přírůstku záznamu [mm].</p>
+            <p class="ana-note" id="anaNote3"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(3,.5)" aria-label="Přiblížit graf 4">+</button><button class="ana-button" onclick="analyticsZoom(3,2)" aria-label="Oddálit graf 4">−</button>
             <button class="ana-button" onclick="analyticsPan(3,-.25)" aria-label="Posunout graf 4 zpět">←</button><button class="ana-button" onclick="analyticsPan(3,.25)" aria-label="Posunout graf 4 vpřed">→</button>
@@ -2997,10 +3012,13 @@
         </article>
         <article class="ana-card" id="anaCard4" data-analytics-card="4">
           <header><h3>5. Baterie a teplota</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(4)" aria-expanded="false" aria-label="Zvětšit graf Baterie a teplota">Zvětšit</button></header>
-          <p class="ana-description">Napětí [V] a teplota vzduchu [°C] na společné časové ose.</p>
           <div class="ana-plot"><canvas id="anaCanvas4" tabindex="0" role="img" aria-label="Baterie a teplota; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty4" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote4"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Napětí [V] a teplota vzduchu [°C] na společné časové ose.</p>
+            <p class="ana-note" id="anaNote4"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(4,.5)" aria-label="Přiblížit graf 5">+</button><button class="ana-button" onclick="analyticsZoom(4,2)" aria-label="Oddálit graf 5">−</button>
             <button class="ana-button" onclick="analyticsPan(4,-.25)" aria-label="Posunout graf 5 zpět">←</button><button class="ana-button" onclick="analyticsPan(4,.25)" aria-label="Posunout graf 5 vpřed">→</button>
@@ -3009,10 +3027,13 @@
         </article>
         <article class="ana-card" id="anaCard5" data-analytics-card="5">
           <header><h3>6. Změna napětí</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(5)" aria-expanded="false" aria-label="Zvětšit graf Změna napětí">Zvětšit</button></header>
-          <p class="ana-description">Napětí [V], pozorovaný sklon [mV/h] a denní min/max.</p>
           <div class="ana-plot"><canvas id="anaCanvas5" tabindex="0" role="img" aria-label="Změna napětí; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty5" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote5"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Napětí [V], pozorovaný sklon [mV/h] a denní min/max.</p>
+            <p class="ana-note" id="anaNote5"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(5,.5)" aria-label="Přiblížit graf 6">+</button><button class="ana-button" onclick="analyticsZoom(5,2)" aria-label="Oddálit graf 6">−</button>
             <button class="ana-button" onclick="analyticsPan(5,-.25)" aria-label="Posunout graf 6 zpět">←</button><button class="ana-button" onclick="analyticsPan(5,.25)" aria-label="Posunout graf 6 vpřed">→</button>
@@ -3021,10 +3042,13 @@
         </article>
         <article class="ana-card" id="anaCard6" data-analytics-card="6">
           <header><h3>7. Teplota × napětí</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(6)" aria-expanded="false" aria-label="Zvětšit graf Teplota × napětí">Zvětšit</button></header>
-          <p class="ana-description">Páry stejného záznamu [°C/V]; den/noc je odhad podle polohy.</p>
           <div class="ana-plot"><canvas id="anaCanvas6" tabindex="0" role="img" aria-label="Teplota × napětí; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty6" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote6"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Páry stejného záznamu [°C/V]; den/noc je odhad podle polohy.</p>
+            <p class="ana-note" id="anaNote6"></p>
+          </details>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(6,.5)" aria-label="Přiblížit graf 7">+</button><button class="ana-button" onclick="analyticsZoom(6,2)" aria-label="Oddálit graf 7">−</button>
             <button class="ana-button" onclick="analyticsPan(6,-.25)" aria-label="Posunout graf 7 zpět">←</button><button class="ana-button" onclick="analyticsPan(6,.25)" aria-label="Posunout graf 7 vpřed">→</button>
@@ -3033,10 +3057,13 @@
         </article>
         <article class="ana-card" id="anaCard7" data-analytics-card="7">
           <header><h3>8. Porovnání stanic</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(7)" aria-expanded="false" aria-label="Zvětšit graf Porovnání stanic">Zvětšit</button></header>
-          <p class="ana-description">Původní teplotní měření na společné časové ose [°C].</p>
           <div class="ana-plot"><canvas id="anaCanvas7" tabindex="0" role="img" aria-label="Porovnání stanic; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty7" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote7"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Původní teplotní měření na společné časové ose [°C].</p>
+            <p class="ana-note" id="anaNote7"></p>
+          </details>
           <button class="ana-button" id="anaCompareLoad" onclick="analyticsLoadStations(true)">Načíst / obnovit ostatní stanice</button>
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(7,.5)" aria-label="Přiblížit graf 8">+</button><button class="ana-button" onclick="analyticsZoom(7,2)" aria-label="Oddálit graf 8">−</button>
@@ -3046,10 +3073,13 @@
         </article>
         <article class="ana-card" id="anaCard8" data-analytics-card="8">
           <header><h3>9. Hodinová heatmapa</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(8)" aria-expanded="false" aria-label="Zvětšit graf Hodinová heatmapa">Zvětšit</button></header>
-          <p class="ana-description">Úplné hodinové průměry; opakovaná místní hodina společně.</p>
           <div class="ana-plot"><canvas id="anaCanvas8" tabindex="0" role="img" aria-label="Hodinová heatmapa; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty8" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <p class="ana-note" id="anaNote8"></p>
+          <details class="ana-info">
+            <summary>Podrobnosti grafu</summary>
+            <p class="ana-description">Úplné hodinové průměry; opakovaná místní hodina společně.</p>
+            <p class="ana-note" id="anaNote8"></p>
+          </details>
           <label for="anaHeatMetric">Barva <select id="anaHeatMetric" onchange="analyticsHeatChanged()"><option value="temp">Teplota [°C]</option><option value="hum">Vlhkost [%]</option></select></label>
           <div class="ana-heat-legend" aria-hidden="true"></div><p class="ana-note" id="anaHeatLegend"></p>
           <p class="ana-note" id="anaHeatDetail" aria-live="polite">Vyberte buňku dotykem nebo šipkami na grafu.</p>

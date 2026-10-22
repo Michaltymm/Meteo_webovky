@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `7bc2b0e`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.11.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.11.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -21,6 +21,7 @@
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
 - Centrální plán: `docs/NAPADY_A_ROADMAP.md` (83 METEO ID); etapa7 přidala8nových076–083 a12skupin doplnění starších návrhů. METEO-078 DONE v0.5.0; METEO-019/031 základní T/V, METEO-013 AH/VPD a METEO-010 motion hotové ve v0.4.0, další části těchto ID rozpracované. Plán dostupnosti a zóna stále027/038/048.
 - METEO-077 DONE v plánovaném denním rozsahu v0.7.0. METEO-063 rozpracováno: T/V dny0.7.0, hodinové průměry T/RH/P0.8.0, globální teplotní extrémy0.9.0 hotové. Globální min/max mají původní řádek/index, přesné hodnoty a počet shod, úplné validní/vynechané počty, quick/full rozsah a UTC offsety. Shoda před zaokrouhlením, první záznam v sestupném zdroji, při shodném čase původní pořadí. Původní minRow/maxRow zachovány; v původním průchodu jen O(1) čítače/indexy, otevření O(1)/max3čtení i250k. Invalidace CSV/MQTT/reset/stanice/fullLoaded zavře a zahodí ref. Pořadí není trvalé ID;063 dále roční/denní extrémy a původ odvozených Td/AH/VPD, vstupy odvozených metrik zůstávají budoucím dílčím úkolem. Po nové analytické etapě má výkonovou návaznost008. Explicitní zóna048 a metadata071 dále.
+- Popisky0.11.1: všech9karet má nativní zavřené details.ana-info/summary „Podrobnosti grafu“ s původní .ana-description a dynamickým #anaNote0–8. Žádný nový JS; osy/legendy/anaEmpty/heatlegend/detail a Možnosti grafu mimo podrobnosti. Dlouhá diagnostika porovnání je k přečtení po rozbalení.
 - Navigace0.11.0: horní Hlavní přehled / Analytické grafy jsou dvě samostatná hlavní zobrazení. Analytika mimo stationData/dolní tabs, dashboard+sticky lišty skryté; URL #analytika/#prehled, browserBack/Forward, nativní odkazy. Sdílený store/caches/config, bez reloadu/refetch již načtené historie. currentPage určuje analyticsActive a refreshUI; refreshTab hlídá skrytou hlavní stránku. Při návratu se zachová aktivní dolní tab a obnoví dirty obsah. Po resetu stanice anaGrid skrytý, anaDataEmpty viditelný; bez dat buildAnalytics nevyžaduje full fetch před konfigurací.4nové VM regrese a aktualizovaný skutečný browser harness.
 - Analytické grafy0.10.0: devět karet,3/2/1 responzivní sloupce, období24h/7/30/90/365/all/custom, lineární epochová osa, zoom/pan/sync/kurzor, rozšíření/Escape/PNG. Statistický model z úplných řádků, vizualizace≤600/XY≤580. Lazy jen dle viewportu, po odchodu destroy/osm původních grafů. Nová vlastní heatmapa14dnů×24hodin, T/RH plné průměry, touch/klávesnice. Cizí T historie: čistý sdílený parseHistoryCSV, actual cfg, žádný commit do store; sekvenčně/abort/cache Float64 po16B/8MiB stanice/16MiB celkem, ruční obnova a viditelná chyba. Párování do10min monotónní one-to-one, O(n log m)/rychlá exact větev, bez interpolace. Srážky jen diagnostika čítače017/049, mV/h není proud/SOC/energie. Viz docs/ANALYTICKE_GRAFY.md a ETAPA13; širší004/007/020/025/029/030/034/037 dál rozpracované.
 - METEO-078: rozbalovací rozklad RH v průzkumníku (T/RH/dew/AH/VPD). Pouze původní krajní řádky aktuálního slideru, O(1), 2čtení i při250k; vodní Magnus jako013, faktory/logaritmická identita, žádná kauzální atribuce či vodní bilance. RH0/nuly T odlišit, nevybírat náhradní endpoint. Kalibrace/umístění mezi body neověřeny, vždy uvedeno; metadata epoch071 dále.
@@ -382,6 +383,13 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 
 
 - Uložení a nasazení etapy14: [ef23a26](https://github.com/Michaltymm/Meteo_webovky/commit/ef23a266ddac00ee5f4b16bd3b8b8edc3b9100dd) odeslán na codex-dev; [Actions #23](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39745845016) **Success**, build17s/deploy12s/celkem37s, jeden Pages artefakt. Main stále2405c5d. Vývojová analytika: https://michaltymm.github.io/Meteo_webovky/dev/#analytika. Deployment potvrzuje workflow; přímé živé widgety ani fyzický iOS nebyly kontrolovány. Tento následný dokumentační záznam nemění HTML0.11.0 a neopakuje hotové testy.
+
+### Etapa 15: Rozbalovací popisky analytických grafů, v0.11.1 (22. 10. 2026)
+
+- Ověřeno230/230 Node testů (8,01s) a skutečný Chromium/Chart.js s řízeným CSV/UV všech3konfigurací. Aktualizovaný browser harness ověřuje9zavřených panelů, zachování textu, kliknutí/Enter/mezerník/dotyk, žádný další request ani novou Chart instanci po rozbalení, samostatné Možnosti, viditelnou heatlegend/detail a původní grafové/navigační regrese.1440/800/390/320px v obou tématech bez overflow,0pageerrors; desktop/mobil screenshoty prohlédnuté. Živé zdroje ani fyzický Safari tím ověřené nejsou.
+
+- Výchozí b80169c na codex-dev. V devíti kartách jsou původní popisy a dynamické anaNote0–8 přesunuté do nativních zavřených details.ana-info; samostatná šipka „Podrobnosti grafu“. Oba texty zachované, ID poznámek a jejich aktualizace beze změny. Kliknutí/dotyk/Enter/mezerník bez vlastního JS, 44px řádek a viditelný fokus.
+- Graf, jednotky/legendy, prázdný stav, ovládání a heatmapová legenda/detail zůstávají mimo popisky. Není změna parseru, dat, statistik, stanic, transportů, cache nebo Chart instancí. METEO-030 doplněno, obecné030/010 nejsou DONE. Změna je pouze zobrazení, bez nových výkonových tvrzení a opakování velkých profilů.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

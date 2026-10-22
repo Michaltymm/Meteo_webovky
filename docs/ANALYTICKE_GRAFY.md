@@ -1,4 +1,4 @@
-# Analytické grafy — v0.11.0
+# Analytické grafy — v0.11.1
 
 Samostatná analytická stránka navazuje na stávající `store.rows`, Chart.js 4.4.0, přepínání
 stanic, řízení relací, CSV parser, binární výběr historie a min/max redukci.
@@ -37,6 +37,14 @@ nikoli od počítačového času. „Všechna“ znamená všechna načtená dat
 Vlastní datum zahrnuje celou místní koncovou noc včetně 23/25h dní.
 Výřez, poslední měření a quick/full stav jsou viditelné nad grafy.
 Chybné vlastní období neuchová starý graf jako nový výsledek.
+
+Od v0.11.1 má každá karta pod grafem zavřené **Podrobnosti grafu** s nativní
+rozbalovací šipkou. Obsahují původní stručný popis i celé statistické a metodické
+poznámky včetně podrobné diagnostiky porovnání stanic. Texty se nadále aktualizují
+podle zvolených dat, ale nezahlcují mřížku. Otevřít je lze kliknutím, dotykem
+nebo klávesami Enter/mezerník. Rozbalení nevyžaduje další stahování ani nový graf.
+Samostatné **Možnosti grafu** zůstávají pro ovládání; legendy, osy, zprávy o prázdných
+datech a barevná legenda i vybraná buňka heatmapy zůstávají mimo podrobnosti.
 
 ## Devět grafů
 

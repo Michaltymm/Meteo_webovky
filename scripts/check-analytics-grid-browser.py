@@ -123,6 +123,48 @@ async def main():
             assert await page.evaluate('analyticsCharts.size') == 8
             assert await page.evaluate('Object.keys(Chart.instances).length') == baseline+8
         await visit_cards()
+        # Descriptive text is optional, never an always-visible paragraph or a
+        # hidden graph. Native details provide pointer and keyboard disclosure.
+        assert await page.locator('#anaGrid details.ana-info').count() == 9
+        for card in range(9):
+            info = page.locator(f'#anaCard{card} details.ana-info')
+            assert not await info.evaluate('e=>e.open')
+            assert await info.locator('summary').inner_text() == 'Podrobnosti grafu'
+            assert await info.locator('.ana-description').count() == 1
+            assert await info.locator(f'#anaNote{card}').count() == 1
+            assert await info.locator('.ana-description').is_hidden()
+            assert await info.locator(f'#anaNote{card}').is_hidden()
+            assert await page.locator(f'#anaCard{card} .ana-plot').evaluate("e=>!e.closest('details.ana-info')")
+            assert await page.locator(f'#anaEmpty{card}').evaluate("e=>!e.closest('details.ana-info')")
+        await page.wait_for_function('analyticsState.loading===null')
+        detail_requests = len(requests)
+        await page.evaluate('globalThis.detailChart=analyticsCharts.get(0)')
+        info = page.locator('#anaCard0 details.ana-info')
+        summary = info.locator('summary')
+        await summary.click()
+        assert await info.evaluate('e=>e.open')
+        assert await info.locator('.ana-description').is_visible()
+        assert await info.locator('#anaNote0').is_visible()
+        await summary.focus()
+        await page.keyboard.press('Enter')
+        assert not await info.evaluate('e=>e.open')
+        assert await info.locator('#anaNote0').is_hidden()
+        await page.keyboard.press('Space')
+        assert await info.evaluate('e=>e.open')
+        await page.keyboard.press('Space')
+        assert not await info.evaluate('e=>e.open')
+        assert await page.evaluate('analyticsCharts.get(0)===detailChart')
+        assert len(requests) == detail_requests
+        # Graph controls and heatmap context remain separately reachable.
+        options = page.locator('#anaCard0 > details:not(.ana-info)')
+        await options.locator('summary').click()
+        assert await options.locator('button').first.is_visible()
+        await options.locator('summary').click()
+        for selector in ['#anaHeatLegend','#anaHeatDetail','#anaHeatMetric']:
+            assert await page.locator(selector).evaluate("e=>!e.closest('details.ana-info')")
+            assert await page.locator(selector).is_visible()
+        results.append({'graphDetailsCollapsed':9,'detailsPointerKeyboard':True,'detailsNoFetchOrChartRecreation':True,
+            'graphControlsSeparate':True,'heatContextRetained':True})
         await page.select_option('#anaRange','all')
         await page.locator('#anaCard0').scroll_into_view_if_needed()
         await page.wait_for_timeout(100)
@@ -139,8 +181,8 @@ async def main():
         assert 85 in time_points
         assert await page.evaluate('analyticsCharts.get(0).options.scales.x.type') == 'linear'
         assert await page.evaluate('analyticsCharts.get(4).data.datasets.length') >= 2
-        assert 'mV' in await page.locator('#anaCard5').inner_text()
-        assert 'korel' in (await page.locator('#anaCard6').inner_text()).lower()
+        assert 'mV' in await page.locator('#anaNote5').text_content()
+        assert 'korel' in (await page.locator('#anaNote6').text_content()).lower()
         await page.locator('#anaCard6').scroll_into_view_if_needed()
         await page.wait_for_timeout(100)
         assert await page.evaluate('''()=>{const c=analyticsCharts.get(6),xs=c.data.datasets.flatMap(d=>d.data.map(p=>p.x));return c.scales.x.min<=Math.min(...xs) && c.scales.x.max>=Math.max(...xs)}''')
@@ -297,7 +339,7 @@ async def main():
         await page.wait_for_function('analyticsStationCache.size>=2 && analyticsState.loading===null')
         remote_failure['station']=1
         await page.evaluate('analyticsLoadStations(true)')
-        assert 'obnova selhala' in await page.locator('#anaNote7').inner_text()
+        assert 'obnova selhala' in await page.locator('#anaNote7').text_content()
         assert await page.evaluate('analyticsCharts.get(7).data.datasets.length') == 3
         remote_failure['station']=None
         await page.evaluate('analyticsLoadStations(true)')
@@ -322,6 +364,13 @@ async def main():
         await page.locator('#anaCard0').scroll_into_view_if_needed()
         await page.wait_for_function('analyticsCharts.has(0)')
         assert await page.evaluate('analyticsCharts.size') < 8
+        mobile_info = page.locator('#anaCard0 details.ana-info')
+        assert not await mobile_info.evaluate('e=>e.open')
+        await mobile_info.locator('summary').tap()
+        assert await mobile_info.locator('.ana-description').is_visible()
+        assert await mobile_info.locator('#anaNote0').is_visible()
+        await mobile_info.locator('summary').tap()
+        assert await mobile_info.locator('#anaNote0').is_hidden()
         await page.locator('#anaCanvas0').evaluate("e=>e.scrollIntoView({block:'center'})")
         point=await page.evaluate("""()=>{const a=analyticsCharts.get(0).chartArea;return {x:(a.left+a.right)/2,y:(a.top+a.bottom)/2}}""")
         await page.locator('#anaCanvas0').tap(position=point)
@@ -335,7 +384,7 @@ async def main():
         assert await page.evaluate('analyticsState.heat.hour') == 13
         await page.locator('#anaCanvas8').focus();await page.keyboard.press('ArrowRight')
         assert await page.evaluate('analyticsState.heat.hour') == 14
-        results.append({'touchTooltip':True,'touchHeatCell':True,'heatKeyboard':True,'mobileLazy':True,'directAnalyticsURL':True,'failedRefreshLabel':True,'lateForeignResponseIgnored':True})
+        results.append({'touchTooltip':True,'touchDetails':True,'touchHeatCell':True,'heatKeyboard':True,'mobileLazy':True,'directAnalyticsURL':True,'failedRefreshLabel':True,'lateForeignResponseIgnored':True})
         assert not errors, errors
         version = browser.version
         await browser.close()

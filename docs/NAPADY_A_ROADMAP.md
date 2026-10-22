@@ -110,7 +110,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-029 Časové párování a tolerance: uvést spárované/odmítnuté vzorky | Timestampy dvou řad | S / P1 | v0.10.0 monotónní one-to-one nejbližší čas do10min: O(n log m), přesně sladěná rychlá větev O(n); konfigurovatelná tolerance dále | METEO-048, policy níže | Rozpracováno |
-| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 devět grafů, sdílené období/zoom, lazy model; v0.11.0 samostatná stránka s horní navigací/Zpět/Vpřed; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
+| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 devět grafů, sdílené období/zoom, lazy model; v0.11.0 samostatná stránka s horní navigací/Zpět/Vpřed; v0.11.1 volitelné rozbalovací popisky; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
 | METEO-031 Pearson/regrese a počet validních párů z úplných dat | Současná párovaná data | S / P1 | v0.4.0 Welford r/sklon z úplných T/V, n/časy/dny; intervaly po dnech/nejistota dále | Korelace ≠ příčina, bez p-value a SOC, při n<3/konstantě nedostupné | Rozpracováno |
 | METEO-032 Časový posun, klouzavé průměry, oddělení den/noc a sezón | Současná historie | V / P2 | v0.10.0 volitelný průměr5měření T/P a odhad den/noc v XY; lagy a sezónní rozklad dále | METEO-029/048; nepravidelné intervaly | Rozpracováno |
 
@@ -1489,3 +1489,25 @@ Publikace etapy14: [ef23a26](https://github.com/Michaltymm/Meteo_webovky/commit/
 [Actions #23](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39745845016)
 **Success** (build17s/deploy12s,37s celkem). Nasazení potvrzené workflow,
 přímá kontrola živých widgetů neprovedena. Main zachován2405c5d.
+
+
+## Etapa 15 — Nenápadné popisky grafů, v0.11.1 (22. 10. 2026)
+
+Dílčí úprava METEO-030 podle požadavku uživatele: všech devět karet má
+výchozí zavřené **Podrobnosti grafu** s nativní šipkou `details/summary`.
+Uvnitř jsou původní popisy a celé aktualizované poznámky/statistické podklady,
+včetně diagnostiky porovnání stanic. Obsah se nezkracuje ani neodstraňuje.
+Ovládání je oddělené v Možnostech grafu; legendy, osy, prázdné stavy a detail
+buňky heatmapy jsou mimo rozbalovací text. Bez nového JavaScriptu, závislostí,
+požadavků nebo změn výpočtu. Kliknutí, dotyk a Enter/mezerník obsluhuje prohlížeč;
+řádek šipky má dotykový cíl44px a zvýraznění fokusu.
+
+Širší METEO-030 i METEO-010 zůstávají Rozpracováno, nevzniká nové ID. Další
+vývojový krok zůstává008 podle dřívějšího měření; tato vzhledová úprava
+neopakuje výkonové profily ani netvrdí nové zrychlení výpočtů.
+
+Ověřeno:230/230 Node testů a skutečný Chromium/Chart.js všech tří konfigurací
+s řízenými daty. Devět zavřených panelů, zachovaný obsah a fungující kliknutí,
+Enter/mezerník i dotyk; rozbalení bez requestů nebo nové Chart instance.
+Původní interakce grafů, prázdná data a navigace prošly.1440/800/390/320px
+v obou tématech bez přetečení a0pageerrors, screenshoty zkontrolované.

@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.11.1
+
+- Vysvětlující popisky a podrobné statistiky všech devíti analytických grafů jsou schované pod rozbalovací šipkou „Podrobnosti grafu“. Text lze otevřít kliknutím, dotykem i klávesnicí.
+
 ## v0.11.0
 
 - Nahoře lze přepínat mezi „Hlavním přehledem“ a samostatnou stránkou „Analytické grafy“ s devíti grafy. Karty přehledu a jeho původní záložky zůstávají na hlavní stránce.
