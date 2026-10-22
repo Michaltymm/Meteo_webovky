@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.12.0
+
+- Nová stránka „Moderní přehled“ nabízí vzdušnější design s výraznou teplotou, novými kartami a responzivním rozložením ve světlém i tmavém režimu.
+- Nahoře lze přepínat mezi původním přehledem, moderním přehledem a analytickými grafy. Oba přehledy sdílejí stanici, data i všechny původní funkce bez opakovaného načítání.
+
 ## v0.11.4
 
 - Prohlížeč ověřuje integritu externích grafových a MQTT knihoven. Jejich verze ani vzhled grafů se nemění.

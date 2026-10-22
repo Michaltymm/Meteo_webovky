@@ -1,10 +1,11 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.12.0: třetí horní stránka Moderní přehled (`#moderni`) je alternativní design celého dashboardu. `currentPage=modern` používá původní page-main, společný DOM/store/grafy a všechny dolní záložky; žádné duplikované ID, druhé grafy, fetch/polling při přepnutí. CSS pouze body[data-view=modern], atribut přežije setTheme. syncModernStation bezpečně naplní výběr stanic při vstupu/updateUI/refresh. Původní #prehled a #analytika zachovány, Back/Forward/direct URL testované. Viz docs/MODERNI_PREHLED.md; METEO-011 částečně realizováno, personalizace karet dále.251/251Node testů a oba Chromium browser harnessy prošly.
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.11.4 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.12.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -17,7 +18,7 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (246/246 prošlo po bezpečnostní sérii); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (251/251 prošlo po přidání moderního přehledu); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
@@ -419,3 +420,7 @@ METEO-055: SRI Chart4.4.0/Paho1.1.0, Actions stejné major připnuté na SHA a v
 SEC-007: historický vstup mimo Pages měl samostatný potvrzený nález; vzhledem k výslovnému zadání auditu celého projektu opraveno pouze bezpečné vykreslení textu v obou tabulkách, bez migrace/záměny aplikace. Skutečný Chromium test původního parseru a rendererů prošel; soukromá reprodukce před opravou byla pozitivní. Úplná modernizace archivní aplikace není provedena, pro nasazení stále nutné další ověření.
 
 Bezpečnostní publikace: [Actions #25](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39824209785), c19e246, **Success38s/build17s/deploy11s**. v0.11.4, main2405c5d bezezměny. Následná změna pouze dokumentace. Přímý Pages host podle politiky prostředí neověřen.
+
+## Nový design dashboardu — v0.12.0
+
+Výchozí revize3e2d2cd, výhradněcodex-dev. Nová virtuální stránka#moderni má vlastní horní odkaz a zcela přepracované responzivní rozložení/barvy/typografii/karty. Zachována jediná implementace komponent a originální měření, theme/state synchronizace i bezpečné názvy.8původních grafů před/po,0nových requestů při změně vzhledu. Node251/251 + moderní browser8layoutů a původní analytický browser prošly,0pageerror. Screenshot desktop/mobil prohlédnut. Konfigurace/workflow/main/archiv neměněny. Fyzický Safari/iOS a živý Pages host neověřeny.

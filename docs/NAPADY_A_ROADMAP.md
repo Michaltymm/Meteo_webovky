@@ -71,7 +71,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | Malý DOM update, bez dalších fetchů | METEO-048 | Připraveno k realizaci |
 | METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu v Chart/CSS/scroll i za běhu hotové; další ARIA/fokus/touch zbývají | IMP-006 | Rozpracováno |
-| METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | Méně DOM při menším počtu karet | METEO-054 validace storage | Nápad |
+| METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.12.0 samostatný moderní přehled, responzivní karty a sdílené komponenty bez dalšího fetch/grafů | METEO-054; výběr karet a per-station preference dále; viz MODERNI_PREHLED.md | Rozpracováno |
 | METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
 
 ## 3. Meteorologické metriky
@@ -1525,3 +1525,9 @@ Bezpečnostní dávka B (v0.11.3): METEO-047/050 získávají odmítnutí neúm�
 Závěrečná bezpečnostní kontrola navíc uzavřela SEC-007 v historickém HTML cílenou opravou textového výstupu. Nepřidává nové METEO ID ani neřeší FUT-002 rozhodnutí o dlouhodobém účelu archivu.
 
 Bezpečnostní série uzavřena v dostupném rozsahu:5potvrzených nálezů/5oprav,246/246Node regresí, browser analytika+SRI+historické tabulky prošly. Actions#25 pro c19e246 **Success**, main2405c5d bezezměny. Další bezpečnostní kroky a omezení jsou vSECURITY_AUDIT.md; další běh nemá opakovat hotové etapy.
+
+## Moderní přehled — 2026-10-22, v0.12.0
+
+Dílčí realizace METEO-011: nový design je třetí stránkou horní navigace (`#moderni`), původní přehled i analytika dostupné dál. Sdílený DOM/store/grafy, samostatné CSS pouze pro moderní stránku, obě témata a vlastní výběr všech3stanic. Přepnutí zachovává dolní záložku a historii bez fetchů či nových grafů. Výběr karet/per-station preference zůstávají otevřené.
+
+Důkaz:251/251Node testů,5nových navigačních regresí; skutečný Chromium v8kombinacích1440/800/390/320px a2témat,3stanice,Back/Forward,URL,empty/nulové hodnoty, návrat zanalytiky. Původní analytický browser harness také prošel. Bez pageerror/overflow. [Rozsah a reprodukce](MODERNI_PREHLED.md).

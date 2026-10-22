@@ -2011,6 +2011,94 @@
         scroll-behavior: auto !important;
       }
     }
+
+    /* Modern dashboard is an alternate page using the existing live components. */
+    body[data-view="modern"] {
+      --bg:#101c22; --bg2:#192a32; --bg3:#21353e; --text:#edf7f5;
+      --muted:#aec3c6; --border:#35505a; --accent:#66d3be;
+      background:radial-gradient(ellipse at 5% 0%,#21403f 0,transparent 45%),var(--bg);
+    }
+    body.theme-light[data-view="modern"] {
+      --bg:#eef4f1; --bg2:#fff; --bg3:#e3eeea; --text:#183832;
+      --muted:#506d65; --border:#c9dbd4; --accent:#166b58;
+      background:radial-gradient(ellipse at 5% 0%,#d5eae0 0,transparent 45%),var(--bg);
+    }
+    body[data-view="modern"] .page-wrapper { max-width:1440px; padding:1.6rem 1.5rem 3rem; }
+    body[data-view="modern"] .page-navigation-inner { max-width:1440px; }
+    body[data-view="modern"] .page-navigation { background:var(--bg); }
+    body[data-view="modern"] .page-link { border-radius:12px; }
+    body[data-view="modern"] .page-link[aria-current="page"] { color:var(--bg); }
+    body.theme-light[data-view="modern"] .page-link[aria-current="page"] { color:#fff; }
+    body[data-view="modern"] .status-bar { padding:.7rem 1rem; border:1px solid var(--border); border-radius:14px; background:var(--bg2); margin-bottom:1.8rem; }
+    .modern-intro { display:flex; justify-content:space-between; align-items:end; gap:1.5rem; margin-bottom:1.6rem; }
+    .modern-intro[hidden] { display:none; }
+    .modern-kicker { display:flex; align-items:center; gap:.5rem; color:var(--accent); font-size:.73rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; margin-bottom:.65rem; }
+    .modern-kicker::before { content:""; width:18px; height:2px; background:currentColor; }
+    .modern-intro h1 { font-size:clamp(1.8rem,3vw,2.8rem); font-weight:650; line-height:1.15; letter-spacing:-.045em; }
+    .modern-intro p { color:var(--muted); font-size:.85rem; margin-top:.65rem; line-height:1.6; }
+    .modern-station-control { min-width:210px; max-width:100%; display:flex; flex-direction:column; gap:.45rem; color:var(--muted); font-size:.75rem; }
+    #modernStation { width:100%; min-height:46px; padding:.65rem .9rem; border:1px solid var(--border); border-radius:12px; color:var(--text); background:var(--bg2); font:inherit; font-size:.9rem; }
+    body[data-view="modern"] .top-row { grid-template-columns:minmax(280px,1.05fr) minmax(220px,.9fr) minmax(300px,1.25fr); gap:1.1rem; margin-bottom:1.1rem; align-items:stretch; }
+    body[data-view="modern"] .top-row>div:first-child { gap:.8rem!important; min-width:0; }
+    body[data-view="modern"] .current-card { position:relative; overflow:hidden; background:linear-gradient(135deg,#155e52,#224a50); color:#f4fffb; border:1px solid #397e72; border-radius:22px; padding:1.8rem 1.6rem; min-height:218px; flex:1; }
+    body[data-view="modern"] .current-card::after { content:""; position:absolute; height:145px; width:145px; border:1px solid #9de7ca40; border-radius:50%; right:-55px; top:-40px; box-shadow:0 0 0 24px #9de7ca09,0 0 0 48px #9de7ca07; pointer-events:none; }
+    body[data-view="modern"] .current-card .lbl { color:#ccede1; font-size:.75rem; font-weight:500; letter-spacing:.07em; }
+    body[data-view="modern"] .big-val { font-size:clamp(3.7rem,5.3vw,5.4rem); letter-spacing:-.07em; font-weight:500; margin:.7rem 0 1rem; position:relative; z-index:1; }
+    body[data-view="modern"] .big-val .unit { font-size:1.6rem; margin-left:.3rem; margin-bottom:.5rem; letter-spacing:0; }
+    body[data-view="modern"] .big-val .trend { margin:0 0 .65rem auto; font-size:1.6rem; letter-spacing:0; }
+    body[data-view="modern"] .current-card .ts { opacity:1; color:#ccede1; font-size:.8rem; }
+    body[data-view="modern"] .sub-cards { flex-direction:row; gap:.8rem; margin:0; }
+    body[data-view="modern"] .sub-card { flex:1; min-width:0; background:var(--bg2)!important; color:var(--text); border:1px solid var(--border); border-radius:16px; padding:1rem; min-height:90px; }
+    body[data-view="modern"] .sc-lbl { color:var(--muted); font-size:.68rem; opacity:1; }
+    body[data-view="modern"] .sc-val { margin-top:.5rem; font-size:1.3rem; font-weight:500; }
+    body[data-view="modern"] .sc-tr { color:var(--accent); }
+    body[data-view="modern"] .table-card { border:1px solid var(--border); border-radius:22px; min-width:0; padding:.4rem 0; }
+    body[data-view="modern"] .tc-title { background:transparent!important; padding:1.1rem 1.1rem .8rem; color:var(--muted); font-size:.7rem; letter-spacing:.09em; }
+    body[data-view="modern"] .table-card table { font-size:.8rem; }
+    body[data-view="modern"] .table-card table td { padding:.68rem 1.1rem; white-space:normal; overflow-wrap:anywhere; }
+    body[data-view="modern"] .table-card table td:first-child { color:var(--muted); }
+    body[data-view="modern"] .extreme-source-button { display:inline-block; min-height:32px; margin:.35rem 0 0 .25rem; background:var(--bg3); border-radius:8px; font-size:.68rem; }
+    body[data-view="modern"] .extreme-source-button[hidden] { display:none; }
+    body[data-view="modern"] .sensor-row { grid-template-columns:repeat(7,minmax(0,1fr)); gap:.8rem; margin-bottom:1.1rem; }
+    body[data-view="modern"] .sensor-tile { min-width:0; text-align:left; border:1px solid var(--border); border-radius:18px; padding:1.1rem; min-height:128px; }
+    body[data-view="modern"] .sensor-tile:hover { border-color:var(--accent); }
+    body[data-view="modern"] .sensor-tile .st-lbl { font-size:.65rem; letter-spacing:.03em; line-height:1.5; min-height:2.7em; }
+    body[data-view="modern"] .sensor-tile .st-val { font-size:1.75rem; font-weight:500; letter-spacing:-.03em; margin:.2rem 0 .35rem; }
+    body[data-view="modern"] .sensor-tile .st-unit { font-size:.68rem; line-height:1.4; }
+    body[data-view="modern"] #page-main>.comparison-data,body[data-view="modern"] #stationData>.comparison-data { border:1px solid var(--border); border-radius:14px; padding:.65rem 1rem; }
+    body[data-view="modern"] .tabs { gap:.35rem; padding:.5rem; margin-top:1.6rem; margin-bottom:1rem; border:1px solid var(--border); border-radius:16px; background:var(--bg2); scrollbar-width:thin; }
+    body[data-view="modern"] .tab-btn { border:0; border-radius:10px; min-height:44px; margin:0; padding:.65rem .9rem; font-size:.8rem; }
+    body[data-view="modern"] .tab-btn.active { color:var(--bg); background:var(--accent); }
+    body.theme-light[data-view="modern"] .tab-btn.active { color:#fff; }
+    body[data-view="modern"] .day-summary { padding:1rem 1.2rem; border:1px solid var(--border); border-radius:16px; gap:1.1rem; }
+    body[data-view="modern"] .ds-title { color:var(--muted); }
+    body[data-view="modern"] .chart-wrapper,body[data-view="modern"] .chart-card { border:1px solid var(--border); border-radius:22px; padding:1.2rem; margin-top:1rem; }
+    body[data-view="modern"] .chart-title { text-transform:none; letter-spacing:0; font-size:.9rem; margin-bottom:1.1rem; }
+    body[data-view="modern"] .chart-canvas-wrap { height:330px; background:#192a32; border-radius:12px; padding:.5rem; }
+    body[data-view="modern"] :is(button,a,select,[role="button"]):focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    @media(max-width:1150px) {
+      body[data-view="modern"] .top-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+      body[data-view="modern"] .top-row>.table-card:last-child { grid-column:1/-1; }
+      body[data-view="modern"] .sensor-row { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    }
+    @media(max-width:650px) {
+      body[data-view="modern"] .page-wrapper { padding:1rem .8rem 2rem; }
+      body[data-view="modern"] .status-bar { gap:.4rem; }
+      body[data-view="modern"] #gsLastFetch:empty { display:none; }
+      body[data-view="modern"] .status-bar button { min-height:44px; }
+      .modern-intro { flex-direction:column; align-items:stretch; gap:1rem; }
+      .modern-station-control { min-width:0; }
+      body[data-view="modern"] .top-row { grid-template-columns:minmax(0,1fr); }
+      body[data-view="modern"] .current-card { min-height:205px; padding:1.4rem; }
+      body[data-view="modern"] .big-val { font-size:4.8rem; }
+      body[data-view="modern"] .sensor-row { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      body[data-view="modern"] .sensor-tile:last-child { grid-column:1/-1; }
+      body[data-view="modern"] .sensor-tile { min-height:118px; padding:1rem; }
+      body[data-view="modern"] .sensor-tile .st-lbl { min-height:0; }
+      body[data-view="modern"] .chart-wrapper,body[data-view="modern"] .chart-card { padding:.85rem; border-radius:16px; }
+      body[data-view="modern"] .chart-canvas-wrap { height:280px; }
+    }
+    @media(max-width:480px) { .page-link { font-size:.7rem; padding:.35rem .3rem; text-align:center; } }
   </style>
 </head>
 
@@ -2024,8 +2112,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0114"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.4</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0120"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.12.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2078,6 +2166,7 @@
   <nav class="page-navigation" aria-label="Hlavní stránky">
     <div class="page-navigation-inner">
       <a class="page-link" href="#prehled" data-page="main" aria-current="page" aria-controls="page-main">Hlavní přehled</a>
+      <a class="page-link" href="#moderni" data-page="modern" aria-controls="page-main">Moderní přehled</a>
       <a class="page-link" href="#analytika" data-page="analytics" aria-controls="tab-analytics">📊 Analytické grafy</a>
     </div>
   </nav>
@@ -2319,6 +2408,16 @@
     </div>
 
     <main class="app-page" id="page-main" aria-label="Hlavní přehled">
+    <section class="modern-intro" id="modernIntro" aria-labelledby="modernHeading" hidden>
+      <div>
+        <div class="modern-kicker">Meteostanice · nový pohled</div>
+        <h1 id="modernHeading">Počasí, přehledně.</h1>
+        <p>Aktuální hodnoty, historie a souvislosti na jednom místě.</p>
+      </div>
+      <label class="modern-station-control" for="modernStation">Vybraná meteostanice
+        <select id="modernStation" onchange="switchStation(Number(this.value))"></select>
+      </label>
+    </section>
     <p id="stationDataEmpty" hidden style="color:var(--muted);padding:1rem 0">
       Data vybrané stanice zatím nejsou k dispozici.
     </p>
@@ -3281,6 +3380,7 @@
     }
 
     function updateStationUI() {
+      syncModernStation();
       for (let i = 0; i < 3; i++) {
         el("st" + i + "name").textContent = stations[i].name;
         el("st" + i + "check").textContent = (i === activeIdx) ? "✓" : " ";
@@ -4349,6 +4449,7 @@
     }
 
     function refreshUI() {
+      syncModernStation();
       if (!store.rows.length) return;
       el("stationData").hidden = false;
       el("stationDataEmpty").hidden = true;
@@ -5748,20 +5849,34 @@
        TABS
     ══════════════════════════════════════════════ */
     let currentPage = "main";
-    function appPageFromHash() { return location.hash === "#analytika" ? "analytics" : "main"; }
+    function appPageFromHash() {
+      return location.hash === "#analytika" ? "analytics" : location.hash === "#moderni" ? "modern" : "main";
+    }
+    function syncModernStation() {
+      if (currentPage !== "modern") return;
+      const select = el("modernStation");
+      const options = stations.map((station,index) => `<option value="${index}">${escapeHTML(station.name)}</option>`).join("");
+      if (select.innerHTML !== options) select.innerHTML = options;
+      select.value = String(activeIdx);
+    }
     function showAppPage(page, { updateHistory = true, scroll = true } = {}) {
-      if (page !== "main" && page !== "analytics") return;
+      if (!["main", "modern", "analytics"].includes(page)) return;
       const changed = currentPage !== page;
       if (changed && currentPage === "analytics") analyticsStop();
       currentPage = page;
-      el("page-main").hidden = page !== "main";
-      el("dashboardBars").hidden = page !== "main";
+      const dashboard = page !== "analytics";
+      document.body.setAttribute?.("data-view", page);
+      el("page-main").hidden = !dashboard;
+      el("page-main").setAttribute?.("aria-label", page === "modern" ? "Moderní přehled" : "Hlavní přehled");
+      el("dashboardBars").hidden = !dashboard;
+      el("modernIntro").hidden = page !== "modern";
+      syncModernStation();
       el("tab-analytics").hidden = page !== "analytics";
       document.querySelectorAll(".page-link").forEach(link => {
         if (link.dataset.page === page) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
-      const hash = page === "analytics" ? "#analytika" : "#prehled";
+      const hash = page === "analytics" ? "#analytika" : page === "modern" ? "#moderni" : "#prehled";
       if (updateHistory && location.hash !== hash) window.history?.pushState(null, "", hash);
       if (changed && scroll) window.scrollTo?.({ top: 0, behavior: "auto" });
       if (!changed) return;
