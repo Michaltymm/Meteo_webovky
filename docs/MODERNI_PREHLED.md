@@ -51,3 +51,5 @@ python scripts/check-modern-dashboard-browser.py --chartjs /tmp/chart.js --paho 
 
 Použijte původní soubory CDN verzí z `index.html`. Screenshoty a výstupy patří
 mimo repozitář. Změna nevyžaduje další závislosti ani úpravu Pages allowlistu.
+
+Publikování ověřeno: [Actions #26](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39832057768) pro [acfa3ba](https://github.com/Michaltymm/Meteo_webovky/commit/acfa3ba) **Success** (build24s/deploy9s/celkem42s), jeden Pages artefakt. Vývojové HTML v0.12.0, main zůstává2405c5d7326909a24c41e7066bfdc4a9d1622208. Přímý živý Pages host není v síťové politice prostředí povolen, potvrzení nasazení vychází z workflow. Následný commit mění pouze dokumentaci.

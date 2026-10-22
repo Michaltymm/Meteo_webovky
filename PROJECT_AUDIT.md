@@ -424,3 +424,5 @@ Bezpečnostní publikace: [Actions #25](https://github.com/Michaltymm/Meteo_webo
 ## Nový design dashboardu — v0.12.0
 
 Výchozí revize3e2d2cd, výhradněcodex-dev. Nová virtuální stránka#moderni má vlastní horní odkaz a zcela přepracované responzivní rozložení/barvy/typografii/karty. Zachována jediná implementace komponent a originální měření, theme/state synchronizace i bezpečné názvy.8původních grafů před/po,0nových requestů při změně vzhledu. Node251/251 + moderní browser8layoutů a původní analytický browser prošly,0pageerror. Screenshot desktop/mobil prohlédnut. Konfigurace/workflow/main/archiv neměněny. Fyzický Safari/iOS a živý Pages host neověřeny.
+
+Publikování ověřeno: [Actions #26](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39832057768) pro [acfa3ba](https://github.com/Michaltymm/Meteo_webovky/commit/acfa3ba) **Success** (build24s/deploy9s/celkem42s), jeden Pages artefakt. Vývojové HTML v0.12.0, main zůstává2405c5d7326909a24c41e7066bfdc4a9d1622208. Přímý živý Pages host není v síťové politice prostředí povolen, potvrzení nasazení vychází z workflow. Následný commit mění pouze dokumentaci.
