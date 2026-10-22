@@ -1,5 +1,7 @@
 # Reprodukce měření výkonu
 
+[Bezpečnostní limity parseru](SECURITY.md): kontrola před/po na1k–250křádcích a přesné hranice odmítnutí vstupů.
+
 [Etapa 13 — Analytické grafy](ETAPA13.md) měří nový přehled devíti karet,
 zachování hlavního dashboardu a paměť při 1k/10k/100k/250k, včetně CPU×4.
 

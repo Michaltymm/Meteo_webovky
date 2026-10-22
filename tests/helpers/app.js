@@ -29,7 +29,7 @@ function app({ realRefresh = false, realStart = false, reducedMotion = false, in
       }
     },
     location: { pathname: '/Meteo_webovky/dev/', protocol: 'https:' },
-    window: { matchMedia: () => motion }, console: { log() {}, warn() {} }, AbortController, AbortSignal,
+    window: { matchMedia: () => motion }, console: { log() {}, warn() {} }, AbortController, AbortSignal, TextEncoder, TextDecoder,
     localStorage: { getItem(k) { if (storageFailure) throw new Error("Storage unavailable"); return storage.get(k) ?? null; },
       setItem(k,v) { if (storageFailure) throw new Error("Storage unavailable"); storage.set(k,v); } },
     Chart: class {

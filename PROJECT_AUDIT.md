@@ -3,7 +3,7 @@
 ## QUICK CONTEXT
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–8 zpracovány sekvenčně, opravy etapa 9. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.11.2 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.11.3 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -404,3 +404,7 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 5. Nedělej celý audit znovu, pokud to úkol nevyžaduje. Zachovej důležitá rozhodnutí a oprav rozpor dokumentace/kódu.
 6. Použij existující izolovaný checkout; bez výslovné žádosti nevytvářej Git worktree. Zachovej cizí změny.
 7. Odděluj fakta, hypotézy a návrhy i prošlé, selhané a neprovedené testy. Chybu sítě nevydávej za chybu aplikace.
+
+## Bezpečnostní dávka B — v0.11.3
+
+SEC-003/005: limity stream/CSV/MQTT před mutací historie; nepřijímají se prázdné MQTT záznamy. HTTPS vždy WSS. 8 nových regresí a45 souvisejících testů prošlo, Chromium harness s3 skutečnými konfiguracemi a řízenými zdroji prošel. Limity a srovnání výkonu: docs/performance/SECURITY.md. Živý broker/ACL neověřeny.

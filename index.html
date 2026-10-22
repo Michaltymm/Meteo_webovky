@@ -2024,8 +2024,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0112"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.2</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0113"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.3</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2259,7 +2259,7 @@
         <label>MQTT Host (WebSocket)
           <input id="cfgMqttHost" type="text" placeholder="192.168.1.100">
         </label>
-        <label>MQTT Port (8883=WSS, 9001=WS)
+        <label>MQTT Port (na HTTPS vždy WSS)
           <input id="cfgMqttPort" type="number" value="9001">
         </label>
         <label>MQTT téma JSON (nebo prázdné)
@@ -3219,11 +3219,47 @@
       }
     }
 
-    async function stationText(url, context, timeout = 30000, extraSignal = null) {
+    const DATA_MAX_BYTES = 64 * 1024 * 1024;
+    const DATA_MAX_ROWS = 300000;
+    function dataLimit(message) {
+      const error = new Error(message); error.code = "DATA_LIMIT"; return error;
+    }
+    async function readLimitedText(response, maxBytes) {
+      const declared = Number(response.headers?.get?.("content-length"));
+      if (declared > maxBytes) {
+        try { await response.body?.cancel(); } catch {}
+        throw dataLimit("Odpověď přesahuje povolenou velikost");
+      }
+      if (!response.body?.getReader) {
+        const text = await response.text();
+        if (text.length > maxBytes || new TextEncoder().encode(text).byteLength > maxBytes)
+          throw dataLimit("Odpověď přesahuje povolenou velikost");
+        return text;
+      }
+      const reader = response.body.getReader(), decoder = new TextDecoder();
+      let size = 0, text = "";
+      try {
+        while (true) {
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          size += chunk.value.byteLength;
+          if (size > maxBytes) throw dataLimit("Odpověď přesahuje povolenou velikost");
+          text += decoder.decode(chunk.value, { stream: true });
+        }
+        return text + decoder.decode();
+      } catch (error) {
+        try { await reader.cancel(); } catch {}
+        throw error;
+      } finally { reader.releaseLock(); }
+    }
+    async function stationText(url, context, timeout = 30000, extraSignal = null, maxBytes = DATA_MAX_BYTES) {
       const response = await fetch(url, { signal: AbortSignal.any([context.signal, AbortSignal.timeout(timeout), ...(extraSignal ? [extraSignal] : [])]) });
-      if (!isCurrentStation(context)) return null;
-      if (!response.ok) throw new Error("HTTP " + response.status);
-      const text = await response.text();
+      if (!isCurrentStation(context) || !response.ok) {
+        try { await response.body?.cancel(); } catch {}
+        if (!isCurrentStation(context)) return null;
+        throw new Error("HTTP " + response.status);
+      }
+      const text = await readLimitedText(response, maxBytes);
       return isCurrentStation(context) ? text : null;
     }
 
@@ -3345,7 +3381,7 @@
       const i = idx ?? activeIdx;
       const fname = cfgFileName(i);
       try {
-        const text = await stationText(fname + "?_=" + Date.now(), context);
+        const text = await stationText(fname + "?_=" + Date.now(), context, 30000, null, CONFIG_MAX_BYTES);
         if (!isCurrentStation(context) || i !== context.index) return false;
         const obj = JSON.parse(text.replace(/^\uFEFF/, ""));
         // Validace: je tento konfig určen pro správnou stanici?
@@ -3924,7 +3960,7 @@
       pollAttempts.uv = Date.now();
       try {
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=uv_index&timezone=auto&forecast_days=1`;
-        const text = await stationText(url, context);
+        const text = await stationText(url, context, 30000, null, 256 * 1024);
         if (!isCurrentStation(context)) return;
         const j = JSON.parse(text);
         uvStore.hourly = j.hourly.uv_index;   // pole 24 hodnot 0–23h
@@ -4245,13 +4281,20 @@
 
     function parseCSV(text, limit = Infinity) {
       const input = String(text).replace(/^\uFEFF/, "");
+      if (input.length > DATA_MAX_BYTES) throw dataLimit("CSV přesahuje limit 64 MiB");
       const records = [];
-      let row = [], value = "", quoted = false, afterQuote = false;
-      const field = () => { row.push(value); value = ""; afterQuote = false; };
+      let row = [], value = "", quoted = false, afterQuote = false, cells = 0;
+      const field = () => {
+        if (row.length >= 64 || ++cells > 3000000) throw dataLimit("CSV překračuje limit sloupců nebo buněk");
+        row.push(value); value = ""; afterQuote = false;
+      };
       const record = () => {
         const present = row.length > 0 || value !== "" || afterQuote;
         field();
-        if (present) records.push(row);
+        if (present) {
+          if (records.length >= DATA_MAX_ROWS) throw dataLimit("CSV překračuje limit 300000 řádků");
+          records.push(row);
+        }
         row = [];
         return records.length >= limit;
       };
@@ -4272,6 +4315,7 @@
           if (value !== "") throw new Error("CSV: neočekávané uvozovky");
           quoted = true;
         } else value += c;
+        if (value.length > 16384) throw dataLimit("Pole CSV přesahuje limit 16384 znaků");
       }
       if (quoted) throw new Error("CSV: neuzavřené uvozovky");
       if (row.length || value !== "" || afterQuote) record();
@@ -6284,18 +6328,34 @@
         setMqttStatus(false, "odpojeno");
         reconnect();
       };
+      let messageWindow = Date.now(), messages = 0;
+      const rejectTraffic = () => {
+        stopMQTT();
+        setMqttStatus(false, "příjem zastaven: překročen limit zpráv nebo historie; obnovte připojení ručně");
+      };
       mc.onMessageArrived = msg => {
         if (!isCurrentClient()) return;
+        const received = Date.now();
+        if (received - messageWindow >= 1000) { messageWindow = received; messages = 0; }
+        if (++messages > 20 || store.rows.length >= DATA_MAX_ROWS) { rejectTraffic(); return; }
+        let payload;
+        try { payload = msg.payloadString; } catch { return; }
+        if (typeof payload !== "string") return;
+        if (payload.length > 65536 || new TextEncoder().encode(payload).byteLength > 65536) { rejectTraffic(); return; }
         try {
-          const o = JSON.parse(msg.payloadString);
+          const o = JSON.parse(payload);
+          if (!o || typeof o !== "object" || Array.isArray(o)) return;
+          const number = value => typeof value === "number" || typeof value === "string" ? pf(value) : null;
           const now = new Date();
-          store.rows.unshift({
+          const row = {
             date: fmtDateShort(now), time: fmtTime(now), ts: now,
-            temp: pf(o.teplota ?? o.temp ?? o.t), pressure: pf(o.tlak ?? o.pressure ?? o.p),
-            hum: pf(o.vlhkost ?? o.humidity ?? o.h), rainInc: pf(o.prirůstek ?? o.rainInc),
-            rain: pf(o.dest ?? o.rain ?? o.r), tank: pf(o.nadrz ?? o.tank),
-            voltage: pf(o.napeti ?? o.voltage ?? o.v)
-          });
+            temp: number(o.teplota ?? o.temp ?? o.t), pressure: number(o.tlak ?? o.pressure ?? o.p),
+            hum: number(o.vlhkost ?? o.humidity ?? o.h), rainInc: number(o.prirůstek ?? o.rainInc),
+            rain: number(o.dest ?? o.rain ?? o.r), tank: number(o.nadrz ?? o.tank),
+            voltage: number(o.napeti ?? o.voltage ?? o.v)
+          };
+          if (!["temp","pressure","hum","rainInc","rain","tank","voltage"].some(key => row[key] !== null)) return;
+          store.rows.unshift(row);
           invalidateDerivedData();
           store._lastQuickCsv = null;
           store._lastFullCsv = null;
@@ -6303,7 +6363,7 @@
         } catch (e) { }
       };
       mc.connect({
-        useSSL: config.mqttPort === 8883 || config.mqttPort === 8884,
+        useSSL: location.protocol === "https:" || config.mqttPort === 8883 || config.mqttPort === 8884,
         timeout: 10,
         onSuccess: () => {
           if (!isCurrentClient()) { try { mc.disconnect(); } catch (e) { } return; }
@@ -6749,7 +6809,7 @@
       const task=async index=>{
         const preferences=analyticsSourceSignature(index);let cfg={...stations[index]};
         try {
-          const configText=await stationText(cfgFileName(index),context,10000,controller.signal);if(!current())return;
+          const configText=await stationText(cfgFileName(index),context,10000,controller.signal,CONFIG_MAX_BYTES);if(!current())return;
           const obj=JSON.parse(configText.replace(/^\uFEFF/,''));
           if(obj.stationIdx!==undefined&&obj.stationIdx!==index)throw new Error('Konfigurace patří jiné stanici');
           cfg=normalizeStationConfig(obj,index,cfg);

@@ -15,7 +15,7 @@ Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez
 | 6 | Server a backend | DONE | Lokální server: 6/6 regresí cest, metadat a symlinků prošlo. Není součástí Pages runtime; veřejný provoz jiného serveru nedoložen. Doporučeno omezit lokální expozici. |
 | 7 | GitHub a externí závislosti | DONE | Workflow/Pages allowlist prověřeny. Známý nalezený Chart.js advisory se této verze netýká; omezené hledání není úplný CVE sken. Secrets a pravidla GitHubu vyžadují vlastníka. |
 | 8 | Testy odolnosti dat | DONE | Lokální reprodukce dokončeny; 38 datových/Pages regresí prošlo. Syntetický parser zvládl až 250000 měření. Čtyři podmíněné nálezy odolnosti určeny k opravě; podrobnosti zatím soukromé. |
-| 9 | Postupné opravy zranitelností | IN_PROGRESS | Dávka A ověřena: SEC-001/002 opraveny, 7 nových a 34 souvisejících testů prošlo. Následuje omezení příjmu dat. |
+| 9 | Postupné opravy zranitelností | IN_PROGRESS | Dávky A/B opraveny a ověřeny; data při odmítnutí zachována. Další dávka: preventivní ochrana CDN/CI a lokálního serveru. |
 | 10 | Závěrečný audit | TODO | Dosud neprovedeno. |
 
 Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno v uvedeném rozsahu; BLOCKED – nelze bezpečně pokračovat; NEEDS_REVIEW – potřebné rozhodnutí vlastníka. DONE analýzy neznamená opravené nálezy ani ověřenou živou infrastrukturu.
@@ -33,6 +33,7 @@ Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno 
 ## Opravené problémy
 
 - SEC-001/002: validace konfigurace před mutací a odolné předvolby, v0.11.2. 7 nových regresí + 34 souvisejících testů prošlo; nevalidní import zachová data, tři dodané konfigurace kompatibilní.
+- SEC-003/005: omezený MQTT příjem, streamované odpovědi a složitost CSV v0.11.3; 8 nových regresí + 45 souvisejících testů. HTTPS vždy WSS (SEC-004). Lokální Chromium analytika/tři konfigurace/mobil prošly bez pageerror.
 
 ## Zbývající úkoly a omezení
 

@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.11.3
+
+- Načítání má průběžné velikostní limity a ochranu před neúměrně složitým CSV. Odmítnutá odpověď nepřepíše platnou historii.
+- MQTT odmítá prázdné/neplatné zprávy a při nadměrném provozu bezpečně zastaví příjem. Na HTTPS používá šifrované WebSocket spojení na každém portu.
+
 ## v0.11.2
 
 - Poškozené nebo blokované úložiště prohlížeče už nezastaví aplikaci. Předvolby lze používat i jen pro aktuální relaci.
