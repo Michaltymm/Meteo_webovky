@@ -2110,8 +2110,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0130"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.13.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0131"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.13.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7094,9 +7094,29 @@
     // One help controller for static and dynamically rendered explanations.
     // Move the original DOM (not copies) so IDs, live notes and controls survive.
     const infoPanels = new WeakMap();
+    const INFO_HOVER_DELAY = 1500;
+    let infoOpenTimer = null, pendingInfoTrigger = null;
     let activeInfo = null, infoCloseTimer = null, infoPointerType = "", infoRestoringFocus = false;
 
+    function cancelPendingInfo() {
+      clearTimeout(infoOpenTimer);
+      infoOpenTimer = null; pendingInfoTrigger = null;
+    }
+
+    function scheduleInfoPopover(trigger) {
+      cancelPendingInfo();
+      if (activeInfo?.trigger === trigger) { clearTimeout(infoCloseTimer); return; }
+      if (activeInfo) closeInfoPopover();
+      pendingInfoTrigger = trigger;
+      infoOpenTimer = setTimeout(() => {
+        infoOpenTimer = null; pendingInfoTrigger = null;
+        if (trigger.isConnected && !trigger.hidden && trigger.getClientRects().length && trigger.matches(":hover"))
+          openInfoPopover(trigger);
+      }, INFO_HOVER_DELAY);
+    }
+
     function closeInfoPopover(restoreFocus = false) {
+      cancelPendingInfo();
       clearTimeout(infoCloseTimer);
       if (!activeInfo) return;
       const { trigger, panel, marker, owner } = activeInfo;
@@ -7139,6 +7159,7 @@
     }
 
     function openInfoPopover(trigger, mode = "hover") {
+      cancelPendingInfo();
       clearTimeout(infoCloseTimer);
       if (activeInfo?.trigger === trigger) { activeInfo.mode = mode; return; }
       closeInfoPopover();
@@ -7203,16 +7224,18 @@
       document.addEventListener("pointerover", event => {
         const trigger = triggerAt(event.target);
         if (event.pointerType !== "touch" && trigger && !trigger.contains(event.relatedTarget))
-          openInfoPopover(trigger);
+          scheduleInfoPopover(trigger);
         if (popup.contains(event.target)) clearTimeout(infoCloseTimer);
       });
       document.addEventListener("pointerout", event => {
+        if (pendingInfoTrigger?.contains(event.target) && !pendingInfoTrigger.contains(event.relatedTarget)) cancelPendingInfo();
         if (!activeInfo || activeInfo.mode !== "hover") return;
         const next = event.relatedTarget;
         if (activeInfo.trigger.contains(next) || popup.contains(next)) return;
         if (activeInfo.trigger.contains(event.target) || popup.contains(event.target)) deferCloseInfo();
       });
       document.addEventListener("pointerdown", event => {
+        cancelPendingInfo();
         infoPointerType = event.pointerType;
         if (activeInfo && !popup.contains(event.target) && !activeInfo.trigger.contains(event.target)) closeInfoPopover();
       }, true);
@@ -7238,8 +7261,8 @@
         if (!activeInfo.trigger.contains(event.relatedTarget) && !popup.contains(event.relatedTarget)) closeInfoPopover();
       });
       document.addEventListener("keydown", event => {
-        if (event.key === "Escape" && activeInfo) {
-          event.preventDefault(); event.stopImmediatePropagation(); closeInfoPopover(true);
+        if (event.key === "Escape" && (activeInfo || pendingInfoTrigger)) {
+          event.preventDefault(); event.stopImmediatePropagation(); closeInfoPopover(!!activeInfo);
         } else if (event.key === "Tab" && activeInfo && !event.shiftKey && event.target === activeInfo.trigger) {
           // The portalled controls come last in DOM order; make them reachable
           // immediately from their icon, without trapping keyboard focus.
@@ -7249,9 +7272,10 @@
         }
       }, true);
       document.addEventListener("scroll", event => {
-        if (activeInfo && !popup.contains(event.target)) closeInfoPopover();
+        if (!popup.contains(event.target)) closeInfoPopover();
       }, true);
       window.addEventListener("resize", () => closeInfoPopover());
+      document.addEventListener("visibilitychange", () => { if (document.hidden) closeInfoPopover(); });
       // Content notes update asynchronously; reposition once at delivery, and
       // dismiss a source whose owner has been hidden by data invalidation.
       new MutationObserver(() => {

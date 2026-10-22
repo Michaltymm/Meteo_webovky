@@ -1542,3 +1542,10 @@ Dílčí UI etapa METEO-010/011/012/030/063 podle zadání: ⓘ u teplotních ex
 Ověření: 251/251 Node regresí; `scripts/check-info-browser.cjs` v Chromium 153 se skutečnými SRI-matching Chart.js/Paho a řízeným CSV/UV. Ověřeno minimum/maximum a návrat obsahu, hover přechod na panel, odjetí, klávesnice/fokus, dotykové otevření/druhé klepnutí/mimo, 1440/390/320px, obě témata a oba přehledy, živé poznámky analytiky, dynamické srážkové ikony, programové otevření podkladů z grafu a invalidace při změně dat/stanice. Nápověda nevyvolá fetch ani konstrukci Chart; 0 pageerror. Desktop i mobilní screenshoty prohlédnuty. Ověření běželo s aktivními bezpečnostními kontrolami knihoven a prohlížeče.
 
 Fyzický Safari/iPhone a živé meteorologické zdroje nejsou tímto testem ověřeny. Širší přístupnost, personalizace karet, další odvozené veličiny a původ dalších výpočtů zůstávají původními otevřenými úkoly. Nasazení se dokládá samostatně výsledkem Pages workflow.
+
+
+## Prodleva nápovědy — 2026-10-22, v0.13.1
+
+Dílčí METEO-010/011: nápověda na hover čeká 1500 ms souvislého pobytu myši nad stejnou ikonou. Při odjetí nebo změně ikony se čekání ruší; nová ikona má vlastní celou prodlevu. Časovač se ruší také při Escape, navigaci, scrollu mimo panel, resize, skrytí stránky a invalidaci dat. Skrytý/odpojený prvek se dodatečně neotevře. Kliknutí, dotyk a klávesnice zůstávají okamžité. Jediný čekající časovač; žádná příprava obsahu, načtení dat nebo nový graf před jeho dokončením.
+
+Ověřeno:254/254Node testů (3 nové regrese čekání/záměny/zrušení/neplatného cíle) a rozšířený `scripts/check-info-browser.cjs` vChromium153 s původními Chart.js/Paho a řízeným CSV/UV. Krátké přejetí po1000ms zůstalo zavřené i po původním termínu, přechod po850ms začal celé čekání znovu; ověřeno i přepnutí zotevřeného panelu, Escape během čekání, okamžitý dotyk, navigace/invalidation a původní všechny scénáře.0pageerror. Předchozí v0.13.0 byla nasazena v89bf6d3, Actions#27Success; nové nasazení se ověřuje zvlášť. Fyzický Safari/iPhone neověřen.

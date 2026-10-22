@@ -59,6 +59,22 @@ async function main() {
     };
     await page.evaluate(() => { globalThis.helpRows = store.rows; globalThis.helpCharts = Chart.instances; dataAggregates(); });
     const count = requests.length;
+    // A fly-by must never flash later, even once the original delay elapses.
+    await max.hover(); await page.waitForTimeout(1000);
+    assert.equal(await popup.isVisible(), false);
+    await page.mouse.move(5, 500); await page.waitForTimeout(650);
+    assert.equal(await popup.isVisible(), false);
+    // Moving between icons starts a fresh full dwell, with no stale maximum.
+    await max.hover(); await page.waitForTimeout(850); await min.hover();
+    await page.waitForTimeout(850); assert.equal(await popup.isVisible(), false);
+    await shown(); assert.equal(await page.evaluate(() => temperatureRecordData().kind), 'min');
+    // Closing the previous panel must not cancel the next icon's pending open.
+    await max.hover(); await shown();
+    assert.equal(await page.evaluate(() => temperatureRecordData().kind), 'max');
+    await page.mouse.move(5, 500); await gone();
+    await min.hover(); await page.keyboard.press('Escape'); await page.waitForTimeout(1550);
+    assert.equal(await popup.isVisible(), false);
+    checks.push('1500ms dwell, cancelled fly-by, fresh delay between icons, active-to-pending switch, Escape before opening');
     await max.hover(); await shown(); await bounds();
     assert.equal(await page.evaluate(() => temperatureRecordData().temp), '42.123456789');
     await popup.hover(); await page.waitForTimeout(180); assert.equal(await popup.isVisible(), true);
@@ -131,7 +147,9 @@ async function main() {
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b.x + b.width / 2, y: b.y + b.height / 2 }] });
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     };
-    await tap(max); await shown(); await bounds();
+    await tap(max); await page.waitForTimeout(100);
+    assert.equal(await popup.isVisible(), true, 'Touch opens immediately without hover dwell');
+    await shown(); await bounds();
     await page.screenshot({ path: path.join(options.output, 'mobile-help.png') });
     await tap(max); await gone();
     await tap(min); await shown();

@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.13.1
+
+- Nápověda ⓘ se myší otevře až po 1,5 sekundy nad ikonou. Krátké přejetí ji nespustí a po odjetí se čekání zruší. Klepnutí, kliknutí a klávesnice otevírají nápovědu okamžitě.
+
 ## v0.13.0
 
 - Vysvětlení a podklady jsou dostupné pod nenápadnou ikonou ⓘ místo samostatných tlačítek a rozbalovacích polí. Sjednoceno v obou přehledech, analytických grafech, vlhkostních metrikách, porovnání, analýze baterie, ročních statistikách i nastavení zdroje.

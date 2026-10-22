@@ -1,12 +1,13 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.13.1: hover nápovědy má jednotný dwell 1500 ms. Odjetí, přechod na jinou ikonu, Escape, scroll, resize, skrytí stránky a invalidace ruší čekání. Kliknutí/dotyk/klávesnice jsou okamžité. 254/254 Node testů včetně 3 nových časovačových regresí a rozšířený Chromium harness prošly; rychlé přejetí a aktivní→čekající ikona ověřeny.
 - v0.13.0: společná nápověda ⓘ nahrazuje tlačítka podkladů minima/maxima, 17 vysvětlujících sekcí a původní srážkové otazníky. Jediný panel v body, přesun původního DOM bez klonování; živé poznámky, tabulky i ovládání zachované. Hover/odjetí, dotyk, fokus/Enter/Tab/Escape; zavření při navigaci, scrollu mimo panel, resize a invalidaci dat. Ověřeno 251/251 Node testů + scripts/check-info-browser.cjs v Chromium 153 (řízené CSV/UV, skutečné Chart/Paho se SRI), 1440/390/320px, obě témata/přehledy/analytika, bez pageerror a bez dodatečného fetch/Chart při otevření nápovědy. METEO-010/011/012/030/063 dílčí UI; širší úkoly zůstávají otevřené. Fyzický Safari/iPhone neověřen.
 - v0.12.0: třetí horní stránka Moderní přehled (`#moderni`) je alternativní design celého dashboardu. `currentPage=modern` používá původní page-main, společný DOM/store/grafy a všechny dolní záložky; žádné duplikované ID, druhé grafy, fetch/polling při přepnutí. CSS pouze body[data-view=modern], atribut přežije setTheme. syncModernStation bezpečně naplní výběr stanic při vstupu/updateUI/refresh. Původní #prehled a #analytika zachovány, Back/Forward/direct URL testované. Viz docs/MODERNI_PREHLED.md; METEO-011 částečně realizováno, personalizace karet dále.251/251Node testů a oba Chromium browser harnessy prošly.
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.13.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.13.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -436,3 +437,10 @@ Dílčí UI etapa METEO-010/011/012/030/063 podle zadání: ⓘ u teplotních ex
 Ověření: 251/251 Node regresí; `scripts/check-info-browser.cjs` v Chromium 153 se skutečnými SRI-matching Chart.js/Paho a řízeným CSV/UV. Ověřeno minimum/maximum a návrat obsahu, hover přechod na panel, odjetí, klávesnice/fokus, dotykové otevření/druhé klepnutí/mimo, 1440/390/320px, obě témata a oba přehledy, živé poznámky analytiky, dynamické srážkové ikony, programové otevření podkladů z grafu a invalidace při změně dat/stanice. Nápověda nevyvolá fetch ani konstrukci Chart; 0 pageerror. Desktop i mobilní screenshoty prohlédnuty. Ověření běželo s aktivními bezpečnostními kontrolami knihoven a prohlížeče.
 
 Fyzický Safari/iPhone a živé meteorologické zdroje nejsou tímto testem ověřeny. Širší přístupnost, personalizace karet, další odvozené veličiny a původ dalších výpočtů zůstávají původními otevřenými úkoly. Nasazení se dokládá samostatně výsledkem Pages workflow.
+
+
+## Prodleva nápovědy — 2026-10-22, v0.13.1
+
+Dílčí METEO-010/011: nápověda na hover čeká 1500 ms souvislého pobytu myši nad stejnou ikonou. Při odjetí nebo změně ikony se čekání ruší; nová ikona má vlastní celou prodlevu. Časovač se ruší také při Escape, navigaci, scrollu mimo panel, resize, skrytí stránky a invalidaci dat. Skrytý/odpojený prvek se dodatečně neotevře. Kliknutí, dotyk a klávesnice zůstávají okamžité. Jediný čekající časovač; žádná příprava obsahu, načtení dat nebo nový graf před jeho dokončením.
+
+Ověřeno:254/254Node testů (3 nové regrese čekání/záměny/zrušení/neplatného cíle) a rozšířený `scripts/check-info-browser.cjs` vChromium153 s původními Chart.js/Paho a řízeným CSV/UV. Krátké přejetí po1000ms zůstalo zavřené i po původním termínu, přechod po850ms začal celé čekání znovu; ověřeno i přepnutí zotevřeného panelu, Escape během čekání, okamžitý dotyk, navigace/invalidation a původní všechny scénáře.0pageerror. Předchozí v0.13.0 byla nasazena v89bf6d3, Actions#27Success; nové nasazení se ověřuje zvlášť. Fyzický Safari/iPhone neověřen.
