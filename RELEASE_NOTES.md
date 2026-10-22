@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.11.2
+
+- Poškozené nebo blokované úložiště prohlížeče už nezastaví aplikaci. Předvolby lze používat i jen pro aktuální relaci.
+- Import konfigurace ověřuje stanici, typy a rozsahy před změnou dat; nepodporované položky se neukládají ani nelogují.
+
 ## v0.11.1
 
 - Vysvětlující popisky a podrobné statistiky všech devíti analytických grafů jsou schované pod rozbalovací šipkou „Podrobnosti grafu“. Text lze otevřít kliknutím, dotykem i klávesnicí.

@@ -5,7 +5,7 @@ const vm = require('node:vm');
 // Execute the actual application code, leaving automatic startup to the tests.
 // UI/Chart.js and transports are replaced; cancellation deliberately does not
 // settle the fake fetch, so late results exercise guards as well as AbortSignal.
-function app({ realRefresh = false, realStart = false, reducedMotion = false } = {}) {
+function app({ realRefresh = false, realStart = false, reducedMotion = false, initialStorage = {}, storageFailure = false } = {}) {
   const html = fs.readFileSync(process.env.METEO_TEST_HTML || path.join(__dirname, '..', '..', 'index.html'), 'utf8');
   const source = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// Init: téma, stanice, config')[0];
   const requests = [], timers = new Map(), intervals = new Map(), listeners = new Map(), nodes = new Map(), clients = [], readers = [];
@@ -18,7 +18,7 @@ function app({ realRefresh = false, realStart = false, reducedMotion = false } =
     });
     return nodes.get(id);
   };
-  const storage = new Map();
+  const storage = new Map(Object.entries(initialStorage));
   const motionListeners = [];
   const motion = { matches: reducedMotion, addEventListener(event, listener) { if (event === 'change') motionListeners.push(listener); } };
   const context = vm.createContext({
@@ -30,7 +30,8 @@ function app({ realRefresh = false, realStart = false, reducedMotion = false } =
     },
     location: { pathname: '/Meteo_webovky/dev/', protocol: 'https:' },
     window: { matchMedia: () => motion }, console: { log() {}, warn() {} }, AbortController, AbortSignal,
-    localStorage: { getItem: k => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v) },
+    localStorage: { getItem(k) { if (storageFailure) throw new Error("Storage unavailable"); return storage.get(k) ?? null; },
+      setItem(k,v) { if (storageFailure) throw new Error("Storage unavailable"); storage.set(k,v); } },
     Chart: class {
       constructor(ctx, config) { Object.assign(this, config); this.config = config; this.updates = 0; }
       update() { this.updates++; }

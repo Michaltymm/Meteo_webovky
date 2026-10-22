@@ -2024,8 +2024,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0111"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0112"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.11.2</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2287,6 +2287,7 @@
         <span id="cfgFileStatus" style="font-size:.78rem;color:var(--muted)"></span>
       </div>
       <div class="config-hint">
+        Nastavení se ukládá pouze v tomto prohlížeči. Zámek není autentizace; nevkládejte hesla ani API tokeny.<br>
         <strong>Jak napojit Google Sheets:</strong><br>
         1. Otevřete tabulku → klikněte <em>Sdílet</em> → nastavte <strong>Kdokoli se odkazem</strong> může zobrazit.<br>
         2. Z URL zkopírujte část mezi <code>/d/</code> a <code>/edit</code> → to je <strong>Sheet ID</strong>.<br>
@@ -3099,9 +3100,19 @@
     // Both Pages versions share an origin, so preview preferences need their own keys.
     const isDevelopmentPreview = /\/dev(?:\/|$)/.test(location.pathname);
     const preferencePrefix = isDevelopmentPreview ? "meteoDev:" : "";
+    const preferenceMemory = new Map();
     const preferences = {
-      getItem: key => localStorage.getItem(preferencePrefix + key),
-      setItem: (key, value) => localStorage.setItem(preferencePrefix + key, value)
+      persistent: true,
+      getItem(key) {
+        if (preferenceMemory.has(key)) return preferenceMemory.get(key);
+        try { return localStorage.getItem(preferencePrefix + key); }
+        catch { this.persistent = false; return null; }
+      },
+      setItem(key, value) {
+        preferenceMemory.set(key, value);
+        try { localStorage.setItem(preferencePrefix + key, value); }
+        catch { this.persistent = false; }
+      }
     };
     if (isDevelopmentPreview) {
       document.getElementById("developmentBanner").hidden = false;
@@ -3117,31 +3128,48 @@
       { name: "Mšené lázně", cfgFile: "config_stanice3.json", sheetId: "1cYWDERr0tNJxrTI1foQS32dW-f5Y3HfwMuyF5l_ZrZE", sheetName: "Prijem_dat", interval: 300, source: "sheets", mqttHost: "", mqttPort: 9001, mqttJson: "meteo/data", lat: 50.44, lon: 13.91 },
     ];
 
-    let stations, activeIdx;
-    try { stations = JSON.parse(preferences.getItem("meteoStations")); } catch (e) { }
-    if (!Array.isArray(stations) || stations.length < 3) {
-      // Migrace ze starého jednoho CFG na stanici 0
-      const old = (() => { try { return JSON.parse(preferences.getItem("meteoCFG")); } catch (e) { return null; } })();
-      stations = STATION_DEFAULTS.map((d, i) => i === 0 && old
-        ? {
-          ...d, sheetId: old.sheetId || "", sheetName: old.sheetName || d.sheetName, interval: old.interval || 60,
-          source: old.source || "sheets", mqttHost: old.mqttHost || "", mqttPort: old.mqttPort || 9001,
-          mqttJson: old.mqttJson || d.mqttJson, name: old.location || d.name
-        }
-        : { ...d });
+    const CONFIG_MAX_BYTES = 64 * 1024;
+    // Only supported public configuration fields may enter storage/export.
+    function normalizeStationConfig(input, index, base = STATION_DEFAULTS[index]) {
+      if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Konfigurace musí být JSON objekt");
+      if (Object.hasOwn(input, "stationIdx") && input.stationIdx !== index) throw new Error("Konfigurace patří jiné stanici");
+      const result = { ...STATION_DEFAULTS[index] };
+      const text = (key, max, pattern = null) => {
+        const value = Object.hasOwn(input, key) ? input[key] : base[key];
+        if (typeof value !== "string" || value.length > max || /[\u0000-\u001f\u007f]/.test(value) || (pattern && !pattern.test(value)))
+          throw new Error("Neplatné nastavení: " + key);
+        result[key] = value;
+      };
+      for (const [key, max] of [["name",120],["sheetName",256],["mqttJson",512]]) text(key,max);
+      text("sheetId",160,/^[A-Za-z0-9_-]*$/);
+      text("mqttHost",253,/^[A-Za-z0-9.:[\]-]*$/);
+      text("source",6,/^(sheets|mqtt|both)$/);
+      for (const [key, min, max, integer] of [["interval",10,86400,true],["mqttPort",1,65535,true],["lat",-90,90,false],["lon",-180,180,false]]) {
+        const raw = Object.hasOwn(input, key) ? input[key] : base[key];
+        const value = typeof raw === "number" || (typeof raw === "string" && raw.trim()) ? Number(raw) : NaN;
+        if (!Number.isFinite(value) || value < min || value > max || (integer && !Number.isInteger(value)))
+          throw new Error("Neplatné nastavení: " + key);
+        result[key] = value;
+      }
+      return result;
     }
-    while (stations.length < 3) stations.push({ ...STATION_DEFAULTS[stations.length] });
-
-    // Doplň chybějící sheetId z STATION_DEFAULTS (pro existující localStorage bez sheetId)
-    stations = stations.map((s, i) => (!s.sheetId && STATION_DEFAULTS[i].sheetId)
-      ? { ...s, sheetId: STATION_DEFAULTS[i].sheetId, sheetName: STATION_DEFAULTS[i].sheetName }
-      : s);
-
-    // Vždy synchronizuj jméno stanice z STATION_DEFAULTS (aby přejmenování v kódu se projevilo)
-    stations = stations.map((s, i) => ({ ...s, name: STATION_DEFAULTS[i].name }));
-
-    try { activeIdx = parseInt(preferences.getItem("meteoActiveIdx")) || 0; } catch (e) { activeIdx = 0; }
-    if (activeIdx < 0 || activeIdx > 2) activeIdx = 0;
+    function readPreferenceJSON(key) {
+      const raw = preferences.getItem(key);
+      if (!raw || raw.length > CONFIG_MAX_BYTES) return null;
+      try { return JSON.parse(raw); } catch { return null; }
+    }
+    const savedStations = readPreferenceJSON("meteoStations");
+    const oldConfig = Array.isArray(savedStations) ? null : readPreferenceJSON("meteoCFG");
+    let stations = STATION_DEFAULTS.map((defaults, index) => {
+      const saved = Array.isArray(savedStations) ? savedStations[index] : index === 0 ? oldConfig : null;
+      try {
+        const result = normalizeStationConfig(saved, index);
+        if (!result.sheetId) { result.sheetId = defaults.sheetId; result.sheetName = defaults.sheetName; }
+        return { ...result, name: defaults.name };
+      } catch { return { ...defaults }; }
+    });
+    let activeIdx = Number(preferences.getItem("meteoActiveIdx"));
+    if (!Number.isInteger(activeIdx) || activeIdx < 0 || activeIdx > 2) activeIdx = 0;
 
     let CFG = stations[activeIdx];
     let stationSession = new AbortController();
@@ -3203,6 +3231,7 @@
 
     /* ── Přepnutí stanice ── */
     function switchStation(idx) {
+      if (!Number.isInteger(idx) || idx < 0 || idx >= stations.length) return;
       if (idx === activeIdx) { closeAllDD(); return; }
       cancelStationWork();
       activeIdx = idx;
@@ -3299,11 +3328,8 @@
 
     /* ── Rychlá změna zdroje z gear popup ── */
     function applyGearSource() {
-      stations[activeIdx].source = el("gearSource").value;
-      CFG = stations[activeIdx];
-      saveStations();
-      resetStationStore();
-      startAll();
+      try { _applyCfgObject({ source: el("gearSource").value }, "nabídka", true); }
+      catch { el("gearSource").value = CFG.source; }
     }
 
     /* Automatické načtení konfiguračního souboru pro danou stanici */
@@ -3337,20 +3363,22 @@
     function loadConfigFromFile(input) {
       const file = input.files[0];
       if (!file) return;
+      if (file.size > CONFIG_MAX_BYTES) { configError("Soubor konfigurace přesahuje 64 KiB"); return; }
       const context = stationContext();
       const reader = new FileReader();
       reader.onload = e => {
         if (!isCurrentStation(context)) return;
         try {
-          const obj = JSON.parse(e.target.result);
+          if (typeof e.target.result !== "string" || e.target.result.length > CONFIG_MAX_BYTES) throw new Error("Soubor konfigurace přesahuje 64 KiB");
+          const obj = JSON.parse(e.target.result.replace(/^\uFEFF/, ""));
           _applyCfgObject(obj, file.name, true);
-          el("cfgFileStatus").textContent = "✓ Načteno z " + file.name;
+          el("cfgFileStatus").textContent = "✓ Načteno z " + file.name + (preferences.persistent ? "" : " · pouze pro tuto relaci");
           el("cfgFileStatus").style.color = "#4caf50";
         } catch (err) {
-          el("cfgFileStatus").textContent = "✗ Chyba parsování: " + err.message;
-          el("cfgFileStatus").style.color = "#f44336";
+          configError("Neplatná konfigurace");
         }
       };
+      reader.onerror = () => { if (isCurrentStation(context)) configError("Soubor nelze přečíst"); };
       reader.readAsText(file);
     }
 
@@ -3363,19 +3391,25 @@
       a.download = fname; a.click(); URL.revokeObjectURL(a.href);
     }
 
+    function configError(message) {
+      el("cfgFileStatus").textContent = "✗ " + message;
+      el("cfgFileStatus").style.color = "#f44336";
+    }
+
     /* Interní: aplikuj objekt do aktivní stanice */
     function _applyCfgObject(obj, source, runStartAll, context) {
       if (context && !isCurrentStation(context)) return;
+      const validated = normalizeStationConfig(obj, activeIdx, stations[activeIdx]);
       if (!context) {
         cancelStationWork();
         resetStationStore();
       }
-      stations[activeIdx] = { ...STATION_DEFAULTS[activeIdx], ...stations[activeIdx], ...obj };
+      stations[activeIdx] = validated;
       CFG = stations[activeIdx];
       saveStations();
       fillConfigUI();
       updateStationUI();
-      console.log("[CFG] Načteno z:", source, CFG);
+      // Configuration values (including unsupported imported fields) never enter logs.
       if (runStartAll) startAll();
     }
 
@@ -3384,16 +3418,18 @@
         name: document.getElementById("cfgStationName").value.trim() || stations[activeIdx].name,
         sheetId: document.getElementById("cfgSheetId").value.trim(),
         sheetName: document.getElementById("cfgSheetName").value.trim() || "List1",
-        interval: parseInt(document.getElementById("cfgInterval").value) || 60,
+        interval: Number(document.getElementById("cfgInterval").value),
         source: document.getElementById("cfgSource").value,
         mqttHost: document.getElementById("cfgMqttHost").value.trim(),
-        mqttPort: parseInt(document.getElementById("cfgMqttPort").value) || 9001,
+        mqttPort: Number(document.getElementById("cfgMqttPort").value),
         mqttJson: document.getElementById("cfgMqttJson").value.trim(),
-        lat: parseFloat(document.getElementById("cfgLat").value) || 50.08,
-        lon: parseFloat(document.getElementById("cfgLon").value) || 14.42,
+        lat: document.getElementById("cfgLat").value === "" ? STATION_DEFAULTS[activeIdx].lat : Number(document.getElementById("cfgLat").value),
+        lon: document.getElementById("cfgLon").value === "" ? STATION_DEFAULTS[activeIdx].lon : Number(document.getElementById("cfgLon").value),
       };
-      document.getElementById("cfgDetails").style.display = "none";
-      _applyCfgObject(obj, "formulář", true);
+      try {
+        _applyCfgObject(obj, "formulář", true);
+        document.getElementById("cfgDetails").style.display = "none";
+      } catch (error) { configError(error.message); }
     }
 
     function fillConfigUI() {
@@ -6716,7 +6752,7 @@
           const configText=await stationText(cfgFileName(index),context,10000,controller.signal);if(!current())return;
           const obj=JSON.parse(configText.replace(/^\uFEFF/,''));
           if(obj.stationIdx!==undefined&&obj.stationIdx!==index)throw new Error('Konfigurace patří jiné stanici');
-          cfg={...cfg,...obj};
+          cfg=normalizeStationConfig(obj,index,cfg);
           if(cfg.source==='mqtt')throw new Error('Stanice nemá nakonfigurovanou historii Sheets');
           if(!/^[A-Za-z0-9_-]+$/.test(cfg.sheetId||''))throw new Error('Chybí platný veřejný zdroj Sheets');
           const url=`https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(cfg.sheetName||'List1')}`;

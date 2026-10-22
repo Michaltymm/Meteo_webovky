@@ -164,7 +164,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-054 Validace konfigurace a odolný storage wrapper; lokální zámek jasně popsat | Config/localStorage | S / P1 | Malý, zabrání chybám startu | IMP-004/005; UI heslo není autentizace | Připraveno k realizaci |
+| METEO-054 Validace konfigurace a odolný storage wrapper; lokální zámek jasně popsat | Config/localStorage | S / P1 | v0.11.2 schema/rozsahy/allowlist, atomické odmítnutí importu, odolné storage a vysvětlený lokální zámek | IMP-004/005; náhled diffu, schema verze a migrace dále; viz SECURITY_ROADMAP | Rozpracováno |
 | METEO-055 Závislosti a testovatelné moduly: CDN integrita, malé čisté funkce, Pages allowlist | Zdrojový kód | S / P2 | Méně duplikací; nový build není podmínkou | IMP-007/008; ověřit file: a Pages | K posouzení |
 | METEO-056 Reprodukovatelné výkonnostní scénáře a regresní brány | Syntetické 1k/10k/100k, reálné anonymní CSV později | S / P0 | Vývojový nástroj, žádná produkční režie | FUT-003; metodika níže | Rozpracováno |
 | METEO-060 Verze webu a release notes: rozeznat načtený obsah a změny vydání | Verze v HTML, RELEASE_NOTES.md | N / P1 | Bez fetchů a závislostí, statický odkaz | Pravidla vydávání v AGENTS.md | Dokončeno |
@@ -1515,3 +1515,7 @@ v obou tématech bez přetečení a0pageerrors, screenshoty zkontrolované.
 Nasazeno: [666b487](https://github.com/Michaltymm/Meteo_webovky/commit/666b4871aaa2ddfff7d0002d8eaffd0962cd534b),
 [Actions #24](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39747969927)
 **Success**,33s. Potvrzen deployment workflow; main stále2405c5d.
+
+## Bezpečnostní série 2026-10-22
+
+Sekvenční audit a důkazy: [SECURITY_ROADMAP.md](SECURITY_ROADMAP.md). METEO-054 má v0.11.2 ověřenou validaci a session fallback (7 nových regresí); širší návrh diffu/verzování konfigurace zůstává otevřený. Produkční konfigurace beze změny.
