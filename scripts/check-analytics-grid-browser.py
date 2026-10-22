@@ -13,6 +13,7 @@ from playwright.async_api import async_playwright
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--chartjs', required=True)
+parser.add_argument('--paho', required=True)
 parser.add_argument('--output', required=True)
 args = parser.parse_args()
 
@@ -21,6 +22,7 @@ async def main():
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     html, chart = Path('index.html').read_text(), Path(args.chartjs).read_text()
+    paho = Path(args.paho).read_text()
     files = ['config_praha_baterie.json', 'config_praha_okno.json', 'config_stanice3.json']
     configs = [json.loads(Path(name).read_text(encoding='utf-8-sig')) for name in files]
     now = datetime.fromisoformat('2026-10-22T12:00:00+02:00')
@@ -52,7 +54,9 @@ async def main():
             if url == 'http://meteo.test/dev/':
                 await r.fulfill(body=html, content_type='text/html')
             elif 'chart.js' in url:
-                await r.fulfill(body=chart, content_type='text/javascript')
+                await r.fulfill(body=chart, content_type='text/javascript', headers={'Access-Control-Allow-Origin':'*'})
+            elif 'paho-mqtt' in url:
+                await r.fulfill(body=paho, content_type='text/javascript', headers={'Access-Control-Allow-Origin':'*'})
             elif filename in files:
                 await r.fulfill(body=json.dumps(configs[files.index(filename)]), content_type='application/json')
             elif 'docs.google.com' in url:
@@ -389,7 +393,7 @@ async def main():
         version = browser.version
         await browser.close()
     output.write_text(json.dumps({'browser':version,'results':results,'layouts':layouts,'comparison':comparison,'pageErrors':errors,
-        'requests':requests,'transport':'Original three configs; controlled CSV/UV; MQTT CDN blocked'},indent=2))
+        'requests':requests,'transport':'Original three configs; controlled CSV/UV; real Chart.js/Paho with SRI; no live MQTT'},indent=2))
     print(output)
 
 

@@ -125,7 +125,7 @@ Raná exploratory série před touto opravou není finálním profilem zde.
 git show df1beb5:index.html > /tmp/meteo-analytics/before.html
 python scripts/profile-history.py --html /tmp/meteo-analytics/before.html --chartjs /tmp/meteo-pages-validation/chart.js --aggregates --counts 1000,10000,100000,250000 --output /tmp/meteo-analytics/before.json
 node --test tests/*.test.js
-python scripts/check-analytics-grid-browser.py --chartjs /tmp/meteo-pages-validation/chart.js --output /tmp/meteo-analytics/browser.json
+python scripts/check-analytics-grid-browser.py --chartjs /tmp/meteo-pages-validation/chart.js --paho /tmp/meteo-pages-validation/paho.js --output /tmp/meteo-analytics/browser.json
 python scripts/profile-history.py --html index.html --chartjs /tmp/meteo-pages-validation/chart.js --aggregates --grid --counts 1000,10000,100000,250000 --output /tmp/meteo-analytics/after.json
 python scripts/profile-history.py --html /tmp/meteo-analytics/before.html --chartjs /tmp/meteo-pages-validation/chart.js --aggregates --cpu 4 --counts 100000 --output /tmp/meteo-analytics/before-cpu4.json
 python scripts/profile-history.py --html index.html --chartjs /tmp/meteo-pages-validation/chart.js --aggregates --grid --cpu 4 --counts 100000 --output /tmp/meteo-analytics/after-cpu4.json
@@ -135,3 +135,5 @@ Playwright/Chromium jsou pouze vývojářské nástroje. Safari/WebKit zde není
 instalovaný. Fyzický iPhone, skutečné externí CSV/MQTT služby, firmware,
 kalibrace, reset srážek ani přímé widgety Pages nejsou tímto ověřeny.
 Nasazení se dokládá samostatně v roadmapě a auditu.
+
+Bezpečnostní aktualizace: browser harness používá také skutečný soubor Paho1.1.0 ze stejné CDN URL jako index.html (`--paho`); odpovědi mají CORS hlavičku pro ověření SRI.

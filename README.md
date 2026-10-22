@@ -14,3 +14,5 @@ Lokální spuštění: `node server.js` → http://localhost:8080/.
 Testy: `node --test tests/*.test.js`.
 
 Vývoj probíhá na `codex-dev`; sloučení do `main` až po schválení.
+
+Lokální server naslouchá pouze na `127.0.0.1`. Pro záměrně sdílený/cloudový náhled lze nastavit `METEO_PREVIEW_HOST=0.0.0.0`; tím zpřístupníte soubory kořene okolní síti, proto jej nepoužívejte jako produkční server. GitHub Pages používá vlastní statický hosting. Bezpečnostní postup a omezení: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md).

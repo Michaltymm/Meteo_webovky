@@ -10,7 +10,16 @@ function isPublicPath(root, file) {
 
 function createServer(rootDir = __dirname) {
   const root = fs.realpathSync(rootDir);
-  return http.createServer((req, res) => {
+  const server = http.createServer((req, res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+    res.setHeader('X-Frame-Options', 'DENY');
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.writeHead(405, { Allow: 'GET, HEAD' });
+      res.end('Method Not Allowed');
+      return;
+    }
     let urlPath;
     try {
       // Decode before validating, without URL normalization hiding dot segments.
@@ -54,19 +63,23 @@ function createServer(rootDir = __dirname) {
         '.css': 'text/css'
       };
       res.writeHead(200, {
-        'Content-Type': types[ext] || 'text/plain',
-        'Access-Control-Allow-Origin': '*'
+        'Content-Type': types[ext] || 'text/plain'
       });
-      res.end(content);
+      res.end(req.method === 'HEAD' ? undefined : content);
     } catch (e) {
       res.writeHead(404);
       res.end('Not Found');
     }
   });
+  server.headersTimeout = 10000;
+  server.requestTimeout = 30000;
+  server.maxRequestsPerSocket = 100;
+  return server;
 }
 
 if (require.main === module) {
-  createServer().listen(8080, () => console.log('Server running at http://localhost:8080'));
+  const host = process.env.METEO_PREVIEW_HOST || '127.0.0.1';
+  createServer().listen(8080, host, () => console.log(`Server running at http://${host}:8080`));
 }
 
 module.exports = { createServer };

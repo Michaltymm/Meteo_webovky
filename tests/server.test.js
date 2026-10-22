@@ -46,15 +46,16 @@ describe('static server document root', () => {
   });
 
   // Use a raw request path: fetch/URL would normalize away traversal attempts.
-  function request(requestPath) {
+  function request(requestPath, method = 'GET') {
     return new Promise((resolve, reject) => {
-      const req = http.get({ host: '127.0.0.1', port, path: requestPath }, res => {
+      const req = http.request({ host: '127.0.0.1', port, path: requestPath, method }, res => {
         let body = '';
         res.setEncoding('utf8');
         res.on('data', chunk => { body += chunk; });
         res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body }));
       });
       req.on('error', reject);
+      req.end();
     });
   }
 
@@ -71,8 +72,26 @@ describe('static server document root', () => {
       assert.equal(res.status, 200, route);
       assert.equal(res.body, content, route);
       assert.equal(res.headers['content-type'], type, route);
-      assert.equal(res.headers['access-control-allow-origin'], '*', route);
+      assert.equal(res.headers['access-control-allow-origin'], undefined, route);
+      assert.equal(res.headers['x-content-type-options'], 'nosniff', route);
     }
+  });
+
+  it('allows only read methods and applies local response protections to errors too', async () => {
+    for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
+      const res = await request('/index.html', method);
+      assert.equal(res.status, 405);
+      assert.equal(res.headers.allow, 'GET, HEAD');
+      assert.equal(res.headers['access-control-allow-origin'], undefined);
+      assert.equal(res.headers['cross-origin-resource-policy'], 'same-origin');
+    }
+    const head = await request('/index.html', 'HEAD');
+    assert.equal(head.status, 200); assert.equal(head.body, '');
+    const missing = await request('/missing');
+    assert.equal(missing.headers['x-content-type-options'], 'nosniff');
+    assert.equal(missing.headers['x-frame-options'], 'DENY');
+    assert.equal(server.headersTimeout, 10000);
+    assert.equal(server.requestTimeout, 30000);
   });
 
   it('returns 404 for missing files and directories', async () => {

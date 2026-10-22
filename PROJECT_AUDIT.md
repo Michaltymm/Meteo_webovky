@@ -3,7 +3,7 @@
 ## QUICK CONTEXT
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–8 zpracovány sekvenčně, opravy etapa 9. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.11.3 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.11.4 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -408,3 +408,7 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 ## Bezpečnostní dávka B — v0.11.3
 
 SEC-003/005: limity stream/CSV/MQTT před mutací historie; nepřijímají se prázdné MQTT záznamy. HTTPS vždy WSS. 8 nových regresí a45 souvisejících testů prošlo, Chromium harness s3 skutečnými konfiguracemi a řízenými zdroji prošel. Limity a srovnání výkonu: docs/performance/SECURITY.md. Živý broker/ACL neověřeny.
+
+## Bezpečnostní dávka C — v0.11.4
+
+METEO-055: SRI Chart4.4.0/Paho1.1.0, Actions stejné major připnuté na SHA a všechnycheckouty persist-credentials:false. Dependabot připraven pouze na codex-dev; automatický běh nepotvrzen (vyžaduje defaultbranch). SEC-006 preventivně: preview implicitně127.0.0.1, GET/HEAD, bezwildcardCORS, nosniff/CORP/XFO; Pages těmito hlavičkami nejsou ovlivněny. Server/Pages11testů a Chromium SRI (originál přijme/pozměněný skript odmítne) prošly. Viz scripts/check-security-browser.py.

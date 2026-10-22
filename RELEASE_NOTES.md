@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.11.4
+
+- Prohlížeč ověřuje integritu externích grafových a MQTT knihoven. Jejich verze ani vzhled grafů se nemění.
+- Lokální náhled má omezenější přístup; publikování používá pevné revize GitHub Actions.
+
 ## v0.11.3
 
 - Načítání má průběžné velikostní limity a ochranu před neúměrně složitým CSV. Odmítnutá odpověď nepřepíše platnou historii.
