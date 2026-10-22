@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.13.0
+
+- Vysvětlení a podklady jsou dostupné pod nenápadnou ikonou ⓘ místo samostatných tlačítek a rozbalovacích polí. Sjednoceno v obou přehledech, analytických grafech, vlhkostních metrikách, porovnání, analýze baterie, ročních statistikách i nastavení zdroje.
+- Nápověda se zobrazí při najetí myší a po odjetí zmizí. Na telefonu ji lze otevřít klepnutím a zavřít dalším klepnutím nebo klepnutím mimo. Funguje také klávesnice a Escape; dlouhé podklady lze posouvat.
+
 ## v0.12.0
 
 - Nová stránka „Moderní přehled“ nabízí vzdušnější design s výraznou teplotou, novými kartami a responzivním rozložením ve světlém i tmavém režimu.

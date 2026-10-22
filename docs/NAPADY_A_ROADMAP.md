@@ -70,7 +70,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | Malý DOM update, bez dalších fetchů | METEO-048 | Připraveno k realizaci |
-| METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu v Chart/CSS/scroll i za běhu hotové; další ARIA/fokus/touch zbývají | IMP-006 | Rozpracováno |
+| METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu; v0.13.0 společné ⓘ: hover/touch/klávesnice, ARIA, Escape a návrat fokusu, panel ve viewportu; ostatní taby/fokus dále | IMP-006 | Rozpracováno |
 | METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.12.0 samostatný moderní přehled, responzivní karty a sdílené komponenty bez dalšího fetch/grafů | METEO-054; výběr karet a per-station preference dále; viz MODERNI_PREHLED.md | Rozpracováno |
 | METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
 
@@ -110,7 +110,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-029 Časové párování a tolerance: uvést spárované/odmítnuté vzorky | Timestampy dvou řad | S / P1 | v0.10.0 monotónní one-to-one nejbližší čas do10min: O(n log m), přesně sladěná rychlá větev O(n); konfigurovatelná tolerance dále | METEO-048, policy níže | Rozpracováno |
-| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 devět grafů, sdílené období/zoom, lazy model; v0.11.0 samostatná stránka s horní navigací/Zpět/Vpřed; v0.11.1 volitelné rozbalovací popisky; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
+| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 devět grafů, sdílené období/zoom, lazy model; v0.11.0 samostatná stránka s horní navigací/Zpět/Vpřed; v0.13.0 sjednocené vysvětlení pod ⓘ u názvu grafu; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
 | METEO-031 Pearson/regrese a počet validních párů z úplných dat | Současná párovaná data | S / P1 | v0.4.0 Welford r/sklon z úplných T/V, n/časy/dny; intervaly po dnech/nejistota dále | Korelace ≠ příčina, bez p-value a SOC, při n<3/konstantě nedostupné | Rozpracováno |
 | METEO-032 Časový posun, klouzavé průměry, oddělení den/noc a sezón | Současná historie | V / P2 | v0.10.0 volitelný průměr5měření T/P a odhad den/noc v XY; lagy a sezónní rozklad dále | METEO-029/048; nepravidelné intervaly | Rozpracováno |
 
@@ -1533,3 +1533,12 @@ Dílčí realizace METEO-011: nový design je třetí stránkou horní navigace 
 Důkaz:251/251Node testů,5nových navigačních regresí; skutečný Chromium v8kombinacích1440/800/390/320px a2témat,3stanice,Back/Forward,URL,empty/nulové hodnoty, návrat zanalytiky. Původní analytický browser harness také prošel. Bez pageerror/overflow. [Rozsah a reprodukce](MODERNI_PREHLED.md).
 
 Publikování ověřeno: [Actions #26](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39832057768) pro [acfa3ba](https://github.com/Michaltymm/Meteo_webovky/commit/acfa3ba) **Success** (build24s/deploy9s/celkem42s), jeden Pages artefakt. Vývojové HTML v0.12.0, main zůstává2405c5d7326909a24c41e7066bfdc4a9d1622208. Přímý živý Pages host není v síťové politice prostředí povolen, potvrzení nasazení vychází z workflow. Následný commit mění pouze dokumentaci.
+
+
+## Sjednocení nápovědy — 2026-10-22, v0.13.0
+
+Dílčí UI etapa METEO-010/011/012/030/063 podle zadání: ⓘ u teplotních extrémů, vlhkostních metrik, analytických grafů a dalších vysvětlujících sekcí. Text není trvale rozbalený; myš otevře při najetí a zavře po odjetí, dotyk přepíná, klávesnice má fokus/Enter/Tab/Escape. Interaktivní tabulky, stránkování a výběry zůstávají skutečným DOM, přesouvá se pouze obsah do jednoho panelu v body. Tím se nevytvářejí duplicitní ID a panel není oříznut kartou. Datové/statistické výpočty, původní hodnoty a nabídky skutečných akcí grafů zůstávají zachované.
+
+Ověření: 251/251 Node regresí; `scripts/check-info-browser.cjs` v Chromium 153 se skutečnými SRI-matching Chart.js/Paho a řízeným CSV/UV. Ověřeno minimum/maximum a návrat obsahu, hover přechod na panel, odjetí, klávesnice/fokus, dotykové otevření/druhé klepnutí/mimo, 1440/390/320px, obě témata a oba přehledy, živé poznámky analytiky, dynamické srážkové ikony, programové otevření podkladů z grafu a invalidace při změně dat/stanice. Nápověda nevyvolá fetch ani konstrukci Chart; 0 pageerror. Desktop i mobilní screenshoty prohlédnuty. Ověření běželo s aktivními bezpečnostními kontrolami knihoven a prohlížeče.
+
+Fyzický Safari/iPhone a živé meteorologické zdroje nejsou tímto testem ověřeny. Širší přístupnost, personalizace karet, další odvozené veličiny a původ dalších výpočtů zůstávají původními otevřenými úkoly. Nasazení se dokládá samostatně výsledkem Pages workflow.

@@ -100,9 +100,8 @@
     .comparison-record-controls label { display: flex; flex-direction: column; gap: .3rem; max-width: 100%; }
     .comparison-record-controls select { min-height: 44px; max-width: 100%; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 4px; }
     #cmpRecords .battery-record-nav button { min-height: 44px; }
-    .extreme-source-button { display: block; margin: .25rem 0 0 auto; min-height: 44px; padding: .3rem .6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg3); color: var(--text); cursor: pointer; }
     .extreme-source-button[hidden] { display: none; }
-    #tempRecord { margin: .6rem; }
+    #tempRecord:not(.info-source-active) { display: none; }
     #tempRecordInfo { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.6; }
 
 
@@ -1832,53 +1831,53 @@
       overflow-x: auto;
     }
 
-    /* ── Info tooltip ── */
-    .ys-tip {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: .3rem;
-      cursor: default;
+    /* Shared, compact help. Panels are portalled to body to escape card clipping. */
+    .info-trigger {
+      display:inline-flex; align-items:center; justify-content:center; vertical-align:middle;
+      width:28px; height:28px; min-width:28px; padding:0; margin:0 0 0 .2rem;
+      border:0; border-radius:50%; background:transparent; color:var(--muted);
+      cursor:help; font:inherit; flex-shrink:0; list-style:none;
     }
-
-    .ys-tip-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      background: var(--muted);
-      color: var(--bg);
-      font-size: 10px;
-      font-weight: 700;
-      line-height: 1;
-      flex-shrink: 0;
-      cursor: help;
+    .info-trigger[hidden] { display:none; }
+    .info-trigger::-webkit-details-marker { display:none; }
+    .info-trigger::marker { content:""; }
+    .info-glyph { display:inline-flex; align-items:center; justify-content:center;
+      width:16px; height:16px; box-sizing:border-box; border:1.5px solid currentColor;
+      border-radius:50%; font:bold 11px/1 Georgia,serif; }
+    .info-trigger:hover,.info-trigger[aria-expanded="true"] { color:var(--accent); background:var(--bg3); }
+    .info-trigger:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    details.info-details,body[data-view="modern"] #stationData>details.info-details {
+      display:inline-block; vertical-align:middle; margin:0; padding:0; border:0; background:none;
     }
-
-    .ys-tip-box {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 7px);
-      left: 0;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: .55rem .8rem;
-      font-size: .77rem;
-      color: var(--text);
-      white-space: nowrap;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, .5);
-      z-index: 300;
-      pointer-events: none;
-      max-width: 280px;
-      white-space: normal;
-      line-height: 1.4;
+    details.info-details[hidden] { display:none; }
+    .ana-card details.info-details { padding:0; margin:0; }
+    .ana-card .info-details>summary { min-height:0; padding:0; }
+    .ana-card header h3 { margin-right:auto; }
+    .info-content[hidden],.info-popover[hidden] { display:none; }
+    .info-popover {
+      position:fixed; z-index:1500; inset:auto; box-sizing:border-box;
+      width:min(560px,calc(100vw - 24px)); max-height:min(65vh,620px);
+      overflow:auto; overscroll-behavior:contain; padding:.85rem 1rem;
+      border:1px solid var(--border); border-radius:10px; background:var(--bg2); color:var(--text);
+      box-shadow:0 8px 28px #0005; font-size:.8rem; font-weight:400; line-height:1.55;
+      overflow-wrap:anywhere; text-align:left;
     }
-
-    .ys-tip:hover .ys-tip-box {
-      display: block;
+    .info-popover-heading { display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem; }
+    .info-popover-heading strong { flex:1; }
+    .info-close { flex-shrink:0; width:32px; height:32px; border:0; border-radius:50%;
+      background:transparent; color:var(--muted); font-size:1.3rem; cursor:pointer; }
+    .info-close:hover { background:var(--bg3); color:var(--text); }
+    .info-close:focus-visible { outline:2px solid var(--accent); }
+    .info-popover p { margin:.55rem 0; }
+    .info-popover .config-hint,.info-popover #tempRecord { padding:0; margin:0; background:none; }
+    .info-popover #tempRecord>summary { display:none; }
+    .info-popover .comparison-data { background:var(--bg3); }
+    .info-popover #tempRecord { background:none; }
+    .info-popover label { color:var(--text); }
+    .ys-tip { display:inline-flex; align-items:center; flex-wrap:wrap; gap:.2rem; }
+    @media(pointer:coarse) {
+      .info-trigger { width:44px; height:44px; min-width:44px; }
+      .info-close { width:44px; height:44px; }
     }
 
     .notes-table {
@@ -2057,7 +2056,6 @@
     body[data-view="modern"] .table-card table { font-size:.8rem; }
     body[data-view="modern"] .table-card table td { padding:.68rem 1.1rem; white-space:normal; overflow-wrap:anywhere; }
     body[data-view="modern"] .table-card table td:first-child { color:var(--muted); }
-    body[data-view="modern"] .extreme-source-button { display:inline-block; min-height:32px; margin:.35rem 0 0 .25rem; background:var(--bg3); border-radius:8px; font-size:.68rem; }
     body[data-view="modern"] .extreme-source-button[hidden] { display:none; }
     body[data-view="modern"] .sensor-row { grid-template-columns:repeat(7,minmax(0,1fr)); gap:.8rem; margin-bottom:1.1rem; }
     body[data-view="modern"] .sensor-tile { min-width:0; text-align:left; border:1px solid var(--border); border-radius:18px; padding:1.1rem; min-height:128px; }
@@ -2112,8 +2110,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0120"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.12.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0130"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.13.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2375,7 +2373,7 @@
           title="Stáhnout nastavení jako config_N.json">💾 Uložit <span id="cfgSaveName">config_0.json</span></button>
         <span id="cfgFileStatus" style="font-size:.78rem;color:var(--muted)"></span>
       </div>
-      <div class="config-hint">
+      <details class="comparison-data" data-info><summary>Nastavení a připojení zdroje dat</summary><div class="config-hint">
         Nastavení se ukládá pouze v tomto prohlížeči. Zámek není autentizace; nevkládejte hesla ani API tokeny.<br>
         <strong>Jak napojit Google Sheets:</strong><br>
         1. Otevřete tabulku → klikněte <em>Sdílet</em> → nastavte <strong>Kdokoli se odkazem</strong> může zobrazit.<br>
@@ -2388,7 +2386,7 @@
         ⚠️ <strong>Při chybě „Failed to fetch":</strong> Použijte rozšíření <strong>Live Server</strong> ve VS Code
         (tlačítko <em>Go Live</em> vpravo dole).
         Stránka automaticky zkouší záložní CORS proxy.
-      </div>
+      </div></details>
     </div>
 
     <!-- ══ STATUS BAR ══ -->
@@ -2486,12 +2484,12 @@
             <tr>
               <td>Nejvyšší teplota</td>
               <td style="text-align:right;color:var(--red);font-weight:700"><span id="statTempMax">–</span>
-                <button id="statTempMaxSource" class="extreme-source-button" onclick="openTemperatureRecord('max')" aria-label="Původní měření nejvyšší teploty" hidden>Podklady maxima</button></td>
+                <button id="statTempMaxSource" type="button" class="extreme-source-button info-trigger" data-info-temperature="max" aria-label="Původní měření nejvyšší teploty" hidden><span class="info-glyph" aria-hidden="true">i</span></button></td>
             </tr>
             <tr>
               <td>Nejnižší teplota</td>
               <td style="text-align:right;color:var(--blue);font-weight:700"><span id="statTempMin">–</span>
-                <button id="statTempMinSource" class="extreme-source-button" onclick="openTemperatureRecord('min')" aria-label="Původní měření nejnižší teploty" hidden>Podklady minima</button></td>
+                <button id="statTempMinSource" type="button" class="extreme-source-button info-trigger" data-info-temperature="min" aria-label="Původní měření nejnižší teploty" hidden><span class="info-glyph" aria-hidden="true">i</span></button></td>
             </tr>
             <tr>
               <td>Max. srážky (den)</td>
@@ -2556,18 +2554,18 @@
         <div class="st-val" id="curVoltage">–</div>
         <div class="st-unit">V</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--teal)" onclick="openExplorerWith('absHum')" title="Vypočteno z teploty a RH: hmotnost páry v objemu vzduchu; zobrazit historii">
-        <div class="st-lbl">Absolutní vlhkost</div>
+      <div class="sensor-tile" style="border-top-color:var(--teal)" onclick="openExplorerWith('absHum')" title="Zobrazit v grafu">
+        <div class="st-lbl" id="absoluteHumidityLabel">Absolutní vlhkost</div>
         <div class="st-val" id="curAbsHum">–</div>
         <div class="st-unit">g/m³ · vypočteno</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--yellow)" onclick="openExplorerWith('vpd')" title="Vypočtený deficit tlaku vodní páry ve vzduchu; zobrazit historii">
-        <div class="st-lbl">VPD vzduchu</div>
+      <div class="sensor-tile" style="border-top-color:var(--yellow)" onclick="openExplorerWith('vpd')" title="Zobrazit v grafu">
+        <div class="st-lbl">VPD vzduchu<button type="button" class="info-trigger" data-info-text="Vypočtený deficit tlaku vodní páry ve vzduchu." aria-label="VPD vzduchu: vysvětlení"><span class="info-glyph" aria-hidden="true">i</span></button></div>
         <div class="st-val" id="curVPD">–</div>
         <div class="st-unit">kPa · vypočteno</div>
       </div>
     </div>
-    <details class="comparison-data">
+    <details class="comparison-data" id="humidityMetricsInfo" data-info>
       <summary>Jak se počítají vlhkostní metriky</summary>
       <p>Ze stejného původního měření T (°C) a RH (%), nad kapalnou vodou i pod 0 °C:
         eₛ = 6,112 · exp(17,62 · T / (243,12 + T)) hPa, e = eₛ · RH / 100;
@@ -2638,7 +2636,7 @@
         </select>
       </label>
       <p id="batterySummary" style="white-space:pre-line;font-size:.85rem;line-height:1.6">Čekám na data…</p>
-      <details id="batteryMethod" class="comparison-data">
+      <details id="batteryMethod" class="comparison-data" data-info>
         <summary>Jak číst tuto analýzu</summary>
         <p>Rozsah končí nejnovějším měřením. Párují se pouze teplota a napětí ze stejného původního řádku;
           chybějící hodnoty se nedoplňují. r i lineární sklon vycházejí ze všech platných párů.
@@ -2649,7 +2647,7 @@
           tato explorativní analýza nemá test významnosti. Teplota čidla není ověřená teplota článku,
           nabíjení a zátěž mohou ovlivňovat oba průběhy. Z napětí se neurčuje SOC, kapacita ani energie.</p>
       </details>
-      <details id="batterySensitivity" class="comparison-data">
+      <details id="batterySensitivity" class="comparison-data" data-info>
         <summary>Citlivost vztahu na jednotlivé dny</summary>
         <p id="batterySensitivityValue" style="white-space:pre-line;line-height:1.6">Čekám na data…</p>
         <div style="display:flex;flex-wrap:wrap;gap:.5rem">
@@ -2787,7 +2785,7 @@
 
       <div id="expStats" class="day-summary" style="margin-bottom:.5rem;display:none"></div>
       <div id="expInterval" class="day-summary" hidden aria-label="Porovnání krajních měření"></div>
-      <details id="expHumidityChange" class="comparison-data" hidden>
+      <details id="expHumidityChange" class="comparison-data" data-info hidden>
         <summary>Rozklad změny relativní vlhkosti</summary>
         <div id="expHumidityChangeValue" style="white-space:pre-line;overflow-wrap:anywhere"></div>
         <p>Součin teplotního faktoru a faktoru parního tlaku odpovídá poměru konečné a počáteční RH.
@@ -2855,8 +2853,8 @@
         <div class="chart-canvas-wrap" style="height:340px"><canvas id="chartCompare"></canvas></div>
       </div>
       <div id="cmpInfo" style="font-size:.78rem;color:var(--muted);margin-top:.3rem;text-align:right"></div>
-      <p style="font-size:.8rem;color:var(--muted)">Původní měření otevřete kliknutím na bod grafu nebo výběrem dne a hodiny v podkladech níže.</p>
-      <details id="cmpEvidence" class="comparison-data">
+      <details class="comparison-data" data-info><summary>Ovládání porovnání dnů</summary><p style="font-size:.8rem;color:var(--muted)">Původní měření otevřete kliknutím na bod grafu nebo výběrem dne a hodiny v podkladech.</p></details>
+      <details id="cmpEvidence" class="comparison-data" data-info>
         <summary>Podklady hodinových průměrů</summary>
         <div id="cmpDataQuality"></div>
         <details id="cmpRecords" class="comparison-data" hidden ontoggle="toggleComparisonRecords()">
@@ -3054,7 +3052,7 @@
           <header><h3>1. Teplota</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(0)" aria-expanded="false" aria-label="Zvětšit graf Teplota">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas0" tabindex="0" role="img" aria-label="Teplota; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty0" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Původní teplota a denní minima/maxima [°C].</p>
             <p class="ana-note" id="anaNote0"></p>
@@ -3069,7 +3067,7 @@
           <header><h3>2. Vlhkost a rosný bod</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(1)" aria-expanded="false" aria-label="Zvětšit graf Vlhkost a rosný bod">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas1" tabindex="0" role="img" aria-label="Vlhkost a rosný bod; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty1" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Relativní vlhkost [%], teplota a vypočtený rosný bod [°C].</p>
             <p class="ana-note" id="anaNote1"></p>
@@ -3084,7 +3082,7 @@
           <header><h3>3. Atmosférický tlak</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(2)" aria-expanded="false" aria-label="Zvětšit graf Atmosférický tlak">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas2" tabindex="0" role="img" aria-label="Atmosférický tlak; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty2" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Původní tlak [hPa] a rozdíl krajních měření výřezu.</p>
             <p class="ana-note" id="anaNote2"></p>
@@ -3099,7 +3097,7 @@
           <header><h3>4. Srážkový čítač</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(3)" aria-expanded="false" aria-label="Zvětšit graf Srážkový čítač">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas3" tabindex="0" role="img" aria-label="Srážkový čítač; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty3" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Diagnostika původního čítače a maxima přírůstku záznamu [mm].</p>
             <p class="ana-note" id="anaNote3"></p>
@@ -3114,7 +3112,7 @@
           <header><h3>5. Baterie a teplota</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(4)" aria-expanded="false" aria-label="Zvětšit graf Baterie a teplota">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas4" tabindex="0" role="img" aria-label="Baterie a teplota; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty4" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Napětí [V] a teplota vzduchu [°C] na společné časové ose.</p>
             <p class="ana-note" id="anaNote4"></p>
@@ -3129,7 +3127,7 @@
           <header><h3>6. Změna napětí</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(5)" aria-expanded="false" aria-label="Zvětšit graf Změna napětí">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas5" tabindex="0" role="img" aria-label="Změna napětí; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty5" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Napětí [V], pozorovaný sklon [mV/h] a denní min/max.</p>
             <p class="ana-note" id="anaNote5"></p>
@@ -3144,7 +3142,7 @@
           <header><h3>7. Teplota × napětí</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(6)" aria-expanded="false" aria-label="Zvětšit graf Teplota × napětí">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas6" tabindex="0" role="img" aria-label="Teplota × napětí; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty6" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Páry stejného záznamu [°C/V]; den/noc je odhad podle polohy.</p>
             <p class="ana-note" id="anaNote6"></p>
@@ -3159,7 +3157,7 @@
           <header><h3>8. Porovnání stanic</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(7)" aria-expanded="false" aria-label="Zvětšit graf Porovnání stanic">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas7" tabindex="0" role="img" aria-label="Porovnání stanic; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty7" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Původní teplotní měření na společné časové ose [°C].</p>
             <p class="ana-note" id="anaNote7"></p>
@@ -3175,7 +3173,7 @@
           <header><h3>9. Hodinová heatmapa</h3><button class="ana-button" data-ana-action="expand" onclick="analyticsExpand(8)" aria-expanded="false" aria-label="Zvětšit graf Hodinová heatmapa">Zvětšit</button></header>
           <div class="ana-plot"><canvas id="anaCanvas8" tabindex="0" role="img" aria-label="Hodinová heatmapa; ovládání tlačítky v Možnostech nebo klávesami plus, minus a šipkami"></canvas></div>
           <p class="ana-empty" id="anaEmpty8" hidden>Pro vybrané období nejsou dostupná data.</p>
-          <details class="ana-info">
+          <details class="ana-info" data-info>
             <summary>Podrobnosti grafu</summary>
             <p class="ana-description">Úplné hodinové průměry; opakovaná místní hodina společně.</p>
             <p class="ana-note" id="anaNote8"></p>
@@ -3191,9 +3189,15 @@
           </div></details>
         </article>
       </div>
-      <p class="ana-note">Časy jsou v zóně prohlížeče; CSV neobsahuje jednoznačnou zónu stanice. Grafické body se pro velké rozsahy redukují se zachováním extrémů; statistiky se počítají z úplných původních měření. Přetažení vodorovně posouvá čas, svislý pohyb nechává posun stránky. +/− a šipky ovládají graf s fokusem. Regrese ani napětí neurčují kapacitu baterie nebo příčinu změn.</p>
+      <details class="comparison-data" data-info><summary>Ovládání a výpočty analytických grafů</summary><p class="ana-note">Časy jsou v zóně prohlížeče; CSV neobsahuje jednoznačnou zónu stanice. Grafické body se pro velké rozsahy redukují se zachováním extrémů; statistiky se počítají z úplných původních měření. Přetažení vodorovně posouvá čas, svislý pohyb nechává posun stránky. +/− a šipky ovládají graf s fokusem. Regrese ani napětí neurčují kapacitu baterie nebo příčinu změn.</p></details>
     </main>
   </div><!-- /page-wrapper -->
+
+  <aside id="infoPopover" class="info-popover" role="dialog" aria-modal="false" aria-labelledby="infoTitle" hidden>
+    <div class="info-popover-heading"><strong id="infoTitle"></strong>
+      <button type="button" class="info-close" aria-label="Zavřít nápovědu">×</button></div>
+    <div id="infoBody"></div>
+  </aside>
 
   <script>
     // Both Pages versions share an origin, so preview preferences need their own keys.
@@ -4989,6 +4993,7 @@
     let explorerRangeCache = null;
 
     function invalidateDerivedData() {
+      closeInfoPopover();
       analyticsInvalidate();
       aggregateCache = null;
       clearTemperatureRecord();
@@ -5862,6 +5867,7 @@
     function showAppPage(page, { updateHistory = true, scroll = true } = {}) {
       if (!["main", "modern", "analytics"].includes(page)) return;
       const changed = currentPage !== page;
+      if (changed) closeInfoPopover();
       if (changed && currentPage === "analytics") analyticsStop();
       currentPage = page;
       const dashboard = page !== "analytics";
@@ -5912,6 +5918,7 @@
 
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
+        closeInfoPopover();
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
         document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
         btn.classList.add("active");
@@ -6324,9 +6331,9 @@
 
         // Srážky souhrn
         html += `<div style="background:var(--bg2);padding:.6rem 1rem;border-bottom:1px solid var(--border);font-size:.82rem;display:flex;gap:2rem;flex-wrap:wrap">
-      <span class="ys-tip">☔ <b>Max. denní čítač:</b>&nbsp;${fmt(rainCounterMax, 1)} mm <span class="ys-tip-icon">?</span><span class="ys-tip-box">Nejvyšší hodnota pole rain v místních dnech daného roku. Není to součet ročních srážek; význam a reset čítače musí potvrdit zdroj dat.</span></span>
-      <span class="ys-tip">🌧 <b>Max. přírůstek záznamu:</b>&nbsp;${maxRainInc > 0 ? fmt(maxRainInc, 1) + " mm (" + fmtDT(maxRainIncRow.ts) + ")" : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Nejvyšší kladná hodnota pole rainInc v jednom záznamu. Bez ověřeného měřicího intervalu ji nelze označit za hodinový úhrn.</span></span>
-      <span class="ys-tip">🌊 <b>Max. rozdíl čítače (≤24h):</b>&nbsp;${maxCounterDelta24h > 0 ? fmt(maxCounterDelta24h, 1) + " mm" + (maxCounterDeltaDate ? " (" + fmtDT(maxCounterDeltaDate) + ")" : "") : "–"} <span class="ys-tip-icon">?</span><span class="ys-tip-box">Největší kladný rozdíl rain mezi nejstarším a posledním dostupným záznamem v posuvném okně do 24 hodin v daném roce. Bez ověření resetů čítače nejde o úhrn srážek za 24 hodin.</span></span>
+      <span class="ys-tip">☔ <b>Max. denní čítač:</b>&nbsp;${fmt(rainCounterMax, 1)} mm <button type="button" class="info-trigger" data-info-text="Nejvyšší hodnota pole rain v místních dnech daného roku. Není to součet ročních srážek; význam a reset čítače musí potvrdit zdroj dat." aria-label="Vysvětlení srážkové statistiky"><span class="info-glyph" aria-hidden="true">i</span></button></span>
+      <span class="ys-tip">🌧 <b>Max. přírůstek záznamu:</b>&nbsp;${maxRainInc > 0 ? fmt(maxRainInc, 1) + " mm (" + fmtDT(maxRainIncRow.ts) + ")" : "–"} <button type="button" class="info-trigger" data-info-text="Nejvyšší kladná hodnota pole rainInc v jednom záznamu. Bez ověřeného měřicího intervalu ji nelze označit za hodinový úhrn." aria-label="Vysvětlení srážkové statistiky"><span class="info-glyph" aria-hidden="true">i</span></button></span>
+      <span class="ys-tip">🌊 <b>Max. rozdíl čítače (≤24h):</b>&nbsp;${maxCounterDelta24h > 0 ? fmt(maxCounterDelta24h, 1) + " mm" + (maxCounterDeltaDate ? " (" + fmtDT(maxCounterDeltaDate) + ")" : "") : "–"} <button type="button" class="info-trigger" data-info-text="Největší kladný rozdíl rain mezi nejstarším a posledním dostupným záznamem v posuvném okně do 24 hodin v daném roce. Bez ověření resetů čítače nejde o úhrn srážek za 24 hodin." aria-label="Vysvětlení srážkové statistiky"><span class="info-glyph" aria-hidden="true">i</span></button></span>
     </div>`;
 
         html += `<div class="ys-grid">`;
@@ -7084,7 +7091,178 @@
     }
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&analyticsState.expanded!==null&&analyticsActive())analyticsExpand(analyticsState.expanded);});
 
+    // One help controller for static and dynamically rendered explanations.
+    // Move the original DOM (not copies) so IDs, live notes and controls survive.
+    const infoPanels = new WeakMap();
+    let activeInfo = null, infoCloseTimer = null, infoPointerType = "", infoRestoringFocus = false;
+
+    function closeInfoPopover(restoreFocus = false) {
+      clearTimeout(infoCloseTimer);
+      if (!activeInfo) return;
+      const { trigger, panel, marker, owner } = activeInfo;
+      activeInfo = null;
+      trigger.setAttribute("aria-expanded", "false");
+      panel.hidden = true;
+      panel.classList.remove("info-source-active");
+      marker.replaceWith(panel);
+      if (owner) owner.open = false;
+      el("infoPopover").hidden = true;
+      if (restoreFocus && trigger.isConnected) {
+        infoRestoringFocus = true;
+        trigger.focus({ preventScroll: true });
+        infoRestoringFocus = false;
+      }
+    }
+
+    function positionInfoPopover() {
+      if (!activeInfo) return;
+      const trigger = activeInfo.trigger, popup = el("infoPopover");
+      if (!trigger.isConnected || !trigger.getClientRects().length) { closeInfoPopover(); return; }
+      const rect = trigger.getBoundingClientRect(), gap = 6, margin = 12;
+      const width = document.documentElement.clientWidth, height = window.innerHeight;
+      const room = Math.max(height - rect.bottom - gap - margin, rect.top - gap - margin);
+      popup.style.maxHeight = Math.max(100, Math.min(room, 620, height * .65)) + "px";
+      const box = popup.getBoundingClientRect();
+      const left = Math.max(margin, Math.min(width - box.width - margin, rect.right - box.width));
+      const below = rect.bottom + gap;
+      const top = below + box.height <= height - margin ? below :
+        Math.max(margin, Math.min(height - box.height - margin, rect.top - gap - box.height));
+      popup.style.left = left + "px"; popup.style.top = top + "px";
+    }
+
+    function registerInfoPanel(trigger, panel, { owner = null, prepare = null, title = null } = {}) {
+      trigger.classList.add("info-trigger");
+      trigger.setAttribute("aria-controls", "infoPopover");
+      trigger.setAttribute("aria-haspopup", "dialog");
+      trigger.setAttribute("aria-expanded", "false");
+      infoPanels.set(trigger, { panel, owner, prepare, title: title || trigger.getAttribute("aria-label") });
+    }
+
+    function openInfoPopover(trigger, mode = "hover") {
+      clearTimeout(infoCloseTimer);
+      if (activeInfo?.trigger === trigger) { activeInfo.mode = mode; return; }
+      closeInfoPopover();
+      let entry = infoPanels.get(trigger);
+      if (!entry && trigger.dataset.infoText) {
+        const panel = document.createElement("p");
+        panel.textContent = trigger.dataset.infoText; panel.hidden = true;
+        trigger.after(panel);
+        registerInfoPanel(trigger, panel);
+        entry = infoPanels.get(trigger);
+      }
+      if (!entry || trigger.hidden) return;
+      entry.prepare?.();
+      const { panel, owner, title } = entry;
+      const marker = document.createComment("info panel position");
+      panel.replaceWith(marker);
+      activeInfo = { trigger, ...entry, marker, mode };
+      if (owner) owner.open = true;
+      panel.hidden = false; panel.classList.add("info-source-active");
+      setNodeText(el("infoTitle"), title);
+      el("infoBody").append(panel);
+      el("infoPopover").hidden = false;
+      el("infoPopover").scrollTop = 0;
+      trigger.setAttribute("aria-expanded", "true");
+      positionInfoPopover();
+    }
+
+    function deferCloseInfo() {
+      clearTimeout(infoCloseTimer);
+      infoCloseTimer = setTimeout(() => {
+        if (activeInfo?.mode === "hover") closeInfoPopover();
+      }, 140);
+    }
+
+    function initInfoTooltips() {
+      for (const owner of document.querySelectorAll("details[data-info]")) {
+        const summary = owner.querySelector(":scope > summary"), title = summary.textContent.trim();
+        const panel = document.createElement("div");
+        panel.className = "info-content"; panel.hidden = true;
+        while (summary.nextSibling) panel.append(summary.nextSibling);
+        owner.append(panel); owner.classList.add("info-details");
+        summary.setAttribute("aria-label", title);
+        summary.innerHTML = '<span class="info-glyph" aria-hidden="true">i</span>';
+        registerInfoPanel(summary, panel, { owner, title });
+        owner.addEventListener("toggle", () => {
+          // Selecting a source point in a chart can open its evidence directly.
+          if (owner.open && activeInfo?.owner !== owner) openInfoPopover(summary, "keyboard");
+          else if (!owner.open && activeInfo?.owner === owner) closeInfoPopover();
+        });
+        // A graph's help belongs next to its heading, not in a separate row.
+        const card = owner.closest(".ana-card");
+        if (card) card.querySelector("header").insertBefore(owner, card.querySelector("header button"));
+        if (owner.id === "humidityMetricsInfo") el("absoluteHumidityLabel").append(owner);
+      }
+      for (const trigger of document.querySelectorAll("[data-info-temperature]")) {
+        registerInfoPanel(trigger, el("tempRecord"), {
+          owner: el("tempRecord"), prepare: () => openTemperatureRecord(trigger.dataset.infoTemperature)
+        });
+      }
+      const popup = el("infoPopover");
+      const triggerAt = target => target?.closest?.(".info-trigger");
+      document.addEventListener("pointerover", event => {
+        const trigger = triggerAt(event.target);
+        if (event.pointerType !== "touch" && trigger && !trigger.contains(event.relatedTarget))
+          openInfoPopover(trigger);
+        if (popup.contains(event.target)) clearTimeout(infoCloseTimer);
+      });
+      document.addEventListener("pointerout", event => {
+        if (!activeInfo || activeInfo.mode !== "hover") return;
+        const next = event.relatedTarget;
+        if (activeInfo.trigger.contains(next) || popup.contains(next)) return;
+        if (activeInfo.trigger.contains(event.target) || popup.contains(event.target)) deferCloseInfo();
+      });
+      document.addEventListener("pointerdown", event => {
+        infoPointerType = event.pointerType;
+        if (activeInfo && !popup.contains(event.target) && !activeInfo.trigger.contains(event.target)) closeInfoPopover();
+      }, true);
+      document.addEventListener("click", event => {
+        const trigger = triggerAt(event.target);
+        if (trigger) {
+          event.preventDefault(); event.stopPropagation();
+          const mode = event.detail === 0 ? "keyboard" : infoPointerType === "touch" ? "touch" : "hover";
+          if (activeInfo?.trigger === trigger && activeInfo.mode === "touch" && mode === "touch") closeInfoPopover();
+          else openInfoPopover(trigger, mode);
+        } else if (event.target.closest?.(".info-close")) {
+          event.preventDefault(); closeInfoPopover(true);
+        }
+      }, true);
+      document.addEventListener("focusin", event => {
+        if (infoRestoringFocus) return;
+        const trigger = triggerAt(event.target);
+        if (trigger?.matches(":focus-visible")) openInfoPopover(trigger, "keyboard");
+        else if (activeInfo && !popup.contains(event.target) && !activeInfo.trigger.contains(event.target)) closeInfoPopover();
+      });
+      document.addEventListener("focusout", event => {
+        if (!activeInfo || activeInfo.mode !== "keyboard") return;
+        if (!activeInfo.trigger.contains(event.relatedTarget) && !popup.contains(event.relatedTarget)) closeInfoPopover();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && activeInfo) {
+          event.preventDefault(); event.stopImmediatePropagation(); closeInfoPopover(true);
+        } else if (event.key === "Tab" && activeInfo && !event.shiftKey && event.target === activeInfo.trigger) {
+          // The portalled controls come last in DOM order; make them reachable
+          // immediately from their icon, without trapping keyboard focus.
+          event.preventDefault(); popup.querySelector(".info-close").focus();
+        } else if (event.key === "Tab" && event.shiftKey && event.target === popup.querySelector(".info-close")) {
+          event.preventDefault(); closeInfoPopover(true);
+        }
+      }, true);
+      document.addEventListener("scroll", event => {
+        if (activeInfo && !popup.contains(event.target)) closeInfoPopover();
+      }, true);
+      window.addEventListener("resize", () => closeInfoPopover());
+      // Content notes update asynchronously; reposition once at delivery, and
+      // dismiss a source whose owner has been hidden by data invalidation.
+      new MutationObserver(() => {
+        if (!activeInfo) return;
+        if (activeInfo.owner?.hidden) closeInfoPopover();
+        else positionInfoPopover();
+      }).observe(el("infoBody"), { childList: true, subtree: true, characterData: true });
+    }
+
     // Init: téma, stanice, config
+    initInfoTooltips();
     setTheme(theme);
     updateStationUI();
     // Výchozí data pro vlastní rozsah = dnes
