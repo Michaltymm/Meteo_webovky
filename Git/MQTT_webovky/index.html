@@ -2259,10 +2259,11 @@ function buildDailyGrid() {
    HISTORY TABLE
 ══════════════════════════════════════════════ */
 function updateHistoryTable() {
+  const esc = value => { const node = document.createElement("div"); node.textContent = value ?? ""; return node.innerHTML; };
   const lim=parseInt(el("histLimit").value)||500;
   const rows=lim?store.rows.slice(0,lim):store.rows;
   el("histTableBody").innerHTML=rows.map(r=>`<tr>
-    <td>${r.date}</td><td>${r.time}</td>
+    <td>${esc(r.date)}</td><td>${esc(r.time)}</td>
     <td style="color:#e74c3c">${fmt(r.temp)}</td>
     <td style="color:#f39c12">${fmt(r.pressure,1)}</td>
     <td style="color:#2980b9">${fmt(r.hum)}</td>
@@ -3061,7 +3062,7 @@ function buildNotesTable() {
 
   el("notesTableBody").innerHTML = filtered.map(r => `<tr>
     <td>${fmtDateShort(r.ts)}</td>
-    <td>${r.time || "–"}</td>
+    <td>${esc(r.time || "–")}</td>
     <td>${esc(r.note)}</td>
   </tr>`).join("") || '<tr><td colspan="3" style="color:var(--muted)">Žádné poznámky pro vybraný rok.</td></tr>';
 }

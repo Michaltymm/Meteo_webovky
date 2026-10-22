@@ -15,8 +15,8 @@ Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez
 | 6 | Server a backend | DONE | Lokální server: 6/6 regresí cest, metadat a symlinků prošlo. Není součástí Pages runtime; veřejný provoz jiného serveru nedoložen. Doporučeno omezit lokální expozici. |
 | 7 | GitHub a externí závislosti | DONE | Workflow/Pages allowlist prověřeny. Známý nalezený Chart.js advisory se této verze netýká; omezené hledání není úplný CVE sken. Secrets a pravidla GitHubu vyžadují vlastníka. |
 | 8 | Testy odolnosti dat | DONE | Lokální reprodukce dokončeny; 38 datových/Pages regresí prošlo. Syntetický parser zvládl až 250000 měření. Čtyři podmíněné nálezy odolnosti určeny k opravě; podrobnosti zatím soukromé. |
-| 9 | Postupné opravy zranitelností | DONE | Tři malé dávky dokončeny: čtyři potvrzené podmíněné chyby opraveny, doplněna preventivní ochrana. Externí ověření vlastníka a CSP zůstávají oddělenými úkoly. |
-| 10 | Závěrečný audit | TODO | Dosud neprovedeno. |
+| 9 | Postupné opravy zranitelností | DONE | Čtyři malé dávky dokončeny: pět potvrzených podmíněných chyb opraveno (včetně cíleného doplnění historické kopie); preventivní ochrany ověřeny. Externí rozhodnutí zůstávají odděleně. |
+| 10 | Závěrečný audit | IN_PROGRESS | Doplňková závěrečná kontrola archivního vstupu našla lokálně reprodukovatelný problém; následuje jedna úzce zaměřená opravná dávka a její regrese. |
 
 Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno v uvedeném rozsahu; BLOCKED – nelze bezpečně pokračovat; NEEDS_REVIEW – potřebné rozhodnutí vlastníka. DONE analýzy neznamená opravené nálezy ani ověřenou živou infrastrukturu.
 
@@ -35,6 +35,7 @@ Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno 
 - SEC-001/002: validace konfigurace před mutací a odolné předvolby, v0.11.2. 7 nových regresí + 34 souvisejících testů prošlo; nevalidní import zachová data, tři dodané konfigurace kompatibilní.
 - SEC-003/005: omezený MQTT příjem, streamované odpovědi a složitost CSV v0.11.3; 8 nových regresí + 45 souvisejících testů. HTTPS vždy WSS (SEC-004). Lokální Chromium analytika/tři konfigurace/mobil prošly bez pageerror.
 - Preventivní dávka C: SRI obou CDN knihoven ověřeno skutečným Chromiem včetně blokování pozměněného skriptu; Actions připnuté na SHA, checkout bez uložených credentials. Lokální server loopback, GET/HEAD, bez wildcard CORS a s bezpečnostními hlavičkami (11 server/Pages testů).
+- SEC-007: minimální oprava bezpečného vykreslení textu v historické HTML kopii; lokální skutečný Chromium test parser→obě tabulky prošel. Archiv není publikován Pages a nebyl migrován na novou aplikaci.
 
 ## Zbývající úkoly a omezení
 
@@ -42,7 +43,7 @@ Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno 
 - NEEDS_REVIEW (vlastník): oprávnění Sheets a případných Apps Script/ThingSpeak nasazení; zdroje a admin přístup chybí. CORS proxy je nadále další důvěryhodná strana.
 - NEEDS_REVIEW (vlastník): GitHub Secrets, environment protection a pravidla větví; Dependabot konfigurace v codex-dev nezačne automaticky fungovat, dokud ji GitHub nenačte z výchozí větve. Main nebyl změněn.
 - TODO: striktní CSP vyžaduje úpravu inline JS/handlerů; frame-ancestors/X-Frame-Options na Pages nelze zajistit HTML meta tagem. Hlavičky server.js platí pouze pro lokální náhled.
-- TODO: pravidelná kontrola CDN advisories (SRI není aktualizace knihoven), větší historie nad limity vyžaduje stránkování, fyzický Safari/iOS a dlouhodobý provoz neověřeny. Archivní/produkční HTML není automaticky opraveno.
+- TODO: pravidelná kontrola CDN advisories (SRI není aktualizace knihoven), větší historie nad limity vyžaduje stránkování, fyzický Safari/iOS a dlouhodobý provoz neověřeny. Historická kopie má jen cílenou opravu vykreslení, nikoli kompletní modernizaci; bez dalšího ověření ji nenasazovat. Produkční HTML nebylo měněno.
 
 ## Pokračování
 

@@ -412,3 +412,7 @@ SEC-003/005: limity stream/CSV/MQTT před mutací historie; nepřijímají se pr
 ## Bezpečnostní dávka C — v0.11.4
 
 METEO-055: SRI Chart4.4.0/Paho1.1.0, Actions stejné major připnuté na SHA a všechnycheckouty persist-credentials:false. Dependabot připraven pouze na codex-dev; automatický běh nepotvrzen (vyžaduje defaultbranch). SEC-006 preventivně: preview implicitně127.0.0.1, GET/HEAD, bezwildcardCORS, nosniff/CORP/XFO; Pages těmito hlavičkami nejsou ovlivněny. Server/Pages11testů a Chromium SRI (originál přijme/pozměněný skript odmítne) prošly. Viz scripts/check-security-browser.py.
+
+## Bezpečnostní doplnění při finální kontrole
+
+SEC-007: historický vstup mimo Pages měl samostatný potvrzený nález; vzhledem k výslovnému zadání auditu celého projektu opraveno pouze bezpečné vykreslení textu v obou tabulkách, bez migrace/záměny aplikace. Skutečný Chromium test původního parseru a rendererů prošel; soukromá reprodukce před opravou byla pozitivní. Úplná modernizace archivní aplikace není provedena, pro nasazení stále nutné další ověření.

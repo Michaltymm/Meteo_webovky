@@ -1521,3 +1521,5 @@ Nasazeno: [666b487](https://github.com/Michaltymm/Meteo_webovky/commit/666b4871a
 Sekvenční audit a důkazy: [SECURITY_ROADMAP.md](SECURITY_ROADMAP.md). METEO-054 má v0.11.2 ověřenou validaci a session fallback (7 nových regresí); širší návrh diffu/verzování konfigurace zůstává otevřený. Produkční konfigurace beze změny.
 
 Bezpečnostní dávka B (v0.11.3): METEO-047/050 získávají odmítnutí neúměrných vstupů před změnou dat; kvalita/flagy a deduplikace zůstávají samostatným plánem. METEO-008: parser1k–250k změřen před/po, viz performance/SECURITY.md. MQTT limity nenahrazují ACL brokeru.
+
+Závěrečná bezpečnostní kontrola navíc uzavřela SEC-007 v historickém HTML cílenou opravou textového výstupu. Nepřidává nové METEO ID ani neřeší FUT-002 rozhodnutí o dlouhodobém účelu archivu.
