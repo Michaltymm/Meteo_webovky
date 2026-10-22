@@ -391,6 +391,9 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Výchozí b80169c na codex-dev. V devíti kartách jsou původní popisy a dynamické anaNote0–8 přesunuté do nativních zavřených details.ana-info; samostatná šipka „Podrobnosti grafu“. Oba texty zachované, ID poznámek a jejich aktualizace beze změny. Kliknutí/dotyk/Enter/mezerník bez vlastního JS, 44px řádek a viditelný fokus.
 - Graf, jednotky/legendy, prázdný stav, ovládání a heatmapová legenda/detail zůstávají mimo popisky. Není změna parseru, dat, statistik, stanic, transportů, cache nebo Chart instancí. METEO-030 doplněno, obecné030/010 nejsou DONE. Změna je pouze zobrazení, bez nových výkonových tvrzení a opakování velkých profilů.
 
+
+- Publikace etapy15: [666b487](https://github.com/Michaltymm/Meteo_webovky/commit/666b4871aaa2ddfff7d0002d8eaffd0962cd534b), [Actions #24](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39747969927) **Success** (build16s/deploy8s/celkem33s). Nasazení potvrzené workflow, přímé živé widgety neověřeny; main stále2405c5d. Tento dokumentační záznam nemění HTML0.11.1.
+
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
 1. Nejprve přečti QUICK CONTEXT; potom jen sekce relevantní k zadání.
