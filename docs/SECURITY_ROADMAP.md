@@ -1,6 +1,6 @@
 # Bezpečnostní roadmapa Meteo_webovky
 
-Aktualizace: 2026-10-22 · kontrolní bod **SEC-STAGE-09** · větev `codex-dev`.
+Aktualizace: 2026-10-22 · kontrolní bod **SEC-STAGE-10** · větev `codex-dev`.
 Výchozí revize: `ae40f950d5d86d2e99e30a270c09636e8b0d4aa8`. Stav odpovídá dostupnému kódu a výslovně uvedenému rozsahu.
 
 Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez pokusů o zápis či přihlášení. Produkční větev se nemění. Soukromé nálezy a podklady jsou mimo repozitář; nepatří do Pages artefaktu ani veřejných logů.
@@ -16,7 +16,7 @@ Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez
 | 7 | GitHub a externí závislosti | DONE | Workflow/Pages allowlist prověřeny. Známý nalezený Chart.js advisory se této verze netýká; omezené hledání není úplný CVE sken. Secrets a pravidla GitHubu vyžadují vlastníka. |
 | 8 | Testy odolnosti dat | DONE | Lokální reprodukce dokončeny; 38 datových/Pages regresí prošlo. Syntetický parser zvládl až 250000 měření. Čtyři podmíněné nálezy odolnosti určeny k opravě; podrobnosti zatím soukromé. |
 | 9 | Postupné opravy zranitelností | DONE | Čtyři malé dávky dokončeny: pět potvrzených podmíněných chyb opraveno (včetně cíleného doplnění historické kopie); preventivní ochrany ověřeny. Externí rozhodnutí zůstávají odděleně. |
-| 10 | Závěrečný audit | IN_PROGRESS | Doplňková závěrečná kontrola archivního vstupu našla lokálně reprodukovatelný problém; následuje jedna úzce zaměřená opravná dávka a její regrese. |
+| 10 | Závěrečný audit | IN_PROGRESS | Závěrečný kód a 246/246 Node testů ověřeny, Chromium a reálný Pages build prošly. Čeká pouze odeslání a kontrola nasazení na GitHubu. |
 
 Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno v uvedeném rozsahu; BLOCKED – nelze bezpečně pokračovat; NEEDS_REVIEW – potřebné rozhodnutí vlastníka. DONE analýzy neznamená opravené nálezy ani ověřenou živou infrastrukturu.
 
@@ -54,3 +54,5 @@ Soukromý report: `/workspace/security-private/Meteo_webovky/REPORT.md`; kontrol
 
 - [Projektová paměť](../PROJECT_AUDIT.md), [vývojová roadmapa](NAPADY_A_ROADMAP.md), [regresní testy](../tests/).
 - [Historie bezpečnostní roadmapy a checkpointů](https://github.com/Michaltymm/Meteo_webovky/commits/codex-dev/docs/SECURITY_ROADMAP.md).
+
+- [Závěrečný veřejný report a konkrétní testy/commity](SECURITY_AUDIT.md).
