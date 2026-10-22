@@ -1441,3 +1441,13 @@ Web Vitals, reálné služby/firmware/HW nebo přímé widgety Pages.
 poté konfigurovatelná tolerance a RH/V porovnání025/029, obecný X/Y030.
 Skutečné úhrny či energetiku řešit až po potvrzení metadata017/049/057/071.
 Neopakovat hotové analýzy063/077/078 bez nového důvodu.
+
+
+### Uložení a publikace etapy 13
+
+[da16a8d](https://github.com/Michaltymm/Meteo_webovky/commit/da16a8d5381d4ef0712154dda0838af82cd24924)
+odeslán na codex-dev; [Actions #22](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39742818313)
+**Success**, build22s/deploy20s/celkem50s, jeden Pages artefakt. Main stále2405c5d.
+Následující commit pouze ukládá ověřený stav nasazení, nemění HTML0.10.0
+ani neopakuje testy. Přímá kontrola widgetů živého webu z tohoto prostředí
+neproběhla; lokální browser výsledky a hranice měření jsou v ETAPA13.

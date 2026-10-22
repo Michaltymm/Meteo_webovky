@@ -32,7 +32,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: v0.9.0 v[d16acdb](https://github.com/Michaltymm/Meteo_webovky/commit/d16acdb4b093d2fa8f4c18824bb8f4817919900a), [Actions #21](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39735320314) **Success**, build19s/deploy14s/celkem42s/1artefakt. Main stále2405c5d. Předchozí publikace viz historie etap. Přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice); workflow potvrzuje deployment.
+- DEPLOY-001: v0.10.0 v[da16a8d](https://github.com/Michaltymm/Meteo_webovky/commit/da16a8d5381d4ef0712154dda0838af82cd24924), [Actions #22](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39742818313) **Success**, build22s/deploy20s/celkem50s/1artefakt. Main stále2405c5d. Předchozí publikace viz historie etap. Přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice); workflow potvrzuje deployment.
 
 ## A. PROJECT CONTEXT
 
@@ -367,6 +367,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Browser reálný Chart/DOM/start/parser a3actualcfg s řízeným CSV/UV:9karet, quick400→full3000, všechny rozsahy/prázdno, nezávislá plná reference85°C v čase i XYose, missing/0V,3stanice, legendy/zoom/pan/reset/sync/expand/Escape/PNG, heatdetail, chyba obnovy a pozdní cizí odpověď, opakované enter/exitbezChartleaku.1440/800/390/320obě témata bez overflow, touch-enabled mobile tooltip/cell/keyboard/lazy,0pageerrors. Screenshot prohlédnut. XY `parsing:false` neplatné pro nesetříděnéX způsobovalo oříznutí extrému; scatter nyní standardně parsuje Chart, actualaxis regression chrání.
 - [ETAPA13](docs/performance/ETAPA13.md): sekvenční1k/10k/100k/250k před/po,5vzorků. Warm250k dashboard24,8→22,0ms, nejde o speedup claim; všech9karet cold393,7/warm21,6ms. CPU×4/100k984,1/120,8ms. Hlavní start8Chart, po10návštěvách znovu8, uzly stabilní; compactcizí250k×2cache8MB zachována. HTML+62087B. První velký O(n) model stále blokuje, navazující008 může rozdělit práci/worker dle měření. Fyzický iPhone/WebKit/živé služby/HW/firmware ani přímé Pages widgety neověřeny.
 - Kontrola GitHubu: explicitní ls-remote ukázalo stále df1beb5; lokální origin/codex-dev byl jen zastaralý tracking ref586025c, aktualizován explicitním fetchrefspec. Nebyly žádné nové cizí commity k přepisování/slučování. Další krok po této etapě: dělená příprava velkého modelu008, pak025/029/030nastavitelné veličiny/tolerance. Publikaci doložit samostatně.
+
+- Uložení a publikace etapy13: [da16a8d](https://github.com/Michaltymm/Meteo_webovky/commit/da16a8d5381d4ef0712154dda0838af82cd24924) odeslán na codex-dev; [Actions #22](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39742818313) **Success**, build22s/deploy20s/celkem50s, jeden Pages artefakt. Main stále2405c5d. Následující dokumentační commit pouze zaznamenává výsledek; HTML0.10.0, hotové testy/browser/profily se kvůli dokumentaci neopakují. Workflow potvrzuje deployment, nikoli přímou kontrolu živých widgetů.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
