@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Etapa 12 — podklady teplotních extrémů](ETAPA12.md) měří cenu doplněných
+čítačů a O(1) zobrazení původního maxima/minima i při250k shodách.
+
 [Etapa 11 — podklady hodinových průměrů](ETAPA11.md) ověřuje přímý výpis
 původních měření, cenu porovnání před/po a stránkování husté 250k hodiny.
 

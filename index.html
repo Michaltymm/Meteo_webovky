@@ -100,6 +100,10 @@
     .comparison-record-controls label { display: flex; flex-direction: column; gap: .3rem; max-width: 100%; }
     .comparison-record-controls select { min-height: 44px; max-width: 100%; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 4px; }
     #cmpRecords .battery-record-nav button { min-height: 44px; }
+    .extreme-source-button { display: block; margin: .25rem 0 0 auto; min-height: 44px; padding: .3rem .6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg3); color: var(--text); cursor: pointer; }
+    .extreme-source-button[hidden] { display: none; }
+    #tempRecord { margin: .6rem; }
+    #tempRecordInfo { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.6; }
 
     .nav-pills {
       display: flex;
@@ -1971,8 +1975,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v080"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.8.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v090"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.9.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2324,11 +2328,13 @@
             </tr>
             <tr>
               <td>Nejvyšší teplota</td>
-              <td style="text-align:right;color:var(--red);font-weight:700" id="statTempMax">–</td>
+              <td style="text-align:right;color:var(--red);font-weight:700"><span id="statTempMax">–</span>
+                <button id="statTempMaxSource" class="extreme-source-button" onclick="openTemperatureRecord('max')" aria-label="Původní měření nejvyšší teploty" hidden>Podklady maxima</button></td>
             </tr>
             <tr>
               <td>Nejnižší teplota</td>
-              <td style="text-align:right;color:var(--blue);font-weight:700" id="statTempMin">–</td>
+              <td style="text-align:right;color:var(--blue);font-weight:700"><span id="statTempMin">–</span>
+                <button id="statTempMinSource" class="extreme-source-button" onclick="openTemperatureRecord('min')" aria-label="Původní měření nejnižší teploty" hidden>Podklady minima</button></td>
             </tr>
             <tr>
               <td>Max. srážky (den)</td>
@@ -2336,6 +2342,29 @@
             </tr>
           </tbody>
         </table>
+        <details id="tempRecord" class="comparison-data" hidden ontoggle="toggleTemperatureRecord()">
+          <summary>Původní měření teplotního extrému</summary>
+          <div class="comparison-record-controls">
+            <label for="tempRecordKind">Extrém<select id="tempRecordKind" onchange="openTemperatureRecord()">
+              <option value="max">Nejvyšší teplota</option><option value="min">Nejnižší teplota</option>
+            </select></label>
+          </div>
+          <div id="tempRecordContent" hidden>
+            <p id="tempRecordInfo"></p>
+            <p id="tempRecordFormula"></p>
+            <div class="battery-record-scroll" tabindex="0" role="region" aria-label="Původní měření teplotního extrému">
+              <table class="battery-record-table">
+                <caption id="tempRecordCaption"></caption>
+                <thead><tr><th scope="col">Záznam</th><th scope="col">Čas včetně UTC offsetu</th><th scope="col">T [°C]</th><th scope="col">RH [%]</th><th scope="col">P [hPa]</th><th scope="col">V [V]</th></tr></thead>
+                <tbody id="tempRecordBody"></tbody>
+              </table>
+            </div>
+            <p>Hodnoty v tabulce se nezaokrouhlují; „–“ znamená chybějící nebo nečíselnou hodnotu.
+              Pořadí platí pouze v aktuální historii, není trvalým ID zdroje. Duplicity se zachovávají.
+              Časy jsou zobrazené po sekundách s UTC offsetem. Po změně dat podklady otevřete znovu.
+              Širokou tabulku lze posouvat vodorovně.</p>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -4043,6 +4072,7 @@
       const temps = aggregates.temperature;
       setNodeText(el("statTempMax"), temps.maxRow ? fmt(temps.max) + " °C  " + fmtDT(temps.maxRow.ts) : "–");
       setNodeText(el("statTempMin"), temps.minRow ? fmt(temps.min) + " °C  " + fmtDT(temps.minRow.ts) : "–");
+      syncTemperatureRecord(aggregates);
       const rainMax = aggregates.rainMax;
       setNodeText(el("statRainMax"), rainMax ? fmt(rainMax.value, 1) + " mm (" + rainMax.day + ")" : "–");
 
@@ -4244,7 +4274,8 @@
       };
       const days = new Map(), months = new Map(), years = new Map();
       const today = { count: 0, temp: accumulator(), hum: accumulator(), pressure: accumulator(), rain: accumulator(), voltage: null };
-      const temperature = { min: null, max: null, minRow: null, maxRow: null };
+      const temperature = { min: null, max: null, minRow: null, maxRow: null, count: 0,
+        minIndex: null, maxIndex: null, minTies: 0, maxTies: 0 };
       const bucket = (map, key, time) => {
         if (!map.has(key)) map.set(key, { time, ts: 0, hs: 0, tn: 0, hn: 0, rain: null });
         return map.get(key);
@@ -4263,8 +4294,13 @@
         yr.end = index;
         if (Number.isFinite(row.temp)) {
           d.ts += row.temp; d.tn++; m.ts += row.temp; m.tn++;
-          if (!temperature.minRow || row.temp < temperature.min) { temperature.min = row.temp; temperature.minRow = row; }
-          if (!temperature.maxRow || row.temp > temperature.max) { temperature.max = row.temp; temperature.maxRow = row; }
+          temperature.count++;
+          if (!temperature.minRow || row.temp < temperature.min) {
+            temperature.min = row.temp; temperature.minRow = row; temperature.minIndex = index - 1; temperature.minTies = 1;
+          } else if (row.temp === temperature.min) temperature.minTies++;
+          if (!temperature.maxRow || row.temp > temperature.max) {
+            temperature.max = row.temp; temperature.maxRow = row; temperature.maxIndex = index - 1; temperature.maxTies = 1;
+          } else if (row.temp === temperature.max) temperature.maxTies++;
         }
         if (Number.isFinite(row.hum)) { d.hs += row.hum; d.hn++; m.hs += row.hum; m.hn++; }
         if (Number.isFinite(row.rain) && (d.rain === null || row.rain > d.rain)) d.rain = row.rain;
@@ -4285,6 +4321,74 @@
         hourly: new Map(), annual: new Map() };
       if (rows === store.rows) aggregateCache = result;
       return result;
+    }
+
+    let temperatureRecordView = null;
+
+    function clearTemperatureRecord() {
+      temperatureRecordView = null;
+      el("tempRecordContent").hidden = true;
+      for (const id of ["tempRecordInfo", "tempRecordFormula", "tempRecordCaption"]) setNodeText(el(id), "");
+      if (el("tempRecordBody").innerHTML) el("tempRecordBody").innerHTML = "";
+    }
+
+    function temperatureRecordIsCurrent() {
+      const v = temperatureRecordView;
+      return v && v.snapshot === aggregateCache && v.snapshot.source === store.rows &&
+        v.snapshot.length === store.rows.length && v.snapshot.dayKey === localDateKey() &&
+        v.station === activeIdx && v.fullLoaded === store.fullLoaded && v.kind === el("tempRecordKind").value;
+    }
+
+    function syncTemperatureRecord(snapshot = dataAggregates()) {
+      const available = snapshot.temperature.count > 0;
+      el("statTempMinSource").hidden = !available;
+      el("statTempMaxSource").hidden = !available;
+      const box = el("tempRecord");
+      box.hidden = !available;
+      if (!["min", "max"].includes(el("tempRecordKind").value)) el("tempRecordKind").value = "max";
+      if (!available || (temperatureRecordView && !temperatureRecordIsCurrent())) {
+        clearTemperatureRecord(); box.open = false;
+      }
+    }
+
+    function temperatureRecordData() {
+      if (!temperatureRecordIsCurrent()) return null;
+      const v = temperatureRecordView, snapshot = v.snapshot, stat = snapshot.temperature;
+      const row = snapshot.source[v.index], raw = value => Number.isFinite(value) ? String(value) : "–";
+      return { kind: v.kind, index: v.index + 1, time: intervalTimestamp(row.ts),
+        temp: raw(row.temp), hum: raw(row.hum), pressure: raw(row.pressure), voltage: raw(row.voltage),
+        ties: stat[v.kind + "Ties"], count: stat.count, excluded: snapshot.length - stat.count, total: snapshot.length,
+        from: intervalTimestamp(snapshot.source[snapshot.length - 1].ts), to: intervalTimestamp(snapshot.source[0].ts) };
+    }
+
+    function openTemperatureRecord(kind = el("tempRecordKind").value) {
+      clearTemperatureRecord();
+      if (kind !== "min" && kind !== "max") return;
+      const snapshot = dataAggregates();
+      syncTemperatureRecord(snapshot);
+      const index = snapshot.temperature[kind + "Index"];
+      if (index === null) return;
+      el("tempRecordKind").value = kind;
+      temperatureRecordView = { snapshot, kind, index, station: activeIdx, fullLoaded: store.fullLoaded };
+      el("tempRecord").open = true;
+      const record = temperatureRecordData(), title = kind === "min" ? "Nejnižší" : "Nejvyšší";
+      setNodeText(el("tempRecordInfo"), `${CFG.name || stations[activeIdx].name} • ${title} teplota ${record.temp} °C.\n` +
+        `${store.fullLoaded ? "Celá dostupná" : "Částečná"} načtená historie: ${record.total} záznamů, ${record.count} číselných teplot, ${record.excluded} vynechaných (chybí nebo nejsou konečné číslo).\n` +
+        `Rozsah všech načtených záznamů: ${record.from} až ${record.to}.\n` +
+        `Přesně shodnou hodnotu má ${record.ties} záznamů. Zvolen první v sestupné historii; při stejném čase rozhoduje původní pořadí.\n` +
+        `Zóna prohlížeče: ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`);
+      setNodeText(el("tempRecordFormula"), `${el("appVersion").textContent}. ${kind === "min" ? "Minimum" : "Maximum"} ze všech konečných číselných teplot v načtených původních měřeních, před zaokrouhlením. ` +
+        "Ostatní hodnoty v řádku jsou původní doprovodná měření a výběr teploty neovlivňují. Nejde o ověřený klimatický rekord; historie kalibrace a umístění čidla není doložená.");
+      setNodeText(el("tempRecordCaption"), `${title} teplota · původní vybraný záznam č. ${record.index}`);
+      const markup = `<tr>${[record.index, record.time, record.temp, record.hum, record.pressure, record.voltage]
+        .map(value => `<td>${escapeHTML(value)}</td>`).join("")}</tr>`;
+      if (el("tempRecordBody").innerHTML !== markup) el("tempRecordBody").innerHTML = markup;
+      el("tempRecordContent").hidden = false;
+    }
+
+    function toggleTemperatureRecord() {
+      if (el("tempRecord").open && !el("tempRecord").hidden) openTemperatureRecord();
+      else clearTemperatureRecord();
     }
 
     const HOURLY_CACHE_LIMIT = 8;
@@ -4469,6 +4573,11 @@
 
     function invalidateDerivedData() {
       aggregateCache = null;
+      clearTemperatureRecord();
+      el("tempRecord").open = false;
+      el("tempRecord").hidden = true;
+      el("statTempMinSource").hidden = true;
+      el("statTempMaxSource").hidden = true;
       el("cmpDataQuality").textContent = "";
       clearComparisonRecords();
       el("cmpRecords").open = false;

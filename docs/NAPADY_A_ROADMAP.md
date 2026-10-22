@@ -342,7 +342,7 @@ nerovnoměrné timestampy, resize/scroll/touch, jeden aktivní RAF, žádný nov
 
 **Přínos / priorita / obtížnost:** po kliknutí na maximum nebo odvozenou hodnotu
 vidět vzorec/verzi, vstupní řádky a důvody vyloučení; P1, střední. **Stav:**
-Rozpracováno — podklady vlivných T/V dnů dokončeny v0.7.0 a hodinových průměrů T/RH/P v0.8.0; maxima a další odvozené výpočty dále.
+Rozpracováno — podklady vlivných T/V dnů dokončeny v0.7.0, hodinových průměrů T/RH/P v0.8.0 a globálních teplotních extrémů v0.9.0; roční/denní extrémy a další odvozené výpočty dále.
 Dnešní řádky stačí pro přehled původu, trvalé odkazy na
 opravené řádky potřebují ID/revizi backendu. Vztah METEO-047/050: ty evidují
 kvalitu a počty; toto je dohledatelná cesta konkrétního výsledku.
@@ -1321,3 +1321,46 @@ v HTML stále ze5d0a427, verze0.8.0; main stále2405c5d.
 Následující commit pouze zaznamenává výsledek; nové testy či verze kvůli
 dokumentaci nejsou potřeba. Workflow potvrzuje deployment, přímé widgety
 vývojového webu z tohoto prostředí nebyly ověřeny.
+
+
+## Etapa 12 — původní globální teplotní extrémy, v0.9.0 (22. 10. 2026)
+
+Čistý `08e531a` na codex-dev, main stále2405c5d. **METEO-063 má hotovou
+dílčí etapu globálních teplotních extrémů** ve společné kartě Statistika.
+Širší původ ročních/denních a dalších odvozených výsledků zůstává
+rozpracovaný. Hotové077/078/hodinové podklady zachovány, žádné nové ID.
+
+Nejvyšší/nejnižší teplota mají nativní tlačítko do details se zdrojovým
+řádkem, přesnou T/RH/P/V, časem a UTC offsetem, pořadím v aktuální historii,
+počty validních/vynechaných T i přesných shod, verzí a pravidlem výběru.
+Shody se posuzují před zaokrouhlením; stále první v sestupné historii,
+při stejném timestampu původní pořadí. Celý rozsah načtených řádků se
+neskrývá: quick je částečný, full celá dostupná načtená historie, nikoli
+ověřený rekord stanice nebo rok vybraný v jiné záložce. Chybějící doprovodné
+senzory zůstávají „–“ a výběr T neovlivňují. Nuly/duplicity zachovány.
+
+V původní agregaci jen5číselných polí pro počet, indexy a shody; žádný
+seznam všech shod nebo kopie dat. Nad hotovou cache otevření O(1)/max3čtení
+i při250k stejných teplotách, DOM1řádek. Stav má platnost snapshotu, stanice,
+volby a fullLoaded; při obnově/CSV/MQTT/opravených datech/resetu/stanici se
+vyčistí a zavře. Původní statistiky a identity minRow/maxRow se nemění,
+žádný extra request/graf/závislost. Pořadí není backendové ID a kalibrace071
+ani explicitní časový kontrakt048 nejsou nově ověřeny.
+
+**193/193 Node testů**,13nových: úplné hodnoty/počty/shody/indexy, stejně
+zaokrouhlené různé T, min=max0, invalid/missing senzory, quick/full,250k
+omezená čtení, všechny životní cykly, XSS, nezávislost ostatních filtrů
+a dva stejné místní časy s odlišným offsetem. Browser se skutečnými třemi
+konfiguracemi a řízeným CSV/UV/startem/parserem ověřil quick400→full1000,
+nezávislou referenci výsledků,0T/allmissingT, klávesnici/volby a CSV opravu.
+Obě témata320/390px, horizontální posun, bez celostránkového overflow,
+extra HTTP/Chart/pageerrors; screenshot prohlédnut.
+
+[Měření a důkazy](performance/ETAPA12.md): sekvenční cílené1k/250k před/po,
+250k cold refresh48,4→45,7ms, opakovaný21,0→21,2ms, bez tvrzení optimalizace.
+Podklady maxima0,5ms a minima0,3ms. Živé služby/HW/firmware/broker,
+fyzický mobil a přímé Pages widgety neověřeny; nasazení doložit samostatně.
+
+**Další vhodná malá etapa:** v rámci063 původní vstupy odvozených Td/AH/VPD
+s přesnými podmínkami platnosti a aktuální referencí. Roční/denní extrémy
+zůstávají dalším dílčím pokračováním, žádné globální DONE celého063.

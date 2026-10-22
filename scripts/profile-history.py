@@ -20,6 +20,7 @@ parser.add_argument('--annual', action='store_true', help='Also measure first an
 parser.add_argument('--analysis', action='store_true', help='Measure the new battery module and humidity explorer, when available')
 parser.add_argument('--records', action='store_true', help='After core measurements, profile the original battery record viewer when available')
 parser.add_argument('--hour-records', action='store_true', help='After core measurements, profile hourly original records with a dense single-hour fixture')
+parser.add_argument('--temperature-record', action='store_true', help='After core measurements, profile original global temperature extremes')
 args = parser.parse_args()
 html = Path(args.html).read_text().split('// Init: téma, stanice, config')[0] + '</script></body></html>'
 chart = Path(args.chartjs).read_text()
@@ -183,8 +184,35 @@ with sync_playwright() as p:
             hour_records['after20OpenClose'] = heap()
             hour_records['closedRows'] = page.locator('#cmpRecordsBody tr').count()
             assert hour_records['closedRows'] == 0 and page.evaluate('comparisonRecordView===null')
+        temperature_record = None
+        if args.temperature_record:
+            page.evaluate("showTab('now');refreshUI();openTemperatureRecord('max')")
+            page.wait_for_timeout(100)
+            assert page.locator('#tempRecord table').is_visible()
+            temperature_samples = []
+            for _ in range(5):
+                temperature_samples.append(page.evaluate('''()=>({
+                  max:measure(()=>openTemperatureRecord('max')),
+                  min:measure(()=>openTemperatureRecord('min')),
+                  rows:el('tempRecordBody').children.length,count:temperatureRecordData().count
+                })'''))
+                page.wait_for_timeout(350)
+            opened = heap()
+            page.evaluate("el('tempRecord').open=false;toggleTemperatureRecord()")
+            page.wait_for_timeout(100)
+            temperature_record = {'samples':temperature_samples,'opened':opened,'closed':heap()}
+            page.evaluate('''()=>{
+              for(let i=0;i<20;i++){
+                openTemperatureRecord('max');openTemperatureRecord('min');
+                el('tempRecord').open=false;toggleTemperatureRecord();observer.takeRecords();
+              }
+            }''')
+            page.wait_for_timeout(100)
+            temperature_record['after20OpenClose'] = heap()
+            temperature_record['closedRows'] = page.locator('#tempRecordBody tr').count()
+            assert temperature_record['closedRows'] == 0 and page.evaluate('temperatureRecordView===null')
         results.append({'rows':count,'empty':empty,'loaded':loaded,'warm':warm,'after30Cycles':repeated,
-                        'samples':samples,'records':records,'hourRecords':hour_records,'pageErrors':errors,
+                        'samples':samples,'records':records,'hourRecords':hour_records,'temperatureRecord':temperature_record,'pageErrors':errors,
                         'overflow':page.evaluate('document.documentElement.scrollWidth>innerWidth')})
         print('profiled', count, flush=True)
         page.close()
@@ -197,6 +225,7 @@ Path(args.output).write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
     'analysisScenario':args.analysis,
     'recordsScenario':args.records,
     'hourRecordsScenario':args.hour_records,
+    'temperatureRecordScenario':args.temperature_record,
     'network':'blocked; generated in-memory fixture, no raw CSV retained','results':results},indent=2))
 if any(r['pageErrors'] or r['overflow'] for r in results):
     raise SystemExit('Browser profile failed; inspect output.')

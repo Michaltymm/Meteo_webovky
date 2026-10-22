@@ -1,0 +1,184 @@
+{
+  "browser": "154.0.8037.57",
+  "results": [
+    {
+      "station": 0,
+      "checks": [
+        {
+          "kind": "max",
+          "index": 51,
+          "temp": "42.123456789",
+          "hum": "50.5",
+          "pressure": "1000.5",
+          "voltage": "4",
+          "ties": 2,
+          "count": 363,
+          "excluded": 37,
+          "total": 400
+        },
+        {
+          "kind": "max",
+          "index": 51,
+          "temp": "42.123456789",
+          "hum": "50.5",
+          "pressure": "1000.5",
+          "voltage": "4",
+          "ties": 2,
+          "count": 909,
+          "excluded": 91,
+          "total": 1000
+        },
+        {
+          "kind": "min",
+          "index": 501,
+          "temp": "-5.123456789",
+          "hum": "55",
+          "pressure": "1005",
+          "voltage": "4",
+          "ties": 2,
+          "count": 909,
+          "excluded": 91,
+          "total": 1000
+        }
+      ],
+      "partialToFullInvalidation": true,
+      "keyboardControls": true,
+      "missingTemperature": false,
+      "extraRequests": 0,
+      "extraCharts": 0
+    },
+    {
+      "station": 1,
+      "checks": [
+        {
+          "kind": "max",
+          "index": 2,
+          "temp": "0",
+          "hum": "\u2013",
+          "pressure": "1000.01",
+          "voltage": "\u2013",
+          "ties": 363,
+          "count": 363,
+          "excluded": 37,
+          "total": 400
+        },
+        {
+          "kind": "max",
+          "index": 2,
+          "temp": "0",
+          "hum": "\u2013",
+          "pressure": "1000.01",
+          "voltage": "\u2013",
+          "ties": 909,
+          "count": 909,
+          "excluded": 91,
+          "total": 1000
+        },
+        {
+          "kind": "min",
+          "index": 2,
+          "temp": "0",
+          "hum": "\u2013",
+          "pressure": "1000.01",
+          "voltage": "\u2013",
+          "ties": 909,
+          "count": 909,
+          "excluded": 91,
+          "total": 1000
+        }
+      ],
+      "partialToFullInvalidation": true,
+      "keyboardControls": true,
+      "missingTemperature": false,
+      "extraRequests": 0,
+      "extraCharts": 0
+    },
+    {
+      "station": 2,
+      "checks": [],
+      "partialToFullInvalidation": true,
+      "keyboardControls": false,
+      "missingTemperature": true,
+      "extraRequests": 0,
+      "extraCharts": 0
+    }
+  ],
+  "mobile": [
+    {
+      "width": 320,
+      "theme": "darkblue",
+      "overflow": false,
+      "keyboardScroll": true
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "overflow": false,
+      "keyboardScroll": true
+    },
+    {
+      "width": 390,
+      "theme": "darkblue",
+      "overflow": false,
+      "keyboardScroll": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "overflow": false,
+      "keyboardScroll": true
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "station": 0,
+      "quick": true
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": true
+    },
+    {
+      "station": 0,
+      "quick": false
+    },
+    {
+      "station": 1,
+      "quick": false
+    },
+    {
+      "station": 2,
+      "quick": false
+    }
+  ],
+  "transport": "Original three configs; controlled CSV/UV, MQTT CDN blocked"
+}

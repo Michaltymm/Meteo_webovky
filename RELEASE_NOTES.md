@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.9.0
+
+- Nejvyšší a nejnižší teplota v kartě Statistika mají podklady s původním měřením, přesnou hodnotou a časem s UTC offsetem. Zobrazují počty platných a vynechaných teplot i přesných shod extrému.
+- Panel rozlišuje částečnou a celou načtenou historii, vysvětluje výběr při shodě a ukazuje původní doprovodná měření. Po změně dat či stanice se staré podklady zavřou.
+- Otevření funguje klávesnicí i na mobilu, využívá stávající souhrny a nepřidává stahování ani grafy.
+
 ## v0.8.0
 
 - U hodinových průměrů v Porovnání dnů lze otevřít původní teplotu, vlhkost či tlak kliknutím na bod grafu nebo výběrem dne a hodiny. Výpis uvádí součet, počet, nezaokrouhlený průměr a důvody vynechání hodnot.
