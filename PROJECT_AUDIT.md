@@ -31,7 +31,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: v0.7.0 odesláno v[d1e42e3](https://github.com/Michaltymm/Meteo_webovky/commit/d1e42e3f9edb47cf39375b7a893c93a003498509), ověřeno nasazení [Actions #18](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39677857017), Success36s/build17s/deploy10s/1artefakt. Main stále2405c5d; předchozí nasazení viz historie etap. Workflow potvrzuje deployment, přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice).
+- DEPLOY-001: v0.8.0 funkce v[5d0a427](https://github.com/Michaltymm/Meteo_webovky/commit/5d0a4279a7c7adfc65db99955f80a8a2fa811547), oprava testovacího času v[566e12c](https://github.com/Michaltymm/Meteo_webovky/commit/566e12cbfdce00db7e02e30ccd059b0a524c61d5). [Actions #20](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733762145) **Success**, build22s/deploy10s/celkem42s/1artefakt; předchozí#19 selhal ve fázi testů, viz etapa11. Main stále2405c5d. Přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice); workflow potvrzuje deployment.
 
 ## A. PROJECT CONTEXT
 
@@ -338,6 +338,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Další vhodná etapa063: dohledání původních teplotních extrémů, s přesným pravidlem shod a platností reference. Explicitní zóna048/revize zdroje a metadata071 zůstávají samostatně; nezavádět srážkovou interpretaci bez017/049.
 
 - Uložení etapy11: [5d0a427](https://github.com/Michaltymm/Meteo_webovky/commit/5d0a4279a7c7adfc65db99955f80a8a2fa811547) odeslán na codex-dev. [Actions #19](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733500427) Failure ve fázi testů, build16s/celkem20s, žádné nasazení. Po změně reálného dne na22.10. místní179/180 odhalilo starou fixture chybu background-refresh: `visibleDay` z dne vyhodnocení skriptu oproti později instalovanému fixnímu21.10. Date. Stejný pád reprodukován na výchozím HTML26af1c1. Test po instalaci mockDate synchronizuje počáteční snapshot; produktové HTML/verze beze změny, browser/výkon se neopakuje. Po opravě22.10. opět **180/180** (7,64s),0fail/skip. Následující výsledek publikace zaznamenat samostatně.
+
+- Závěrečné ověření publikace etapy11: oprava fixture v[566e12c](https://github.com/Michaltymm/Meteo_webovky/commit/566e12cbfdce00db7e02e30ccd059b0a524c61d5) odeslána na codex-dev; [Actions #20](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733762145) **Success**, build22s/deploy10s/celkem42s, jeden artefakt. Nasazené HTML odpovídá funkčnímu commitu5d0a427, verze0.8.0. Main stále2405c5d. Další dokumentační commit pouze ukládá tento stav; testy/browser/měření se kvůli němu neopakují. Přímá kontrola widgetů Pages zůstává neprovedená.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

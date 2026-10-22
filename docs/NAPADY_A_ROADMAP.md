@@ -1310,3 +1310,14 @@ Produkční HTML/verze se kvůli opravě testu nemění; browser ani výkon znov
 neměřit, dokud se nezmění produkt. Nový výsledek testů/nasazení doplnit níže.
 
 Po opravě fixture22.10. opět **180/180 testů prošlo**,0fail/skip,7,64s.
+
+### Úspěšná publikace etapy 11
+
+Oprava testovacího času v
+[566e12c](https://github.com/Michaltymm/Meteo_webovky/commit/566e12cbfdce00db7e02e30ccd059b0a524c61d5)
+odeslána na codex-dev; [Actions #20](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733762145)
+**Success**, build22s/deploy10s/celkem42s, jeden Pages artefakt. Funkce
+v HTML stále ze5d0a427, verze0.8.0; main stále2405c5d.
+Následující commit pouze zaznamenává výsledek; nové testy či verze kvůli
+dokumentaci nejsou potřeba. Workflow potvrzuje deployment, přímé widgety
+vývojového webu z tohoto prostředí nebyly ověřeny.
