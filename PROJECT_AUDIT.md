@@ -380,6 +380,9 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Původních226 Node testů a4nové v `tests/page-navigation.test.js` prošly: viditelnost/obnova záložky, uchování dat a cache, destroy, URL bez duplicit, refresh jen aktivní stránky, pozdní callback a prázdný/resetovaný store bez fetch. `scripts/check-analytics-grid-browser.py` nyní používá horní odkazy a ověřuje sourozenecké stránky, Back/Forward, klávesnicový návrat, mobilní přímý odkaz a původní9grafové regrese.1440/800/390/320px a obě témata bez overflow,0pageerrors, screenshot desktop/mobil prohlédnut, žádný refetch při přepnutí již úplné historie. Fyzický Safari/iOS ani živé externí služby tím ověřené nejsou.
 - Profilovací `showTab` rozumí nové horní stránce a zachovává kompatibilitu se starší HTML referencí. Smoke `--counts 1000 --grid` prošel:0pageerrors,8základních/16otevřených/8po10návratech Chart instancí; nejde o nové srovnávací měření výkonu. Žádná změna výpočtů/redukce/konfigurací/závislostí/workflow. Bez nového výkonnostního tvrzení se velké profily etapy13 neopakují. Další prioritou zůstává008 příprava modelu.
 
+
+- Uložení a nasazení etapy14: [ef23a26](https://github.com/Michaltymm/Meteo_webovky/commit/ef23a266ddac00ee5f4b16bd3b8b8edc3b9100dd) odeslán na codex-dev; [Actions #23](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39745845016) **Success**, build17s/deploy12s/celkem37s, jeden Pages artefakt. Main stále2405c5d. Vývojová analytika: https://michaltymm.github.io/Meteo_webovky/dev/#analytika. Deployment potvrzuje workflow; přímé živé widgety ani fyzický iOS nebyly kontrolovány. Tento následný dokumentační záznam nemění HTML0.11.0 a neopakuje hotové testy.
+
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
 1. Nejprve přečti QUICK CONTEXT; potom jen sekce relevantní k zadání.

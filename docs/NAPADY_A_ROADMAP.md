@@ -1484,3 +1484,8 @@ Podrobnosti: [Analytické grafy](ANALYTICKE_GRAFY.md).
 Další krok zůstává METEO-008: rozdělit první přípravu velkého analytického
 modelu podle měření etapy13. Následují nastavitelné veličiny/tolerance025/029/030;
 časový kontrakt048 a srážkový kontrakt017/049 nadále otevřené.
+
+Publikace etapy14: [ef23a26](https://github.com/Michaltymm/Meteo_webovky/commit/ef23a266ddac00ee5f4b16bd3b8b8edc3b9100dd),
+[Actions #23](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39745845016)
+**Success** (build17s/deploy12s,37s celkem). Nasazení potvrzené workflow,
+přímá kontrola živých widgetů neprovedena. Main zachován2405c5d.
