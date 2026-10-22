@@ -2,7 +2,7 @@
 
 ## QUICK CONTEXT
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
-- Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–8 zpracovány sekvenčně, opravy etapa 9. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
+- Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
 - Verze webu: 0.11.4 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
@@ -417,3 +417,5 @@ METEO-055: SRI Chart4.4.0/Paho1.1.0, Actions stejné major připnuté na SHA a v
 ## Bezpečnostní doplnění při finální kontrole
 
 SEC-007: historický vstup mimo Pages měl samostatný potvrzený nález; vzhledem k výslovnému zadání auditu celého projektu opraveno pouze bezpečné vykreslení textu v obou tabulkách, bez migrace/záměny aplikace. Skutečný Chromium test původního parseru a rendererů prošel; soukromá reprodukce před opravou byla pozitivní. Úplná modernizace archivní aplikace není provedena, pro nasazení stále nutné další ověření.
+
+Bezpečnostní publikace: [Actions #25](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39824209785), c19e246, **Success38s/build17s/deploy11s**. v0.11.4, main2405c5d bezezměny. Následná změna pouze dokumentace. Přímý Pages host podle politiky prostředí neověřen.

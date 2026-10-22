@@ -22,7 +22,7 @@ způsobu použití, nikoli vypočtené CVSS.
 
 Preventivní opatření se nezapočítávají jako další potvrzené zranitelnosti:
 HTTPS používá WSS na všech MQTT portech (SEC-004), lokální server má omezenější
-expozici (SEC-006), obě CDN knihovny mají SRI a Actions jsou připnuté na SHA.
+expozici (SEC-006), obě CDN knihovny mají SRI a přímé Actions jsou připnuté na SHA.
 Všechny checkouty používají `persist-credentials: false`.
 
 Kontrola tajemství zahrnula 302 dostupných historických blobů, bez potvrzeného
@@ -77,6 +77,10 @@ python scripts/check-security-browser.py --chartjs /tmp/chart.js --paho /tmp/pah
    administrátorsky ověřeny. `.github/dependabot.yml` je připraven pro Actions
    a PR do `codex-dev`, ale aktivace vyžaduje konfiguraci na výchozí větvi.
    Do `main` se nezasahovalo, automatický běh Dependabotu není potvrzen.
+   CI upozorňuje na deklarace Node20 u některých Actions (runner je spouští
+   na Node24) a vnořený `upload-artifact@v4`. SHA pinning přímých kroků
+   nepřipíná automaticky všechny tranzitivní závislosti; upgrade tohoto
+   řetězce je další preventivní úkol.
 4. **TODO — CSP:** striktní CSP potřebuje úpravu inline kódu a handlerů.
    GitHub Pages neumožňuje vlastní response `frame-ancestors`/X-Frame-Options;
    HTML meta takovou ochranu nenahradí. Bezpečnostní hlavičky `server.js` platí
@@ -100,6 +104,9 @@ měření upravena. Podrobné soukromé reprodukce jsou mimo veřejný repozitá
 - [CDN, workflow a server — 0d8cdc1](https://github.com/Michaltymm/Meteo_webovky/commit/0d8cdc1)
 - [Cílená oprava historické kopie — d920f8b](https://github.com/Michaltymm/Meteo_webovky/commit/d920f8b)
 
-Lokálně implementováno a otestováno. Stav odeslání a nasazení se zaznamená po
-ověření GitHub Actions do bezpečnostní roadmapy; samotné číslo verze nasazení
-nepotvrzuje. Přímá kontrola živého Pages hostu není v síťové politice tohoto prostředí povolena.
+Implementováno, lokálně otestováno a odesláno na `codex-dev`.
+[Actions #25](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39824209785)
+pro `c19e246` potvrzují **Success**: build17s, deploy11s, celkem38s. Nasazení
+vývojového HTML v0.11.4 potvrzuje workflow; závěrečný pozdější commit mění pouze
+dokumentaci. `main` zůstává `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Přímá kontrola živého Pages hostu není v síťové politice tohoto prostředí povolena.

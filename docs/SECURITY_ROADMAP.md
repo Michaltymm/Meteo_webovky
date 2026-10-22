@@ -16,7 +16,7 @@ Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez
 | 7 | GitHub a externí závislosti | DONE | Workflow/Pages allowlist prověřeny. Známý nalezený Chart.js advisory se této verze netýká; omezené hledání není úplný CVE sken. Secrets a pravidla GitHubu vyžadují vlastníka. |
 | 8 | Testy odolnosti dat | DONE | Lokální reprodukce dokončeny; 38 datových/Pages regresí prošlo. Syntetický parser zvládl až 250000 měření. Čtyři podmíněné nálezy odolnosti určeny k opravě; podrobnosti zatím soukromé. |
 | 9 | Postupné opravy zranitelností | DONE | Čtyři malé dávky dokončeny: pět potvrzených podmíněných chyb opraveno (včetně cíleného doplnění historické kopie); preventivní ochrany ověřeny. Externí rozhodnutí zůstávají odděleně. |
-| 10 | Závěrečný audit | IN_PROGRESS | Závěrečný kód a 246/246 Node testů ověřeny, Chromium a reálný Pages build prošly. Čeká pouze odeslání a kontrola nasazení na GitHubu. |
+| 10 | Závěrečný audit | DONE | 5 potvrzených nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Actions #25 Success potvrdily nasazení dev; main beze změny. Externí ověření a preventivní úkoly zůstávají výslovně otevřené. |
 
 Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno v uvedeném rozsahu; BLOCKED – nelze bezpečně pokračovat; NEEDS_REVIEW – potřebné rozhodnutí vlastníka. DONE analýzy neznamená opravené nálezy ani ověřenou živou infrastrukturu.
 
@@ -41,13 +41,13 @@ Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno 
 
 - NEEDS_REVIEW (vlastník): skutečné MQTT ACL/certifikáty/limity a firmware ESP32; klientské testy je nenahrazují.
 - NEEDS_REVIEW (vlastník): oprávnění Sheets a případných Apps Script/ThingSpeak nasazení; zdroje a admin přístup chybí. CORS proxy je nadále další důvěryhodná strana.
-- NEEDS_REVIEW (vlastník): GitHub Secrets, environment protection a pravidla větví; Dependabot konfigurace v codex-dev nezačne automaticky fungovat, dokud ji GitHub nenačte z výchozí větve. Main nebyl změněn.
+- NEEDS_REVIEW (vlastník): GitHub Secrets, environment protection a pravidla větví; Dependabot konfigurace v codex-dev nezačne automaticky fungovat, dokud ji GitHub nenačte z výchozí větve. Main nebyl změněn. CI upozorňuje na starší deklarace Node20 (runner je spouští na Node24) a vnořený upload-artifact@v4; přímé Actions jsou připnuté, úplný tranzitivní řetězec nikoli.
 - TODO: striktní CSP vyžaduje úpravu inline JS/handlerů; frame-ancestors/X-Frame-Options na Pages nelze zajistit HTML meta tagem. Hlavičky server.js platí pouze pro lokální náhled.
 - TODO: pravidelná kontrola CDN advisories (SRI není aktualizace knihoven), větší historie nad limity vyžaduje stránkování, fyzický Safari/iOS a dlouhodobý provoz neověřeny. Historická kopie má jen cílenou opravu vykreslení, nikoli kompletní modernizaci; bez dalšího ověření ji nenasazovat. Produkční HTML nebylo měněno.
 
 ## Pokračování
 
-Při dalším spuštění začít etapou **10** a soukromým kontrolním bodem; dokončené oblasti znovu kontrolovat pouze při změně relevantních souborů.
+Etapy byly zpracovány. Navázat zbývajícími úkoly/rozhodnutími; neopakovat celou analýzu.
 Soukromý report: `/workspace/security-private/Meteo_webovky/REPORT.md`; kontrolní otisky souborů a stav jsou ve stejné soukromé složce. Tato složka nemusí přežít zrušení cloudového prostředí; při její nedostupnosti nelze tvrdit, že byly podrobné nálezy znovu ověřeny.
 
 ## Důkazy a historie
@@ -56,3 +56,7 @@ Soukromý report: `/workspace/security-private/Meteo_webovky/REPORT.md`; kontrol
 - [Historie bezpečnostní roadmapy a checkpointů](https://github.com/Michaltymm/Meteo_webovky/commits/codex-dev/docs/SECURITY_ROADMAP.md).
 
 - [Závěrečný veřejný report a konkrétní testy/commity](SECURITY_AUDIT.md).
+
+## GitHub a nasazení
+
+Opravy a report byly odeslány na `codex-dev`. [Actions #25](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39824209785) pro `c19e246` skončily **Success**: build17s, deploy11s, celkem38s. Vývojové HTML v0.11.4; pozdější závěrečný commit mění pouze dokumentaci. `main` zůstává `2405c5d7326909a24c41e7066bfdc4a9d1622208`; místní sestava prokázala bajtovou shodu produkčních souborů. Deployment potvrzen workflow, přímý živý Pages host není v síťové politice prostředí povolen.
