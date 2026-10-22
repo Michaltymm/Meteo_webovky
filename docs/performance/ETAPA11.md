@@ -109,3 +109,9 @@ Playwright/Chromium jsou volitelné vývojářské nástroje. Nová produkční
 závislost, síťový požadavek, Chart instance ani změna konfigurace nepřibyla.
 Živý broker, služby, firmware, fyzický mobil a přímé widgety Pages tímto
 nejsou ověřeny; nasazení se dokládá samostatně v roadmapě a auditu.
+
+Po původním úspěšném běhu180/180 (21.10.) selhal22.10. CI build #19 ve fázi
+testů. Místní179/180 odhalilo chybu inicializace testovacího času v
+background-refresh a reprodukovalo ji i s původním HTML26af1c1. Fixture nyní
+synchronizuje počáteční den po instalaci mockDate; žádný zásah do webu ani
+důvod opakovat browser/časování. Výsledek následného běhu je v roadmapě.

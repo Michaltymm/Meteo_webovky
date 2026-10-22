@@ -8,6 +8,9 @@ async function started(source='sheets') {
   const a=app({realStart:true});
   a.run(`globalThis.NativeDate=Date;globalThis.clock=+new Date(2026,9,21,12);
     globalThis.Date=class extends NativeDate {constructor(...args){super(...(args.length?args:[clock]))}static now(){return clock}};
+    // The script was evaluated before installing the fixture clock. Match its
+    // initial day snapshot to that clock, independent of the machine's date.
+    visibleDay=localDateKey();
     CFG.source='${source}';CFG.interval=60;CFG.mqttHost='test.example';startAll()`);
   // Sheets + UV + two overview sources; MQTT creates no fake HTTP requests.
   const offset=source==='mqtt'?0:1;

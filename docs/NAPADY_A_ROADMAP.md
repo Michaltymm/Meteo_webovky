@@ -1293,3 +1293,20 @@ funkce, nikoli tvrzení zrychlení. Hustý250k výpis1,4ms/stránka0,6ms.
 **Další vhodná etapa:** v rámci063 dohledání původních teplotních extrémů,
 nejprve malé samostatné řešení se shodami, nulami a invalidací. Explicitní
 časový kontrakt048 a metadata071 nepředstírat. Nasazení dokládat samostatně.
+
+
+### Uložení etapy 11 a oprava testovacího času
+
+Funkce/testy/dokumentace uloženy v
+[5d0a427](https://github.com/Michaltymm/Meteo_webovky/commit/5d0a4279a7c7adfc65db99955f80a8a2fa811547)
+na codex-dev. Publikační [Actions #19](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733500427)
+skončily **Failure** ve fázi testů (build16s/celkem20s), bez artefaktu/deploymentu.
+Místní opakování po změně skutečného data na22.10. našlo179/180: test návratu
+přes půlnoc měl `visibleDay` ze skutečného dne inicializace skriptu, ale mock
+Date se instaloval až potom a posunul se z21. na22.10. Stejná chyba testu
+reprodukována nad výchozím HTML26af1c1; nejde o novou regresi webu.
+Fixture nyní po instalaci svého času synchronizuje počáteční `visibleDay`.
+Produkční HTML/verze se kvůli opravě testu nemění; browser ani výkon znovu
+neměřit, dokud se nezmění produkt. Nový výsledek testů/nasazení doplnit níže.
+
+Po opravě fixture22.10. opět **180/180 testů prošlo**,0fail/skip,7,64s.

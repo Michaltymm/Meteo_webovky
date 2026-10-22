@@ -337,6 +337,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - [ETAPA11](docs/performance/ETAPA11.md): sekvenční1k/250k před/po,5vzorků/medián. První porovnání250k23,3→25,0ms, opakované4,7→5,3ms; nová funkce má režii, nejde o optimalizační tvrzení. Hustá samostatná250k hodina: otevření1,4ms/stránka0,6ms,50DOMřádků,po20cyklech prázdné tělo/nullreference, stejný počet uzlů a8grafů. CDP paměť neklesá ihned po zavření, žádný příslib vícedenního soak. Živé služby/broker/HW/firmware/fyzický mobil a přímé Pages widgety neověřeny.
 - Další vhodná etapa063: dohledání původních teplotních extrémů, s přesným pravidlem shod a platností reference. Explicitní zóna048/revize zdroje a metadata071 zůstávají samostatně; nezavádět srážkovou interpretaci bez017/049.
 
+- Uložení etapy11: [5d0a427](https://github.com/Michaltymm/Meteo_webovky/commit/5d0a4279a7c7adfc65db99955f80a8a2fa811547) odeslán na codex-dev. [Actions #19](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733500427) Failure ve fázi testů, build16s/celkem20s, žádné nasazení. Po změně reálného dne na22.10. místní179/180 odhalilo starou fixture chybu background-refresh: `visibleDay` z dne vyhodnocení skriptu oproti později instalovanému fixnímu21.10. Date. Stejný pád reprodukován na výchozím HTML26af1c1. Test po instalaci mockDate synchronizuje počáteční snapshot; produktové HTML/verze beze změny, browser/výkon se neopakuje. Po opravě22.10. opět **180/180** (7,64s),0fail/skip. Následující výsledek publikace zaznamenat samostatně.
+
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 
 1. Nejprve přečti QUICK CONTEXT; potom jen sekce relevantní k zadání.
