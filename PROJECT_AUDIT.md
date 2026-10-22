@@ -31,7 +31,7 @@
 - Zachovat líné vykreslování a oddělené konfigurace stanic; nezačínat rozsáhlým rozdělením monolitu.
 - Kontext celého systému: `ANALYZA_CELEHO_WORKSPACE.md` na GitHubu, revize `29ecf56`; souvislosti a mapování nálezů viz B.1.
 - Na `Raw_Data` nepřecházet pouhou změnou názvu listu: liší se timestampy a význam J/R. Firmware a živé nasazení zde nejsou ověřeny.
-- DEPLOY-001: v0.8.0 funkce v[5d0a427](https://github.com/Michaltymm/Meteo_webovky/commit/5d0a4279a7c7adfc65db99955f80a8a2fa811547), oprava testovacího času v[566e12c](https://github.com/Michaltymm/Meteo_webovky/commit/566e12cbfdce00db7e02e30ccd059b0a524c61d5). [Actions #20](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39733762145) **Success**, build22s/deploy10s/celkem42s/1artefakt; předchozí#19 selhal ve fázi testů, viz etapa11. Main stále2405c5d. Přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice); workflow potvrzuje deployment.
+- DEPLOY-001: v0.9.0 v[d16acdb](https://github.com/Michaltymm/Meteo_webovky/commit/d16acdb4b093d2fa8f4c18824bb8f4817919900a), [Actions #21](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39735320314) **Success**, build19s/deploy14s/celkem42s/1artefakt. Main stále2405c5d. Předchozí publikace viz historie etap. Přímé widgety Pages nejsou z prostředí ověřeny (host není v síťové politice); workflow potvrzuje deployment.
 
 ## A. PROJECT CONTEXT
 
@@ -351,6 +351,8 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Browser reálný DOM/Chart/start/parser, tři původní konfigurace s řízeným CSV/UV: quick400→full1000 zavře staré podklady, úplné nezávislé počty/shody/řádek, Enter/volby,0T/allmissingT, skutečná oprava starého CSV a změna stanice. Obě témata320/390px bez overflow, horizontální posun klávesnicí;0pageerrors/extraHTTP/grafů. Screenshot prohlédnut; pevná hlavička na elementovém snímku překrývá horní část při posunu kvůli screenshotu.
 - [ETAPA12](docs/performance/ETAPA12.md): cílené sekvenční1k/250k před/po,5vzorků. Cold refresh250k48,4→45,7ms, opakovaný21,0→21,2ms; nejde o optimalizační tvrzení. Podklady maxima0,5ms/minima0,3ms, po20cyklech prázdné tělo/nullref,8grafů. CDP paměť se neuvolní okamžitě, žádný příslib vícedenního provozu. HTML+7414B. Živé služby/broker/HW/firmware/fyzický mobil a přímé Pages widgety neověřeny, nasazení doložit samostatně.
 - Další vhodná malá etapa063: dohledání původních vstupů pro odvozené Td/AH/VPD, s platným oborem a jasným rozlišením vypočtených hodnot. Roční/denní extrémy a další rozsahy zachovat jako samostatné dílčí pokračování063, nevydávat globální podklady za úplné DONE celéhoID.
+
+- Uložení a publikace etapy12: [d16acdb](https://github.com/Michaltymm/Meteo_webovky/commit/d16acdb4b093d2fa8f4c18824bb8f4817919900a) odeslán do codex-dev, [Actions #21](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39735320314) **Success**, build19s/deploy14s/celkem42s, jeden artefakt. Main stále2405c5d. Následující commit jen ukládá tento stav; HTML0.9.0, testy/browser/profily se kvůli dokumentaci neopakují. Workflow je důkaz deploymentu, nikoli přímé kontroly živých widgetů.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

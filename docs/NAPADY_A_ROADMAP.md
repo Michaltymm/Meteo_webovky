@@ -1364,3 +1364,13 @@ fyzický mobil a přímé Pages widgety neověřeny; nasazení doložit samostat
 **Další vhodná malá etapa:** v rámci063 původní vstupy odvozených Td/AH/VPD
 s přesnými podmínkami platnosti a aktuální referencí. Roční/denní extrémy
 zůstávají dalším dílčím pokračováním, žádné globální DONE celého063.
+
+
+### Uložení a publikace etapy 12
+
+[d16acdb](https://github.com/Michaltymm/Meteo_webovky/commit/d16acdb4b093d2fa8f4c18824bb8f4817919900a)
+odeslán na codex-dev; [Actions #21](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39735320314)
+**Success**, build19s/deploy14s/celkem42s, jeden artefakt. Main stále2405c5d.
+Následující dokumentační commit pouze zaznamenává výsledek, verze0.9.0
+se nemění a testy se neopakují. Přímá kontrola živých Pages widgetů z tohoto
+prostředí neproběhla. Další063 etapa: vstupy odvozených Td/AH/VPD.
