@@ -1,6 +1,6 @@
 # Bezpečnostní roadmapa Meteo_webovky
 
-Aktualizace: 2026-10-22 · kontrolní bod **SEC-STAGE-01** · větev `codex-dev`.
+Aktualizace: 2026-10-22 · kontrolní bod **SEC-STAGE-02** · větev `codex-dev`.
 Výchozí revize: `ae40f950d5d86d2e99e30a270c09636e8b0d4aa8`. Stav odpovídá dostupnému kódu a výslovně uvedenému rozsahu.
 
 Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez pokusů o zápis či přihlášení. Produkční větev se nemění. Soukromé nálezy a podklady jsou mimo repozitář; nepatří do Pages artefaktu ani veřejných logů.
@@ -8,7 +8,7 @@ Audit probíhá sekvenčně. Aktivní testy pouze lokálně, živé systémy bez
 | Etapa | Oblast | Stav | Veřejně bezpečný výsledek |
 | --- | --- | --- | --- |
 | 1 | Architektura a bezpečnostní mapa | DONE | Inventář a hranice důvěry ověřeny proti kódu; externí firmware/backend dostupné jen jako dokumentační kontext. Bez oprav. |
-| 2 | Hesla, tokeny a citlivé údaje | TODO | Dosud neprovedeno. |
+| 2 | Hesla, tokeny a citlivé údaje | DONE | Prověřeno 302 dostupných historických blobů a konfigurace; bez potvrzeného živého tajemství. Klientský zámek není autentizace; vzdálené Secrets neověřeny. |
 | 3 | Frontend, JavaScript a XSS | TODO | Dosud neprovedeno. |
 | 4 | MQTT a komunikace s ESP32 | TODO | Dosud neprovedeno. |
 | 5 | Google Sheets a externí API | TODO | Dosud neprovedeno. |
@@ -42,7 +42,7 @@ Stavy: TODO – nezahájeno; IN_PROGRESS – rozpracováno; DONE – dokončeno 
 
 ## Pokračování
 
-Při dalším spuštění začít etapou **2** a soukromým kontrolním bodem; dokončené oblasti znovu kontrolovat pouze při změně relevantních souborů.
+Při dalším spuštění začít etapou **3** a soukromým kontrolním bodem; dokončené oblasti znovu kontrolovat pouze při změně relevantních souborů.
 Soukromý report: `/workspace/security-private/Meteo_webovky/REPORT.md`; kontrolní otisky souborů a stav jsou ve stejné soukromé složce. Tato složka nemusí přežít zrušení cloudového prostředí; při její nedostupnosti nelze tvrdit, že byly podrobné nálezy znovu ověřeny.
 
 ## Důkazy a historie
