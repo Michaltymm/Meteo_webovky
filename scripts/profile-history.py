@@ -60,6 +60,12 @@ with sync_playwright() as p:
           });
           store.fullLoaded=true;
           globalThis.showTab=tab=>{
+            if(typeof currentPage!=="undefined") {
+              currentPage=tab==='analytics'?'analytics':'main';
+              el('page-main').hidden=tab==='analytics';
+              el('dashboardBars').hidden=tab==='analytics';
+              el('tab-analytics').hidden=tab!=='analytics';
+            }
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
             document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
           };

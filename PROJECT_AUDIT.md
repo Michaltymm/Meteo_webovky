@@ -1,8 +1,8 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `df1beb5`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.10.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `7bc2b0e`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.11.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -15,12 +15,13 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (226/226 prošlo); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (230/230 prošlo); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
 - Centrální plán: `docs/NAPADY_A_ROADMAP.md` (83 METEO ID); etapa7 přidala8nových076–083 a12skupin doplnění starších návrhů. METEO-078 DONE v0.5.0; METEO-019/031 základní T/V, METEO-013 AH/VPD a METEO-010 motion hotové ve v0.4.0, další části těchto ID rozpracované. Plán dostupnosti a zóna stále027/038/048.
 - METEO-077 DONE v plánovaném denním rozsahu v0.7.0. METEO-063 rozpracováno: T/V dny0.7.0, hodinové průměry T/RH/P0.8.0, globální teplotní extrémy0.9.0 hotové. Globální min/max mají původní řádek/index, přesné hodnoty a počet shod, úplné validní/vynechané počty, quick/full rozsah a UTC offsety. Shoda před zaokrouhlením, první záznam v sestupném zdroji, při shodném čase původní pořadí. Původní minRow/maxRow zachovány; v původním průchodu jen O(1) čítače/indexy, otevření O(1)/max3čtení i250k. Invalidace CSV/MQTT/reset/stanice/fullLoaded zavře a zahodí ref. Pořadí není trvalé ID;063 dále roční/denní extrémy a původ odvozených Td/AH/VPD, vstupy odvozených metrik zůstávají budoucím dílčím úkolem. Po nové analytické etapě má výkonovou návaznost008. Explicitní zóna048 a metadata071 dále.
+- Navigace0.11.0: horní Hlavní přehled / Analytické grafy jsou dvě samostatná hlavní zobrazení. Analytika mimo stationData/dolní tabs, dashboard+sticky lišty skryté; URL #analytika/#prehled, browserBack/Forward, nativní odkazy. Sdílený store/caches/config, bez reloadu/refetch již načtené historie. currentPage určuje analyticsActive a refreshUI; refreshTab hlídá skrytou hlavní stránku. Při návratu se zachová aktivní dolní tab a obnoví dirty obsah. Po resetu stanice anaGrid skrytý, anaDataEmpty viditelný; bez dat buildAnalytics nevyžaduje full fetch před konfigurací.4nové VM regrese a aktualizovaný skutečný browser harness.
 - Analytické grafy0.10.0: devět karet,3/2/1 responzivní sloupce, období24h/7/30/90/365/all/custom, lineární epochová osa, zoom/pan/sync/kurzor, rozšíření/Escape/PNG. Statistický model z úplných řádků, vizualizace≤600/XY≤580. Lazy jen dle viewportu, po odchodu destroy/osm původních grafů. Nová vlastní heatmapa14dnů×24hodin, T/RH plné průměry, touch/klávesnice. Cizí T historie: čistý sdílený parseHistoryCSV, actual cfg, žádný commit do store; sekvenčně/abort/cache Float64 po16B/8MiB stanice/16MiB celkem, ruční obnova a viditelná chyba. Párování do10min monotónní one-to-one, O(n log m)/rychlá exact větev, bez interpolace. Srážky jen diagnostika čítače017/049, mV/h není proud/SOC/energie. Viz docs/ANALYTICKE_GRAFY.md a ETAPA13; širší004/007/020/025/029/030/034/037 dál rozpracované.
 - METEO-078: rozbalovací rozklad RH v průzkumníku (T/RH/dew/AH/VPD). Pouze původní krajní řádky aktuálního slideru, O(1), 2čtení i při250k; vodní Magnus jako013, faktory/logaritmická identita, žádná kauzální atribuce či vodní bilance. RH0/nuly T odlišit, nevybírat náhradní endpoint. Kalibrace/umístění mezi body neověřeny, vždy uvedeno; metadata epoch071 dále.
 - Nová batteryAnalysis: pouze páry stejného řádku, plné Welford r/sklon a n/časy/dny. Cache jediného rozsahu7/30/all v dataAggregates, grafy lazy +2 (start stále8, po použití10). Max800 časových a582 skutečných XY reprezentantů, počet bodů není hustota. Žádné p-value/SOC/energie ani záměna T čidla za T baterie.
@@ -369,6 +370,15 @@ IMP-001 je průběžná podmínka každé opravy; testy serveru, sestavení a na
 - Kontrola GitHubu: explicitní ls-remote ukázalo stále df1beb5; lokální origin/codex-dev byl jen zastaralý tracking ref586025c, aktualizován explicitním fetchrefspec. Nebyly žádné nové cizí commity k přepisování/slučování. Další krok po této etapě: dělená příprava velkého modelu008, pak025/029/030nastavitelné veličiny/tolerance. Publikaci doložit samostatně.
 
 - Uložení a publikace etapy13: [da16a8d](https://github.com/Michaltymm/Meteo_webovky/commit/da16a8d5381d4ef0712154dda0838af82cd24924) odeslán na codex-dev; [Actions #22](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39742818313) **Success**, build22s/deploy20s/celkem50s, jeden Pages artefakt. Main stále2405c5d. Následující dokumentační commit pouze zaznamenává výsledek; HTML0.10.0, hotové testy/browser/profily se kvůli dokumentaci neopakují. Workflow potvrzuje deployment, nikoli přímou kontrolu živých widgetů.
+
+### Etapa 14: Samostatná stránka analytiky, v0.11.0 (22. 10. 2026)
+
+- Výchozí7bc2b0e, čistýcodex-dev; main2405c5d. Výslovné zadání mění umístění hotové analytiky, neopakuje analýzu všech83návrhů. METEO-030 rozšířen, širší návrh zůstává rozpracovaný.
+- `page-main` a `tab-analytics` jsou sourozenecké hlavní obsahy. Horní sticky navigace má skutečné odkazy #prehled/#analytika a aria-current. Původní dashboard/sticky lišty jsou skryté v analytice; stanice/nastavení/status společné. Přesun původních9karet, nikoliv nová implementace grafů/parseru.
+- `showAppPage`/`appPageFromHash` řídí přímé otevření i browser Zpět/Vpřed. Opakovaná událost téže stránky nevytváří historii ani znovu model. Modifikovaný klik používá nativní chování odkazu. Po změně stránky scroll nahoru, hlavní dolní tab zůstává vybraný. Obnova aktualizuje pouze aktivní hlavní obsah; skrytý callback nemůže přepočítat dashboard grafy.
+- Prázdný/resetovaný store neschová horní navigaci. Analytická mřížka a staré údaje jsou skryté, stav uvádí právě vybranou stanici. Otevření bez dat nevyvolá ensureFullData se starou konfigurací. Příjem původním transportem ukáže grafy, návrat ničí jejich instance a ruší cizí požadavky; cache měření se zachová.
+- Původních226 Node testů a4nové v `tests/page-navigation.test.js` prošly: viditelnost/obnova záložky, uchování dat a cache, destroy, URL bez duplicit, refresh jen aktivní stránky, pozdní callback a prázdný/resetovaný store bez fetch. `scripts/check-analytics-grid-browser.py` nyní používá horní odkazy a ověřuje sourozenecké stránky, Back/Forward, klávesnicový návrat, mobilní přímý odkaz a původní9grafové regrese.1440/800/390/320px a obě témata bez overflow,0pageerrors, screenshot desktop/mobil prohlédnut, žádný refetch při přepnutí již úplné historie. Fyzický Safari/iOS ani živé externí služby tím ověřené nejsou.
+- Profilovací `showTab` rozumí nové horní stránce a zachovává kompatibilitu se starší HTML referencí. Smoke `--counts 1000 --grid` prošel:0pageerrors,8základních/16otevřených/8po10návratech Chart instancí; nejde o nové srovnávací měření výkonu. Žádná změna výpočtů/redukce/konfigurací/závislostí/workflow. Bez nového výkonnostního tvrzení se velké profily etapy13 neopakují. Další prioritou zůstává008 příprava modelu.
 
 ## INSTRUCTIONS FOR FUTURE AI AGENTS
 

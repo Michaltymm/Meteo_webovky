@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.11.0
+
+- Nahoře lze přepínat mezi „Hlavním přehledem“ a samostatnou stránkou „Analytické grafy“ s devíti grafy. Karty přehledu a jeho původní záložky zůstávají na hlavní stránce.
+- Analytiku lze otevřít přímo odkazem s `#analytika`; funguje také Zpět/Vpřed v prohlížeči. Návrat zachová vybranou záložku přehledu a již načtenou historii.
+- Horní přepínač funguje na mobilu i klávesnicí. Při změně stanice se staré analytické grafy skryjí, po odchodu z analytiky se uvolní.
+
 ## v0.10.0
 
 - Nová záložka „Analytické grafy“ nabízí devět karet: teplotu s denními extrémy, RH/rosný bod, tlak, srážkový čítač, společný graf T/V, změnu napětí, XY závislost T/V, porovnání tří stanic a hodinovou heatmapu T/RH.

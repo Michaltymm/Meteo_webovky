@@ -110,7 +110,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
 | METEO-029 Časové párování a tolerance: uvést spárované/odmítnuté vzorky | Timestampy dvou řad | S / P1 | v0.10.0 monotónní one-to-one nejbližší čas do10min: O(n log m), přesně sladěná rychlá větev O(n); konfigurovatelná tolerance dále | METEO-048, policy níže | Rozpracováno |
-| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 nová záložka9grafů, sdílené období/zoom, lazy model; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
+| METEO-030 Záložka Analýza a závislosti: výběr X/Y, společný graf, scatter, r | Současné páry T/RH/P/V + odvozené veličiny | S / P1 | v0.10.0 devět grafů, sdílené období/zoom, lazy model; v0.11.0 samostatná stránka s horní navigací/Zpět/Vpřed; obecný výběr libovolné X/Y dále | METEO-019/029/031 | Rozpracováno |
 | METEO-031 Pearson/regrese a počet validních párů z úplných dat | Současná párovaná data | S / P1 | v0.4.0 Welford r/sklon z úplných T/V, n/časy/dny; intervaly po dnech/nejistota dále | Korelace ≠ příčina, bez p-value a SOC, při n<3/konstantě nedostupné | Rozpracováno |
 | METEO-032 Časový posun, klouzavé průměry, oddělení den/noc a sezón | Současná historie | V / P2 | v0.10.0 volitelný průměr5měření T/P a odhad den/noc v XY; lagy a sezónní rozklad dále | METEO-029/048; nepravidelné intervaly | Rozpracováno |
 
@@ -1451,3 +1451,36 @@ odeslán na codex-dev; [Actions #22](https://github.com/Michaltymm/Meteo_webovky
 Následující commit pouze ukládá ověřený stav nasazení, nemění HTML0.10.0
 ani neopakuje testy. Přímá kontrola widgetů živého webu z tohoto prostředí
 neproběhla; lokální browser výsledky a hranice měření jsou v ETAPA13.
+
+
+## Etapa 14 — Samostatná stránka analytických grafů, v0.11.0 (22. 10. 2026)
+
+Na výslovnou úpravu zadání uživatele pokračuje METEO-030: devět hotových grafů
+má vlastní hlavní obsah a horní přepínač **Hlavní přehled / Analytické grafy**.
+Analytika je přesunutá z dolních záložek mimo karty hlavního dashboardu.
+Původní přehled se všemi staršími záložkami zůstává zachovaný; po návratu
+se obnoví naposledy vybraná záložka. Širší METEO-030 zůstává Rozpracováno,
+žádné nové ID ani duplicitní backlog nevzniká.
+
+**Dokončeno:** dvě samostatná zobrazení, přímé `#analytika`/`#prehled`,
+Zpět/Vpřed a otevření v nové kartě, horní navigace s označením aktivní stránky,
+dotyk a klávesnice. Analytika neobsahuje původní aktuální karty ani lišty
+Slunce/Měsíc/přehled stanic. Hlavička, nastavení, datový store a načítání jsou
+sdílené. Přepnutí nad již načtenou historií nemá další datový požadavek.
+Po odchodu se analytické Chart instance zničí; obnovování dat nebo pozdní
+callback starší záložky nevykresluje skryté grafy přehledu. Nová stanice
+nedostává grafy předchozí stanice ani předčasný požadavek se starou konfigurací.
+
+**Ověření:** původních226 Node testů a4nové regresní testy navigace prošly.
+Reálný Chromium/Chart.js s původními3konfiguracemi a řízeným CSV/UV ověřil
+oba hlavní obsahy, návrat na Denní statistiky, Zpět/Vpřed, přímé otevření
+analytiky na dotykovém mobilu, devět grafů a jejich dosavadní interakce,
+3/2/1 sloupce,1440/800/390/320px, obě témata bez vodorovného přetečení,
+opakované návraty bez nárůstu Chart instancí a žádnou chybu JS.
+Rozložení a životní cyklus se změnily; matematika, původní data a konfigurace
+ne. Kompletní výkonové profily etapy13 se bez nové optimalizace neopakují.
+Podrobnosti: [Analytické grafy](ANALYTICKE_GRAFY.md).
+
+Další krok zůstává METEO-008: rozdělit první přípravu velkého analytického
+modelu podle měření etapy13. Následují nastavitelné veličiny/tolerance025/029/030;
+časový kontrakt048 a srážkový kontrakt017/049 nadále otevřené.

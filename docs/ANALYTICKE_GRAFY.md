@@ -1,10 +1,26 @@
-# Analytické grafy — v0.10.0
+# Analytické grafy — v0.11.0
 
-Nová záložka navazuje na stávající `store.rows`, Chart.js 4.4.0, přepínání
+Samostatná analytická stránka navazuje na stávající `store.rows`, Chart.js 4.4.0, přepínání
 stanic, řízení relací, CSV parser, binární výběr historie a min/max redukci.
 Neobsahuje další knihovnu, build ani druhý zdroj aktivních měření.
 
 ## Obrazovka
+
+Od v0.11.0 horní navigace přepíná dvě samostatná zobrazení: **Hlavní přehled**
+a **Analytické grafy**. Analytika už není dolní záložkou pod aktuálními hodnotami.
+Má vlastní hlavní obsah vedle původního dashboardu; jeho karty, starší záložky
+a lišty Slunce/Měsíc/přehled stanic jsou při analytice skryté. Společná hlavička,
+stanice, nastavení a stav přenosu zůstávají přístupné.
+
+Přímý vývojový odkaz je https://michaltymm.github.io/Meteo_webovky/dev/#analytika,
+přehled používá `#prehled` (nebo původní adresu bez kotvy). Funguje Zpět/Vpřed,
+klávesnice i otevření odkazu v nové kartě. Přepnutí stránky posune obsah nahoru;
+při návratu zůstane vybraná původní záložka přehledu. Jde o dvě stránky v jedné
+aplikaci se sdílenými daty, takže přepnutí neobnovuje celý dokument ani nestahuje
+znovu již načtenou historii. Grafy analytiky se při odchodu uvolní, po návratu
+vznikají opět podle viditelnosti. Na pozadí se nepřekreslují grafy přehledu;
+po návratu se obnoví jeho aktuální záložka. Během načítání nové stanice se místo
+starých grafů zobrazí prázdný stav, nikoliv grafy předchozí stanice.
 
 Desktop od 1200 px má 3 sloupce, tablet 2, telefon do 650 px 1. Karty mají v řádku
 stejnou výšku, graf obvykle245/260 px. „Zvětšit“ poskytne celou šířku a větší

@@ -82,11 +82,35 @@ async def main():
         assert await page.evaluate('analyticsCharts.size') == 0
         await page.evaluate('''()=>{const original=analyticsSummarize;globalThis.gridSummaryCalls=0;
           analyticsSummarize=(...args)=>{gridSummaryCalls++;return original(...args)};}''')
+        assert await page.locator('#page-main').is_visible()
+        assert await page.locator('.top-row').is_visible()
+        assert not await page.locator('#tab-analytics').is_visible()
+        await page.screenshot(path=str(output.with_name(output.stem+'-main.png')))
+        # Preserve the dashboard's selected subtab across full-page navigation.
+        await page.locator('.tab-btn[data-tab="daily"]').click()
+        await page.wait_for_function('store.fullLoaded')
         before = len(requests)
-        await page.locator('.tab-btn[data-tab="analytics"]').click()
+        await page.locator('.page-link[data-page="analytics"]').click()
         await page.wait_for_function('(n)=>store.fullLoaded && store.rows.length===n', arg=row_count)
         await page.wait_for_function('analyticsState.model!==null')
-        assert len(requests)-before == 1
+        assert len(requests) == before
+        assert await page.locator('#page-main').is_hidden()
+        assert await page.locator('#dashboardBars').is_hidden()
+        assert await page.locator('.top-row').is_hidden()
+        assert await page.locator('.tabs').is_hidden()
+        assert await page.locator('#tab-analytics').is_visible()
+        assert await page.locator('.page-link[data-page="analytics"]').get_attribute('aria-current') == 'page'
+        assert await page.evaluate('location.hash') == '#analytika'
+        assert await page.locator('#tab-analytics').evaluate('e=>!document.querySelector("#stationData").contains(e)')
+        await page.go_back()
+        assert await page.locator('#page-main').is_visible()
+        assert await page.locator('#tab-daily').is_visible()
+        assert await page.locator('#tab-analytics').is_hidden()
+        assert await page.evaluate('analyticsCharts.size') == 0
+        await page.go_forward()
+        await page.wait_for_function('analyticsState.model!==null')
+        assert await page.locator('#page-main').is_hidden()
+        results.append({'topLevelPages':True,'historyBackForward':True,'dashboardSubtabRetained':True,'sharedHistoryNoRefetch':True})
         assert await page.locator('#tab-analytics canvas').count() == 9
         assert await page.evaluate('analyticsCharts.size') <= 8  # A tall desktop may already expose all cards.
 
@@ -220,8 +244,14 @@ async def main():
                 await page.evaluate('(t)=>setTheme(t)',theme)
                 await page.wait_for_timeout(100)
                 assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+                assert await page.locator('.page-link[data-page="main"]').is_visible()
+                assert await page.locator('.page-link[data-page="analytics"]').is_visible()
                 actual_columns = await page.locator('#anaCard0').evaluate('e=>getComputedStyle(e.parentElement).gridTemplateColumns.split(" ").length')
                 assert actual_columns == columns, (width,actual_columns,columns)
+                if width in [1440,390] and theme == 'darkblue':
+                    await page.evaluate('window.scrollTo(0,0)')
+                    await page.wait_for_timeout(100)
+                    await page.screenshot(path=str(output.with_name(output.stem+'-'+str(width)+'.png')))
                 layouts.append({'width':width,'theme':theme,'columns':columns,'overflow':False})
         await page.set_viewport_size({'width':1440,'height':1000})
         await page.evaluate('setTheme("darkblue")')
@@ -242,8 +272,10 @@ async def main():
                 assert voltage_rows > 0
                 assert await page.evaluate('store.rows.filter(r=>Number.isFinite(r.voltage)).every(r=>r.voltage===0)')
             results.append({'station':station,'stationSelection':True,'voltageSamples':voltage_rows})
-        await page.locator('.tab-btn[data-tab="now"]').click()
+        await page.locator('.page-link[data-page="main"]').focus()
+        await page.keyboard.press('Enter')
         await page.wait_for_timeout(100)
+        assert await page.locator('#tab-daily').is_visible()
         assert await page.evaluate('analyticsCharts.size') == 0
         assert await page.evaluate('Object.keys(Chart.instances).length') == baseline
         summary_calls = await page.evaluate('gridSummaryCalls')
@@ -252,15 +284,15 @@ async def main():
         assert await page.evaluate('gridSummaryCalls') == summary_calls
         # Repeated visits must release charts, rather than grow their count.
         for _ in range(3):
-            await page.locator('.tab-btn[data-tab="analytics"]').click()
+            await page.locator('.page-link[data-page="analytics"]').click()
             await page.wait_for_function('analyticsState.model!==null')
             await visit_cards()
-            await page.locator('.tab-btn[data-tab="now"]').click()
+            await page.locator('.page-link[data-page="main"]').click()
             await page.wait_for_timeout(60)
             assert await page.evaluate('Object.keys(Chart.instances).length') == baseline
         # A failed renewal keeps clearly labelled cached data. A late response
         # after leaving must never resurrect charts or replace the active rows.
-        await page.locator('.tab-btn[data-tab="analytics"]').click()
+        await page.locator('.page-link[data-page="analytics"]').click()
         await page.locator('#anaCard7').scroll_into_view_if_needed()
         await page.wait_for_function('analyticsStationCache.size>=2 && analyticsState.loading===null')
         remote_failure['station']=1
@@ -272,7 +304,7 @@ async def main():
         delayed['enabled']=True
         await page.evaluate('globalThis.beforeForeignExit=store.rows;void analyticsLoadStations(true)')
         await asyncio.wait_for(delayed['started'].wait(),timeout=5)
-        await page.locator('.tab-btn[data-tab="now"]').click()
+        await page.locator('.page-link[data-page="main"]').click()
         delayed['gate'].set()
         await page.wait_for_timeout(200)
         assert await page.evaluate('analyticsCharts.size===0 && store.rows===beforeForeignExit')
@@ -283,9 +315,9 @@ async def main():
         page.on('pageerror',lambda error:errors.append(str(error)))
         await page.clock.set_fixed_time(now)
         await page.route('**/*',route)
-        await page.goto('http://meteo.test/dev/')
-        await page.wait_for_function('store.rows.length===400')
-        await page.locator('.tab-btn[data-tab="analytics"]').tap()
+        await page.goto('http://meteo.test/dev/#analytika')
+        assert await page.locator('#page-main').is_hidden()
+        assert await page.locator('#tab-analytics').is_visible()
         await page.wait_for_function('store.fullLoaded')
         await page.locator('#anaCard0').scroll_into_view_if_needed()
         await page.wait_for_function('analyticsCharts.has(0)')
@@ -303,7 +335,7 @@ async def main():
         assert await page.evaluate('analyticsState.heat.hour') == 13
         await page.locator('#anaCanvas8').focus();await page.keyboard.press('ArrowRight')
         assert await page.evaluate('analyticsState.heat.hour') == 14
-        results.append({'touchTooltip':True,'touchHeatCell':True,'heatKeyboard':True,'mobileLazy':True,'failedRefreshLabel':True,'lateForeignResponseIgnored':True})
+        results.append({'touchTooltip':True,'touchHeatCell':True,'heatKeyboard':True,'mobileLazy':True,'directAnalyticsURL':True,'failedRefreshLabel':True,'lateForeignResponseIgnored':True})
         assert not errors, errors
         version = browser.version
         await browser.close()
