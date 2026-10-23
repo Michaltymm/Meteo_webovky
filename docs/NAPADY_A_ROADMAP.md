@@ -69,7 +69,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | Malý DOM update, bez dalších fetchů | METEO-048 | Připraveno k realizaci |
+| METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | v0.15.0 O(1) panel, starý záznam ≠ nová kontrola, oddělený MQTT příjem; bez dalších fetchů | Stávající časový kontrakt; explicitní zóna dále METEO-048, rozsah v STAV_DAT.md | Dokončeno |
 | METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu; v0.13.0 společné ⓘ: hover/touch/klávesnice, ARIA, Escape a návrat fokusu, panel ve viewportu; ostatní taby/fokus dále | IMP-006 | Rozpracováno |
 | METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.14.0 výběr 7 senzorových karet pro každou stanici, uložení/obnova a responzivní rozložení; bez dalších fetch/grafů | METEO-054; rozsah a důkazy v MODERNI_PREHLED.md | Dokončeno |
 | METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
@@ -1559,3 +1559,27 @@ DONE v tomto rozsahu: kompaktní responzivní dashboard + výběr senzorových k
 Důkazy:263/263Node testů,9nových regresí v tests/modern-cards.test.js; rozšířený moderní Chromium harness (3stanice, reload, přesný záznam fetch fáze, prázdný výběr, obnova,320/390/800/1440px, obě témata), původní check-info-browser.cjs včetně1500ms a dotyku prošel.0pageerror,8původních Chart instancí,0nových fetch při volbě karet. [Podrobnosti](MODERNI_PREHLED.md), [mikroměření](performance/MODERNI_KARTY.md). Fyzický Safari/iPhone a živé zdroje tím neověřeny.
 
 Publikování v0.14.0 ověřeno: [Actions #29](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39915420587) pro [e0a8ba4](https://github.com/Michaltymm/Meteo_webovky/commit/e0a8ba445a7fcbc8dfd5f661e272a7904ea1570c) **Success** — build 17 s, deploy 11 s, celkem 36 s. Odesláno pouze do `codex-dev`; `main` zůstává `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages host není podle síťové politiky tohoto prostředí dostupný; nasazení potvrzuje workflow. Následující commit mění pouze dokumentaci.
+
+
+## METEO-009 — stáří, přenos a načtená historie, v0.15.0
+
+Dokončeno v rozsahu současného zdrojového kontraktu. Společný panel ve všech
+pohledech rozlišuje čas nejnovějšího CSV záznamu, poslední platnou kontrolu
+Sheets, místní příjem MQTT a částečnou/plnou/živou historii. Nezměněný platný
+export posune kontrolu, ne čas měření; neplatný HTTP 200, config, UV a cizí
+ověření nejsou úspěchem aktivní stanice. Chyba ponechá poslední úspěch a data.
+Přepnutí stanice evidenci resetuje a pozdní výsledek staré generace ji nepřepíše.
+
+Čas má sekundy a offset prohlížeče, budoucí záznam varování. Bez měřicího plánu
+není starší záznam označen za poruchu. Částečná historie již neslibuje pevné tři
+dny: rychlý export je limitovaný počtem řádků. Celý export neprokazuje úplnost
+měření. Výslovná zóna CSV zůstává METEO-048, výpadky METEO-027/045 a důvody
+odmítnutí parseru METEO-050; nevzniká nové duplicitní ID.
+
+Ověření: **273/273 Node**, 10 nových regresí v tests/data-status.test.js,
+cílený browser (24 kombinací tří pohledů, dvou témat a 320/390/800/1440 px,
+včetně chyby/obnovy a všech tří konfigurací), moderní a info harness bez
+pageerror. Aktualizace čte pouze první řádek a délku, používá existující minutový
+timer a nepřidává požadavky/grafy. [Chování a omezení](STAV_DAT.md),
+[měření před/po](performance/STAV_DAT.md). Živý broker ani fyzický iPhone tím
+ověřeny nejsou. Další doporučený krok: METEO-050, čítače validace při parseru.

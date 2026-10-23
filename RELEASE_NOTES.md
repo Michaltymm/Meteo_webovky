@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.15.0
+
+- Nový přehled stavu dat odděluje čas posledního záznamu, úspěšnou kontrolu Sheets a přijetí zprávy MQTT. Při chybě obnovy zůstává viditelný poslední úspěch i načtená historie.
+- Je zřetelné, zda se zobrazuje částečná historie, celý export nebo živé zprávy. Stáří se obnovuje bez dalších síťových požadavků; budoucí čas je označený.
+
 ## v0.14.0
 
 - V moderním přehledu lze přes „Upravit karty“ vybrat senzorové karty zvlášť pro každou stanici. Volba se uloží v prohlížeči; všechny karty lze jedním tlačítkem obnovit.

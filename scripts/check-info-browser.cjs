@@ -143,7 +143,11 @@ async function main() {
     await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
     await page.setViewportSize({ width: 390, height: 844 });
     const tap = async locator => {
-      await locator.scrollIntoViewIfNeeded(); const b = await locator.boundingBox();
+      await locator.scrollIntoViewIfNeeded();
+      // Raw CDP touches do not await layout stability like Playwright clicks.
+      // Wait after viewport/scroll changes before taking screen coordinates.
+      await locator.click({ trial: true });
+      const b = await locator.boundingBox();
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b.x + b.width / 2, y: b.y + b.height / 2 }] });
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     };

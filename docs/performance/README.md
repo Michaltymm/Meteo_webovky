@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Stav a stáří dat](STAV_DAT.md): skutečný DOM/Chart.js před/po na 1k–250k
+měření; cena minutové aktualizace a opakovaného refresh, beze změny řádků/grafů.
+
 [Volba karet moderního přehledu](MODERNI_KARTY.md): režie synchronizace před/po na1k–250k měření; samostatně ověřen nulový přírůstek fetch/grafů.
 
 [Bezpečnostní limity parseru](SECURITY.md): kontrola před/po na1k–250křádcích a přesné hranice odmítnutí vstupů.

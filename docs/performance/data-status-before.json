@@ -1,0 +1,230 @@
+{
+  "browser": "154.0.8037.57",
+  "source": "5dca29d:index.html",
+  "results": [
+    {
+      "rows": 1000,
+      "samples": [
+        {
+          "ticksMs": 717.7000000011176,
+          "refreshMs": 7.099999999627471,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 792.9000000003725,
+          "refreshMs": 5.400000000372529,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 1092.2999999988824,
+          "refreshMs": 5.800000000745058,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 687.5,
+          "refreshMs": 6.400000000372529,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 847.7999999988824,
+          "refreshMs": 7.300000000745058,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 765.2000000011176,
+          "refreshMs": 7,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 660.4000000003725,
+          "refreshMs": 5.199999999254942,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        }
+      ],
+      "unchangedStatusMutations": null,
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "samples": [
+        {
+          "ticksMs": 705.6999999992549,
+          "refreshMs": 9.599999999627471,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 711,
+          "refreshMs": 7.700000001117587,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 1039.2000000011176,
+          "refreshMs": 6.599999999627471,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 648.3999999985099,
+          "refreshMs": 4.900000000372529,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 659.5,
+          "refreshMs": 4.599999999627471,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 967.3000000007451,
+          "refreshMs": 6.900000000372529,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 649.7999999988824,
+          "refreshMs": 4.700000001117587,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        }
+      ],
+      "unchangedStatusMutations": null,
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "samples": [
+        {
+          "ticksMs": 688.8000000007451,
+          "refreshMs": 8.199999999254942,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 703.8000000007451,
+          "refreshMs": 6.5,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 904,
+          "refreshMs": 7.199999999254942,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 686.1999999992549,
+          "refreshMs": 10.099999999627471,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 774.7000000011176,
+          "refreshMs": 6.899999998509884,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 674.5,
+          "refreshMs": 8,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 734,
+          "refreshMs": 5.800000000745058,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        }
+      ],
+      "unchangedStatusMutations": null,
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "samples": [
+        {
+          "ticksMs": 698.4000000003725,
+          "refreshMs": 12,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 758.9000000003725,
+          "refreshMs": 11,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 769,
+          "refreshMs": 10.199999999254942,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 680.1999999992549,
+          "refreshMs": 7.900000000372529,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 744.2999999988824,
+          "refreshMs": 8.5,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 736.5,
+          "refreshMs": 9.599999999627471,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        },
+        {
+          "ticksMs": 741.2999999988824,
+          "refreshMs": 8.200000001117587,
+          "chartsBefore": 8,
+          "chartsAfter": 8,
+          "rowsUnchanged": true
+        }
+      ],
+      "unchangedStatusMutations": null,
+      "pageErrors": []
+    }
+  ]
+}

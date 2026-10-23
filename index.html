@@ -2119,6 +2119,22 @@
       .modern-card-picker { align-self:end; }
       .modern-card-options { position:fixed; top:auto; bottom:1rem; left:1rem; right:1rem; width:auto; max-width:none; max-height:65vh; z-index:110; }
     }
+
+    .data-state { display:grid; grid-template-columns:1fr 1.25fr 1fr; gap:.7rem 1rem; padding:.8rem 1rem; margin:0 0 1.4rem; border:1px solid var(--border); border-radius:10px; background:var(--bg2); font-size:.78rem; }
+    .data-state>div { min-width:0; }
+    .data-state dt { color:var(--muted); font-size:.69rem; margin-bottom:.35rem; }
+    .data-state dd { margin:0; line-height:1.5; overflow-wrap:anywhere; }
+    .data-state-detail { display:block; color:var(--muted); white-space:pre-line; font-size:.72rem; margin-top:.25rem; }
+    .data-state-error { color:var(--red); }
+    .data-state-warning { color:var(--yellow); }
+    body[data-view="modern"] .data-state { border-radius:16px; }
+    body[data-view="modern"] .status-bar { margin-bottom:.7rem; }
+    @media(max-width:650px) {
+      .data-state { grid-template-columns:1fr; padding:.8rem; gap:.8rem; }
+      .data-state>div { display:grid; grid-template-columns:105px minmax(0,1fr); column-gap:.65rem; }
+      .data-state dt { margin:0; padding-top:.12rem; }
+      .data-state-detail { margin-top:.15rem; }
+    }
   </style>
 </head>
 
@@ -2132,8 +2148,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0140"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.14.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0150"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.15.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2420,12 +2436,18 @@
       <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()" title="Obnovit data"><span
           class="refresh-icon">↻</span> Refresh</button>
       <button class="partial-badge" id="partialBadge" onclick="fetchSheets(true)" style="display:none"
-        title="Zobrazena jen poslední data – kliknutím načíst celou historii">⚡ 3 dny · Načíst vše</button>
+        title="Zobrazena jen poslední data – kliknutím načíst celou historii">⚡ Částečná historie · Načíst vše</button>
       <span id="gsLastFetch"></span>
       <button onclick="toggleFullCfg()"
         style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:.2rem .7rem;font-size:.75rem;cursor:pointer"
         title="Nastavení zdroje dat">⚙ Nastavení</button>
     </div>
+
+    <dl class="data-state" aria-label="Stáří a rozsah dat">
+      <div><dt id="dataRecordLabel">Poslední záznam</dt><dd><span id="dataRecordTime">Zatím bez dat</span><span id="dataRecordAge" class="data-state-detail"></span></dd></div>
+      <div><dt>Přenos dat <button type="button" class="info-trigger" data-info-text="Úspěšná kontrola Sheets potvrzuje přenos a zpracování exportu, nikoli nové měření. Čas CSV je vyložen v zóně prohlížeče. MQTT uvádí čas přijetí platné zprávy, nikoli čas měření čidla. Samotné stáří záznamu bez známého měřicího plánu neprokazuje výpadek stanice." aria-label="Jak rozlišit měření a synchronizaci"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataTransferState" role="status">Čeká na ověření</span><span id="dataLastSync" class="data-state-detail">Dosud bez úspěšného přenosu</span></dd></div>
+      <div><dt>Načtená historie</dt><dd><span id="dataHistoryScope">Bez načtených dat</span><span id="dataHistoryCount" class="data-state-detail">Počet záznamů: 0</span></dd></div>
+    </dl>
 
     <main class="app-page" id="page-main" aria-label="Hlavní přehled">
     <section class="modern-intro" id="modernIntro" aria-labelledby="modernHeading" hidden>
@@ -3348,6 +3370,9 @@
     function resetStationStore() {
       analyticsStop(true);
       store.rows = [];
+      dataStatus = emptyDataStatus();
+      setGsStatus(null, "Google Sheets: čekám na konfiguraci…");
+      setMqttStatus(false, "čekám na konfiguraci…");
       store.fullLoaded = false;
       store._onFullLoad = [];
       store._fullLoadPending = false;
@@ -3430,6 +3455,7 @@
 
     function updateStationUI() {
       syncModernStation();
+      renderDataStatus();
       for (let i = 0; i < 3; i++) {
         el("st" + i + "name").textContent = stations[i].name;
         el("st" + i + "check").textContent = (i === activeIdx) ? "✓" : " ";
@@ -4086,6 +4112,10 @@
        Každý záznam: { date, time, ts, temp, pressure, hum, rainInc, rain, tank, voltage }
     ══════════════════════════════════════════════ */
     const store = { rows: [], lastRowCount: 0, fullLoaded: false, _onFullLoad: [], _fullLoadPending: false };
+    function emptyDataStatus() {
+      return { sheets: { phase: "idle", successAt: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
+    }
+    let dataStatus = emptyDataStatus();
 
     /* UV data z Open-Meteo (reálná data dle polohy) */
     const uvStore = { hourly: null, lat: null, lon: null, date: null };
@@ -4247,8 +4277,13 @@
       const request = { context };
       sheetsLoad = request;
       pollAttempts.sheets = Date.now();
+      setDataSourcePhase("sheets", "loading", context);
       request.promise = loadSheets(forceFullLoad, context).finally(() => {
         if (sheetsLoad === request) sheetsLoad = null;
+        if (isCurrentStation(context)) {
+          if (dataStatus.sheets.phase === "loading") dataStatus.sheets.phase = "error";
+          renderDataStatus();
+        }
       });
       return request.promise;
     }
@@ -4262,7 +4297,7 @@
       const isFile = location.protocol === "file:";
       const allURLs = isFile ? [proxy1, proxy2] : [fullURL, proxy1, proxy2];
 
-      // ── QUICK LOAD: první načtení – stáhneme jen posledních ~400 řádků (≈3 dny) ──
+      // ── QUICK LOAD: první načtení – nejvýše 400 posledních řádků, nikoli pevný počet dnů ──
       if (!forceFullLoad && !store.fullLoaded) {
         const quickTQ = encodeURIComponent("SELECT * ORDER BY A DESC, B DESC LIMIT 400");
         const quickFull = fullURL + "&tq=" + quickTQ;
@@ -4277,6 +4312,7 @@
             if (!isCurrentStation(context)) return;
             if (!text || text.length < 10) continue;
             if (store.rows.length && store._lastQuickCsv === text) {
+              recordSheetsSuccess(context);
               setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
               return;
             }
@@ -4287,7 +4323,8 @@
             if (!isCurrentStation(context)) return;
             store._lastQuickCsv = text;
             updatePartialBadge();
-            setGsStatus(true, "Google Sheets: OK – posl. 3 dny (" + fmtTime(new Date()) + ")");
+            recordSheetsSuccess(context);
+            setGsStatus(true, "Google Sheets: OK – poslední záznamy (" + fmtTime(new Date()) + ")");
             ok = true;
             break;
           } catch (e) { if (!isCurrentStation(context)) return; }
@@ -4312,6 +4349,7 @@
           // Compare the complete last validated export rather than guessing a row
           // range. This also detects edits to older measurements and notes.
           if (!forceFullLoad && store.fullLoaded && store._lastFullCsv === text) {
+            recordSheetsSuccess(context);
             setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
             return;
           }
@@ -4325,6 +4363,7 @@
           store._lastFullCsv = text;
           store._fullLoadPending = false;
           updatePartialBadge();
+          recordSheetsSuccess(context);
           setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
           // Spusť čekající callbacky (ensureFullData)
           const cbs = store._onFullLoad.splice(0);
@@ -4357,6 +4396,7 @@
     function updatePartialBadge() {
       const b = el("partialBadge");
       if (b) b.style.display = (!store.fullLoaded && store.rows.length > 0) ? "" : "none";
+      renderDataStatus();
     }
 
     /* ══════════════════════════════════════════════
@@ -4377,6 +4417,8 @@
         return false;
       }
       store.rows = parsed;
+      dataStatus.latestRow = parsed[0];
+      dataStatus.latestKind = "sheets";
       invalidateDerivedData();
       refreshUI();
       return true;
@@ -4498,6 +4540,7 @@
     }
 
     function refreshUI() {
+      renderDataStatus();
       syncModernStation();
       if (!store.rows.length) return;
       el("stationData").hidden = false;
@@ -5867,6 +5910,67 @@
     /* ══════════════════════════════════════════════
        STATUS
     ══════════════════════════════════════════════ */
+    function dataAge(timestamp, now = Date.now()) {
+      if (!Number.isFinite(timestamp)) return "Čas není dostupný";
+      const age = now - timestamp;
+      if (age < 0) return "Čas je v budoucnosti vůči prohlížeči";
+      const minutes = Math.floor(age / 60000);
+      if (!minutes) return "Před méně než minutou";
+      if (minutes < 60) return "Před " + minutes + " min";
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return "Před " + hours + " h " + minutes % 60 + " min";
+      return "Před " + Math.floor(hours / 24) + " d " + hours % 24 + " h";
+    }
+    function setDataSourcePhase(kind, phase, context = stationContext()) {
+      if (!isCurrentStation(context)) return;
+      dataStatus[kind].phase = phase;
+      renderDataStatus();
+    }
+    function recordSheetsSuccess(context) {
+      if (!isCurrentStation(context)) return;
+      dataStatus.sheets.phase = "ok";
+      dataStatus.sheets.successAt = Date.now();
+      renderDataStatus();
+    }
+    function renderDataStatus(now = Date.now()) {
+      const row = store.rows[0], timestamp = row?.ts?.getTime?.();
+      const mqttRow = row && dataStatus.latestRow === row && dataStatus.latestKind === "mqtt";
+      setNodeText(el("dataRecordLabel"), mqttRow ? "Poslední příjem MQTT" : "Poslední záznam");
+      setNodeText(el("dataRecordTime"), Number.isFinite(timestamp) ? intervalTimestamp(row.ts) : row ? "Čas záznamu není dostupný" : "Zatím bez dat");
+      setNodeText(el("dataRecordAge"), Number.isFinite(timestamp) ? dataAge(timestamp, now) : "");
+      const recordClass = Number.isFinite(timestamp) && timestamp > now ? "data-state-warning" : "";
+      if (el("dataRecordTime").className !== recordClass) el("dataRecordTime").className = recordClass;
+      const phases = [], successes = [];
+      let error = false;
+      const sheets = CFG.source === "sheets" || CFG.source === "both", mqtt = CFG.source === "mqtt" || CFG.source === "both";
+      if (sheets) {
+        const state = dataStatus.sheets;
+        phases.push("Sheets: " + ({ idle: "čeká na ověření", loading: "načítá se", ok: "ověřeno", error: "chyba obnovy" }[state.phase] || "čeká na ověření"));
+        successes.push(state.successAt === null ? "Úspěšná kontrola: dosud žádná" : "Kontrola Sheets: " + intervalTimestamp(new Date(state.successAt)) + " · " + dataAge(state.successAt, now));
+        error = state.phase === "error";
+      }
+      if (mqtt) {
+        const state = dataStatus.mqtt;
+        phases.push("MQTT: " + ({ idle: "čeká na připojení", inactive: "neaktivní", connecting: "připojuje se", connected: "připojeno", error: "chyba příjmu" }[state.phase] || "čeká na připojení"));
+        successes.push(state.receivedAt === null ? "Platná zpráva: dosud žádná" : "Zpráva MQTT: " + intervalTimestamp(new Date(state.receivedAt)) + " · " + dataAge(state.receivedAt, now));
+        error = error || state.phase === "error";
+      }
+      setNodeText(el("dataTransferState"), phases.join(" · ") || "Zdroj dat není zvolený");
+      const transferClass = error ? "data-state-error" : "";
+      if (el("dataTransferState").className !== transferClass) el("dataTransferState").className = transferClass;
+      setNodeText(el("dataLastSync"), successes.join("\n") || "Dosud bez úspěšného přenosu");
+      const scope = !store.rows.length ? "Bez načtených dat" : store.fullLoaded
+        ? "Celý export zdroje" + (mqttRow ? " + živé zprávy" : "")
+        : !sheets && mqttRow ? "Živé zprávy této relace" : "Částečná historie";
+      setNodeText(el("dataHistoryScope"), scope);
+      setNodeText(el("dataHistoryCount"), "Počet záznamů: " + store.rows.length.toLocaleString("cs-CZ"));
+    }
+
+    function updateVisibleDataStatus() {
+      if (document.hidden) return;
+      updateSunBar();
+      renderDataStatus();
+    }
     function setGsStatus(ok, msg) {
       el("gsDot").className = "dot" + (ok === true ? " ok" : ok === false ? "" : " warn");
       el("gsStatusText").textContent = msg;
@@ -6551,7 +6655,8 @@
       if (!isCurrentStation(context)) return;
       stopMQTT();
       const config = context.config;
-      if (!config.mqttHost || config.source === "sheets") { setMqttStatus(false, "neaktivní"); return; }
+      if (!config.mqttHost || config.source === "sheets") { setDataSourcePhase("mqtt", "inactive", context); setMqttStatus(false, "neaktivní"); return; }
+      setDataSourcePhase("mqtt", "connecting", context);
       setMqttStatus(false, "připojování…");
       const cid = "meteo_" + Math.random().toString(16).slice(2, 8);
       const mc = new Paho.Client(config.mqttHost, config.mqttPort, "/mqtt", cid);
@@ -6566,12 +6671,14 @@
       };
       mc.onConnectionLost = r => {
         if (!isCurrentClient()) return;
+        setDataSourcePhase("mqtt", "error", context);
         setMqttStatus(false, "odpojeno");
         reconnect();
       };
       let messageWindow = Date.now(), messages = 0;
       const rejectTraffic = () => {
         stopMQTT();
+        setDataSourcePhase("mqtt", "error", context);
         setMqttStatus(false, "příjem zastaven: překročen limit zpráv nebo historie; obnovte připojení ručně");
       };
       mc.onMessageArrived = msg => {
@@ -6597,6 +6704,10 @@
           };
           if (!["temp","pressure","hum","rainInc","rain","tank","voltage"].some(key => row[key] !== null)) return;
           store.rows.unshift(row);
+          dataStatus.latestRow = row;
+          dataStatus.latestKind = "mqtt";
+          dataStatus.mqtt.receivedAt = now.getTime();
+          dataStatus.mqtt.phase = "connected";
           invalidateDerivedData();
           store._lastQuickCsv = null;
           store._lastFullCsv = null;
@@ -6608,11 +6719,13 @@
         timeout: 10,
         onSuccess: () => {
           if (!isCurrentClient()) { try { mc.disconnect(); } catch (e) { } return; }
+          setDataSourcePhase("mqtt", "connected", context);
           setMqttStatus(true, "připojeno – " + config.mqttHost);
           if (config.mqttJson) mc.subscribe(config.mqttJson);
         },
         onFailure: e => {
           if (!isCurrentClient()) return;
+          setDataSourcePhase("mqtt", "error", context);
           setMqttStatus(false, "chyba – " + e.errorMessage);
           reconnect();
         }
@@ -6630,6 +6743,7 @@
         fetchSheets();
         fetchTimer = setInterval(() => periodicRefresh("sheets", CFG.interval * 1000, fetchSheets, context), CFG.interval * 1000);
       }
+      if (CFG.source === "mqtt") setGsStatus(null, "Google Sheets: nepoužívá se");
       if (CFG.source === "mqtt" || CFG.source === "both") connectMQTT();
       if (CFG.source === "sheets") setMqttStatus(false, "neaktivní");
       // Načti reálný UV index z Open-Meteo pro aktuální souřadnice
@@ -6742,6 +6856,7 @@
       if (day !== visibleDay) { visibleDay = day; refreshUI(); }
       updateSunBar();
       updateOvBar();
+      renderDataStatus();
       const context = stationContext();
       if (CFG.source === "sheets" || CFG.source === "both") periodicRefresh("sheets", CFG.interval * 1000, fetchSheets, context);
       const uvAttemptToday = pollAttempts.uv !== null && localDateKey(new Date(pollAttempts.uv)) === day;
@@ -7416,7 +7531,7 @@
     fillConfigUI();
     initCmpDays();
     updateSunBar();
-    setInterval(() => { if (!document.hidden) updateSunBar(); }, 60000);
+    setInterval(updateVisibleDataStatus, 60000);
     setInterval(() => periodicRefresh("overview", 300000, fetchAllOv), 300000);
 
     showAppPage(appPageFromHash(), { updateHistory: false, scroll: false });

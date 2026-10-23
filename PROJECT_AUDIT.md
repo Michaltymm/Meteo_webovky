@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.15.0: METEO-009 DONE — společný panel stáří záznamu, posledního úspěšného přenosu a načtené historie ve všech třech pohledech. Sheets úspěch znamená přijatý platný export (i nezměněný), MQTT čas znamená příjem platné zprávy, ne čas čidla. Chyba ponechá data/poslední úspěch; station generation guard a reset zabrání přenosu evidence mezi stanicemi. O(1) aktualizace přes stávající minutový timer/visibility, bez dalších fetch/grafů a bez změny statistik. 273/273 Node, cílený browser, moderní a info harness prošly. Viz docs/STAV_DAT.md a docs/performance/STAV_DAT.md. Baseline 5dca29d, pouze codex-dev. Další etapa METEO-050; explicitní zóna/známý měřicí plán zůstávají METEO-048/027/045.
 - v0.14.0: METEO-011 DONE v rozsahu7volitelných senzorových karet. Moderní přehled má „Upravit karty“, uložený výběr po stanici (meteoModernCards, schema1, devprefix), bezpečné defaulty/validaci, session fallback a obnovení všech. Klasický přehled vždy7karet. syncModernCards se volá přes syncModernStation při vstupu/updateUI/refresh a používá podpis pro omezení DOM. Data a grafy beze změny; žádné fetch ani nové Chart. Skrývání zavře infoPopover a pendingInfoTrigger,1500ms nápověda zachována.263/263Node + moderní a info Chromium harnessy prošly. Viz docs/MODERNI_PREHLED.md a docs/performance/MODERNI_KARTY.md. Výchozí revize4a88d7e, pouzecodex-dev.
 - v0.13.1: hover nápovědy má jednotný dwell 1500 ms. Odjetí, přechod na jinou ikonu, Escape, scroll, resize, skrytí stránky a invalidace ruší čekání. Kliknutí/dotyk/klávesnice jsou okamžité. 254/254 Node testů včetně 3 nových časovačových regresí a rozšířený Chromium harness prošly; rychlé přejetí a aktivní→čekající ikona ověřeny.
 - v0.13.0: společná nápověda ⓘ nahrazuje tlačítka podkladů minima/maxima, 17 vysvětlujících sekcí a původní srážkové otazníky. Jediný panel v body, přesun původního DOM bez klonování; živé poznámky, tabulky i ovládání zachované. Hover/odjetí, dotyk, fokus/Enter/Tab/Escape; zavření při navigaci, scrollu mimo panel, resize a invalidaci dat. Ověřeno 251/251 Node testů + scripts/check-info-browser.cjs v Chromium 153 (řízené CSV/UV, skutečné Chart/Paho se SRI), 1440/390/320px, obě témata/přehledy/analytika, bez pageerror a bez dodatečného fetch/Chart při otevření nápovědy. METEO-010/011/012/030/063 dílčí UI; širší úkoly zůstávají otevřené. Fyzický Safari/iPhone neověřen.
@@ -8,7 +9,7 @@
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.14.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.15.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -455,3 +456,27 @@ Ověřeno263/263Node (9nových) a Chromium154 s původními configs a řízeným
 Další vhodná etapa: METEO-009 — jasně rozlišit stáří měření, poslední synchronizaci a neúplnou historii; stav ověřovat proti načítacímu kontextu bez nových požadavků. Konfigurace/workflow/main/archiv vtéto etapě neměněny.
 
 Publikování v0.14.0 ověřeno: [Actions #29](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39915420587) pro [e0a8ba4](https://github.com/Michaltymm/Meteo_webovky/commit/e0a8ba445a7fcbc8dfd5f661e272a7904ea1570c) **Success** — build 17 s, deploy 11 s, celkem 36 s. Odesláno pouze do `codex-dev`; `main` zůstává `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages host není podle síťové politiky tohoto prostředí dostupný; nasazení potvrzuje workflow. Následující commit mění pouze dokumentaci.
+
+
+## Stav a stáří dat — v0.15.0, METEO-009
+
+Evidence transportu je samostatná od pollAttempts (pokusy pouze omezují
+frekvenci opakování). recordSheetsSuccess se volá až po přijetí platného exportu
+nebo shodě s již ověřeným exportem, ve všech čtyřech quick/full větvích.
+Neúspěch zachová předchozí successAt, původní store i fullLoaded. MQTT připojení
+není měření; čas receivedAt se nastaví teprve při platném senzorovém payloadu.
+Kombinovaný zdroj vede oba časy odděleně a provenance nejnovějšího řádku se
+obnoví při přijetí CSV. Metadata nepřidávají pole do každého měření.
+
+Vše chrání existující stationContext generace. Reset vymaže předchozí časy i
+stavové texty a renderDataStatus používá jen první řádek/délku. Aktualizace přes
+stávající minutový timer se ve skrytí neprovádí, po návratu ano. Nezměněný obsah
+nezapisuje DOM; žádné nové requesty, Chart, změny schémat/config/statistik.
+273/273 Node, 10 cílených regresí a 3 Chromium harnessy prošly; přehled důkazů,
+výkladu časů a rozsahu historie v docs/STAV_DAT.md. Browser testy nyní před
+kontrolou rozložení/dotykových souřadnic čekají na asynchronní resize/stabilitu.
+
+Následující etapa METEO-050 má získat počty a důvody odmítnutí přímo při parseru;
+nesmí veřejně vypisovat celé měření či citlivý obsah. METEO-048 (výslovná zóna)
+a METEO-027/045 (měřicí plán, výpadky) nejsou touto etapou dokončeny.
+Produkční větev, konfigurace, publikační workflow a archiv se nemění.
