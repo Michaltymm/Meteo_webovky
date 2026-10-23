@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.17.0
+
+- Pod ⓘ u načtené historie je nyní doba poslední obnovy rozdělená na přenos CSV, rozbor dat a přípravu přehledu, včetně počtu pokusů a celkového času.
+- U nezměněného exportu je vidět, které kroky nebyly potřeba. Neúspěšné pokusy mají vlastní časování; dosavadní měření a poslední úspěšná kontrola zůstávají zachovány.
+
 ## v0.16.1
 
 - Po obnovení dříve přijatého nezměněného exportu přehled znovu ukáže jeho správný rozbor. Předchozí neúspěšný pokus tak nezůstane zobrazen jako aktuální stav; další parsování není potřeba.

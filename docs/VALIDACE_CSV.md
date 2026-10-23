@@ -67,6 +67,8 @@ Původní info harness ověřuje hover, klávesnici, dotyk a ostatní nápovědy
 Řízené CSV/UV a skutečné knihovny se SRI nejsou kontrolou živých zdrojů nebo
 fyzického Safari/iOS. [Měření parseru před/po](performance/VALIDACE_CSV.md).
 
-METEO-050 zůstává rozpracované: další malá etapa má oddělit dobu přenosu,
-parsování a vykreslení. Počty odmítnutých MQTT zpráv a širší provozní diagnostika
-zůstávají dalšími částmi; anomálie/duplikace a fyzikální kvalita patří METEO-047.
+Ve v0.17.0 navazuje dokončené [časování obnovy](CASOVANI_OBNOVY.md), které
+odděluje přenos, parser a synchronní práci přehledu od celkového čekání.
+METEO-050 zůstává rozpracované: dále počty/důvody odmítnutých MQTT zpráv.
+Širší provozní diagnostika je další část; anomálie/duplikace a fyzikální kvalita
+patří METEO-047.

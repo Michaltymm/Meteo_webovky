@@ -150,7 +150,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-047 Flagy kvality a deduplikace: původní/opravované/odvozené údaje odděleně | Timestamp, ID pokud dostupné, validace | V / P1 | O(n), omezené indexy | FUT-009, definice duplicit před slučováním | Připraveno k realizaci |
 | METEO-048 Časový kontrakt: lokální den, UTC, DST, explicitní zóna stanice | Současné A/B + konfigurace; nové UTC vyžaduje backend | S / P1 | Nízký, cache formatteru | AUD-010 DONE v0.2.1; další zóna stanice/CSV offset a UV hourly kontrakt | Rozpracováno |
 | METEO-049 Verzovaný adaptér legacy/Raw_Data, kontrola schema a jednotek | Skutečné anonymizované exporty obou backendů | V / P1 | O(n), validace před commitem | FUT-008; nikdy pouhá změna názvu listu | K posouzení |
-| METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | v0.16.0 CSV čítače, důvody a ≤8 bezpečných logických pozic; lazy přehled pod ⓘ bez fetchů | METEO-009 hotové; časování transport/parser/render a MQTT dále, viz VALIDACE_CSV.md; kvalita METEO-047 samostatně | Rozpracováno |
+| METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | v0.16.1 CSV čítače/důvody; v0.17.0 časy přenosu, parseru, synchronní práce přehledu a celé obnovy, bez fetchů/timerů navíc | METEO-009 hotové; CSV a časování hotové, dále MQTT čítače, viz CASOVANI_OBNOVY.md; kvalita METEO-047 samostatně | Rozpracováno |
 
 ## 11. Export a sdílení
 
@@ -1644,3 +1644,33 @@ nasazení potvrzuje workflow. Známá upozornění runtime Actions/ubuntu-latest
 přetrvávají, workflow se neměnilo. Následující commit ukládá pouze tento záznam.
 Další pokračování: METEO-050, rozlišit dobu přenosu / parseru / renderu;
 CSV čítače a jejich testy se bez související změny znovu neimplementují.
+
+
+## METEO-050 — časování obnovy, v0.17.0
+
+Další dokončená část stejného ID, bez nového duplicitního návrhu. Pod stávajícím
+ⓘ jsou časy poslední dokončené obnovy aktivní Sheets historie: přenos celého
+obsahu, parser, synchronní commit/přehled/callbacky a celek. Měří se skutečně
+provedené bloky včetně neúspěšných pokusů; nezměněný export nepřebírá starou
+cenu parseru/UI. Doba úspěšné kontroly, doba rozboru a výsledek poslední obnovy
+jsou oddělené. Selhání neznamená nové měření a nepřepisuje úspěch ani původní store.
+
+Časování je O(1) na hranicích práce přes performance.now, žádný nový request,
+timer, kopie řádků nebo Chart. Bez platných hodin se uvede nedostupné měření.
+Aktuální generation guard/reset chrání přepnutí stanice; coalescing dává jediné
+měření, následný full upgrade nové samostatné. Jen omezené enumy/čítače/časy,
+bez URL/poznámek/vstupních hodnot. Vysvětlení je sbalené; rozbalení krátkého
+chybového reportu přepočítá pozici popupu, aby zůstal ve viewportu.
+
+Ověření: **296/296 Node**, 12 nových regresí v tests/sheets-timing.test.js
+s řízeným monotónním časem a samostatným kalendářním časem. Browser se skutečným
+DOM/Chart/Paho, původními 3 konfiguracemi a řízeným 60ms přenosem ověřil
+fáze, cache, retry/obnovu, oddělení stanice a 24 layoutů včetně 320 px;
+bez pageerror. [Sémantika/omezení](CASOVANI_OBNOVY.md),
+[měření před/po](performance/CASOVANI_OBNOVY.md). Nejde o přesnou latenci serveru,
+Web Vitals nebo dobu hotového snímku, fyzický Safari a živé služby neověřeny.
+
+CSV čítače a časování jsou hotové. METEO-050 zůstává rozpracované pro MQTT
+počty/důvody odmítnutí (bez raw payloadu) — doporučená další malá etapa.
+Trvalý/anonymizovaný log/export dále METEO-064, velký parser METEO-008;
+časové zóny a fyzikální kvalita METEO-048/047 se touto etapou nemění.

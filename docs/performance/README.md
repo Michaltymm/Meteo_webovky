@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Režie časování obnovy](CASOVANI_OBNOVY.md): celý načítací pipeline ve VM
+před/po na 1k–250k, zachování hodnot a cena omezeného snapshotu; skutečný browser
+ověřuje zvlášť hranice fází a ovládání.
+
 [Čítače validace CSV](VALIDACE_CSV.md): cena aktivní diagnostiky parseru před/po
 na 1k–250k záznamech, zachování hodnot a velikost omezeného reportu.
 

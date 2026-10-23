@@ -2131,6 +2131,9 @@
     .csv-validation-table th,.csv-validation-table td { text-align:right; padding:.4rem .25rem; border-bottom:1px solid var(--border); }
     .csv-validation-table th:first-child,.csv-validation-table td:first-child { text-align:left; }
     .csv-validation-table caption { text-align:left; color:var(--muted); margin-bottom:.4rem; }
+    .sheets-timing { margin:.6rem 0; font-size:.78rem; }
+    .sheets-timing>div { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.3rem .7rem; padding:.3rem 0; border-bottom:1px solid var(--border); }
+    .sheets-timing dd { margin:0; text-align:right; }
     body[data-view="modern"] .data-state { border-radius:16px; }
     body[data-view="modern"] .status-bar { margin-bottom:.7rem; }
     @media(max-width:650px) {
@@ -2152,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0161"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.16.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0170"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.17.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4118,7 +4121,7 @@
     ══════════════════════════════════════════════ */
     const store = { rows: [], lastRowCount: 0, fullLoaded: false, _onFullLoad: [], _fullLoadPending: false };
     function emptyDataStatus() {
-      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
+      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null, timing: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
     }
     let dataStatus = emptyDataStatus();
 
@@ -4270,6 +4273,37 @@
       return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
     }
 
+    function sheetsNow() {
+      try {
+        const value = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : null;
+        return Number.isFinite(value) ? value : null;
+      } catch { return null; }
+    }
+    function sheetsElapsed(start) {
+      const end = sheetsNow(), elapsed = end - start;
+      return Number.isFinite(start) && Number.isFinite(end) && Number.isFinite(elapsed) && elapsed >= 0 ? elapsed : null;
+    }
+    function newSheetsTiming(scope) {
+      return { scope, completedAt: null, outcome: null, unchanged: false, totalMs: null,
+        transfer: { runs: 0, ms: 0 }, parse: { runs: 0, ms: 0 }, ui: { runs: 0, ms: 0 } };
+    }
+    function finishSheetsStep(timing, phase, start) {
+      const step = timing[phase], elapsed = sheetsElapsed(start);
+      step.runs++;
+      step.ms = step.ms === null || elapsed === null || !Number.isFinite(step.ms + elapsed) ? null : step.ms + elapsed;
+    }
+    function measureSheetsWork(timing, phase, action) {
+      if (!timing) return action();
+      const start = sheetsNow();
+      try { return action(); }
+      finally { finishSheetsStep(timing, phase, start); }
+    }
+    async function timedSheetsText(url, context, timing, timeout = 30000) {
+      const start = sheetsNow();
+      try { return await stationText(url, context, timeout); }
+      finally { finishSheetsStep(timing, "transfer", start); }
+    }
+
     async function fetchSheets(forceFullLoad = false) {
       const context = stationContext();
       // Reuse an in-flight load. A full-history request waits for a quick load,
@@ -4280,20 +4314,27 @@
         return;
       }
       const request = { context };
+      const timing = newSheetsTiming(forceFullLoad || store.fullLoaded ? "full" : "partial");
+      const started = sheetsNow();
       sheetsLoad = request;
       pollAttempts.sheets = Date.now();
       setDataSourcePhase("sheets", "loading", context);
-      request.promise = loadSheets(forceFullLoad, context).finally(() => {
+      request.promise = loadSheets(forceFullLoad, context, timing).finally(() => {
         if (sheetsLoad === request) sheetsLoad = null;
         if (isCurrentStation(context)) {
           if (dataStatus.sheets.phase === "loading") dataStatus.sheets.phase = "error";
+          timing.completedAt = Date.now();
+          timing.outcome = dataStatus.sheets.phase === "ok" ? "ok" : "error";
+          timing.totalMs = sheetsElapsed(started);
+          dataStatus.sheets.timing = timing;
           renderDataStatus();
+          if (activeInfo?.trigger === el("dataValidationTrigger")) renderCSVValidation();
         }
       });
       return request.promise;
     }
 
-    async function loadSheets(forceFullLoad, context) {
+    async function loadSheets(forceFullLoad, context, timing) {
       if (!context.config.sheetId) { setGsStatus(false, "Google Sheets: zadejte Sheet ID v nastavení ↑"); return; }
 
       const fullURL = sheetsURL(context.config.sheetId, context.config.sheetName);
@@ -4313,15 +4354,16 @@
         let ok = false;
         for (const url of qURLs) {
           try {
-            const text = await stationText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context, 8000);
+            const text = await timedSheetsText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context, timing, 8000);
             if (!isCurrentStation(context)) return;
             if (!text || text.length < 10) continue;
             if (store.rows.length && store._lastQuickCsv === text) {
+              timing.unchanged = true;
               recordSheetsSuccess(context);
               setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
               return;
             }
-            if (!await parseAndStore(text, context, "partial")) {
+            if (!await parseAndStore(text, context, "partial", timing)) {
               if (!isCurrentStation(context)) return;
               continue;
             }
@@ -4343,22 +4385,24 @@
       }
 
       // ── PLNÉ NAČTENÍ ──
+      timing.scope = "full";
       setGsStatus(null, "Google Sheets: načítám celou historii…");
       let lastErr = "";
       for (const url of allURLs) {
         try {
-          const text = await stationText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context);
+          const text = await timedSheetsText(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), context, timing);
           if (!isCurrentStation(context)) return;
           if (!text || text.length < 10) { lastErr = "prázdná odpověď"; continue; }
           // Header rows, sheet ordering and timestamp types vary between sources.
           // Compare the complete last validated export rather than guessing a row
           // range. This also detects edits to older measurements and notes.
           if (!forceFullLoad && store.fullLoaded && store._lastFullCsv === text) {
+            timing.unchanged = true;
             recordSheetsSuccess(context);
             setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
             return;
           }
-          if (!await parseAndStore(text, context, "full")) {
+          if (!await parseAndStore(text, context, "full", timing)) {
             if (!isCurrentStation(context)) return;
             lastErr = "žádná platná data";
             continue;
@@ -4372,9 +4416,9 @@
           setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
           // Spusť čekající callbacky (ensureFullData)
           const cbs = store._onFullLoad.splice(0);
-          cbs.forEach(cb => {
+          if (cbs.length) measureSheetsWork(timing, "ui", () => cbs.forEach(cb => {
             if (isCurrentStation(context)) { try { cb(); } catch (e) { } }
-          });
+          }));
           return;
         } catch (e) {
           if (!isCurrentStation(context)) return;
@@ -4409,7 +4453,7 @@
        Sloupce A–I: Datum, Čas, Teplota, Tlak, Vlhkost, Přírůstek, Déšť, nádrž, Napětí
        Přeskočí řádky nadpis + záhlaví (autodetekce)
     ══════════════════════════════════════════════ */
-    async function parseAndStore(text, context = stationContext(), scope = "unknown") {
+    async function parseAndStore(text, context = stationContext(), scope = "unknown", timing = null) {
       if (!isCurrentStation(context)) return false;
       setGsStatus(null, "Zpracovávám data (" + Math.round(text.length / 1024) + " KB)…");
       
@@ -4418,7 +4462,7 @@
       if (!isCurrentStation(context)) return false;
       const validation = newCSVValidation(scope);
       let parsed;
-      try { parsed = parseHistoryCSV(text, validation); }
+      try { parsed = measureSheetsWork(timing, "parse", () => parseHistoryCSV(text, validation)); }
       catch (error) {
         validation.failure = error.code === "DATA_LIMIT" ? "DATA_LIMIT" : "CSV_SYNTAX";
         publishCSVValidation(validation, context);
@@ -4429,12 +4473,14 @@
         setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
         return false;
       }
-      store.rows = parsed;
-      dataStatus.latestRow = parsed[0];
-      dataStatus.latestKind = "sheets";
-      invalidateDerivedData();
-      publishCSVValidation(validation, context);
-      refreshUI();
+      measureSheetsWork(timing, "ui", () => {
+        store.rows = parsed;
+        dataStatus.latestRow = parsed[0];
+        dataStatus.latestKind = "sheets";
+        invalidateDerivedData();
+        publishCSVValidation(validation, context);
+        refreshUI();
+      });
       return true;
     }
 
@@ -5990,6 +6036,7 @@
       if (!isCurrentStation(context)) return;
       dataStatus[kind].phase = phase;
       renderDataStatus();
+      if (kind === "sheets" && activeInfo?.trigger === el("dataValidationTrigger")) renderCSVValidation();
     }
     function recordSheetsSuccess(context) {
       if (!isCurrentStation(context)) return;
@@ -6004,16 +6051,37 @@
       }
       renderDataStatus();
     }
+    function sheetsTimingHTML() {
+      const timing = dataStatus.sheets.timing;
+      if (!timing) return CFG.source === "mqtt" ? "" : '<p>Doba dokončené obnovy zatím není k dispozici.</p>';
+      const count = value => Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString("cs-CZ") : "–";
+      const duration = value => !Number.isFinite(value) || value < 0 ? "Měření nedostupné" : value < 1000
+        ? value.toLocaleString("cs-CZ", { maximumFractionDigits: 1 }) + " ms"
+        : (value / 1000).toLocaleString("cs-CZ", { maximumFractionDigits: 2 }) + " s";
+      const step = phase => timing[phase].runs ? duration(timing[phase].ms) : "Neproběhlo";
+      const date = Number.isFinite(timing.completedAt) ? intervalTimestamp(new Date(timing.completedAt)) : "–";
+      const scope = timing.scope === "full" ? "celý export" : "částečný export";
+      return '<section aria-label="Doba poslední obnovy"><p><strong>Doba poslední dokončené obnovy</strong><br>' + date + ' · ' +
+        (timing.outcome === "ok" ? "Úspěšná kontrola" : "Obnova selhala") + ' · ' + scope + '.</p>' +
+        (dataStatus.sheets.phase === "loading" ? '<p>Právě probíhá další načítání; níže jsou předchozí dokončené časy.</p>' : '') +
+        '<dl class="sheets-timing"><div><dt>Celá obnova</dt><dd id="sheetsTimeTotal">' + duration(timing.totalMs) + '</dd></div>' +
+        '<div><dt>Přenos CSV · pokusy: ' + count(timing.transfer.runs) + '</dt><dd id="sheetsTimeTransfer">' + step("transfer") + '</dd></div>' +
+        '<div><dt>Rozbor CSV · běhy: ' + count(timing.parse.runs) + '</dt><dd id="sheetsTimeParse">' + step("parse") + '</dd></div>' +
+        '<div><dt>Data a přehled · běhy: ' + count(timing.ui.runs) + '</dt><dd id="sheetsTimeUi">' + step("ui") + '</dd></div></dl>' +
+        (timing.unchanged ? '<p>Poslední odpověď: beze změny. Dříve přijatý export se znovu neparsuje; jeho datový přehled se nepřepočítává.</p>' : '') +
+        '<details><summary>Co časy zahrnují</summary><p>Přenos zahrnuje čekání na odpověď i přečtení obsahu. Složky sčítají všechny pokusy této obnovy; celek zahrnuje také čekání mezi kroky a další obsluhu. Data a přehled měří synchronní práci aplikace, nikoli hotový snímek, pozdější líné grafy nebo rychlost samotného serveru. Přesnost závisí na časovači prohlížeče.</p></details></section>';
+    }
     function renderCSVValidation() {
       const panel = el("dataValidationPanel"), validation = dataStatus.sheets.validation;
+      const timingHTML = sheetsTimingHTML();
       if (!validation) {
-        panel.innerHTML = '<p>' + (CFG.source === "mqtt" ? "Stanice používá MQTT; tento přehled se týká pouze CSV historie." : "CSV historie této stanice zatím nebyla zpracována.") + '</p>';
+        panel.innerHTML = timingHTML + '<p>' + (CFG.source === "mqtt" ? "Stanice používá MQTT; tento přehled se týká pouze CSV historie." : "CSV historie této stanice zatím nebyla zpracována.") + '</p>';
         return;
       }
       const count = value => Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString("cs-CZ") : "–";
       const checked = Number.isFinite(validation.checkedAt) ? intervalTimestamp(new Date(validation.checkedAt)) : "–";
       const scope = validation.scope === "full" ? "celý export" : validation.scope === "partial" ? "částečný export" : "export CSV";
-      let html = '<p>Poslední rozbor: ' + checked + ' · ' + scope + '.</p>';
+      let html = timingHTML + '<p>Poslední rozbor: ' + checked + ' · ' + scope + '.</p>';
       if (!validation.complete) {
         const reason = validation.failure === "DATA_LIMIT" ? "Export přesáhl bezpečnostní limit." : "Strukturu CSV nelze zpracovat.";
         panel.innerHTML = html + '<p>' + reason + ' Součty nejsou k dispozici; dosavadní měření nebyla nahrazena.</p>';
@@ -7536,6 +7604,7 @@
 
     function initInfoTooltips() {
       registerInfoPanel(el("dataValidationTrigger"), el("dataValidationPanel"), { prepare: renderCSVValidation, title: "Validace historie CSV" });
+      el("dataValidationPanel").addEventListener("toggle", positionInfoPopover, true);
       for (const owner of document.querySelectorAll("details[data-info]")) {
         const summary = owner.querySelector(":scope > summary"), title = summary.textContent.trim();
         const panel = document.createElement("div");

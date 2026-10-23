@@ -56,8 +56,9 @@ async def main():
                 requests.append({'station': station})
                 if station == 1:
                     await gate.wait()
+                await asyncio.sleep(.06)  # Controlled transport latency, not a live service.
                 if failed:
-                    await r.fulfill(body='<html>Controlled invalid export</html>', content_type='text/html')
+                    await r.fulfill(body='"unterminated CSV' if failed == 'syntax' else '<html>Controlled invalid export</html>', content_type='text/html')
                     return
                 quick = 'LIMIT 400' in parse_qs(urlparse(url).query).get('tq', [''])[0]
                 rows = ['Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti']
@@ -78,6 +79,9 @@ async def main():
         assert await page.locator('#dataRecordAge').inner_text() == 'Před 1 d 0 h'
         assert await page.locator('#dataHistoryScope').inner_text() == 'Částečná historie'
         assert await page.evaluate('dataStatus.sheets.validation.accepted===4 && dataStatus.sheets.validation.rejected===2')
+        assert await page.evaluate('''dataStatus.sheets.timing.scope==='partial' && dataStatus.sheets.timing.outcome==='ok' &&
+          dataStatus.sheets.timing.transfer.ms>=40 && dataStatus.sheets.timing.parse.runs===1 && dataStatus.sheets.timing.ui.runs===1 &&
+          dataStatus.sheets.timing.totalMs+1>=dataStatus.sheets.timing.transfer.ms+dataStatus.sheets.timing.parse.ms+dataStatus.sheets.timing.ui.ms''')
         before = len(requests)
         charts = await page.evaluate('Object.keys(Chart.instances).length')
         await page.locator('#dataValidationTrigger').click()
@@ -86,6 +90,10 @@ async def main():
         assert 'Přijato: 4 · Vyřazeno: 2' in await validation.inner_text()
         assert 'Záznam #6' in await validation.inner_text()
         assert await validation.locator('tbody tr').count() == 7
+        assert 'ms' in await page.locator('#sheetsTimeTransfer').inner_text()
+        assert await validation.locator('details').evaluate('e=>!e.open')
+        await validation.locator('details summary').click()
+        assert 'nikoli hotový snímek' in await validation.locator('details').inner_text()
         assert len(requests) == before
         assert await page.evaluate('Object.keys(Chart.instances).length') == charts
         await page.keyboard.press('Escape')
@@ -97,6 +105,7 @@ async def main():
         await page.clock.set_fixed_time(now+timedelta(minutes=10))
         await page.evaluate('fetchSheets()')
         assert await page.evaluate('store.rows===originalRows && store.rows[0].ts.getTime()===recordTime && dataStatus.sheets.successAt===Date.now()')
+        assert await page.evaluate('dataStatus.sheets.timing.unchanged && dataStatus.sheets.timing.parse.runs===0 && dataStatus.sheets.timing.ui.runs===0')
         await page.locator('#partialBadge').click()
         await page.wait_for_function('store.fullLoaded && dataStatus.sheets.phase==="ok"')
         assert await page.locator('#dataHistoryScope').inner_text() == 'Celý export zdroje'
@@ -106,11 +115,13 @@ async def main():
         await page.clock.set_fixed_time(now+timedelta(minutes=20))
         await page.evaluate('fetchSheets(true)')
         assert await page.locator('#dataTransferState').inner_text() == 'Sheets: chyba obnovy'
+        assert await page.evaluate('dataStatus.sheets.timing.outcome==="error" && dataStatus.sheets.timing.transfer.runs===3 && dataStatus.sheets.timing.parse.runs===3 && dataStatus.sheets.timing.ui.runs===0')
         assert await page.evaluate('store.rows===originalRows && dataStatus.sheets.successAt===lastSuccess && store.fullLoaded')
         assert 'Před 10 min' in await page.locator('#dataLastSync').inner_text()
         assert await page.locator('#dataHistoryCount').inner_text() == 'Počet záznamů: 8'
         assert await page.locator('#infoPopover').is_visible()
         assert 'Export nebyl přijat' in await validation.inner_text()
+        assert 'Obnova selhala' in await validation.inner_text()
         await page.keyboard.press('Escape')
         failed = False
         await page.evaluate('fetchSheets()')
@@ -118,6 +129,8 @@ async def main():
         await page.locator('#dataValidationTrigger').click()
         assert 'Přijato: 8 · Vyřazeno: 2' in await validation.inner_text()
         assert 'Export nebyl přijat' not in await validation.inner_text()
+        assert await page.locator('#sheetsTimeParse').inner_text() == 'Neproběhlo'
+        assert await page.locator('#sheetsTimeUi').inner_text() == 'Neproběhlo'
         await page.keyboard.press('Escape')
         before = len(requests)
         await page.clock.set_fixed_time(now+timedelta(minutes=21))
@@ -130,6 +143,7 @@ async def main():
         assert await page.locator('#dataRecordTime').inner_text() == 'Zatím bez dat'
         assert await page.locator('#dataLastSync').inner_text() == 'Úspěšná kontrola: dosud žádná'
         assert await page.evaluate('dataStatus.sheets.validation===null')
+        assert await page.evaluate('dataStatus.sheets.timing===null')
         gate.set()
         await page.wait_for_function('dataStatus.sheets.phase==="ok" && store.rows.length===4')
         assert await page.locator('#curVoltage').inner_text() == '0.00'
@@ -164,6 +178,18 @@ async def main():
                     layouts.append({'view': view, 'theme': theme, 'width': width})
                     if view == 'modern' and width in [1440, 320]:
                         await page.screenshot(path=str(output.with_name(f'state-{theme}-{width}.png')))
+        # A short failure report can grow when its explanation is expanded.
+        # Reposition it in the viewport rather than overflowing below its anchor.
+        failed = 'syntax'
+        await page.evaluate('fetchSheets(true)')
+        await page.set_viewport_size({'width': 320, 'height': 700})
+        await page.locator('#dataValidationTrigger').click()
+        await validation.locator('details summary').click()
+        await page.wait_for_timeout(100)
+        box = await page.locator('#infoPopover').bounding_box()
+        assert box['x'] >= 0 and box['y'] >= 0 and box['x']+box['width'] <= 321 and box['y']+box['height'] <= 701, box
+        await page.keyboard.press('Escape')
+        failed = False
         future = True
         await page.evaluate('fetchSheets(true)')
         assert 'budoucnosti' in await page.locator('#dataRecordAge').inner_text()
@@ -175,7 +201,9 @@ async def main():
         'checks': ['old record vs new validation', 'unchanged quick export', 'full history',
                    'invalid HTTP200 retains last success/rows', 'recovery', 'minute update without fetch',
                    'station reset before delayed CSV', 'zero/missing voltage', 'three pages/two themes', 'future time',
-                   'CSV counts/rejection reasons/positions', 'diagnostics without fetch/new Chart', 'diagnostic popup bounds in all layouts'],
+                   'CSV counts/rejection reasons/positions', 'diagnostics without fetch/new Chart', 'diagnostic popup bounds in all layouts',
+                   'controlled 60ms transport and separate parser/UI timings', 'no stale costs for unchanged exports', 'failure/recovery timings',
+                   'collapsed timing explanation', 'expanded short error report stays in viewport'],
         'transport': 'Controlled CSV/UV; real Chart.js and Paho with SRI; no live MQTT'}, indent=2)+'\n')
     print(output)
 
