@@ -524,3 +524,17 @@ odkaz na poslední přijatý report, nikoli další historie. Jedna nová regres
 ověřuje quick i full větev a browser i obnovený obsah ⓘ. **284/284 Node**;
 11 nových testů CSV diagnostiky. Výsledná verze etapy je 0.16.1, původní
 283/283 výše označuje první krok v0.16.0. Příští krok METEO-050: časování.
+
+
+Publikování výsledné v0.16.1 ověřeno 2026-10-23: [Actions #32](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39948737532)
+pro [a26b55f](https://github.com/Michaltymm/Meteo_webovky/commit/a26b55ffb4d6a1443f7db6dba218c46a124447f5)
+**Success** — build 23 s, deploy 10 s, celkem 40 s. První část v0.16.0 je
+[7844995](https://github.com/Michaltymm/Meteo_webovky/commit/7844995d5f51bfddbc50ef836e3c683345968940),
+[Actions #31](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39948346233) také Success.
+284/284 lokálních Node regresí a finální Chromium ověření prošly. Odesláno jen
+do codex-dev; main zůstává `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Živý Pages host nelze z tohoto prostředí kvůli síťové politice přímo navštívit;
+nasazení potvrzuje workflow. Známá upozornění runtime Actions/ubuntu-latest
+přetrvávají, workflow se neměnilo. Následující commit ukládá pouze tento záznam.
+Další pokračování: METEO-050, rozlišit dobu přenosu / parseru / renderu;
+CSV čítače a jejich testy se bez související změny znovu neimplementují.
