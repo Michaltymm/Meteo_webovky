@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.16.1
+
+- Po obnovení dříve přijatého nezměněného exportu přehled znovu ukáže jeho správný rozbor. Předchozí neúspěšný pokus tak nezůstane zobrazen jako aktuální stav; další parsování není potřeba.
+
 ## v0.16.0
 
 - U načtené historie je pod ikonou ⓘ přehled kontroly CSV: přijaté a vyřazené záznamy, důvody vyřazení a dostupnost hodnot jednotlivých senzorů.

@@ -1620,3 +1620,13 @@ Původní měření, pořadí, duplicity a výpočty zachovány; živé zdroje/S
 Následující malá etapa METEO-050: oddělit dobu přenosu, parsování a renderu.
 Samostatně zbývají MQTT odmítnutí; širší export diagnostiky patří METEO-064,
 změny fyzikální kvality/deduplikace METEO-047, zóna stanice METEO-048.
+
+
+Doplnění v0.16.1: pokud po neúspěšném rozboru přijde dříve přijatý nezměněný
+export, recordSheetsSuccess obnoví jeho acceptedValidation místo ponechání
+neúspěšného reportu. Čas původního rozboru, reference store, cache a počet renderů
+se nezmění; nepřidává se další parse/fetch. Na chybu se navíc uchovává pouze
+odkaz na poslední přijatý report, nikoli další historie. Jedna nová regrese
+ověřuje quick i full větev a browser i obnovený obsah ⓘ. **284/284 Node**;
+11 nových testů CSV diagnostiky. Výsledná verze etapy je 0.16.1, původní
+283/283 výše označuje první krok v0.16.0. Příští krok METEO-050: časování.

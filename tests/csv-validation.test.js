@@ -100,6 +100,20 @@ test('station reset and late prior-generation parser cannot move diagnostics to 
   a.run('renderCSVValidation()'); assert.doesNotMatch(a.nodes.get('dataValidationPanel').innerHTML,/Přijato:/);
 });
 
+test('recovery of unchanged quick/full CSV restores its accepted report without reparsing or changing its timestamp', async () => {
+  for (const full of [false,true]) {
+    const a=app();await fetchCSV(a,full);
+    a.run('globalThis.accepted=dataStatus.sheets.validation;globalThis.parsedAt=accepted.checkedAt;globalThis.rowsBefore=store.rows');
+    await parse(a,header+'\n31.02.2026,12:00,1');
+    assert.equal(a.run('dataStatus.sheets.validation.accepted'),0);
+    const renders=a.state.renders;
+    await fetchCSV(a);
+    assert.equal(a.run('dataStatus.sheets.validation===accepted && accepted.checkedAt===parsedAt && store.rows===rowsBefore'),true);
+    assert.equal(a.state.renders,renders);
+    assert.equal(a.run('dataStatus.sheets.validation.accepted'),1);
+  }
+});
+
 test('pure foreign parser, overview and MQTT do not overwrite active CSV evidence', async () => {
   const a = app(); await parse(a, valid); a.run('globalThis.previous=dataStatus.sheets.validation');
   a.run(`parseHistoryCSV(${JSON.stringify(header+'\n'+valid)})`);

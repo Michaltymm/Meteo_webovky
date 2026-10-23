@@ -2152,8 +2152,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0160"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.16.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0161"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.16.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4118,7 +4118,7 @@
     ══════════════════════════════════════════════ */
     const store = { rows: [], lastRowCount: 0, fullLoaded: false, _onFullLoad: [], _fullLoadPending: false };
     function emptyDataStatus() {
-      return { sheets: { phase: "idle", successAt: null, validation: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
+      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
     }
     let dataStatus = emptyDataStatus();
 
@@ -4451,6 +4451,7 @@
       if (!isCurrentStation(context)) return;
       validation.checkedAt = Date.now();
       dataStatus.sheets.validation = validation;
+      if (validation.complete && validation.accepted > 0) dataStatus.sheets.acceptedValidation = validation;
       if (activeInfo?.trigger === el("dataValidationTrigger")) renderCSVValidation();
     }
     function parseHistoryCSV(text, validation = null) {
@@ -5994,6 +5995,13 @@
       if (!isCurrentStation(context)) return;
       dataStatus.sheets.phase = "ok";
       dataStatus.sheets.successAt = Date.now();
+      // Recovery can validate a previously accepted, unchanged CSV without
+      // parsing again. Restore its own report instead of showing a failed one.
+      const accepted = dataStatus.sheets.acceptedValidation;
+      if (accepted && dataStatus.sheets.validation !== accepted) {
+        dataStatus.sheets.validation = accepted;
+        if (activeInfo?.trigger === el("dataValidationTrigger")) renderCSVValidation();
+      }
       renderDataStatus();
     }
     function renderCSVValidation() {

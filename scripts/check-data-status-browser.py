@@ -115,6 +115,10 @@ async def main():
         failed = False
         await page.evaluate('fetchSheets()')
         assert await page.locator('#dataTransferState').inner_text() == 'Sheets: ověřeno'
+        await page.locator('#dataValidationTrigger').click()
+        assert 'Přijato: 8 · Vyřazeno: 2' in await validation.inner_text()
+        assert 'Export nebyl přijat' not in await validation.inner_text()
+        await page.keyboard.press('Escape')
         before = len(requests)
         await page.clock.set_fixed_time(now+timedelta(minutes=21))
         await page.evaluate('updateVisibleDataStatus()')

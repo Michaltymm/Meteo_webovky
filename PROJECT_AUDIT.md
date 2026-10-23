@@ -1,7 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
-- v0.16.0: první část METEO-050 hotová — ⓘ u načtené historie ukazuje čítače posledního CSV rozboru, odmítnutí s kódy DATE_MISSING/DATETIME_INVALID a nejvýše 8 logických pozic, dostupnost 7 veličin a čas/rozsah rozboru. Původní pravidla parseru, duplicity, null/nuly a statistiky zachovány. Report neobsahuje raw hodnoty/poznámky/URL; syntaxe/limit jsou obecné kódy bez neúplných součtů. Jen aktivní generační kontext, reset a nezměněný export zachovávají správnou evidenci. Čistý parseHistoryCSV cizích stanic report nevytváří. 283/283 Node, cílený browser a info harness prošly; viz docs/VALIDACE_CSV.md a docs/performance/VALIDACE_CSV.md. Baseline 33557f2, pouze codex-dev. METEO-050 zůstává rozpracované; dále časování transport/parser/render a MQTT čítače.
+- v0.16.1: první část METEO-050 hotová — ⓘ u načtené historie ukazuje čítače posledního CSV rozboru, odmítnutí s kódy DATE_MISSING/DATETIME_INVALID a nejvýše 8 logických pozic, dostupnost 7 veličin a čas/rozsah rozboru. Původní pravidla parseru, duplicity, null/nuly a statistiky zachovány. Report neobsahuje raw hodnoty/poznámky/URL; syntaxe/limit jsou obecné kódy bez neúplných součtů. Jen aktivní generační kontext, reset a nezměněný export zachovávají správnou evidenci. Čistý parseHistoryCSV cizích stanic report nevytváří. 284/284 Node, cílený browser a info harness prošly; viz docs/VALIDACE_CSV.md a docs/performance/VALIDACE_CSV.md. Baseline 33557f2, pouze codex-dev. METEO-050 zůstává rozpracované; dále časování transport/parser/render a MQTT čítače.
 - v0.15.0: METEO-009 DONE — společný panel stáří záznamu, posledního úspěšného přenosu a načtené historie ve všech třech pohledech. Sheets úspěch znamená přijatý platný export (i nezměněný), MQTT čas znamená příjem platné zprávy, ne čas čidla. Chyba ponechá data/poslední úspěch; station generation guard a reset zabrání přenosu evidence mezi stanicemi. O(1) aktualizace přes stávající minutový timer/visibility, bez dalších fetch/grafů a bez změny statistik. 273/273 Node, cílený browser, moderní a info harness prošly. Viz docs/STAV_DAT.md a docs/performance/STAV_DAT.md. Baseline 5dca29d, pouze codex-dev. Další etapa METEO-050; explicitní zóna/známý měřicí plán zůstávají METEO-048/027/045.
 - v0.14.0: METEO-011 DONE v rozsahu7volitelných senzorových karet. Moderní přehled má „Upravit karty“, uložený výběr po stanici (meteoModernCards, schema1, devprefix), bezpečné defaulty/validaci, session fallback a obnovení všech. Klasický přehled vždy7karet. syncModernCards se volá přes syncModernStation při vstupu/updateUI/refresh a používá podpis pro omezení DOM. Data a grafy beze změny; žádné fetch ani nové Chart. Skrývání zavře infoPopover a pendingInfoTrigger,1500ms nápověda zachována.263/263Node + moderní a info Chromium harnessy prošly. Viz docs/MODERNI_PREHLED.md a docs/performance/MODERNI_KARTY.md. Výchozí revize4a88d7e, pouzecodex-dev.
 - v0.13.1: hover nápovědy má jednotný dwell 1500 ms. Odjetí, přechod na jinou ikonu, Escape, scroll, resize, skrytí stránky a invalidace ruší čekání. Kliknutí/dotyk/klávesnice jsou okamžité. 254/254 Node testů včetně 3 nových časovačových regresí a rozšířený Chromium harness prošly; rychlé přejetí a aktivní→čekající ikona ověřeny.
@@ -10,7 +10,7 @@
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-23; práce výhradně na `codex-dev`, výchozí revize této etapy `33557f2`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.16.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.16.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -23,7 +23,7 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (283/283 prošlo po CSV diagnostice); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (284/284 prošlo po CSV diagnostice a obnově); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
@@ -514,3 +514,13 @@ záznamy zůstávají heuristikou, nejsou nově považovány za ověřenou hlavi
 prošly. Viz docs/VALIDACE_CSV.md a měření parseru v docs/performance/VALIDACE_CSV.md.
 METEO-050 dále časování transport/parser/render a MQTT čítače; METEO-047/048
 stále samostatně. Main, konfigurace, archiv a publikační workflow nezměněny.
+
+
+Doplnění v0.16.1: pokud po neúspěšném rozboru přijde dříve přijatý nezměněný
+export, recordSheetsSuccess obnoví jeho acceptedValidation místo ponechání
+neúspěšného reportu. Čas původního rozboru, reference store, cache a počet renderů
+se nezmění; nepřidává se další parse/fetch. Na chybu se navíc uchovává pouze
+odkaz na poslední přijatý report, nikoli další historie. Jedna nová regrese
+ověřuje quick i full větev a browser i obnovený obsah ⓘ. **284/284 Node**;
+11 nových testů CSV diagnostiky. Výsledná verze etapy je 0.16.1, původní
+283/283 výše označuje první krok v0.16.0. Příští krok METEO-050: časování.

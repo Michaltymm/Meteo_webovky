@@ -1,4 +1,4 @@
-# Kontrola CSV historie — METEO-050, v0.16.0
+# Kontrola CSV historie — METEO-050, v0.16.0–0.16.1
 
 První dokončená část METEO-050 navazuje na stav dat METEO-009. Ikona ⓘ u
 „Načtená historie“ ve všech třech pohledech otevře přehled posledního rozboru
@@ -35,7 +35,10 @@ vyžaduje samostatné rozhodnutí a regresní ověření METEO-047/048/049.
 Report výslovně rozlišuje částečný/celý export a čas jeho rozboru. Neplatí pro
 aktuální filtr grafu ani pro MQTT zprávy přijaté později. Nezměněný ověřený CSV
 export se znovu neparsuje: původní report/čas rozboru zůstane, zatímco čas
-úspěšné kontroly transportu v METEO-009 se aktualizuje.
+úspěšné kontroly transportu v METEO-009 se aktualizuje. Po neúspěšném pokusu
+se při ověření dříve přijatého nezměněného exportu obnoví jeho původní přijatý
+report včetně času rozboru. Chyba tak po obnově nezůstává v aktuálním přehledu;
+v RAM se během chyby drží navíc jen odkaz na poslední přijatý malý report.
 
 Při nule přijatých řádků je dostupný kompletní rozbor odmítnutého exportu;
 starý store se nenahrazuje. U poškozené syntaxe nebo bezpečnostního limitu
@@ -51,7 +54,7 @@ jej zavře stejně jako ostatní nápovědy při invalidaci dat.
 
 ## Ověření a pokračování
 
-`tests/csv-validation.test.js`: 10 nových regresí; celá sada **283/283**.
+`tests/csv-validation.test.js`: 11 nových regresí; celá sada **284/284**.
 Ověřeny původní řádky/pořadí/duplicity, nuly/null, multiline/blank/BOM, omezené
 vzorky bez vstupního obsahu, poškozené CSV/limity, odmítnutí bez změny store,
 nezměněné exporty, generace a oddělení MQTT/cizích dat. Renderer používá pevné
