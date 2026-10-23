@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.16.0
+
+- U načtené historie je pod ikonou ⓘ přehled kontroly CSV: přijaté a vyřazené záznamy, důvody vyřazení a dostupnost hodnot jednotlivých senzorů.
+- Odmítnutí ukazují jen pořadí záznamu a bezpečný kód důvodu. Neplatný export nepřepíše dosavadní měření; pravidla načítání a statistiky zůstávají zachovány.
+
 ## v0.15.0
 
 - Nový přehled stavu dat odděluje čas posledního záznamu, úspěšnou kontrolu Sheets a přijetí zprávy MQTT. Při chybě obnovy zůstává viditelný poslední úspěch i načtená historie.

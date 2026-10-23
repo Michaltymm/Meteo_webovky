@@ -150,7 +150,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-047 Flagy kvality a deduplikace: původní/opravované/odvozené údaje odděleně | Timestamp, ID pokud dostupné, validace | V / P1 | O(n), omezené indexy | FUT-009, definice duplicit před slučováním | Připraveno k realizaci |
 | METEO-048 Časový kontrakt: lokální den, UTC, DST, explicitní zóna stanice | Současné A/B + konfigurace; nové UTC vyžaduje backend | S / P1 | Nízký, cache formatteru | AUD-010 DONE v0.2.1; další zóna stanice/CSV offset a UV hourly kontrakt | Rozpracováno |
 | METEO-049 Verzovaný adaptér legacy/Raw_Data, kontrola schema a jednotek | Skutečné anonymizované exporty obou backendů | V / P1 | O(n), validace před commitem | FUT-008; nikdy pouhá změna názvu listu | K posouzení |
-| METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | Čítače během parseru | METEO-009/047 | Připraveno k realizaci |
+| METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | v0.16.0 CSV čítače, důvody a ≤8 bezpečných logických pozic; lazy přehled pod ⓘ bez fetchů | METEO-009 hotové; časování transport/parser/render a MQTT dále, viz VALIDACE_CSV.md; kvalita METEO-047 samostatně | Rozpracováno |
 
 ## 11. Export a sdílení
 
@@ -1592,3 +1592,31 @@ main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages ho
 není podle síťové politiky prostředí dostupný; nasazení potvrzuje workflow,
 nikoli přímá návštěva. Existující upozornění na runtime Actions a ubuntu-latest
 přetrvávají, workflow se v této etapě neměnilo. Následující commit je jen evidence.
+
+
+## METEO-050 — CSV diagnostika, první část v0.16.0
+
+Hotová první část, celé ID zůstává rozpracované. Vedle rozsahu načtené historie
+je ⓘ s časem/rozsahem posledního rozboru, počty přijatých, vyřazených, prázdných
+a úvodních záznamů. Dva dosavadní důvody odmítnutí mají stabilní kódy a maximálně
+osm ukázek logických pozic v exportu před seřazením; poznámky a odmítnutý obsah
+se do diagnostiky nekopírují. Víceřádkové uvozované poznámky nejsou nové záznamy.
+Sedm senzorů má počty číselných, prázdných a nečíselných výsledků původního parseru.
+Nejde o nové fyzikální ověřování ani deduplikaci METEO-047.
+
+Při chybné syntaxi/limitu se zobrazí jen obecný důvod bez neúplných součtů;
+bez přijatých řádků se dosavadní data nepřepíší. Přepnutí stanice report vyčistí,
+nezměněný CSV zachová předchozí rozbor a oddělený čas transportu se aktualizuje.
+Cizí analytický parser/overview ani MQTT nesmějí přepsat aktivní CSV report.
+Report se vykresluje až pod ⓘ; žádný nový request, graf, kopie měření nebo timer.
+
+Ověření: **283/283 Node**, 10 nových regresí v tests/csv-validation.test.js,
+rozšířený skutečný browser ve 24 kombinacích 3 pohledů / 2 témat / 4 šířek
+včetně 320 px, původní 3 konfigurace, nuly/chybějící senzory, chyby a obnova,
+původní info harness s hoverem 1500 ms a dotykem — bez pageerror.
+[Podrobnosti a omezení](VALIDACE_CSV.md), [parser před/po](performance/VALIDACE_CSV.md).
+Původní měření, pořadí, duplicity a výpočty zachovány; živé zdroje/Safari neověřeny.
+
+Následující malá etapa METEO-050: oddělit dobu přenosu, parsování a renderu.
+Samostatně zbývají MQTT odmítnutí; širší export diagnostiky patří METEO-064,
+změny fyzikální kvality/deduplikace METEO-047, zóna stanice METEO-048.

@@ -55,5 +55,7 @@ Po resize čeká browser test na asynchronní přizpůsobení canvasu; raw CDP d
 čeká na stabilní cíl před odečtením souřadnic.
 
 Testy nepotvrzují živé oprávnění brokeru, aktuálnost skutečných zdrojů ani
-fyzický Safari/iPhone. Další vhodná etapa: METEO-050, počty odmítnutých řádků
-a důvody validace, získané během parseru bez nových síťových požadavků.
+fyzický Safari/iPhone. Navazující [METEO-050 — kontrola CSV](VALIDACE_CSV.md)
+ve v0.16.0 přidává pod ⓘ počty odmítnutých řádků a důvody validace, získané
+během parseru bez nových síťových požadavků. Původní čas rozboru se při shodném
+exportu nemění; čas úspěšného přenosu uvedený výše ano.

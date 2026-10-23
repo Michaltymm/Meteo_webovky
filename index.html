@@ -2127,6 +2127,10 @@
     .data-state-detail { display:block; color:var(--muted); white-space:pre-line; font-size:.72rem; margin-top:.25rem; }
     .data-state-error { color:var(--red); }
     .data-state-warning { color:var(--yellow); }
+    .csv-validation-table { width:100%; border-collapse:collapse; font-size:.75rem; margin:.7rem 0; }
+    .csv-validation-table th,.csv-validation-table td { text-align:right; padding:.4rem .25rem; border-bottom:1px solid var(--border); }
+    .csv-validation-table th:first-child,.csv-validation-table td:first-child { text-align:left; }
+    .csv-validation-table caption { text-align:left; color:var(--muted); margin-bottom:.4rem; }
     body[data-view="modern"] .data-state { border-radius:16px; }
     body[data-view="modern"] .status-bar { margin-bottom:.7rem; }
     @media(max-width:650px) {
@@ -2148,8 +2152,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0150"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.15.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0160"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.16.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2446,8 +2450,9 @@
     <dl class="data-state" aria-label="Stáří a rozsah dat">
       <div><dt id="dataRecordLabel">Poslední záznam</dt><dd><span id="dataRecordTime">Zatím bez dat</span><span id="dataRecordAge" class="data-state-detail"></span></dd></div>
       <div><dt>Přenos dat <button type="button" class="info-trigger" data-info-text="Úspěšná kontrola Sheets potvrzuje přenos a zpracování exportu, nikoli nové měření. Čas CSV je vyložen v zóně prohlížeče. MQTT uvádí čas přijetí platné zprávy, nikoli čas měření čidla. Samotné stáří záznamu bez známého měřicího plánu neprokazuje výpadek stanice." aria-label="Jak rozlišit měření a synchronizaci"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataTransferState" role="status">Čeká na ověření</span><span id="dataLastSync" class="data-state-detail">Dosud bez úspěšného přenosu</span></dd></div>
-      <div><dt>Načtená historie</dt><dd><span id="dataHistoryScope">Bez načtených dat</span><span id="dataHistoryCount" class="data-state-detail">Počet záznamů: 0</span></dd></div>
+      <div><dt>Načtená historie <button type="button" id="dataValidationTrigger" class="info-trigger" aria-label="Podrobnosti validace dat"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataHistoryScope">Bez načtených dat</span><span id="dataHistoryCount" class="data-state-detail">Počet záznamů: 0</span></dd></div>
     </dl>
+    <div id="dataValidationPanel" hidden></div>
 
     <main class="app-page" id="page-main" aria-label="Hlavní přehled">
     <section class="modern-intro" id="modernIntro" aria-labelledby="modernHeading" hidden>
@@ -4113,7 +4118,7 @@
     ══════════════════════════════════════════════ */
     const store = { rows: [], lastRowCount: 0, fullLoaded: false, _onFullLoad: [], _fullLoadPending: false };
     function emptyDataStatus() {
-      return { sheets: { phase: "idle", successAt: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
+      return { sheets: { phase: "idle", successAt: null, validation: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
     }
     let dataStatus = emptyDataStatus();
 
@@ -4316,7 +4321,7 @@
               setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
               return;
             }
-            if (!await parseAndStore(text, context)) {
+            if (!await parseAndStore(text, context, "partial")) {
               if (!isCurrentStation(context)) return;
               continue;
             }
@@ -4353,7 +4358,7 @@
             setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
             return;
           }
-          if (!await parseAndStore(text, context)) {
+          if (!await parseAndStore(text, context, "full")) {
             if (!isCurrentStation(context)) return;
             lastErr = "žádná platná data";
             continue;
@@ -4404,15 +4409,23 @@
        Sloupce A–I: Datum, Čas, Teplota, Tlak, Vlhkost, Přírůstek, Déšť, nádrž, Napětí
        Přeskočí řádky nadpis + záhlaví (autodetekce)
     ══════════════════════════════════════════════ */
-    async function parseAndStore(text, context = stationContext()) {
+    async function parseAndStore(text, context = stationContext(), scope = "unknown") {
       if (!isCurrentStation(context)) return false;
       setGsStatus(null, "Zpracovávám data (" + Math.round(text.length / 1024) + " KB)…");
       
       // Uvolníme Main Thread, aby se status "Zpracovávám data" stihl vykreslit
       await new Promise(resolve => setTimeout(resolve, 10));
       if (!isCurrentStation(context)) return false;
-      const parsed = parseHistoryCSV(text);
+      const validation = newCSVValidation(scope);
+      let parsed;
+      try { parsed = parseHistoryCSV(text, validation); }
+      catch (error) {
+        validation.failure = error.code === "DATA_LIMIT" ? "DATA_LIMIT" : "CSV_SYNTAX";
+        publishCSVValidation(validation, context);
+        throw error;
+      }
       if (!parsed.length) {
+        publishCSVValidation(validation, context);
         setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
         return false;
       }
@@ -4420,12 +4433,41 @@
       dataStatus.latestRow = parsed[0];
       dataStatus.latestKind = "sheets";
       invalidateDerivedData();
+      publishCSVValidation(validation, context);
       refreshUI();
       return true;
     }
 
-    function parseHistoryCSV(text) {
-      const lines = parseCSV(text).filter(row => row.some(value => value.trim() !== ""));
+    const CSV_SENSOR_FIELDS = ["temp", "pressure", "hum", "rainInc", "rain", "tank", "voltage"];
+    const CSV_SENSOR_LABELS = ["Teplota", "Tlak", "Vlhkost", "Přírůstek deště", "Čítač deště", "Nádrž", "Napětí"];
+    const CSV_REJECTION_LABELS = { DATE_MISSING: "Chybějící nebo nečitelný údaj data", DATETIME_INVALID: "Neplatné datum nebo čas" };
+    const CSV_REJECTION_SAMPLE_LIMIT = 8;
+    function newCSVValidation(scope = "unknown") {
+      return { scope, checkedAt: Date.now(), complete: false, failure: null, total: 0, empty: 0, leading: 0,
+        accepted: 0, rejected: 0, reasons: { DATE_MISSING: 0, DATETIME_INVALID: 0 }, samples: [],
+        sensors: CSV_SENSOR_FIELDS.map(() => ({ valid: 0, empty: 0, invalid: 0 })) };
+    }
+    function publishCSVValidation(validation, context) {
+      if (!isCurrentStation(context)) return;
+      validation.checkedAt = Date.now();
+      dataStatus.sheets.validation = validation;
+      if (activeInfo?.trigger === el("dataValidationTrigger")) renderCSVValidation();
+    }
+    function parseHistoryCSV(text, validation = null) {
+      // Logical positions include blank records, but a newline inside a quoted
+      // note belongs to its original record. Temporary numbers never enter store.
+      const scan = validation ? { count: 0, numbers: [] } : null;
+      let retained = 0;
+      const lines = parseCSV(text, Infinity, scan).filter((row, index) => {
+        const nonempty = row.some(value => value.trim() !== "");
+        if (nonempty && scan) scan.numbers[retained++] = scan.numbers[index];
+        return nonempty;
+      });
+      if (scan) {
+        scan.numbers.length = lines.length;
+        validation.total = scan.count;
+        validation.empty = scan.count - lines.length;
+      }
 
       // Autodetekce: přeskočit řádky dokud první sloupec nevypadá jako datum "27." apod.
       let dataStart = 0;
@@ -4434,6 +4476,15 @@
         if (/^\d{1,2}\.\d{0,2}/.test(c0)) { dataStart = i; break; }
         dataStart = i + 1;
       }
+      if (validation) validation.leading = dataStart;
+
+      const rejected = (index, code) => {
+        if (!validation) return;
+        validation.rejected++;
+        validation.reasons[code]++;
+        if (validation.samples.length < CSV_REJECTION_SAMPLE_LIMIT)
+          validation.samples.push({ record: scan.numbers[index], code });
+      };
 
       const parsed = [];
       let yearState = {
@@ -4444,9 +4495,9 @@
       for (let i = dataStart; i < lines.length; i++) {
         const c = lines[i];
         const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
-        if (!ds || !/\d/.test(ds)) continue;
+        if (!ds || !/\d/.test(ds)) { rejected(i, "DATE_MISSING"); continue; }
         const ts = parseCSDateTime(ds, ts2, yearState);
-        if (!ts || isNaN(ts.getTime())) continue;
+        if (!ts || isNaN(ts.getTime())) { rejected(i, "DATETIME_INVALID"); continue; }
         const noteRaw = (c[9] || "").trim();
         parsed.push({
           date: ds, time: ts2, ts,
@@ -4459,8 +4510,19 @@
           voltage: stripQ(c[8] || "").replace(/[Vv]/g, "").trim() !== "" ? pf(stripQ(c[8] || "").replace(/[Vv]/g, "")) : null,
           note: noteRaw || null
         });
+        if (validation) {
+          validation.accepted++;
+          const row = parsed[parsed.length - 1];
+          for (let field = 0; field < CSV_SENSOR_FIELDS.length; field++) {
+            const bucket = validation.sensors[field];
+            if (row[CSV_SENSOR_FIELDS[field]] !== null) bucket.valid++;
+            else if (String(c[field + 2] ?? "").trim() === "") bucket.empty++;
+            else bucket.invalid++;
+          }
+        }
       }
       parsed.sort((a, b) => b.ts - a.ts);
+      if (validation) validation.complete = true;
       return parsed;
     }
 
@@ -4470,7 +4532,7 @@
       return parseCSV(line, 1)[0] || [];
     }
 
-    function parseCSV(text, limit = Infinity) {
+    function parseCSV(text, limit = Infinity, scan = null) {
       const input = String(text).replace(/^\uFEFF/, "");
       if (input.length > DATA_MAX_BYTES) throw dataLimit("CSV přesahuje limit 64 MiB");
       const records = [];
@@ -4480,11 +4542,13 @@
         row.push(value); value = ""; afterQuote = false;
       };
       const record = () => {
+        if (scan) scan.count++;
         const present = row.length > 0 || value !== "" || afterQuote;
         field();
         if (present) {
           if (records.length >= DATA_MAX_ROWS) throw dataLimit("CSV překračuje limit 300000 řádků");
           records.push(row);
+          if (scan) scan.numbers.push(scan.count);
         }
         row = [];
         return records.length >= limit;
@@ -5931,6 +5995,40 @@
       dataStatus.sheets.phase = "ok";
       dataStatus.sheets.successAt = Date.now();
       renderDataStatus();
+    }
+    function renderCSVValidation() {
+      const panel = el("dataValidationPanel"), validation = dataStatus.sheets.validation;
+      if (!validation) {
+        panel.innerHTML = '<p>' + (CFG.source === "mqtt" ? "Stanice používá MQTT; tento přehled se týká pouze CSV historie." : "CSV historie této stanice zatím nebyla zpracována.") + '</p>';
+        return;
+      }
+      const count = value => Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString("cs-CZ") : "–";
+      const checked = Number.isFinite(validation.checkedAt) ? intervalTimestamp(new Date(validation.checkedAt)) : "–";
+      const scope = validation.scope === "full" ? "celý export" : validation.scope === "partial" ? "částečný export" : "export CSV";
+      let html = '<p>Poslední rozbor: ' + checked + ' · ' + scope + '.</p>';
+      if (!validation.complete) {
+        const reason = validation.failure === "DATA_LIMIT" ? "Export přesáhl bezpečnostní limit." : "Strukturu CSV nelze zpracovat.";
+        panel.innerHTML = html + '<p>' + reason + ' Součty nejsou k dispozici; dosavadní měření nebyla nahrazena.</p>';
+        return;
+      }
+      html += '<p><strong>Přijato: ' + count(validation.accepted) + ' · Vyřazeno: ' + count(validation.rejected) + '</strong><br>' +
+        'Celkem logických záznamů: ' + count(validation.total) + '. Prázdných: ' + count(validation.empty) +
+        '. Úvodních přeskočených: ' + count(validation.leading) + '.</p>';
+      if (!validation.accepted) html += '<p>Export nebyl přijat. Případná dříve načtená měření zůstávají zachována.</p>';
+      const reasons = Object.entries(CSV_REJECTION_LABELS).filter(([code]) => validation.reasons[code] > 0);
+      if (reasons.length) html += '<ul>' + reasons.map(([code, label]) => '<li>' + label + ': ' + count(validation.reasons[code]) + '</li>').join('') + '</ul>';
+      html += '<table class="csv-validation-table"><caption>Hodnoty v přijatých záznamech</caption><thead><tr><th scope="col">Veličina</th><th scope="col">Číslo</th><th scope="col">Prázdné</th><th scope="col">Nečíselné</th></tr></thead><tbody>' +
+        CSV_SENSOR_LABELS.map((label, index) => {
+          const sensor = validation.sensors[index];
+          return '<tr><th scope="row">' + label + '</th><td>' + count(sensor.valid) + '</td><td>' + count(sensor.empty) + '</td><td>' + count(sensor.invalid) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+      if (validation.samples.length) html += '<p>Prvních nejvýše ' + CSV_REJECTION_SAMPLE_LIMIT + ' vyřazení před seřazením:</p><ul>' +
+        validation.samples.map(sample => '<li>Záznam #' + count(sample.record) + ': ' +
+          (Object.hasOwn(CSV_REJECTION_LABELS, sample.code) ? CSV_REJECTION_LABELS[sample.code] + ' <code>' + sample.code + '</code>' : 'Neznámý důvod') + '</li>').join('') + '</ul>';
+      html += '<p>Pořadí zahrnuje úvodní a prázdné záznamy; víceřádková poznámka patří k jedinému záznamu. Obsah odmítnutých řádků se neukládá.</p>' +
+        '<p>Přijetí znamená použitelný čas, nikoli ověřenou fyzikální správnost. Chybějící či nečíselná hodnota se nenahrazuje nulou; naměřená nula zůstává číslem. Samotné chybějící hodnoty neprokazují poruchu čidla. Duplicitní měření se zachovávají.</p>' +
+        '<p>Rozbor se týká uvedeného CSV exportu, nikoli filtru grafu nebo později přijatých MQTT zpráv. Nezměněný export se znovu neparsuje; čas posledního přenosu je uveden zvlášť.</p>';
+      panel.innerHTML = html;
     }
     function renderDataStatus(now = Date.now()) {
       const row = store.rows[0], timestamp = row?.ts?.getTime?.();
@@ -7429,6 +7527,7 @@
     }
 
     function initInfoTooltips() {
+      registerInfoPanel(el("dataValidationTrigger"), el("dataValidationPanel"), { prepare: renderCSVValidation, title: "Validace historie CSV" });
       for (const owner of document.querySelectorAll("details[data-info]")) {
         const summary = owner.querySelector(":scope > summary"), title = summary.textContent.trim();
         const panel = document.createElement("div");

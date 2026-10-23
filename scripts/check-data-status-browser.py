@@ -65,6 +65,7 @@ async def main():
                     ts = now + timedelta(days=1) if future else now - timedelta(days=1, minutes=i*10)
                     voltage = '' if station == 2 else '0' if station == 1 else '4.12'
                     rows.append(f'{ts:%d.%m.%Y},{ts:%H:%M:%S},{18-station},1010,60,0,0,,{voltage}')
+                rows += ['31.02.2026,12:00,999', 'missing,,999']
                 await r.fulfill(body='\n'.join(rows), content_type='text/csv')
             elif 'api.open-meteo.com' in url:
                 await r.fulfill(json={'hourly': {'uv_index': [0]*24}})
@@ -76,8 +77,20 @@ async def main():
         await page.wait_for_function('dataStatus.sheets.phase==="ok" && store.rows.length===4')
         assert await page.locator('#dataRecordAge').inner_text() == 'Před 1 d 0 h'
         assert await page.locator('#dataHistoryScope').inner_text() == 'Částečná historie'
+        assert await page.evaluate('dataStatus.sheets.validation.accepted===4 && dataStatus.sheets.validation.rejected===2')
+        before = len(requests)
+        charts = await page.evaluate('Object.keys(Chart.instances).length')
+        await page.locator('#dataValidationTrigger').click()
+        await page.locator('#infoPopover').wait_for(state='visible')
+        validation = page.locator('#dataValidationPanel')
+        assert 'Přijato: 4 · Vyřazeno: 2' in await validation.inner_text()
+        assert 'Záznam #6' in await validation.inner_text()
+        assert await validation.locator('tbody tr').count() == 7
+        assert len(requests) == before
+        assert await page.evaluate('Object.keys(Chart.instances).length') == charts
+        await page.keyboard.press('Escape')
         assert await page.locator('#dataRecordTime').inner_text() != await page.locator('#dataLastSync').inner_text()
-        await page.locator('.data-state .info-trigger').click()
+        await page.locator('.data-state [data-info-text]').click()
         assert 'nikoli nové měření' in await page.locator('#infoBody').inner_text()
         await page.keyboard.press('Escape')
         await page.evaluate('globalThis.originalRows=store.rows;globalThis.recordTime=store.rows[0].ts.getTime()')
@@ -88,6 +101,7 @@ async def main():
         await page.wait_for_function('store.fullLoaded && dataStatus.sheets.phase==="ok"')
         assert await page.locator('#dataHistoryScope').inner_text() == 'Celý export zdroje'
         await page.evaluate('globalThis.originalRows=store.rows;globalThis.lastSuccess=dataStatus.sheets.successAt')
+        await page.locator('#dataValidationTrigger').click()
         failed = True
         await page.clock.set_fixed_time(now+timedelta(minutes=20))
         await page.evaluate('fetchSheets(true)')
@@ -95,6 +109,9 @@ async def main():
         assert await page.evaluate('store.rows===originalRows && dataStatus.sheets.successAt===lastSuccess && store.fullLoaded')
         assert 'Před 10 min' in await page.locator('#dataLastSync').inner_text()
         assert await page.locator('#dataHistoryCount').inner_text() == 'Počet záznamů: 8'
+        assert await page.locator('#infoPopover').is_visible()
+        assert 'Export nebyl přijat' in await validation.inner_text()
+        await page.keyboard.press('Escape')
         failed = False
         await page.evaluate('fetchSheets()')
         assert await page.locator('#dataTransferState').inner_text() == 'Sheets: ověřeno'
@@ -108,12 +125,15 @@ async def main():
         await page.wait_for_function('activeIdx===1 && dataStatus.sheets.phase==="loading"')
         assert await page.locator('#dataRecordTime').inner_text() == 'Zatím bez dat'
         assert await page.locator('#dataLastSync').inner_text() == 'Úspěšná kontrola: dosud žádná'
+        assert await page.evaluate('dataStatus.sheets.validation===null')
         gate.set()
         await page.wait_for_function('dataStatus.sheets.phase==="ok" && store.rows.length===4')
         assert await page.locator('#curVoltage').inner_text() == '0.00'
+        assert await page.evaluate('dataStatus.sheets.validation.sensors[6].valid===4')
         await page.evaluate('switchStation(2)')
         await page.wait_for_function('activeIdx===2 && dataStatus.sheets.phase==="ok"')
         assert await page.locator('#curVoltage').inner_text() == '–'
+        assert await page.evaluate('dataStatus.sheets.validation.sensors[6].empty===4')
         for view in ['main', 'modern', 'analytics']:
             await page.locator(f'[data-page="{view}"]').click()
             if view == 'analytics':
@@ -129,6 +149,14 @@ async def main():
                         await page.screenshot(path=str(output.with_name('overflow.png')))
                         outside = await page.evaluate('''[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>({tag:e.tagName,id:e.id,class:e.className,right:e.getBoundingClientRect().right})).slice(0,20)''')
                         raise AssertionError((view, theme, width, outside))
+                    await page.locator('#dataValidationTrigger').click()
+                    await page.locator('#infoPopover').wait_for(state='visible')
+                    box = await page.locator('#infoPopover').bounding_box()
+                    assert box['x'] >= 0 and box['x'] + box['width'] <= width+1, (view, theme, width, box)
+                    assert await validation.evaluate('e=>e.scrollWidth<=e.clientWidth+1'), (view, theme, width)
+                    if view == 'modern' and width in [1440, 320]:
+                        await page.screenshot(path=str(output.with_name(f'validation-{theme}-{width}.png')))
+                    await page.keyboard.press('Escape')
                     layouts.append({'view': view, 'theme': theme, 'width': width})
                     if view == 'modern' and width in [1440, 320]:
                         await page.screenshot(path=str(output.with_name(f'state-{theme}-{width}.png')))
@@ -142,7 +170,8 @@ async def main():
     output.write_text(json.dumps({'browser': version, 'pageErrors': errors, 'layouts': layouts,
         'checks': ['old record vs new validation', 'unchanged quick export', 'full history',
                    'invalid HTTP200 retains last success/rows', 'recovery', 'minute update without fetch',
-                   'station reset before delayed CSV', 'zero/missing voltage', 'three pages/two themes', 'future time'],
+                   'station reset before delayed CSV', 'zero/missing voltage', 'three pages/two themes', 'future time',
+                   'CSV counts/rejection reasons/positions', 'diagnostics without fetch/new Chart', 'diagnostic popup bounds in all layouts'],
         'transport': 'Controlled CSV/UV; real Chart.js and Paho with SRI; no live MQTT'}, indent=2)+'\n')
     print(output)
 

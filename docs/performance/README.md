@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Čítače validace CSV](VALIDACE_CSV.md): cena aktivní diagnostiky parseru před/po
+na 1k–250k záznamech, zachování hodnot a velikost omezeného reportu.
+
 [Stav a stáří dat](STAV_DAT.md): skutečný DOM/Chart.js před/po na 1k–250k
 měření; cena minutové aktualizace a opakovaného refresh, beze změny řádků/grafů.
 
