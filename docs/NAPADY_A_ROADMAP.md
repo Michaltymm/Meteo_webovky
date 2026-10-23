@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 společný Sheets model od10k v dávkách, přesné výpočty; menší blokování za delší celkové čekání. Parser a navazující výpočty dále | Profil etapy13, ověřené plné výsledky; worker/persistence a METEO-004 dále, viz performance/ANALYTICKY_MODEL.md | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 společný Sheets model, v0.18.2 samostatné velké porovnání v dávkách, přesné výpočty; menší blokování za delší čekání. Parser a další výpočty dále | Profil etapy13, ověřené plné výsledky; worker/persistence a METEO-004 dále, viz performance/ANALYTICKY_MODEL.md a POROVNANI_STANIC.md | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -1795,3 +1795,46 @@ externí služby tím ověřeny nejsou. Pouze codex-dev, main stále
 runtime/ubuntu-latest přetrvávají, workflow se neměnilo. Následující commit
 zapisuje pouze evidenci. Pokračovat další částí008 podle výše uvedeného bodu;
 dokončené dávkování společného Sheets modelu a050 znovu neimplementovat.
+
+## METEO-008 — dávkované porovnání stanic, v0.18.2
+
+Druhá dokončená část008; celé ID zůstává **Rozpracováno**. Výchozí9fd455b,
+hotový model/diagnostika se znovu neimplementují. Změřen dosavadní první průchod
+karty8 nad připraveným modelem a dvěma cached exporty:250k/+5s149,5ms,
+z toho párování140,5ms. CPU×4/100k266ms. Rozdělení párování má doložený přínos.
+
+Stejný monotónní matcher, kontrolní body512položek, výběr konečných teplot
+a min/max vizualizace po1024; synchronní API dokončuje stejné generátory.
+Žádná interpolace, každý záznam nejvýše jednou,10min, při shodě dřívější;
+statistiky vždy z plných dat. Porovnání má samostatný comparisonJob, společný
+workSlice~8ms/max64kroků a vlastní stav jen karty8. Ostatní grafy/model/exporty
+zůstávají dostupné. Žádné requesty, závislosti nebo druhá cache historie.
+
+Rozsah: Sheets/společný výřez, alespoň10k vybraných řádků aktivní nebo cizí
+stanice; malá/nezávislá/streaming cesta beze změny. Snapshot relace/modelu/
+zdroje/délky/mezi a cache referencí/loading/error stavu se ověřuje před každou
+dávkou a commitem. Změna cizí cache/zdroje restartuje jen potřebnou viditelnou
+kartu, invalidace/stanice/odchod/skrytí ruší; cizí síťový loader se neruší.
+Stará cache při selhání obnovy zůstává označená původním časem. Selhání výpočtu
+má obecnou chybu bez nekonečného retry. PNG až po úplném výsledku/překreslení.
+
+**Ověřeno332/332 Node**,11nových regresí v analytics-comparison-cooperative.
+Původních400náhodných párování proti nezávislé referenci nadále prochází.
+Nově koalescing, plné výsledky/nuly/extrémy, hustá cizí historie, rušení,
+změny cache/modelu/dat/zdroje, A→B→A, visibility, loading/error, chyba/obnova,
+nedostupný časovač a PNG. Rozšířený skutečný Chromium154 browser100k/9grafů/
+3konfigurace/zoom/reset/PNG, busy pouze karta8, výměna cache a pozdní callback,
+320/1440px a obě témata; žádný pageerror/socket. Původní info harness prošel také.
+
+Před/po1k/10k/100k/250k pro shodné i+5s časy, CPU×4/100k, sekvenčně.
+SHA celých datasetů/popisků a nezaokrouhlených match výsledků přesně shodné.
+250k/+5s blok149,5→8,5ms, dokončení149,5→281,8ms; CPU×4/100k blok266→9,6ms,
+dokončení266→445,2ms. Menší blokování za delší čekání; není tvrzeno zrychlení
+celého webu/INP. Bez sítě/parseru/Chart/paint a fyzického mobilu, heap poGC
+není peak nebo důkaz vícedenní stability.
+[Profil a surová data](performance/POROVNANI_STANIC.md).
+
+Další checkpoint008: změřit zbývající heatmapové buňky/vyhlazení/noční analýzu
+a podle profilu vybrat další malý průchod. Velký parser, worker/persistence,
+nezávislé výřezy a konzistentní streaming snapshot zůstávají samostatné.
+Neopakovat dokončený model ani porovnání; hlavní data/config/archiv/main beze změn.

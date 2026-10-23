@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0181"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0182"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.2</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7124,7 +7124,7 @@
     const analyticsState = { model: null, range: '7', domain: null, views: new Map(), visible: new Set(),
       observer: null, heatObserver:null, abort: null, epoch: 0, loading: null, requested: new Set(), errors: new Map(),
       all: false, expanded: null, heatPage: 0, heat: null, cursor: null, xy: null, drawing: false,
-      job: null, modelError: false };
+      job: null, modelError: false, comparisonJob: null };
     const ANA_COLORS = { temp:'#e74c3c', hum:'#2980b9', pressure:'#16a085', voltage:'#9b59b6', dew:'#e67e22', rain:'#3498db' };
     const ANA_CACHE_LIMIT = 16 * 1024 * 1024;
 
@@ -7195,12 +7195,16 @@
       return {times,temps,count,bytes:times.byteLength+temps.byteLength};
     }
     function analyticsMatch(na,getA,nb,getB,tolerance=600000) {
+      return finishSteps(analyticsMatchSteps(na,getA,nb,getB,tolerance));
+    }
+    function* analyticsMatchSteps(na,getA,nb,getB,tolerance=600000) {
       let j=0,count=0,sum=0,min=null,max=null,maxOffsetMs=0;
       if(!Number.isFinite(tolerance)||tolerance<0)tolerance=0;
       // Binary boundaries avoid quadratic scans of repeated timestamps. Equal
       // distance chooses the earlier timestamp, then its first unused record.
       const lower=(time,lo)=>{let hi=nb;while(lo<hi){const mid=(lo+hi)>>>1;if(+getB(mid).ts<time)lo=mid+1;else hi=mid;}return lo;};
       for(let i=0;i<na;i++) {
+        if(i && (i & 511)===0)yield;
         const a=getA(i),at=+a.ts;
         let candidate=null;
         if(j<nb&&+getB(j).ts===at)candidate=j; // Common aligned exports: O(1) per pair.
@@ -7223,8 +7227,9 @@
       const av=valid(a),bv=valid(b);
       return analyticsMatch(av.length,i=>av[i],bv.length,i=>bv[i],toleranceMs);
     }
-    function analyticsInvalidate() { analyticsCancelModel();analyticsState.model=null;analyticsState.heat=null;analyticsState.modelError=false; }
+    function analyticsInvalidate() { analyticsCancelComparison();analyticsCancelModel();analyticsState.model=null;analyticsState.heat=null;analyticsState.modelError=false; }
     function analyticsStop(reset=false) {
+      analyticsCancelComparison();
       analyticsCancelModel();analyticsState.modelError=false;
       analyticsState.epoch++;analyticsState.abort?.abort();analyticsState.abort=null;analyticsState.loading=null;
       analyticsState.observer?.disconnect();analyticsState.observer=null;analyticsState.heatObserver?.disconnect();analyticsState.heatObserver=null;
@@ -7326,21 +7331,25 @@
       analyticsState.job=null;clearTimeout(job.timer);job.steps.return();
       analyticsModelBusy(false);
     }
+    function analyticsWorkSlice(iterator) {
+      const started=sheetsNow();
+      for(let steps=0;steps<64;steps++){
+        const step=iterator.next();if(step.done)return step;
+        const now=sheetsNow();if(started!==null && now!==null && now-started>=8)break;
+      }
+      return null;
+    }
     function analyticsRunModelJob(job) {
       const current=()=>analyticsState.job===job && analyticsActive() && !document.hidden && el('anaSync').checked && CFG.source==='sheets' &&
         isCurrentStation(job.context) && store.rows===job.source && store.rows.length===job.length &&
         analyticsState.domain?.from===job.domain.from && analyticsState.domain?.to===job.domain.to;
       if(!current()){if(analyticsState.job===job)analyticsCancelModel();return;}
-      const started=sheetsNow();
       try{
-        for(let steps=0;steps<64;steps++){
-          const step=job.steps.next();
-          if(step.done){
-            if(!current()){if(analyticsState.job===job)analyticsCancelModel();return;}
-            analyticsState.model=step.value;analyticsState.job=null;analyticsModelBusy(false);
-            analyticsRedraw();return;
-          }
-          const now=sheetsNow();if(started!==null && now!==null && now-started>=8)break;
+        const step=analyticsWorkSlice(job.steps);
+        if(step){
+          if(!current()){if(analyticsState.job===job)analyticsCancelModel();return;}
+          analyticsState.model=step.value;analyticsState.job=null;analyticsModelBusy(false);
+          analyticsRedraw();return;
         }
         job.timer=setTimeout(()=>analyticsRunModelJob(job),0);
       }catch{
@@ -7400,6 +7409,8 @@
       if(!analyticsActive()||!analyticsState.visible.has(id))return;
       if(id===8){analyticsHeatmap();return;}
       const m=analyticsModel(id,true);if(!m)return;
+      const comparison=id===7?analyticsComparison(analyticsDomain(id),m,true):null;
+      if(id===7&&!comparison)return;
       el('anaExport'+id).disabled=false;
       el('anaCanvas'+id).style.visibility='';setNodeText(el('anaEmpty'+id),'Pro vybrané období nejsou dostupná data.');
       const d=analyticsDomain(id),s=m.summary,axis=(title,position='left')=>({type:'linear',position,title:{display:true,text:title}});
@@ -7421,7 +7432,7 @@
         datasets=[analyticsSeries(known?'Den (odhad)':'Původní páry','V',day,'#e67e22','y',{showLine:false,pointRadius:3}),analyticsSeries('Noc (odhad)','V',night,'#8e44ad','y',{showLine:false,pointRadius:3})];
         if(el('anaRegression').checked&&m.pair.r!==null){const a=m.minT,b=m.maxT;datasets.push(analyticsSeries('Popisná regrese','V',[{x:a,y:m.pair.meanV+m.pair.slope*(a-m.pair.meanT)},{x:b,y:m.pair.meanV+m.pair.slope*(b-m.pair.meanT)}],'#16a085','y',{pointRadius:0,borderDash:[5,3]}));}
         note=`${m.pair.count} úplných párů • r = ${fmt(m.pair.r,3)} • sklon ${fmt(m.pair.slope===null?null:m.pair.slope*1000,3)} mV/°C. Korelace neprokazuje příčinu; vzorky nejsou nezávislé. r/sklon nedostupné při n<3 nebo konstantní T/V. Body jsou reprezentanti, nikoli mapa hustoty. Den/noc podle nastavené polohy.`;}
-      if(id===7){const result=analyticsComparison(d,m);datasets=result.datasets;note=result.note;axes={y:axis('°C')};}
+      if(id===7){datasets=comparison.datasets;note=comparison.note;axes={y:axis('°C')};}
       hasData=datasets.some(ds=>ds.data.some(point=>Number.isFinite(point.y)));
       el('anaEmpty'+id).hidden=hasData;setNodeText(el('anaNote'+id),note);
       const palette=analyticsPalette();
@@ -7453,10 +7464,14 @@
       return {start:boundary(to,false),end:boundary(from,true)};
     }
     function analyticsColumnPoints(columns,from,to) {
+      return finishSteps(analyticsColumnPointSteps(columns,from,to));
+    }
+    function* analyticsColumnPointSteps(columns,from,to) {
       const {start,end}=analyticsColumnBounds(columns,from,to),indices=new Set();
       if(start<end){indices.add(start);indices.add(end-1);}
       const width=Math.max(1,Math.ceil((end-start)/298));
-      for(let i=start;i<end;i+=width){let min=i,max=i;for(let j=i+1;j<Math.min(end,i+width);j++){if(columns.temps[j]<columns.temps[min])min=j;if(columns.temps[j]>columns.temps[max])max=j;}indices.add(min);indices.add(max);}
+      let work=0;
+      for(let i=start;i<end;i+=width){let min=i,max=i;for(let j=i+1;j<Math.min(end,i+width);j++){if((++work & 1023)===0)yield;if(columns.temps[j]<columns.temps[min])min=j;if(columns.temps[j]>columns.temps[max])max=j;}indices.add(min);indices.add(max);}
       return [...indices].sort((a,b)=>b-a).map(i=>({x:columns.times[i],y:columns.temps[i]}));
     }
     function analyticsSourceSignature(index) {const s=stations[index];return JSON.stringify([s.sheetId,s.sheetName,s.source,s.cfgFile]);}
@@ -7508,24 +7523,89 @@
       if(analyticsState.visible.has(7))analyticsDrawCard(7);
       return analyticsState.loading;
     }
-    function analyticsComparison(domain,m) {
-      const colors=['#e74c3c','#2980b9','#27ae60'],datasets=[],notes=[];
+    function analyticsComparisonContext() {
       const entries=[0,1,2].map(i=>i===activeIdx?null:analyticsCached(i));
       const signature=[activeIdx,...entries,Boolean(analyticsState.loading),JSON.stringify([...analyticsState.errors])];
-      if(m.comparison&&signature.every((v,i)=>v===m.comparisonSignature[i]))return m.comparison;
-      const a=m.rows.filter(r=>Number.isFinite(r.temp));
-      for(let i=0;i<3;i++){
-        if(i===activeIdx){datasets.push(analyticsSeries(stations[i].name,'°C',analyticsPoints(m.samples,r=>r.temp),colors[i],'y',{showLine:false,pointRadius:2}));continue;}
-        const c=entries[i];
-        if(!c){notes.push((stations[i]?.name||'Stanice')+': '+(analyticsState.errors.get(i)|| (analyticsState.loading?'načítá se historie':'historie není načtená'))+'.');continue;}
-        if(analyticsState.errors.has(i))notes.push(c.name+': obnova selhala ('+analyticsState.errors.get(i)+'); zobrazuji předchozí cache.');
-        const {start,end}=analyticsColumnBounds(c,domain.from,domain.to),n=end-start;
-        datasets.push(analyticsSeries(c.name,'°C',analyticsColumnPoints(c,domain.from,domain.to),colors[i],'y',{showLine:false,pointRadius:2}));
-        const aligned=analyticsMatch(a.length,j=>a[j],n,j=>({ts:c.times[end-1-j],temp:c.temps[end-1-j]}),600000);
-        notes.push(`${c.name}: ${n} teplot, cache ${fmtDT(new Date(c.loadedAt))}. Δ ${stations[activeIdx].name} − ${c.name}: ${fmt(aligned.deltaAvg,2)} °C, ${aligned.count} párů, bez páru ${aligned.unmatchedA}/${aligned.unmatchedB}, max |Δt| ${fmt(aligned.maxOffsetMs/60000,1)} min.`);
+      return {entries,signature,index:activeIdx,names:stations.map(s=>s.name),errors:new Map(analyticsState.errors),loading:!!analyticsState.loading};
+    }
+    function analyticsSameComparison(a,b) {return !!a&&!!b&&a.length===b.length&&a.every((v,i)=>v===b[i]);}
+    function analyticsComparisonBusy() {
+      el('anaCard7').setAttribute?.('aria-busy','true');
+      el('anaCanvas7').style.visibility='hidden';el('anaExport7').disabled=true;
+      setNodeText(el('anaEmpty7'),'Připravuji porovnání stanic…');el('anaEmpty7').hidden=false;
+      setNodeText(el('anaNote7'),'Připravuji časové párování původních měření.');
+    }
+    function analyticsCancelComparison() {
+      const job=analyticsState.comparisonJob;if(!job)return;
+      analyticsState.comparisonJob=null;clearTimeout(job.timer);job.steps.return();
+      el('anaCard7').setAttribute?.('aria-busy','false');
+    }
+    function analyticsRunComparisonJob(job) {
+      const current=()=>analyticsState.comparisonJob===job && analyticsActive() && !document.hidden && CFG.source==='sheets' &&
+        el('anaSync').checked && isCurrentStation(job.context) && analyticsState.model===job.model &&
+        store.rows===job.model.source && store.rows.length===job.model.length &&
+        analyticsState.domain?.from===job.domain.from && analyticsState.domain?.to===job.domain.to &&
+        analyticsSameComparison(job.snapshot.signature,analyticsComparisonContext().signature);
+      if(!current()){
+          if(analyticsState.comparisonJob===job){analyticsCancelComparison();if(analyticsActive()&&!document.hidden){analyticsDrawCard(7);analyticsUpdateStatus();}}
+        return;
       }
-      m.comparisonSignature=signature;
-      return m.comparison={datasets,note:notes.join(' ')+' Párování: nejbližší čas do10min, každý bod nejvýše jednou; při shodě dřívější. Bez interpolace. Senzory a mikroklima nemusí být srovnatelné. Body jsou původní měření, ne společný čas odběru.'};
+      try{
+        const step=analyticsWorkSlice(job.steps);
+        if(step){
+          if(!current()){if(analyticsState.comparisonJob===job)analyticsCancelComparison();return;}
+          job.model.comparison=step.value;job.model.comparisonSignature=job.snapshot.signature;
+          delete job.model.comparisonFailed;
+          analyticsState.comparisonJob=null;el('anaCard7').setAttribute?.('aria-busy','false');
+          analyticsDrawCard(7);analyticsUpdateStatus();return;
+        }
+        job.timer=setTimeout(()=>analyticsRunComparisonJob(job),0);
+      }catch{
+        if(analyticsState.comparisonJob!==job)return;
+        analyticsCancelComparison();job.model.comparisonFailed=job.snapshot.signature;
+        setNodeText(el('anaEmpty7'),'Příprava porovnání selhala. Obnovte data nebo změňte období.');
+        setNodeText(el('anaNote7'),'Porovnání není připravené; ostatní grafy jsou dostupné.');
+        analyticsUpdateStatus();
+      }
+    }
+    function analyticsComparison(domain,m,cooperative=false) {
+      const snapshot=analyticsComparisonContext(),signature=snapshot.signature;
+      if(m.comparison&&analyticsSameComparison(signature,m.comparisonSignature))return m.comparison;
+      if(cooperative && el('anaSync').checked && CFG.source==='sheets' && analyticsState.model===m){
+        const large=m.rows.length>=10000||snapshot.entries.some(c=>{if(!c)return false;const b=analyticsColumnBounds(c,domain.from,domain.to);return b.end-b.start>=10000;});
+        if(large){
+          if(document.hidden||analyticsSameComparison(signature,m.comparisonFailed))return null;
+          const job=analyticsState.comparisonJob;
+          if(!job || job.model!==m || job.domain.from!==domain.from || job.domain.to!==domain.to || !analyticsSameComparison(job.snapshot.signature,signature)){
+            analyticsCancelComparison();
+            delete m.comparisonFailed;
+            const next={context:stationContext(),model:m,domain:{...domain},snapshot,timer:null,steps:analyticsComparisonSteps({...domain},m,snapshot)};
+            analyticsState.comparisonJob=next;analyticsComparisonBusy();analyticsUpdateStatus();
+            next.timer=setTimeout(()=>analyticsRunComparisonJob(next),0);
+          }
+          return null;
+        }
+      }
+      analyticsCancelComparison();
+      const result=finishSteps(analyticsComparisonSteps(domain,m,snapshot));
+      delete m.comparisonFailed;
+      m.comparisonSignature=signature;return m.comparison=result;
+    }
+    function* analyticsComparisonSteps(domain,m,snapshot) {
+      const colors=['#e74c3c','#2980b9','#27ae60'],datasets=[],notes=[],a=[];
+      const {entries,index,names,errors,loading}=snapshot;
+      for(let i=0;i<m.rows.length;i++){if(i&&(i & 1023)===0)yield;const r=m.rows[i];if(Number.isFinite(r.temp))a.push(r);}
+      for(let i=0;i<3;i++){
+        if(i===index){datasets.push(analyticsSeries(names[i],'°C',analyticsPoints(m.samples,r=>r.temp),colors[i],'y',{showLine:false,pointRadius:2}));continue;}
+        const c=entries[i];
+        if(!c){notes.push((names[i]||'Stanice')+': '+(errors.get(i)|| (loading?'načítá se historie':'historie není načtená'))+'.');continue;}
+        if(errors.has(i))notes.push(c.name+': obnova selhala ('+errors.get(i)+'); zobrazuji předchozí cache.');
+        const {start,end}=analyticsColumnBounds(c,domain.from,domain.to),n=end-start;
+        datasets.push(analyticsSeries(c.name,'°C',yield* analyticsColumnPointSteps(c,domain.from,domain.to),colors[i],'y',{showLine:false,pointRadius:2}));
+        const aligned=yield* analyticsMatchSteps(a.length,j=>a[j],n,j=>({ts:c.times[end-1-j],temp:c.temps[end-1-j]}),600000);
+        notes.push(`${c.name}: ${n} teplot, cache ${fmtDT(new Date(c.loadedAt))}. Δ ${names[index]} − ${c.name}: ${fmt(aligned.deltaAvg,2)} °C, ${aligned.count} párů, bez páru ${aligned.unmatchedA}/${aligned.unmatchedB}, max |Δt| ${fmt(aligned.maxOffsetMs/60000,1)} min.`);
+      }
+      return {datasets,note:notes.join(' ')+' Párování: nejbližší čas do10min, každý bod nejvýše jednou; při shodě dřívější. Bez interpolace. Senzory a mikroklima nemusí být srovnatelné. Body jsou původní měření, ne společný čas odběru.'};
     }
     function analyticsHeatChanged(){analyticsHeatmap();}
     function analyticsHeatPage(delta){analyticsState.heatPage=Math.max(0,analyticsState.heatPage+delta);analyticsState.heat=null;analyticsHeatmap();}
@@ -7606,7 +7686,8 @@
         `${store.fullLoaded?'Celá dostupná':'Částečná'} načtená historie: ${store.rows.length.toLocaleString('cs-CZ')} záznamů. Poslední měření: ${last?intervalTimestamp(last.ts):'–'}.\n`+
         (d?`Výřez: ${intervalTimestamp(new Date(d.from))} až ${intervalTimestamp(new Date(d.to))}.`:store.rows.length?'Neplatné vlastní období: zadejte platné datum od–do.':'Data vybrané stanice zatím nejsou k dispozici.')+
         (analyticsState.loading?' Načítám teplotní historii ostatních stanic…':'')+
-        (analyticsState.job?' Připravuji grafy pro vybrané období…':analyticsState.modelError?' Příprava grafů selhala. Změňte období nebo obnovte data.':''));
+        (analyticsState.job?' Připravuji grafy pro vybrané období…':analyticsState.modelError?' Příprava grafů selhala. Změňte období nebo obnovte data.':'')+
+        (analyticsState.comparisonJob?' Připravuji porovnání stanic…':analyticsState.model?.comparisonFailed?' Příprava porovnání selhala; obnovte data nebo změňte období.':''));
     }
     function buildAnalytics() {
       if(!analyticsActive())return;
@@ -7640,7 +7721,7 @@
     }
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&analyticsState.expanded!==null&&analyticsActive())analyticsExpand(analyticsState.expanded);});
     document.addEventListener('visibilitychange',()=>{
-      if(document.hidden)analyticsCancelModel();
+      if(document.hidden){analyticsCancelComparison();analyticsCancelModel();}
       else if(analyticsActive())analyticsRedraw();
     });
 

@@ -103,8 +103,9 @@ CPU×4 doplní `--cpu 4 --counts 100000`. Surové výsledky:
 [před](model-before.json), [po](model-after.json),
 [CPU×4 před](model-before-cpu4.json), [CPU×4 po](model-after-cpu4.json).
 
-METEO-008 zůstává rozpracované: stále synchronní jsou velký CSV parser,
-vyhlazení/noční analýza, párování cizích stanic, heatmapové buňky a samotné
-vykreslení po dokončení modelu. Další etapa má podle profilu rozdělit první
-přípravu porovnání stanic; worker/persistence až s doloženou cenou přenosu
-a paměti. Zmenšování dat nesmí nahrazovat plné statistiky.
+Ve v0.18.2 navazuje dokončené [dávkované porovnání stanic](POROVNANI_STANIC.md)
+ve stejném rozsahu Sheets/společného výřezu. METEO-008 zůstává rozpracované:
+stále synchronní jsou velký CSV parser, vyhlazení/noční analýza, heatmapové
+buňky a samotné vykreslení. Další etapa má podle profilu rozdělit zbývající
+práci; worker/persistence až s doloženou cenou přenosu a paměti. Zmenšování
+dat nesmí nahrazovat plné statistiky.

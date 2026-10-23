@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Dávkované porovnání stanic](POROVNANI_STANIC.md): další část METEO-008;
+shodné/posunuté časy,1k–250k,CPU×4, cena párování a přesná shoda výsledků.
+Čeká jen karta porovnání, menší bloky mohou prodloužit celkové dokončení.
+
 [Dávkovaná příprava analytického modelu](ANALYTICKY_MODEL.md): první část
 METEO-008; blokování a celé dokončení před/po na1k–250k, CPU×4 a přesná shoda
 souhrnů i vizuálních bodů. Menší blokování může prodloužit celkové čekání.

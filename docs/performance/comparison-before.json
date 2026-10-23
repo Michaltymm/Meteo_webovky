@@ -1,0 +1,600 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "scenario": "Two cached station histories; exact and +5s duplicate timestamps; five cold comparisons after warmup; prepared model",
+  "limits": "Comparison preparation only; no chart draw, CSV, network, paint, INP or physical phone",
+  "results": [
+    {
+      "rows": 1000,
+      "offsetMs": 0,
+      "signatureSHA256": "5eec9c0f399df108c1335f3b1a4c6f921305e383b2b0db66cfc4c426307ab29a",
+      "samples": [
+        {
+          "wallMs": 2.599999999627471,
+          "requestMs": 2.599999999627471,
+          "computeMs": 2.599999999627471,
+          "longestComputeMs": 2.599999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.099999999627471,
+          "matchMs": 1.5,
+          "samplingMs": 0.5999999977648258,
+          "heapAfterGCBytes": 2925232
+        },
+        {
+          "wallMs": 2.700000001117587,
+          "requestMs": 2.700000001117587,
+          "computeMs": 2.700000001117587,
+          "longestComputeMs": 2.700000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 6.5,
+          "matchMs": 1.099999999627471,
+          "samplingMs": 1.300000000745058,
+          "heapAfterGCBytes": 2926168
+        },
+        {
+          "wallMs": 1.099999999627471,
+          "requestMs": 1.099999999627471,
+          "computeMs": 1.099999999627471,
+          "longestComputeMs": 1.099999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.099999999627471,
+          "matchMs": 0.2999999988824129,
+          "samplingMs": 0.5000000018626451,
+          "heapAfterGCBytes": 2932632
+        },
+        {
+          "wallMs": 1.599999999627471,
+          "requestMs": 1.599999999627471,
+          "computeMs": 1.599999999627471,
+          "longestComputeMs": 1.599999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4,
+          "matchMs": 0.6000000014901161,
+          "samplingMs": 0.49999999813735485,
+          "heapAfterGCBytes": 2939436
+        },
+        {
+          "wallMs": 2.599999999627471,
+          "requestMs": 2.599999999627471,
+          "computeMs": 2.599999999627471,
+          "longestComputeMs": 2.599999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.299999998882413,
+          "matchMs": 0.2999999988824129,
+          "samplingMs": 2.100000001490116,
+          "heapAfterGCBytes": 2940108
+        }
+      ],
+      "median": {
+        "wallMs": 2.599999999627471,
+        "requestMs": 2.599999999627471,
+        "computeMs": 2.599999999627471,
+        "longestComputeMs": 2.599999999627471,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 4.099999999627471,
+        "matchMs": 0.6000000014901161,
+        "samplingMs": 0.5999999977648258,
+        "heapAfterGCBytes": 2932632
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 1000,
+      "offsetMs": 5000,
+      "signatureSHA256": "5cf88f7d7c214ead5a78cf7c76c8e4694e88ee7979a28057c8606c600dd0f601",
+      "samples": [
+        {
+          "wallMs": 3.5,
+          "requestMs": 3.5,
+          "computeMs": 3.5,
+          "longestComputeMs": 3.5,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.200000001117587,
+          "matchMs": 2.799999998882413,
+          "samplingMs": 0.4000000022351742,
+          "heapAfterGCBytes": 2934068
+        },
+        {
+          "wallMs": 2.300000000745058,
+          "requestMs": 2.300000000745058,
+          "computeMs": 2.300000000745058,
+          "longestComputeMs": 2.300000000745058,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.099999999627471,
+          "matchMs": 1.800000000745058,
+          "samplingMs": 0.40000000037252903,
+          "heapAfterGCBytes": 2935004
+        },
+        {
+          "wallMs": 2.099999999627471,
+          "requestMs": 2.099999999627471,
+          "computeMs": 2.099999999627471,
+          "longestComputeMs": 2.099999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.100000001490116,
+          "matchMs": 1.599999999627471,
+          "samplingMs": 0.19999999925494194,
+          "heapAfterGCBytes": 2941384
+        },
+        {
+          "wallMs": 1.800000000745058,
+          "requestMs": 1.800000000745058,
+          "computeMs": 1.800000000745058,
+          "longestComputeMs": 1.800000000745058,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.100000001490116,
+          "matchMs": 1.400000000372529,
+          "samplingMs": 0.2999999988824129,
+          "heapAfterGCBytes": 2948188
+        },
+        {
+          "wallMs": 2.099999999627471,
+          "requestMs": 2.099999999627471,
+          "computeMs": 2.099999999627471,
+          "longestComputeMs": 2.099999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.200000001117587,
+          "matchMs": 1.699999999254942,
+          "samplingMs": 0.30000000074505806,
+          "heapAfterGCBytes": 2948884
+        }
+      ],
+      "median": {
+        "wallMs": 2.099999999627471,
+        "requestMs": 2.099999999627471,
+        "computeMs": 2.099999999627471,
+        "longestComputeMs": 2.099999999627471,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 4.100000001490116,
+        "matchMs": 1.699999999254942,
+        "samplingMs": 0.30000000074505806,
+        "heapAfterGCBytes": 2941384
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "offsetMs": 0,
+      "signatureSHA256": "e0f10450aaed56a47f90bfe28d953c6ec0cfb851f29e2e8af53ace389bf771a6",
+      "samples": [
+        {
+          "wallMs": 10.199999999254942,
+          "requestMs": 10.199999999254942,
+          "computeMs": 10.199999999254942,
+          "longestComputeMs": 10.199999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 10.199999999254942,
+          "matchMs": 7.299999998882413,
+          "samplingMs": 2.200000001117587,
+          "heapAfterGCBytes": 4061556
+        },
+        {
+          "wallMs": 4.700000001117587,
+          "requestMs": 4.700000001117587,
+          "computeMs": 4.700000001117587,
+          "longestComputeMs": 4.700000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.700000001117587,
+          "matchMs": 3.300000000745058,
+          "samplingMs": 0.6999999992549419,
+          "heapAfterGCBytes": 4062448
+        },
+        {
+          "wallMs": 4.900000000372529,
+          "requestMs": 4.900000000372529,
+          "computeMs": 4.900000000372529,
+          "longestComputeMs": 4.900000000372529,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 5.099999999627471,
+          "matchMs": 3.5,
+          "samplingMs": 0.900000000372529,
+          "heapAfterGCBytes": 4068900
+        },
+        {
+          "wallMs": 2.900000000372529,
+          "requestMs": 2.900000000372529,
+          "computeMs": 2.900000000372529,
+          "longestComputeMs": 2.900000000372529,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.100000001490116,
+          "matchMs": 1.699999999254942,
+          "samplingMs": 0.5,
+          "heapAfterGCBytes": 4076008
+        },
+        {
+          "wallMs": 3.200000001117587,
+          "requestMs": 3.200000001117587,
+          "computeMs": 3.200000001117587,
+          "longestComputeMs": 3.200000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 4.200000001117587,
+          "matchMs": 2.200000001117587,
+          "samplingMs": 0.599999999627471,
+          "heapAfterGCBytes": 4080480
+        }
+      ],
+      "median": {
+        "wallMs": 4.700000001117587,
+        "requestMs": 4.700000001117587,
+        "computeMs": 4.700000001117587,
+        "longestComputeMs": 4.700000001117587,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 4.700000001117587,
+        "matchMs": 3.300000000745058,
+        "samplingMs": 0.6999999992549419,
+        "heapAfterGCBytes": 4068900
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "offsetMs": 5000,
+      "signatureSHA256": "f97390fc73b5d3f6275853e27137cceaf8e85781222985942133edf12fb0e1c4",
+      "samples": [
+        {
+          "wallMs": 16,
+          "requestMs": 16,
+          "computeMs": 16,
+          "longestComputeMs": 16,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 16.09999999962747,
+          "matchMs": 13.900000000372529,
+          "samplingMs": 1.4999999981373549,
+          "heapAfterGCBytes": 4005080
+        },
+        {
+          "wallMs": 12.700000001117587,
+          "requestMs": 12.700000001117587,
+          "computeMs": 12.700000001117587,
+          "longestComputeMs": 12.700000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 12.800000000745058,
+          "matchMs": 11.400000000372529,
+          "samplingMs": 0.5,
+          "heapAfterGCBytes": 4006600
+        },
+        {
+          "wallMs": 18.200000001117587,
+          "requestMs": 18.200000001117587,
+          "computeMs": 18.200000001117587,
+          "longestComputeMs": 18.200000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 18.300000000745058,
+          "matchMs": 17.09999999962747,
+          "samplingMs": 0.6000000014901161,
+          "heapAfterGCBytes": 4030844
+        },
+        {
+          "wallMs": 10.400000000372529,
+          "requestMs": 10.400000000372529,
+          "computeMs": 10.400000000372529,
+          "longestComputeMs": 10.400000000372529,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 10.600000001490116,
+          "matchMs": 8.700000001117587,
+          "samplingMs": 0.7999999988824129,
+          "heapAfterGCBytes": 4036352
+        },
+        {
+          "wallMs": 18.199999999254942,
+          "requestMs": 18.199999999254942,
+          "computeMs": 18.199999999254942,
+          "longestComputeMs": 18.199999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 18.299999998882413,
+          "matchMs": 17,
+          "samplingMs": 0.7999999988824129,
+          "heapAfterGCBytes": 4038748
+        }
+      ],
+      "median": {
+        "wallMs": 16,
+        "requestMs": 16,
+        "computeMs": 16,
+        "longestComputeMs": 16,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 16.09999999962747,
+        "matchMs": 13.900000000372529,
+        "samplingMs": 0.7999999988824129,
+        "heapAfterGCBytes": 4030844
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "offsetMs": 0,
+      "signatureSHA256": "dc4811b2a426bd84ef12f0c7ea6bb4ba30ba5a666904db95d094b731f9cc1996",
+      "samples": [
+        {
+          "wallMs": 39.09999999962747,
+          "requestMs": 39.09999999962747,
+          "computeMs": 39.09999999962747,
+          "longestComputeMs": 39.09999999962747,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 39.09999999962747,
+          "matchMs": 32.59999999962747,
+          "samplingMs": 3.400000002235174,
+          "heapAfterGCBytes": 14422004
+        },
+        {
+          "wallMs": 22.699999999254942,
+          "requestMs": 22.699999999254942,
+          "computeMs": 22.699999999254942,
+          "longestComputeMs": 22.699999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 22.90000000037253,
+          "matchMs": 18.5,
+          "samplingMs": 1.5,
+          "heapAfterGCBytes": 14427100
+        },
+        {
+          "wallMs": 22.40000000037253,
+          "requestMs": 22.40000000037253,
+          "computeMs": 22.40000000037253,
+          "longestComputeMs": 22.40000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 22.5,
+          "matchMs": 18.200000001117587,
+          "samplingMs": 1.099999999627471,
+          "heapAfterGCBytes": 14430328
+        },
+        {
+          "wallMs": 20.699999999254942,
+          "requestMs": 20.699999999254942,
+          "computeMs": 20.699999999254942,
+          "longestComputeMs": 20.699999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 20.799999998882413,
+          "matchMs": 16.700000001117587,
+          "samplingMs": 1.099999999627471,
+          "heapAfterGCBytes": 14437648
+        },
+        {
+          "wallMs": 21.699999999254942,
+          "requestMs": 21.699999999254942,
+          "computeMs": 21.699999999254942,
+          "longestComputeMs": 21.699999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 21.799999998882413,
+          "matchMs": 17.600000001490116,
+          "samplingMs": 1.199999999254942,
+          "heapAfterGCBytes": 14438436
+        }
+      ],
+      "median": {
+        "wallMs": 22.40000000037253,
+        "requestMs": 22.40000000037253,
+        "computeMs": 22.40000000037253,
+        "longestComputeMs": 22.40000000037253,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 22.5,
+        "matchMs": 18.200000001117587,
+        "samplingMs": 1.199999999254942,
+        "heapAfterGCBytes": 14430328
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "offsetMs": 5000,
+      "signatureSHA256": "11336ea978c1f1aba90ea8c0fc30990826456b8f525dcfcd004b5d155c8819f8",
+      "samples": [
+        {
+          "wallMs": 114.60000000149012,
+          "requestMs": 114.60000000149012,
+          "computeMs": 114.60000000149012,
+          "longestComputeMs": 114.60000000149012,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 114.80000000074506,
+          "matchMs": 92.80000000074506,
+          "samplingMs": 5.900000000372529,
+          "heapAfterGCBytes": 14456336
+        },
+        {
+          "wallMs": 57.90000000037253,
+          "requestMs": 57.90000000037253,
+          "computeMs": 57.90000000037253,
+          "longestComputeMs": 57.90000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 58.09999999962747,
+          "matchMs": 53.600000001490116,
+          "samplingMs": 1.3999999985098839,
+          "heapAfterGCBytes": 14461668
+        },
+        {
+          "wallMs": 61.69999999925494,
+          "requestMs": 61.69999999925494,
+          "computeMs": 61.69999999925494,
+          "longestComputeMs": 61.69999999925494,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 61.79999999888241,
+          "matchMs": 57.000000001862645,
+          "samplingMs": 1.699999999254942,
+          "heapAfterGCBytes": 14464896
+        },
+        {
+          "wallMs": 58.5,
+          "requestMs": 58.5,
+          "computeMs": 58.5,
+          "longestComputeMs": 58.5,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 58.600000001490116,
+          "matchMs": 54.30000000074506,
+          "samplingMs": 1.3999999985098839,
+          "heapAfterGCBytes": 14472216
+        },
+        {
+          "wallMs": 61.59999999962747,
+          "requestMs": 61.59999999962747,
+          "computeMs": 61.59999999962747,
+          "longestComputeMs": 61.59999999962747,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 61.69999999925494,
+          "matchMs": 56.90000000037253,
+          "samplingMs": 1.800000000745058,
+          "heapAfterGCBytes": 14473004
+        }
+      ],
+      "median": {
+        "wallMs": 61.59999999962747,
+        "requestMs": 61.59999999962747,
+        "computeMs": 61.59999999962747,
+        "longestComputeMs": 61.59999999962747,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 61.69999999925494,
+        "matchMs": 56.90000000037253,
+        "samplingMs": 1.699999999254942,
+        "heapAfterGCBytes": 14464896
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "offsetMs": 0,
+      "signatureSHA256": "a4c4914d48b7b7b29b7aebce9369d8e4f016f32d30aeeb8bf29485d6ee0c9eff",
+      "samples": [
+        {
+          "wallMs": 89.40000000037253,
+          "requestMs": 89.40000000037253,
+          "computeMs": 89.40000000037253,
+          "longestComputeMs": 89.40000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 89.5,
+          "matchMs": 74,
+          "samplingMs": 8,
+          "heapAfterGCBytes": 31776708
+        },
+        {
+          "wallMs": 61.19999999925494,
+          "requestMs": 61.19999999925494,
+          "computeMs": 61.19999999925494,
+          "longestComputeMs": 61.19999999925494,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 61.40000000037253,
+          "matchMs": 50.09999999962747,
+          "samplingMs": 5,
+          "heapAfterGCBytes": 31781392
+        },
+        {
+          "wallMs": 53.70000000111759,
+          "requestMs": 53.70000000111759,
+          "computeMs": 53.70000000111759,
+          "longestComputeMs": 53.70000000111759,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 53.80000000074506,
+          "matchMs": 44.5,
+          "samplingMs": 3,
+          "heapAfterGCBytes": 31784620
+        },
+        {
+          "wallMs": 53.69999999925494,
+          "requestMs": 53.69999999925494,
+          "computeMs": 53.69999999925494,
+          "longestComputeMs": 53.69999999925494,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 53.79999999888241,
+          "matchMs": 44.09999999962747,
+          "samplingMs": 3.300000000745058,
+          "heapAfterGCBytes": 31791748
+        },
+        {
+          "wallMs": 53.19999999925494,
+          "requestMs": 53.19999999925494,
+          "computeMs": 53.19999999925494,
+          "longestComputeMs": 53.19999999925494,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 53.19999999925494,
+          "matchMs": 44,
+          "samplingMs": 2.599999999627471,
+          "heapAfterGCBytes": 31792452
+        }
+      ],
+      "median": {
+        "wallMs": 53.70000000111759,
+        "requestMs": 53.70000000111759,
+        "computeMs": 53.70000000111759,
+        "longestComputeMs": 53.70000000111759,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 53.80000000074506,
+        "matchMs": 44.5,
+        "samplingMs": 3.300000000745058,
+        "heapAfterGCBytes": 31784620
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "offsetMs": 5000,
+      "signatureSHA256": "4b2a8907f818eaa6758e88da0313fecd355b983203f8fcd9a1f6ee2ae095a8c6",
+      "samples": [
+        {
+          "wallMs": 213.7000000011176,
+          "requestMs": 213.7000000011176,
+          "computeMs": 213.7000000011176,
+          "longestComputeMs": 213.7000000011176,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 213.90000000037253,
+          "matchMs": 202.89999999850988,
+          "samplingMs": 5.300000000745058,
+          "heapAfterGCBytes": 31810156
+        },
+        {
+          "wallMs": 151.7000000011176,
+          "requestMs": 151.7000000011176,
+          "computeMs": 151.7000000011176,
+          "longestComputeMs": 151.7000000011176,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 151.80000000074506,
+          "matchMs": 142.39999999850988,
+          "samplingMs": 3.600000001490116,
+          "heapAfterGCBytes": 31814916
+        },
+        {
+          "wallMs": 148.90000000037253,
+          "requestMs": 148.90000000037253,
+          "computeMs": 148.90000000037253,
+          "longestComputeMs": 148.90000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 149.10000000149012,
+          "matchMs": 139.7000000011176,
+          "samplingMs": 2.5,
+          "heapAfterGCBytes": 31817752
+        },
+        {
+          "wallMs": 149.5,
+          "requestMs": 149.5,
+          "computeMs": 149.5,
+          "longestComputeMs": 149.5,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 149.69999999925494,
+          "matchMs": 140.5,
+          "samplingMs": 2.600000001490116,
+          "heapAfterGCBytes": 31824644
+        },
+        {
+          "wallMs": 146.40000000037253,
+          "requestMs": 146.40000000037253,
+          "computeMs": 146.40000000037253,
+          "longestComputeMs": 146.40000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 146.59999999962747,
+          "matchMs": 137.7999999988824,
+          "samplingMs": 2.800000000745058,
+          "heapAfterGCBytes": 31825388
+        }
+      ],
+      "median": {
+        "wallMs": 149.5,
+        "requestMs": 149.5,
+        "computeMs": 149.5,
+        "longestComputeMs": 149.5,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 149.69999999925494,
+        "matchMs": 140.5,
+        "samplingMs": 2.800000000745058,
+        "heapAfterGCBytes": 31817752
+      },
+      "pageErrors": []
+    }
+  ]
+}

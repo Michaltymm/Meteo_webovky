@@ -128,6 +128,13 @@ Menší výřezy, nezávislé grafy a MQTT/both zůstávají synchronní. Omezen
 [měření před/po](performance/ANALYTICKY_MODEL.md); všechny výpočty nadále
 používají původní měření a stejný algoritmus.
 
+Od v0.18.2 se samostatně dávkuje také velké porovnání stanic nad připraveným
+modelem. Stav přípravy a zákaz exportu patří jen kartě8, ostatní grafy zůstávají
+dostupné. Změna cizí cache/zdroje, období, dat, stanice nebo odchod zneplatní
+rozpracované párování. Zveřejní se až úplný výsledek, při selhání obnovy je
+stará cache nadále označená původním časem. Tolerance10min, pravidla duplicit,
+jednotky ani statistiky se nemění. [Výkon a omezení](performance/POROVNANI_STANIC.md).
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.
@@ -144,7 +151,7 @@ Centrální stavy zůstávají v [roadmapě](NAPADY_A_ROADMAP.md), bez nových I
   nejistota vztahů031 a metadata071 zůstávají dalšími etapami.
 - Heatmapa srážek/pokrytí034 potřebuje srážkový/měřicí kontrakt; nevyvozuje
   se dostupnost senzoru z počtu buněk.
-- Dávkovaný společný Sheets model je první část008. Další jsou porovnání,
+- Dávkovaný společný Sheets model a porovnání jsou první části008. Další jsou
   noční analýza, vyhlazení/heatmapa a velký parser; worker nebo ověřené
   serverové agregace až s měřením. První úplný250k výpočet má cenu O(n);
   žádný příslib nulové prodlevy nebo fyzického iOS měření.

@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.2
+
+- Velké porovnání stanic z Google Sheets se společným výřezem se připravuje po dávkách. Během párování zůstávají ostatní grafy použitelné.
+- Změna historie, cache jiné stanice nebo odchod z analytiky zruší zastaralý výpočet. Výsledek a export PNG jsou dostupné až po úplném dokončení; pravidla párování a hodnoty zůstávají zachované.
+
 ## v0.18.1
 
 - Příprava velkých analytických grafů z Google Sheets se společným časovým výřezem probíhá po krátkých dávkách, aby během výpočtu šlo dál ovládat stránku.

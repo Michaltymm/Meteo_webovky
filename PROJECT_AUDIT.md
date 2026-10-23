@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.2: druhá část METEO-008 hotová, celé ID Rozpracováno. Velké porovnání pro Sheets/společný výřez má samostatný comparisonJob až nad hotovým modelem. Stejný workSlice~8ms/max64kroků; matcher kontrolní body512, filtr/sampling1024, synchronní API dokončí stejné generátory. Pravidla10min/nejbližší/dřívější/one-to-one/duplicit a plné statistiky zachované. Snapshot cache/source/model/context/domain/loading/errors, atomický commit; invalidace/odchod/skrytí ruší, změna cizí cache zneplatní/restartuje viditelnou kartu. Busy/PNG jen karta8, ostatní model/grafy/cizí fetch zůstávají.332/332Node včetně11nových, skutečný Chromium100k/9grafů/3konfigurace/zoom/PNG/320–1440px +info harness prošly, bez pageerror/socketů. Přesné podpisy datasetů i nezaokrouhlených match výsledků před/po shodné.250k/+5s blok149,5→8,5ms, celek149,5→281,8ms; CPU×4/100k blok266→9,6ms, celek266→445,2ms. Menší blokování, nikoli celkové zrychlení; viz docs/performance/POROVNANI_STANIC.md. Baseline9fd455b. Dále profil heatmapy/vyhlazení/noční analýzy; velký CSV parser a streaming/nezávislé rozsahy dále. Jen codex-dev.
 - v0.18.1: první část METEO-008 hotová, celé ID Rozpracováno. Společný Sheets výřez od10k vybraných řádků připravuje jeden model v dávkách ~8ms/max64kroků; kontrolní body po1024položkách, stejné generátory pro synchronní API i UI. Kopie referencí/úplný souhrn/gapy/minmax/XY, přesné pořadí výpočtů zachováno. Rušení na každou invalidaci/odchod/skrytí, guard identity/context/source/length/domain; žádný částečný commit. Busy skrývá staré plátno, čistí staré heat detaily a vypíná PNG do překreslení. Malé/nezávislé a MQTT/both zůstávají synchronní kvůli riziku opakovaného rušení streamem.321/321Node (včetně13nových cílených), nový skutečný Chromium harness100k/9grafů/3stanice/PNG/zoom/320–1440px prošel. Před/po modelu250k: nejdelší blok389,6→10,7ms, celé dokončení389,6→685,6ms; CPU×4/100k834,4→20,1ms blok a834,4→925,2ms celek, přesně stejné podpisy celých souhrnů/bodů. Bez tvrzení rychlejšího celého webu/INP. Viz docs/performance/ANALYTICKY_MODEL.md. Baselinefcdcbba; dále podle profilu rozdělit první přípravu porovnání stanic. Velký CSV parser, night/smoothing/heatmapa, nezávislé výřezy a streaming snapshot dále.
 - v0.18.0: METEO-050 DONE v rozsahu provozního panelu CSV/časování/MQTT. Živé zprávy mají lokální čítače obsloužených/uložených/odmítnutých a 8 pevných důvodů, chyby aplikace oddělené včetně selhání po uložení. Limity, číselná pravidla, duplicity i nulové/chybějící senzory zachovány. Reconnect drží čítače, reset/změna stanice čistí, staré callbacky ignorovány; metadata bez payloadu/topicu/hostu/chyb. MQTT ponechá otevřenou jen diagnostiku; původní podklady dál zavírá. 308/308 Node (12 nových), Chromium: 24 původních +12 MQTT layoutů, bez pageerror/socketů; původní tři konfigurace zůstávají Sheets. Před/po skutečného handleru 1k–250k: bez prokázaného zrychlení, metadata 310 B JSON, žádný scan historie. Viz docs/MQTT_DIAGNOSTIKA.md a docs/performance/MQTT_DIAGNOSTIKA.md. Baseline068db56, pouze codex-dev. Dále METEO-008 podle existujících měření; log/export METEO-064, fyzikální kvalita METEO-047 a živý broker dále neověřené.
 - v0.17.0: další část METEO-050 hotová — stejné ⓘ nově ukazuje jediný snapshot poslední dokončené Sheets obnovy: celý čas, přenos včetně těla a retry, parser a synchronní commit/refreshUI/full-load callbacky. performance.now, žádné vymyšlené časy bez platného časovače. Nezměněný export má nové měření přenosu a 0 běhů parseru/UI („Neproběhlo“), starý parser report se nepřepisuje. Report se publikuje jen pro aktuální generaci, reset jej vyčistí; UV/overview/cizí historie/MQTT jej nemění. 296/296 Node včetně 12 nových deterministických regresí a rozšířený skutečný browser prošly. Viz docs/CASOVANI_OBNOVY.md a docs/performance/CASOVANI_OBNOVY.md. Baseline d1d42a4, pouze codex-dev. Dále METEO-050: počty/důvody MQTT odmítnutí; velký synchronní parser stále METEO-008.
@@ -12,8 +13,8 @@
 - v0.12.0: třetí horní stránka Moderní přehled (`#moderni`) je alternativní design celého dashboardu. `currentPage=modern` používá původní page-main, společný DOM/store/grafy a všechny dolní záložky; žádné duplikované ID, druhé grafy, fetch/polling při přepnutí. CSS pouze body[data-view=modern], atribut přežije setTheme. syncModernStation bezpečně naplní výběr stanic při vstupu/updateUI/refresh. Původní #prehled a #analytika zachovány, Back/Forward/direct URL testované. Viz docs/MODERNI_PREHLED.md; METEO-011 částečně realizováno, personalizace karet dále.251/251Node testů a oba Chromium browser harnessy prošly.
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
-- Aktualizováno 2026-10-23; práce výhradně na `codex-dev`, výchozí revize této etapy `fcdcbba`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.18.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-23; práce výhradně na `codex-dev`, výchozí revize této etapy `9fd455b`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.18.2 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -26,7 +27,7 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (321/321 prošlo po dávkování analytického modelu); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (332/332 prošlo po dávkování porovnání stanic); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
@@ -674,3 +675,42 @@ Vzdálený codex-dev3314c6c, main stále
 `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Původní upozornění Actions runtime/
 ubuntu-latest trvají, bez změny workflow. Následující commit je pouze evidence;
 další checkpoint008: profil navazujícího porovnání, nikoli opakování hotového modelu.
+
+## Dávkované porovnání stanic — v0.18.2, druhá část METEO-008
+
+Výchozí9fd455b. Profil pouze comparison nad připraveným modelem/cache:
+250k/+5s149,5ms, matcher140,5ms (~94 %). CPU×4/100k266ms. Důvod rozdělení,
+bez opakování modelového profilu nebo CSV auditu. Matcher a typed min/max
+sampler dostaly resumable generátory; synchronní API je dokončí finishSteps.
+Stejná pořadí porovnání/součtů a pravidla10min/earlier/one-to-one/duplicity,
+žádný výpočet statistik z vizuálních bodů. Zachovány všechny3konfigurace.
+
+analyticsComparison má volitelný cooperative UI režim; Sheets+sync a10k
+vybraných řádků aktivního nebo cizího zdroje. comparisonJob je jen pro kartu8,
+workSlice sdílený s modelem (~8ms/max64kroků; matcher512,ostatní1024).
+Metadata snapshotu: context,model,domain,entry refs/loading/errors. Guard před
+dávkou/commitem; změna zdroje/cache/modelu/mezi/relace zahazuje starý výsledek,
+viditelná karta začne aktuální. analyticsInvalidate/Stop/visibility ruší,
+ale samostatný foreign abort/network/cache se tím nemění. Busy pouzecard8,
+staré plátno/PNG nejsou dostupné do překreslení; ostatní karty/model zachovány.
+Chyba bez raw textu a bez nekonečného retry stejného podpisu; další změna/obnova
+dovolí nový pokus. Memo drží jeden hotový výsledek na modelu; transientní
+cache reference nepředstavují celkový RAM limit16MiB.
+
+332/332Node,11nových targeted, původní matcher oracle400historií zachovaný.
+Rozšířený reálný Chromium154 harness100k/9grafů/3konfigurace/0/nullV/zoom/PNG,
+busy jen8, výměna cache/pozdní callback/navcancel a oba režimy320/1440px,
+bez pageerror nebo socketů. Původní info harness také prošel. Vzdálené služby,
+skutečné MQTT a fyzický Safari/iOS tím ověřeny nejsou.
+
+Před/po1k–250k shodných/+5s timestampů aCPU×4/100k, sekvenčně.
+Podpis celých výsledků a raw match statistik přesně shodný.250k/+5s blok
+149,5→8,5ms, celek149,5→281,8ms; CPU×4/100k blok266→9,6ms a celek266→445,2ms.
+Heap poGC250k/+5s31 817 752→31 902 908B; není peak/RSS nebo důkaz úspory/
+nulového úniku. Profil izoluje přípravu, ne síť/CSV/Chart/paint/INP. Žádná nová
+produkční závislost nebo změna config/workflow/main/archivu.
+Viz docs/performance/POROVNANI_STANIC.md, reprodukční script/profileJSON a testy.
+
+METEO-008 Rozpracováno. Dále profil heatmapových buněk/vyhlazení/noční analýzy,
+pak nejdražší malý průchod. Velký parser/worker/persistence, nezávislé výřezy
+a konzistentní streaming snapshot zůstávají dalšími částmi.

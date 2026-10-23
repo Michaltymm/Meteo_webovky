@@ -210,6 +210,72 @@ async def main():
                 await page.screenshot(path=str(output.with_name(f'cooperative-{theme}-{width}.png')))
                 layouts.append({'theme': theme, 'width': width, 'columns': columns})
 
+        # The shared model is already ready. A large comparison must keep the
+        # other eight cards usable while pairing its independent cache snapshot.
+        await page.locator('#anaCard7').scroll_into_view_if_needed()
+        await page.wait_for_function('analyticsState.loading===null && analyticsState.comparisonJob===null')
+        await page.evaluate('''()=>{
+          globalThis.realComparisonRun=analyticsRunComparisonJob;
+          globalThis.pauseComparison=true;globalThis.heldComparison=null;
+          analyticsRunComparisonJob=job=>{if(pauseComparison){heldComparison=job;return}return realComparisonRun(job)};
+          for(const index of [1,2]){
+            const c=analyticsCompact(store.rows);
+            for(let i=0;i<c.count;i++){c.times[i]+=5000;c.temps[i]+=index;}
+            analyticsStationCache.set(index,{...c,name:'Fixture '+index,loadedAt:Date.now(),preferences:analyticsSourceSignature(index)});
+          }
+          globalThis.readyModel=analyticsState.model;
+          delete readyModel.comparison;delete readyModel.comparisonSignature;
+          analyticsDrawCard(7);
+        }''')
+        await page.wait_for_function('analyticsState.comparisonJob!==null && heldComparison===analyticsState.comparisonJob')
+        assert await page.locator('#anaCard7').get_attribute('aria-busy') == 'true'
+        assert await page.locator('#anaGrid').get_attribute('aria-busy') == 'false'
+        assert await page.locator('#anaExport7').is_disabled()
+        assert await page.locator('#anaExport0').is_enabled()
+        assert await page.evaluate('el("anaCanvas7").style.visibility==="hidden" && el("anaCanvas0").style.visibility!=="hidden"')
+        comparison_requests = len(requests)
+        await page.evaluate('globalThis.staleComparison=analyticsState.comparisonJob;realComparisonRun(staleComparison);analyticsExport(7)')
+        assert await page.evaluate('analyticsState.model===readyModel && !readyModel.comparison')
+        assert len(downloads) == 1
+        assert len(requests) == comparison_requests
+        await page.screenshot(path=str(output.with_name('comparison-busy-320.png')))
+        # Replacing a foreign cache entry makes the queued old work obsolete.
+        await page.evaluate('''()=>{
+          analyticsStationCache.set(1,{...analyticsStationCache.get(1),name:'Updated fixture'});
+          realComparisonRun(staleComparison);
+        }''')
+        await page.wait_for_function('analyticsState.comparisonJob!==staleComparison && heldComparison===analyticsState.comparisonJob')
+        assert await page.evaluate('!readyModel.comparison')
+        await page.evaluate('pauseComparison=false;realComparisonRun(analyticsState.comparisonJob)')
+        await page.wait_for_function('readyModel.comparison && analyticsState.comparisonJob===null && el("anaCanvas7").style.visibility!=="hidden"')
+        assert await page.locator('#anaCard7').get_attribute('aria-busy') == 'false'
+        assert await page.locator('#anaExport7').is_enabled()
+        assert await page.evaluate('readyModel.comparison.datasets.length===3 && readyModel.comparison.datasets.every(ds=>ds.data.length<=600)')
+        assert 'Updated fixture' in await page.locator('#anaNote7').text_content()
+        assert await page.evaluate('analyticsState.model===readyModel && readyModel.rows.length===100000')
+        async with page.expect_download() as comparison_download:
+            await page.evaluate('analyticsExport(7)')
+        await (await comparison_download.value).save_as(output.with_name('comparison-graph.png'))
+        assert output.with_name('comparison-graph.png').read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
+        for theme in ['darkblue', 'light']:
+            await page.evaluate('(theme)=>setTheme(theme)', theme)
+            for width in [1440, 320]:
+                await page.set_viewport_size({'width':width,'height':1000})
+                await page.locator('#anaCard7').scroll_into_view_if_needed()
+                await page.wait_for_timeout(100)
+                assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                await page.screenshot(path=str(output.with_name(f'comparison-{theme}-{width}.png')))
+        # Leaving releases the pending computation; an already queued callback
+        # must not revive its result or chart.
+        await page.evaluate('''()=>{pauseComparison=true;heldComparison=null;
+          delete readyModel.comparison;delete readyModel.comparisonSignature;analyticsDrawCard(7)}''')
+        await page.wait_for_function('heldComparison===analyticsState.comparisonJob && heldComparison!==null')
+        await page.evaluate('globalThis.exitComparison=analyticsState.comparisonJob')
+        await page.locator('[data-page="main"]').click()
+        await page.evaluate('realComparisonRun(exitComparison)')
+        assert await page.evaluate('analyticsState.comparisonJob===null && !readyModel.comparison')
+        checks.append('100k comparison: only card7 busy, other graphs usable, no partial result/request, cache replacement rejects stale work, PNG after completion, two themes/widths, navigation cancels')
+
         await page.locator('[data-page="main"]').click()
         assert await page.evaluate('analyticsCharts.size===0 && analyticsState.job===null && analyticsState.model===null')
         assert await page.evaluate('Object.keys(Chart.instances).length') == baseline_charts
