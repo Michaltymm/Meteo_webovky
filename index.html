@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0170"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.17.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0180"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4120,8 +4120,20 @@
        Každý záznam: { date, time, ts, temp, pressure, hum, rainInc, rain, tank, voltage }
     ══════════════════════════════════════════════ */
     const store = { rows: [], lastRowCount: 0, fullLoaded: false, _onFullLoad: [], _fullLoadPending: false };
+    const MQTT_REJECTION_LABELS = {
+      PAYLOAD_UNREADABLE: "Obsah nelze přečíst jako text", INVALID_JSON: "Neplatný JSON",
+      INVALID_OBJECT: "JSON není objekt měření", NO_MEASUREMENT: "Bez použitelné měřené veličiny",
+      SIZE_LIMIT: "Překročen limit velikosti zprávy", RATE_LIMIT: "Překročena četnost zpráv",
+      HISTORY_LIMIT: "Dosažen limit uložené historie", PROCESSING_ERROR: "Chyba zpracování v aplikaci"
+    };
+    function emptyMQTTDiagnostics() {
+      return { since: Date.now(), received: 0, accepted: 0, rejected: 0, processingErrors: 0,
+        lastRejectedAt: null, lastReason: null,
+        reasons: { PAYLOAD_UNREADABLE: 0, INVALID_JSON: 0, INVALID_OBJECT: 0, NO_MEASUREMENT: 0,
+          SIZE_LIMIT: 0, RATE_LIMIT: 0, HISTORY_LIMIT: 0, PROCESSING_ERROR: 0 } };
+    }
     function emptyDataStatus() {
-      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null, timing: null }, mqtt: { phase: "idle", receivedAt: null }, latestRow: null, latestKind: null };
+      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null, timing: null }, mqtt: { phase: "idle", receivedAt: null, diagnostics: emptyMQTTDiagnostics() }, latestRow: null, latestKind: null };
     }
     let dataStatus = emptyDataStatus();
 
@@ -5191,8 +5203,8 @@
     let expAllPts = [];   // plný filtrovaný soubor bodů pro posuvník
     let explorerRangeCache = null;
 
-    function invalidateDerivedData() {
-      closeInfoPopover();
+    function invalidateDerivedData({ keepDataDiagnostics = false } = {}) {
+      if (!keepDataDiagnostics || !activeInfo || activeInfo.trigger !== el("dataValidationTrigger")) closeInfoPopover();
       analyticsInvalidate();
       aggregateCache = null;
       clearTemperatureRecord();
@@ -6071,11 +6083,48 @@
         (timing.unchanged ? '<p>Poslední odpověď: beze změny. Dříve přijatý export se znovu neparsuje; jeho datový přehled se nepřepočítává.</p>' : '') +
         '<details><summary>Co časy zahrnují</summary><p>Přenos zahrnuje čekání na odpověď i přečtení obsahu. Složky sčítají všechny pokusy této obnovy; celek zahrnuje také čekání mezi kroky a další obsluhu. Data a přehled měří synchronní práci aplikace, nikoli hotový snímek, pozdější líné grafy nebo rychlost samotného serveru. Přesnost závisí na časovači prohlížeče.</p></details></section>';
     }
+    function mqttDiagnosticsHTML() {
+      const d = dataStatus.mqtt.diagnostics;
+      if (CFG.source === "sheets" && !d.received) return "";
+      const count = value => Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString("cs-CZ") : "–";
+      const since = Number.isFinite(d.since) ? intervalTimestamp(new Date(d.since)) : "–";
+      return '<details id="mqttDiagnostics"' + (CFG.source === "mqtt" ? ' open' : '') + '><summary>Živé zprávy MQTT</summary>' +
+        '<p>Počítáno v tomto prohlížeči od ' + since + '. Přepnutí stanice nebo nové načtení stránky čítače vyčistí; opětovné připojení je zachová.</p>' +
+        '<dl class="sheets-timing"><div><dt>Obsloužené zprávy</dt><dd id="mqttDiagReceived">' + count(d.received) + '</dd></div>' +
+        '<div><dt>Uložená měření</dt><dd id="mqttDiagAccepted">' + count(d.accepted) + '</dd></div>' +
+        '<div><dt>Odmítnuté zprávy</dt><dd id="mqttDiagRejected">' + count(d.rejected) + '</dd></div>' +
+        '<div><dt>Chyby aplikace</dt><dd id="mqttDiagProcessingErrors">' + count(d.processingErrors) + '</dd></div></dl>' +
+        '<table class="csv-validation-table"><caption>Důvody odmítnutí</caption><thead><tr><th scope="col">Důvod</th><th scope="col">Počet</th></tr></thead><tbody>' +
+        Object.entries(MQTT_REJECTION_LABELS).map(([code, label]) => '<tr><th scope="row">' + label + '</th><td id="mqttDiagReason-' + code + '">' + count(d.reasons[code]) + '</td></tr>').join('') +
+        '</tbody></table><p>Poslední odmítnutí: <span id="mqttDiagLastRejected">' + mqttLastRejection(d) + '</span></p>' +
+        '<p>Čítače popisují jen zprávy obsloužené aktivním klientem, nikoli ztráty v síti nebo na brokeru. Zpráva se odmítne podle první dosažené kontroly. Po překročení bezpečnostního limitu se příjem zastaví a další zprávy se již nepočítají.</p>' +
+        '<p>Chyba aplikace může nastat i po uložení měření; tehdy se uložená zpráva znovu nepočítá jako odmítnutá. Čítač neověřuje fyzikální správnost hodnot. Obsah zpráv, topic, broker ani text chyby se do diagnostiky neukládají.</p></details>';
+    }
+    function mqttLastRejection(d) {
+      if (d.lastRejectedAt === null) return "Dosud žádné";
+      const time = Number.isFinite(d.lastRejectedAt) ? intervalTimestamp(new Date(d.lastRejectedAt)) : "–";
+      return time + ' · ' + (Object.hasOwn(MQTT_REJECTION_LABELS, d.lastReason) ? MQTT_REJECTION_LABELS[d.lastReason] : "Neznámý důvod");
+    }
+    function refreshMQTTDiagnostics() {
+      if (document.hidden || !activeInfo || activeInfo.trigger !== el("dataValidationTrigger") || !el("mqttDiagnostics")?.open) return;
+      const d = dataStatus.mqtt.diagnostics;
+      const count = value => Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString("cs-CZ") : "–";
+      for (const [id, key] of [["mqttDiagReceived", "received"], ["mqttDiagAccepted", "accepted"], ["mqttDiagRejected", "rejected"], ["mqttDiagProcessingErrors", "processingErrors"]])
+        setNodeText(el(id), count(d[key]));
+      for (const code of Object.keys(MQTT_REJECTION_LABELS)) setNodeText(el("mqttDiagReason-" + code), count(d.reasons[code]));
+      setNodeText(el("mqttDiagLastRejected"), mqttLastRejection(d));
+    }
+    function rejectMQTTMessage(reason, received) {
+      const d = dataStatus.mqtt.diagnostics;
+      d.rejected++; d.reasons[reason]++;
+      d.lastReason = reason; d.lastRejectedAt = received;
+      refreshMQTTDiagnostics();
+    }
     function renderCSVValidation() {
       const panel = el("dataValidationPanel"), validation = dataStatus.sheets.validation;
-      const timingHTML = sheetsTimingHTML();
+      const timingHTML = mqttDiagnosticsHTML() + sheetsTimingHTML();
       if (!validation) {
-        panel.innerHTML = timingHTML + '<p>' + (CFG.source === "mqtt" ? "Stanice používá MQTT; tento přehled se týká pouze CSV historie." : "CSV historie této stanice zatím nebyla zpracována.") + '</p>';
+        panel.innerHTML = timingHTML + '<p>' + (CFG.source === "mqtt" ? "Stanice používá MQTT; CSV historie zde není načtená." : "CSV historie této stanice zatím nebyla zpracována.") + '</p>';
         return;
       }
       const count = value => Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString("cs-CZ") : "–";
@@ -6850,7 +6899,8 @@
         reconnect();
       };
       let messageWindow = Date.now(), messages = 0;
-      const rejectTraffic = () => {
+      const rejectTraffic = (reason, received) => {
+        rejectMQTTMessage(reason, received);
         stopMQTT();
         setDataSourcePhase("mqtt", "error", context);
         setMqttStatus(false, "příjem zastaven: překročen limit zpráv nebo historie; obnovte připojení ručně");
@@ -6858,15 +6908,20 @@
       mc.onMessageArrived = msg => {
         if (!isCurrentClient()) return;
         const received = Date.now();
+        const diagnostics = dataStatus.mqtt.diagnostics;
+        diagnostics.received++;
         if (received - messageWindow >= 1000) { messageWindow = received; messages = 0; }
-        if (++messages > 20 || store.rows.length >= DATA_MAX_ROWS) { rejectTraffic(); return; }
+        if (++messages > 20) { rejectTraffic("RATE_LIMIT", received); return; }
+        if (store.rows.length >= DATA_MAX_ROWS) { rejectTraffic("HISTORY_LIMIT", received); return; }
         let payload;
-        try { payload = msg.payloadString; } catch { return; }
-        if (typeof payload !== "string") return;
-        if (payload.length > 65536 || new TextEncoder().encode(payload).byteLength > 65536) { rejectTraffic(); return; }
+        try { payload = msg.payloadString; } catch { rejectMQTTMessage("PAYLOAD_UNREADABLE", received); return; }
+        if (typeof payload !== "string") { rejectMQTTMessage("PAYLOAD_UNREADABLE", received); return; }
+        if (payload.length > 65536 || new TextEncoder().encode(payload).byteLength > 65536) { rejectTraffic("SIZE_LIMIT", received); return; }
+        let o;
+        try { o = JSON.parse(payload); } catch { rejectMQTTMessage("INVALID_JSON", received); return; }
+        if (!o || typeof o !== "object" || Array.isArray(o)) { rejectMQTTMessage("INVALID_OBJECT", received); return; }
+        let accepted = false;
         try {
-          const o = JSON.parse(payload);
-          if (!o || typeof o !== "object" || Array.isArray(o)) return;
           const number = value => typeof value === "number" || typeof value === "string" ? pf(value) : null;
           const now = new Date();
           const row = {
@@ -6876,17 +6931,24 @@
             rain: number(o.dest ?? o.rain ?? o.r), tank: number(o.nadrz ?? o.tank),
             voltage: number(o.napeti ?? o.voltage ?? o.v)
           };
-          if (!["temp","pressure","hum","rainInc","rain","tank","voltage"].some(key => row[key] !== null)) return;
+          if (!["temp","pressure","hum","rainInc","rain","tank","voltage"].some(key => row[key] !== null)) { rejectMQTTMessage("NO_MEASUREMENT", received); return; }
           store.rows.unshift(row);
+          accepted = true;
+          diagnostics.accepted++;
           dataStatus.latestRow = row;
           dataStatus.latestKind = "mqtt";
           dataStatus.mqtt.receivedAt = now.getTime();
           dataStatus.mqtt.phase = "connected";
-          invalidateDerivedData();
+          invalidateDerivedData({ keepDataDiagnostics: true });
           store._lastQuickCsv = null;
           store._lastFullCsv = null;
           refreshUI();
-        } catch (e) { }
+          refreshMQTTDiagnostics();
+        } catch (e) {
+          diagnostics.processingErrors++;
+          if (!accepted) rejectMQTTMessage("PROCESSING_ERROR", received);
+          else refreshMQTTDiagnostics();
+        }
       };
       mc.connect({
         useSSL: location.protocol === "https:" || config.mqttPort === 8883 || config.mqttPort === 8884,
@@ -7603,8 +7665,8 @@
     }
 
     function initInfoTooltips() {
-      registerInfoPanel(el("dataValidationTrigger"), el("dataValidationPanel"), { prepare: renderCSVValidation, title: "Validace historie CSV" });
-      el("dataValidationPanel").addEventListener("toggle", positionInfoPopover, true);
+      registerInfoPanel(el("dataValidationTrigger"), el("dataValidationPanel"), { prepare: renderCSVValidation, title: "Diagnostika dat" });
+      el("dataValidationPanel").addEventListener("toggle", () => { refreshMQTTDiagnostics(); positionInfoPopover(); }, true);
       for (const owner of document.querySelectorAll("details[data-info]")) {
         const summary = owner.querySelector(":scope > summary"), title = summary.textContent.trim();
         const panel = document.createElement("div");

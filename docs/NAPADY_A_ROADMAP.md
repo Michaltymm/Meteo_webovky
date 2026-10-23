@@ -1,6 +1,6 @@
 # Rozvoj meteorologického dashboardu
 
-Aktualizováno 21. 10. 2026. Centrální živý backlog pro `codex-dev`.
+Aktualizováno 23. 10. 2026. Centrální živý backlog pro `codex-dev`.
 Zadání: postupný rozvoj; nejprve doložené problémy výkonu, potom analytika.
 Produkční `main` se mění až po schválení. Dokončený kód není důkaz nasazení.
 
@@ -150,7 +150,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-047 Flagy kvality a deduplikace: původní/opravované/odvozené údaje odděleně | Timestamp, ID pokud dostupné, validace | V / P1 | O(n), omezené indexy | FUT-009, definice duplicit před slučováním | Připraveno k realizaci |
 | METEO-048 Časový kontrakt: lokální den, UTC, DST, explicitní zóna stanice | Současné A/B + konfigurace; nové UTC vyžaduje backend | S / P1 | Nízký, cache formatteru | AUD-010 DONE v0.2.1; další zóna stanice/CSV offset a UV hourly kontrakt | Rozpracováno |
 | METEO-049 Verzovaný adaptér legacy/Raw_Data, kontrola schema a jednotek | Skutečné anonymizované exporty obou backendů | V / P1 | O(n), validace před commitem | FUT-008; nikdy pouhá změna názvu listu | K posouzení |
-| METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | v0.16.1 CSV čítače/důvody; v0.17.0 časy přenosu, parseru, synchronní práce přehledu a celé obnovy, bez fetchů/timerů navíc | METEO-009 hotové; CSV a časování hotové, dále MQTT čítače, viz CASOVANI_OBNOVY.md; kvalita METEO-047 samostatně | Rozpracováno |
+| METEO-050 Provozní panel: počty odmítnutých řádků, chybějící senzory a poslední validace | Výsledky parseru/transportu | S / P1 | v0.16.1 CSV čítače/důvody; v0.17.0 časování; v0.18.0 MQTT přijetí/odmítnutí/chyby, O(1), bez fetchů/timerů navíc | METEO-009 hotové; viz MQTT_DIAGNOSTIKA.md; fyzikální kvalita METEO-047 a log/export METEO-064 samostatně | Dokončeno |
 
 ## 11. Export a sdílení
 
@@ -1686,3 +1686,41 @@ Existující upozornění na runtime Actions/ubuntu-latest přetrvávají; workf
 se v této etapě neměnilo. Následující commit mění pouze tuto evidenci.
 Další pokračování: METEO-050 — lokální čítače/důvody odmítnutí MQTT bez raw
 payloadu; znovu neimplementovat dokončené CSV čítače a časování.
+
+## METEO-050 — MQTT diagnostika a dokončení panelu, v0.18.0
+
+Dokončena poslední plánovaná část provozního panelu. Pod stejným ⓘ je pro
+MQTT/kombinovaný zdroj přehled obsloužených zpráv, uložených měření, odmítnutí
+podle osmi pevných důvodů a chyb aplikace. Uložená zpráva se při následné
+chybě vykreslení neoznačí za odmítnutou. Tabulka důvodů zachovává první
+neúspěšnou kontrolu a původní prioritu/hranice bezpečnostních limitů.
+
+Nezměněna číselná pravidla, aliasy, duplicity, původní řádky, statistiky ani
+tři Sheets konfigurace. Reconnect zachová čítače, změna stanice/reset je čistí;
+stará generace a zastavený klient nemění evidenci. Žádné payloady, topic,
+broker, tajemství či zprávy výjimek. Metadata jsou lokální a velikostí nezávislá
+na historii. Zavřená/sbalená diagnostika nemá průběžné DOM aktualizace, otevřená
+mění jen čítače. Při MQTT přežije jen tento panel, původní podklady měření
+se při invalidaci dál zavírají. Žádné nové fetch, timer nebo Chart.
+
+Ověřeno **308/308 Node**, z toho 12 nových cílených regresí. Chromium154
+s reálným DOM/Chart/Paho se SRI, původními 3 konfiguracemi a řízenými CSV/UV:
+24 původních +12 čistě MQTT layoutů (3pohledy ×2témata ×320/1440px), živé
+čítače/stejné DOM uzly, reconnect, zastavení při limitu, chyba po uložení,
+zavření podkladů a reset stanice; žádné pageerror ani skutečný WebSocket.
+Paho Client je pro MQTT nahrazen lokálním testovacím klientem. Původní info
+browser harness také prošel: hover1500ms, klávesnice, dotyk a invalidace.
+Živý broker/ACL/firmware a fyzický Safari/iOS ověřeny nejsou.
+
+Benchmark skutečného handleru před/po na1k/10k/100k/250k s původními odkazy:
+u250k dávka100přijetí 8,47→8,52ms; 1000odmítnutí 8,86→7,83ms. Rozdíly
+neprokazují zrychlení; diagnostická metadata310B JSON ve všech objemech.
+Bez skutečného DOM/renderu, sítě nebo měření dlouhodobého heapu.
+[Sémantika a omezení](MQTT_DIAGNOSTIKA.md), [metodika/surové výsledky](performance/MQTT_DIAGNOSTIKA.md).
+
+**METEO-050 Dokončeno** v rozsahu aktuálního CSV/časovacího/MQTT panelu.
+Kruhový log/anonymizovaný report se nepřesouvají do tohoto ID, zůstávají
+METEO-064; fyzikální kvalita/deduplikace METEO-047 a časový kontrakt048.
+Další etapa **METEO-008**: podle měření etapy13 rozdělit první přípravu velkého
+analytického modelu na malé ověřitelné části. Zachovat přesné statistiky,
+generation guard a rozpočet paměti; worker/závislosti až s doloženým přínosem.

@@ -69,6 +69,6 @@ fyzického Safari/iOS. [Měření parseru před/po](performance/VALIDACE_CSV.md)
 
 Ve v0.17.0 navazuje dokončené [časování obnovy](CASOVANI_OBNOVY.md), které
 odděluje přenos, parser a synchronní práci přehledu od celkového čekání.
-METEO-050 zůstává rozpracované: dále počty/důvody odmítnutých MQTT zpráv.
-Širší provozní diagnostika je další část; anomálie/duplikace a fyzikální kvalita
-patří METEO-047.
+Ve v0.18.0 dokončené [čítače MQTT](MQTT_DIAGNOSTIKA.md) uzavírají METEO-050
+v rozsahu provozního panelu. Log/export zůstává METEO-064;
+anomálie/duplikace a fyzikální kvalita patří METEO-047.

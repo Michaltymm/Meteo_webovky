@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.0
+
+- Diagnostika pod ⓘ nově ukazuje obsloužené MQTT zprávy, uložená měření a počty odmítnutí podle důvodu, bez ukládání obsahu zpráv.
+- Přehled MQTT se průběžně aktualizuje a zůstává otevřený při příchodu měření. Opětovné připojení zachová čítače, přepnutí stanice je vyčistí; chyby aplikace jsou oddělené od neplatného vstupu.
+
 ## v0.17.0
 
 - Pod ⓘ u načtené historie je nyní doba poslední obnovy rozdělená na přenos CSV, rozbor dat a přípravu přehledu, včetně počtu pokusů a celkového času.

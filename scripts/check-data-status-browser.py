@@ -32,6 +32,8 @@ async def main():
     requests = []
     errors = []
     layouts = []
+    mqtt_layouts = []
+    sockets = []
     gate = asyncio.Event()
     gate.set()
     async with async_playwright() as p:
@@ -39,6 +41,7 @@ async def main():
         page = await browser.new_page(viewport={'width': 1440, 'height': 1000}, timezone_id='Europe/Prague', reduced_motion='reduce')
         await page.clock.set_fixed_time(now)
         page.on('pageerror', lambda e: errors.append(str(e)))
+        page.on('websocket', lambda socket: sockets.append(socket.url))
 
         async def route(r):
             url = r.request.url
@@ -194,17 +197,116 @@ async def main():
         await page.evaluate('fetchSheets(true)')
         assert 'budoucnosti' in await page.locator('#dataRecordAge').inner_text()
         assert await page.locator('#dataRecordTime').get_attribute('class') == 'data-state-warning'
+
+        # Exercise the actual MQTT handler with a local Client double. The real
+        # SRI Paho file was loaded, but no broker/socket is contacted by this QA.
+        future = False
+        await page.evaluate('fetchSheets(true)')
+        await page.locator('[data-page="main"]').click()
+        await page.wait_for_load_state('networkidle')
+        await page.evaluate('''()=>{
+          cancelStationWork();globalThis.realPahoClient=Paho.Client;
+          globalThis.mqttTestClients=[];
+          Paho.Client=class {
+            constructor(){this.disconnected=0;mqttTestClients.push(this)}
+            connect(options){this.options=options}
+            subscribe(){}
+            disconnect(){this.disconnected++}
+          };
+          CFG={...CFG,source:'both',mqttHost:'fixture.invalid'};
+          connectMQTT();mqttClient.options.onSuccess();
+          globalThis.deliver=body=>mqttClient.onMessageArrived({payloadString:body});
+          globalThis.savedCSVReport=dataStatus.sheets.validation;
+          globalThis.savedTiming=dataStatus.sheets.timing;
+          globalThis.initialRowCount=store.rows.length;
+          deliver('bad');deliver('[]');deliver('{}');
+          deliver(JSON.stringify({secret:'private-fixture-<img src=x onerror=alert(1)>'}));
+          deliver('{"temp":0,"voltage":"4,2"}');
+        }''')
+        assert await page.evaluate('dataStatus.mqtt.diagnostics.received===5 && dataStatus.mqtt.diagnostics.accepted===1 && dataStatus.mqtt.diagnostics.rejected===4')
+        await page.locator('#dataValidationTrigger').click()
+        await page.locator('#mqttDiagnostics summary').click()
+        assert await page.locator('#mqttDiagAccepted').inner_text() == '1'
+        assert await page.locator('#mqttDiagRejected').inner_text() == '4'
+        assert 'private-fixture' not in await validation.inner_text()
+        assert await validation.locator('img').count() == 0
+        before = len(requests)
+        charts = await page.evaluate('Object.keys(Chart.instances).length')
+        await page.evaluate('globalThis.counterNode=el("mqttDiagAccepted");deliver("bad");deliver(\'{"temp":0}\')')
+        assert await page.locator('#infoPopover').is_visible()
+        assert await page.evaluate('el("mqttDiagAccepted")===counterNode && dataStatus.sheets.validation===savedCSVReport && dataStatus.sheets.timing===savedTiming')
+        assert await page.locator('#mqttDiagAccepted').inner_text() == '2'
+        assert await page.locator('#mqttDiagRejected').inner_text() == '5'
+        assert await page.evaluate('store.rows.length===initialRowCount+2 && store.rows[0].temp===0')
+        assert len(requests) == before
+        assert await page.evaluate('Object.keys(Chart.instances).length') == charts
+        await page.evaluate('''()=>{
+          const refresh=refreshUI;refreshUI=()=>{throw new Error('private-render-fixture')};
+          deliver('{"temp":0}');refreshUI=refresh;refreshUI();
+        }''')
+        assert await page.locator('#mqttDiagAccepted').inner_text() == '3'
+        assert await page.locator('#mqttDiagProcessingErrors').inner_text() == '1'
+        assert 'private-render-fixture' not in await validation.inner_text()
+        await page.evaluate('globalThis.oldMQTT=mqttClient;connectMQTT();mqttClient.options.onSuccess();oldMQTT.onMessageArrived({payloadString:"bad"});deliver("bad")')
+        assert await page.locator('#mqttDiagReceived').inner_text() == '9'
+        await page.evaluate('deliver("x".repeat(65537))')
+        assert await page.evaluate('mqttClient===null && mqttReconnectTimer===null && dataStatus.mqtt.diagnostics.reasons.SIZE_LIMIT===1')
+        assert await page.locator('#mqttDiagReason-SIZE_LIMIT').inner_text() == '1'
+        await page.keyboard.press('Escape')
+        # Evidence popovers retain their existing invalidation behavior.
+        await page.evaluate('connectMQTT();mqttClient.options.onSuccess()')
+        await page.locator('[data-info-temperature="max"]').click()
+        assert await page.locator('#infoPopover').is_visible()
+        await page.evaluate('deliver(\'{"temp":0}\')')
+        assert await page.locator('#infoPopover').is_hidden()
+
+        await page.evaluate('cancelStationWork();resetStationStore();CFG={...CFG,source:"mqtt"};connectMQTT();mqttClient.options.onSuccess();deliver(\'{"temp":0}\')')
+        for view in ['main', 'modern', 'analytics']:
+            await page.locator(f'[data-page="{view}"]').click()
+            await page.wait_for_load_state('networkidle')
+            for theme in ['darkblue', 'light']:
+                await page.evaluate('(theme)=>setTheme(theme)', theme)
+                for width in [1440, 320]:
+                    await page.set_viewport_size({'width': width, 'height': 1000})
+                    await page.wait_for_timeout(150)
+                    await page.clock.set_fixed_time(now+timedelta(minutes=30+len(mqtt_layouts)))
+                    await page.locator('#dataValidationTrigger').scroll_into_view_if_needed()
+                    await page.wait_for_timeout(100)  # Flush scrolling before opening a dismiss-on-scroll popup.
+                    # The mixed-source case above exercises pointer opening and
+                    # reading inside the popup. Cover keyboard opening here;
+                    # it also avoids mouse-hover dismissal during viewport QA.
+                    await page.locator('#dataValidationTrigger').focus()
+                    await page.locator('#dataValidationTrigger').press('Enter')
+                    assert await page.locator('#mqttDiagnostics').evaluate('e=>e.open')
+                    accepted = await page.evaluate('dataStatus.mqtt.diagnostics.accepted')
+                    await page.evaluate('deliver("bad");deliver(\'{"temp":0}\')')
+                    assert await page.locator('#infoPopover').is_visible(), (view,theme,width)
+                    assert await page.locator('#mqttDiagAccepted').inner_text() == str(accepted+1)
+                    box = await page.locator('#infoPopover').bounding_box()
+                    assert box['x']>=0 and box['y']>=0 and box['x']+box['width']<=width+1 and box['y']+box['height']<=1001, box
+                    assert await validation.evaluate('e=>e.scrollWidth<=e.clientWidth+1')
+                    assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+                    if view == 'modern':
+                        await page.screenshot(path=str(output.with_name(f'mqtt-{theme}-{width}.png')))
+                    await page.keyboard.press('Escape')
+                    mqtt_layouts.append({'view':view,'theme':theme,'width':width})
+        await page.evaluate('globalThis.staleMQTT=mqttClient;switchStation(1);Paho.Client=realPahoClient;staleMQTT.onMessageArrived({payloadString:"bad"})')
+        await page.wait_for_function('activeIdx===1 && dataStatus.sheets.phase==="ok"')
+        assert await page.evaluate('dataStatus.mqtt.diagnostics.received===0')
+        assert not sockets, sockets
         assert not errors, errors
         version = browser.version
         await browser.close()
-    output.write_text(json.dumps({'browser': version, 'pageErrors': errors, 'layouts': layouts,
+    output.write_text(json.dumps({'browser': version, 'pageErrors': errors, 'layouts': layouts, 'mqttLayouts':mqtt_layouts, 'webSockets':len(sockets),
         'checks': ['old record vs new validation', 'unchanged quick export', 'full history',
                    'invalid HTTP200 retains last success/rows', 'recovery', 'minute update without fetch',
                    'station reset before delayed CSV', 'zero/missing voltage', 'three pages/two themes', 'future time',
                    'CSV counts/rejection reasons/positions', 'diagnostics without fetch/new Chart', 'diagnostic popup bounds in all layouts',
                    'controlled 60ms transport and separate parser/UI timings', 'no stale costs for unchanged exports', 'failure/recovery timings',
-                   'collapsed timing explanation', 'expanded short error report stays in viewport'],
-        'transport': 'Controlled CSV/UV; real Chart.js and Paho with SRI; no live MQTT'}, indent=2)+'\n')
+                   'collapsed timing explanation', 'expanded short error report stays in viewport',
+                   'MQTT counts/reasons/private content excluded', 'live popup survives accepted MQTT with stable counter nodes',
+                   'processing error after commit', 'reconnect/size stop/stale clients', 'evidence popup invalidation', 'pure MQTT 12 layouts and station reset'],
+        'transport': 'Controlled CSV/UV; real Chart.js and Paho with SRI; MQTT Client double, no broker/socket'}, indent=2)+'\n')
     print(output)
 
 

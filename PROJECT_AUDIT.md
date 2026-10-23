@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.0: METEO-050 DONE v rozsahu provozního panelu CSV/časování/MQTT. Živé zprávy mají lokální čítače obsloužených/uložených/odmítnutých a 8 pevných důvodů, chyby aplikace oddělené včetně selhání po uložení. Limity, číselná pravidla, duplicity i nulové/chybějící senzory zachovány. Reconnect drží čítače, reset/změna stanice čistí, staré callbacky ignorovány; metadata bez payloadu/topicu/hostu/chyb. MQTT ponechá otevřenou jen diagnostiku; původní podklady dál zavírá. 308/308 Node (12 nových), Chromium: 24 původních +12 MQTT layoutů, bez pageerror/socketů; původní tři konfigurace zůstávají Sheets. Před/po skutečného handleru 1k–250k: bez prokázaného zrychlení, metadata 310 B JSON, žádný scan historie. Viz docs/MQTT_DIAGNOSTIKA.md a docs/performance/MQTT_DIAGNOSTIKA.md. Baseline068db56, pouze codex-dev. Dále METEO-008 podle existujících měření; log/export METEO-064, fyzikální kvalita METEO-047 a živý broker dále neověřené.
 - v0.17.0: další část METEO-050 hotová — stejné ⓘ nově ukazuje jediný snapshot poslední dokončené Sheets obnovy: celý čas, přenos včetně těla a retry, parser a synchronní commit/refreshUI/full-load callbacky. performance.now, žádné vymyšlené časy bez platného časovače. Nezměněný export má nové měření přenosu a 0 běhů parseru/UI („Neproběhlo“), starý parser report se nepřepisuje. Report se publikuje jen pro aktuální generaci, reset jej vyčistí; UV/overview/cizí historie/MQTT jej nemění. 296/296 Node včetně 12 nových deterministických regresí a rozšířený skutečný browser prošly. Viz docs/CASOVANI_OBNOVY.md a docs/performance/CASOVANI_OBNOVY.md. Baseline d1d42a4, pouze codex-dev. Dále METEO-050: počty/důvody MQTT odmítnutí; velký synchronní parser stále METEO-008.
 - v0.16.1: první část METEO-050 hotová — ⓘ u načtené historie ukazuje čítače posledního CSV rozboru, odmítnutí s kódy DATE_MISSING/DATETIME_INVALID a nejvýše 8 logických pozic, dostupnost 7 veličin a čas/rozsah rozboru. Původní pravidla parseru, duplicity, null/nuly a statistiky zachovány. Report neobsahuje raw hodnoty/poznámky/URL; syntaxe/limit jsou obecné kódy bez neúplných součtů. Jen aktivní generační kontext, reset a nezměněný export zachovávají správnou evidenci. Čistý parseHistoryCSV cizích stanic report nevytváří. 284/284 Node, cílený browser a info harness prošly; viz docs/VALIDACE_CSV.md a docs/performance/VALIDACE_CSV.md. Baseline 33557f2, pouze codex-dev. METEO-050 zůstává rozpracované; dále časování transport/parser/render a MQTT čítače.
 - v0.15.0: METEO-009 DONE — společný panel stáří záznamu, posledního úspěšného přenosu a načtené historie ve všech třech pohledech. Sheets úspěch znamená přijatý platný export (i nezměněný), MQTT čas znamená příjem platné zprávy, ne čas čidla. Chyba ponechá data/poslední úspěch; station generation guard a reset zabrání přenosu evidence mezi stanicemi. O(1) aktualizace přes stávající minutový timer/visibility, bez dalších fetch/grafů a bez změny statistik. 273/273 Node, cílený browser, moderní a info harness prošly. Viz docs/STAV_DAT.md a docs/performance/STAV_DAT.md. Baseline 5dca29d, pouze codex-dev. Další etapa METEO-050; explicitní zóna/známý měřicí plán zůstávají METEO-048/027/045.
@@ -10,8 +11,8 @@
 - v0.12.0: třetí horní stránka Moderní přehled (`#moderni`) je alternativní design celého dashboardu. `currentPage=modern` používá původní page-main, společný DOM/store/grafy a všechny dolní záložky; žádné duplikované ID, druhé grafy, fetch/polling při přepnutí. CSS pouze body[data-view=modern], atribut přežije setTheme. syncModernStation bezpečně naplní výběr stanic při vstupu/updateUI/refresh. Původní #prehled a #analytika zachovány, Back/Forward/direct URL testované. Viz docs/MODERNI_PREHLED.md; METEO-011 částečně realizováno, personalizace karet dále.251/251Node testů a oba Chromium browser harnessy prošly.
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
-- Aktualizováno 2026-10-23; práce výhradně na `codex-dev`, výchozí revize této etapy `d1d42a4`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.17.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Aktualizováno 2026-10-23; práce výhradně na `codex-dev`, výchozí revize této etapy `068db56`; původní audit `fbb9659`. Ověřuj proti kódu.
+- Verze webu: 0.18.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -24,7 +25,7 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (296/296 prošlo po časování obnovy); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (308/308 prošlo po MQTT diagnostice); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
@@ -580,3 +581,37 @@ Existující upozornění na runtime Actions/ubuntu-latest přetrvávají; workf
 se v této etapě neměnilo. Následující commit mění pouze tuto evidenci.
 Další pokračování: METEO-050 — lokální čítače/důvody odmítnutí MQTT bez raw
 payloadu; znovu neimplementovat dokončené CSV čítače a časování.
+
+## MQTT diagnostika — v0.18.0, dokončení METEO-050
+
+Navázáno na ověřený bod068db56 bez opakování CSV analýzy. Dosavadní první
+kontroly onMessageArrived dostaly pevné čítače důvodů. Platné měření se počítá
+v okamžiku původního unshift; následující chyba aplikace nezpůsobí druhé
+odmítnutí nebo nepravdivý INVALID_JSON. Limity20/s,65536UTF-8B,300křádků,
+jejich pořadí i původní převod/aliasy/čas/duplicity zachovány.
+
+emptyDataStatus nově vytváří diagnostics se scope aktivní datové relace;
+reconnect jej nemění, reset ano. Pouze čítače/pevné kódy/časy, bez obsahu,
+topicu/hostu nebo výjimek a bez persistence. O(1), žádná nová kopie historie.
+refreshMQTTDiagnostics nepracuje s DOM mimo otevřenou rozbalenou diagnostiku.
+Přijímací invalidace zachovává jen aktivní dataValidationTrigger, aby bylo
+možné sledovat součty; CSV/reset/stanice a podklady původních měření nadále
+zavírají nápovědu. Zbytek společného hover/touch/keyboard chování zachován.
+
+308/308 Node,12nových v tests/mqtt-diagnostics.test.js. Rozšířený skutečný
+Chromium154 harness:24původních a12MQTTlayoutů v obou tématech/třech pohledech,
+320/1440px; stejný DOM čítačů, živé hodnoty, izolace CSV/timing, reconnect,
+size-limit bez reconnectu, reset a ochrana starých klientů, bez pageerror.
+Původní info harness prošel také, včetně1500ms hoveru, klávesnice a dotyku.
+Žádný broker/socket kontaktován, Client náhrada; původní konfiguraceSheets.
+Fyzický iOS/Safari, ACL/certy/firmware a živé MQTT nejsou touto etapou ověřeny.
+
+Sekvenční před/po handleru s1k–250k: zachováno pořadí/reference a nuly/převody;
+250k 100přijetí8,47→8,52ms,1000odmítnutí8,86→7,83ms. Metadata310BJSON;
+neprokazuje to zrychlení, cenu celého UI ani nulový memory leak. Viz
+docs/MQTT_DIAGNOSTIKA.md a docs/performance/MQTT_DIAGNOSTIKA.md.
+
+METEO-050 DONE v rozsahu provozního panelu; log/export dál METEO-064,
+fyzikální kvalita METEO-047, zóny048. Další METEO-008 podle existujícího
+profilu etapy13: rozdělit první tvorbu velkého analytického modelu a ověřit
+nezměněné plné výpočty. Main/archiv/config/workflow se zde neupravují.

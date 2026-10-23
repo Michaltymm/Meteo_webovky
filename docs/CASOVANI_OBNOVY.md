@@ -68,6 +68,6 @@ neprovedených kroků a sbalené vysvětlení. Panel projde 24 kombinacemi tří
 pohledů, dvou témat a 320/390/800/1440 px bez pageerror. Živé služby,
 broker, fyzický Safari/iOS a úplné vykreslení snímku tím ověřeny nejsou.
 
-CSV čítače a časování jsou dokončené části METEO-050. Celé ID dál čeká na
-počty/důvody odmítnutých MQTT zpráv; to je další vhodná malá etapa. Dlouhé
-synchronní parsování legitimní velké historie zůstává METEO-008.
+Ve v0.18.0 navazují dokončené [čítače MQTT](MQTT_DIAGNOSTIKA.md). METEO-050
+je hotové v rozsahu tohoto provozního panelu; log/export zůstává METEO-064.
+Dlouhé synchronní parsování legitimní velké historie zůstává METEO-008.

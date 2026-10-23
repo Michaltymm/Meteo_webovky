@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[MQTT diagnostika](MQTT_DIAGNOSTIKA.md): skutečný handler před/po s historií
+1k–250k, přijaté/odmítnuté dávky a zachování původních řádků; žádný živý broker.
+
 [Režie časování obnovy](CASOVANI_OBNOVY.md): celý načítací pipeline ve VM
 před/po na 1k–250k, zachování hodnot a cena omezeného snapshotu; skutečný browser
 ověřuje zvlášť hranice fází a ovládání.
