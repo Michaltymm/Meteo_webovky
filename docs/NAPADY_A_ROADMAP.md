@@ -1838,3 +1838,14 @@ Další checkpoint008: změřit zbývající heatmapové buňky/vyhlazení/nočn
 a podle profilu vybrat další malý průchod. Velký parser, worker/persistence,
 nezávislé výřezy a konzistentní streaming snapshot zůstávají samostatné.
 Neopakovat dokončený model ani porovnání; hlavní data/config/archiv/main beze změn.
+
+Publikování v0.18.2 ověřeno 2026-10-23: [Actions #36](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40016084617)
+pro [cebf40a](https://github.com/Michaltymm/Meteo_webovky/commit/cebf40ac4f0e9aae63bd307857f0429376018f76)
+**Success**, build28s/deploy46s/celkem82s,1artefakt.332/332lokálních Node,
+rozšířený100k browser a původní info harness prošly. Implementováno i ověřeno;
+nasazení potvrzené workflow, přímý živý Pages host je mimo síťovou politiku.
+Živé služby/broker a fyzický Safari/iOS tím ověřeny nejsou. Pouze codex-dev,
+main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Původní upozornění
+Actions runtime/ubuntu-latest přetrvávají; workflow se neměnilo. Následující
+commit zapisuje pouze tuto evidenci; pokračovat výše uvedeným profilem další
+synchronní práce008, neopakovat hotové párování a model.

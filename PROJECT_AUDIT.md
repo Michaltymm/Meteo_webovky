@@ -714,3 +714,14 @@ Viz docs/performance/POROVNANI_STANIC.md, reprodukční script/profileJSON a tes
 METEO-008 Rozpracováno. Dále profil heatmapových buněk/vyhlazení/noční analýzy,
 pak nejdražší malý průchod. Velký parser/worker/persistence, nezávislé výřezy
 a konzistentní streaming snapshot zůstávají dalšími částmi.
+
+Publikování v0.18.2 ověřeno 2026-10-23: [Actions #36](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40016084617)
+pro [cebf40a](https://github.com/Michaltymm/Meteo_webovky/commit/cebf40ac4f0e9aae63bd307857f0429376018f76)
+**Success** (build28s,deploy46s,celkem82s,1artefakt).332/332lokálních Node,
+rozšířený skutečný100k browser i info harness prošly; implementaci/ověření
+a workflow-nasazení rozlišovat od přímé kontroly živého Pages hostu, který
+není v síťové politice. Živé služby/MQTT/fyzické iOS neověřeny. Vzdálený
+codex-devcebf40a, main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Původní upozornění Actions runtime/ubuntu-latest trvají; bez změny workflow.
+Následující commit jen evidence, další checkpoint008: profil heatmapových
+buněk/vyhlazení/noční analýzy; nevracet se k dokončenému modelu a porovnání.
