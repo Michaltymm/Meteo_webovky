@@ -568,3 +568,15 @@ Viz docs/CASOVANI_OBNOVY.md a docs/performance/CASOVANI_OBNOVY.md.
 Dále METEO-050: MQTT počty/důvody odmítnutí, bez kopírování payloadu. Velké
 synchronní parsingové časy z předchozích profilů trvají (METEO-008). Main,
 archiv, konfigurace a workflow zůstávají beze změny.
+
+
+Publikování v0.17.0 ověřeno 2026-10-23: [Actions #33](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39957537357)
+pro [4ae2a09](https://github.com/Michaltymm/Meteo_webovky/commit/4ae2a091bb6707f7c818a0187997a9816764d522)
+**Success** — build 17 s, deploy 9 s, celkem 35 s. 296/296 lokálních Node testů
+a finální řízený Chromium browser prošly. Odesláno pouze do codex-dev; main
+stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages host není
+podle síťové politiky prostředí dostupný, nasazení potvrzuje workflow.
+Existující upozornění na runtime Actions/ubuntu-latest přetrvávají; workflow
+se v této etapě neměnilo. Následující commit mění pouze tuto evidenci.
+Další pokračování: METEO-050 — lokální čítače/důvody odmítnutí MQTT bez raw
+payloadu; znovu neimplementovat dokončené CSV čítače a časování.

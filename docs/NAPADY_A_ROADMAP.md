@@ -1674,3 +1674,15 @@ CSV čítače a časování jsou hotové. METEO-050 zůstává rozpracované pro
 počty/důvody odmítnutí (bez raw payloadu) — doporučená další malá etapa.
 Trvalý/anonymizovaný log/export dále METEO-064, velký parser METEO-008;
 časové zóny a fyzikální kvalita METEO-048/047 se touto etapou nemění.
+
+
+Publikování v0.17.0 ověřeno 2026-10-23: [Actions #33](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39957537357)
+pro [4ae2a09](https://github.com/Michaltymm/Meteo_webovky/commit/4ae2a091bb6707f7c818a0187997a9816764d522)
+**Success** — build 17 s, deploy 9 s, celkem 35 s. 296/296 lokálních Node testů
+a finální řízený Chromium browser prošly. Odesláno pouze do codex-dev; main
+stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages host není
+podle síťové politiky prostředí dostupný, nasazení potvrzuje workflow.
+Existující upozornění na runtime Actions/ubuntu-latest přetrvávají; workflow
+se v této etapě neměnilo. Následující commit mění pouze tuto evidenci.
+Další pokračování: METEO-050 — lokální čítače/důvody odmítnutí MQTT bez raw
+payloadu; znovu neimplementovat dokončené CSV čítače a časování.
