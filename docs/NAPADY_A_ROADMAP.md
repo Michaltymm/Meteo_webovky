@@ -1783,3 +1783,15 @@ heap poGC není peak nebo důkaz vícedenní stability.
 a podle nákladů rozdělit její nejdražší průchod. Velký CSV parser, vyhlazení,
 noční analýza, heatmapové buňky/vykreslení, nezávislé rozsahy a streaming dále.
 Worker/IndexedDB až po doložení režie přenosu/paměti, obecná cache004 samostatně.
+
+Publikování v0.18.1 ověřeno 2026-10-23: [Actions #35](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40012622055)
+pro [3314c6c](https://github.com/Michaltymm/Meteo_webovky/commit/3314c6cbd5b241897655421e671efbc6ecb78244)
+**Success**, build25s/deploy9s/celkem43s,1artefakt. Lokální321/321Node,
+13/13cílené po závěrečné ochraně starých XY os, nový100k browser a původní
+info harness prošly. Implementováno i otestováno; nasazení potvrzené workflow.
+Přímý Pages host není v síťové politice prostředí, jeho živé widgety ani skutečné
+externí služby tím ověřeny nejsou. Pouze codex-dev, main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Existující upozornění Actions
+runtime/ubuntu-latest přetrvávají, workflow se neměnilo. Následující commit
+zapisuje pouze evidenci. Pokračovat další částí008 podle výše uvedeného bodu;
+dokončené dávkování společného Sheets modelu a050 znovu neimplementovat.

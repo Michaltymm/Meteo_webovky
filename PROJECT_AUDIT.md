@@ -663,3 +663,14 @@ skripty a13testů; žádná produkční závislost, změna configů/workflow/arc
 METEO-008 Rozpracováno; příště nejprve změřit přípravu porovnání a rozdělit
 nejdražší průchod podle výsledků. Velký parser, smoothing/night/heatmapa,
 nezávislé výřezy a streaming snapshot samostatné zbývající části.
+
+Publikování v0.18.1 ověřeno 2026-10-23: [Actions #35](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40012622055)
+pro [3314c6c](https://github.com/Michaltymm/Meteo_webovky/commit/3314c6cbd5b241897655421e671efbc6ecb78244)
+**Success** (build25s,deploy9s,celkem43s,1artefakt).321/321lokálních Node,
+13/13cílené po závěrečné ochraně použití starých XY os a oba browser harnessy
+prošly. Implementované/otestované a workflow-nasazené se rozlišuje; přímý živý
+Pages host je mimo síťovou politiku, skutečné zdroje/broker/fyzické iOS neověřeny.
+Vzdálený codex-dev3314c6c, main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Původní upozornění Actions runtime/
+ubuntu-latest trvají, bez změny workflow. Následující commit je pouze evidence;
+další checkpoint008: profil navazujícího porovnání, nikoli opakování hotového modelu.
