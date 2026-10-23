@@ -63,6 +63,41 @@ async def main():
         await page.locator('.tab-btn[data-tab="now"]').click()
         assert len(requests)==count
         assert await page.evaluate('Object.keys(Chart.instances).length')==8
+        # Preferences affect only visibility, never rows/statistics or classic view.
+        picker=page.locator('#modernCardPicker')
+        await picker.locator('summary').click()
+        for key in ['tank','rainInc','absHum']:
+            await page.locator('#modernShow-'+key).uncheck()
+        await page.keyboard.press('Escape')
+        assert await picker.evaluate('e=>!e.open')
+        assert await page.locator('#sensorCard-tank').is_hidden()
+        assert await page.locator('#modernCardCount').inner_text()=='4/7'
+        assert await page.evaluate('store.rows===savedRows && chart24===savedChart')
+        assert len(requests)==count
+        # Help moved into the body must close before its source card is hidden.
+        await page.locator('#sensorCard-vpd .info-trigger').click()
+        await page.locator('#infoPopover').wait_for(state='visible')
+        await page.evaluate('setModernCardVisible("vpd",false)')
+        assert await page.locator('#infoPopover').is_hidden()
+        assert await page.locator('#modernCardCount').inner_text()=='3/7'
+        await page.locator('[data-page="main"]').click()
+        assert await page.locator('.sensor-tile:visible').count()==7
+        await page.locator('[data-page="modern"]').click()
+        assert await page.locator('.sensor-tile:visible').count()==3
+        assert len(requests)==count
+        await page.reload()
+        await page.wait_for_function('currentPage==="modern" && store.rows.length===400')
+        assert await page.locator('.sensor-tile:visible').count()==3
+        # An explicit empty choice keeps an obvious recovery action.
+        await picker.locator('summary').click()
+        for key in ['pressure','rain','voltage']:
+            await page.locator('#modernShow-'+key).uncheck()
+        await page.keyboard.press('Escape')
+        assert await page.locator('#sensorCards').is_hidden()
+        assert await page.locator('#modernCardsEmpty').is_visible()
+        await page.locator('#modernCardsEmpty button').click()
+        assert await page.locator('.sensor-tile:visible').count()==7
+        assert await page.locator('#modernCardsEmpty').is_hidden()
         for theme in ['darkblue','light']:
             await page.evaluate('(t)=>setTheme(t)',theme)
             assert await page.locator('body').get_attribute('data-view')=='modern'
@@ -77,6 +112,20 @@ async def main():
                 assert all(l['left']>=0 and l['right']<=width+1 for l in links),(width,links)
                 layouts.append({'theme':theme,'width':width,'overflow':False})
                 await page.screenshot(path=str(output.with_name(f'{output.stem}-{theme}-{width}.png')),full_page=False)
+                await picker.locator('summary').click()
+                await page.wait_for_timeout(50)
+                assert await page.locator('.modern-card-options').is_visible()
+                box=await page.locator('.modern-card-options').bounding_box()
+                assert box['x']>=0 and box['x']+box['width']<=width+1,box
+                assert box['y']>=0 and box['y']+box['height']<=1051 if width>650 else box['y']>=0 and box['y']+box['height']<=845,box
+                if width in [1440,390]:
+                    await page.screenshot(path=str(output.with_name(f'{output.stem}-picker-{theme}-{width}.png')))
+                if width==390:
+                    await page.locator('.modern-card-close').click()
+                    assert await picker.evaluate('e=>!e.open')
+                else:
+                    await page.keyboard.press('Escape')
+        await page.evaluate('setModernCardVisible("tank",false)')
         for index in [1,2,0]:
             await page.locator('#modernStation').select_option(str(index))
             await page.wait_for_function('(i)=>activeIdx===i && store.rows.length===400',arg=index)
@@ -85,20 +134,29 @@ async def main():
             if index==1:assert await page.locator('#curVoltage').inner_text()=='0.00'
             if index==2:assert await page.locator('#curVoltage').inner_text()=='–'
             assert await page.evaluate('currentPage')=='modern'
+            assert await page.locator('#sensorCard-tank').is_visible()==(index!=0)
         await page.set_viewport_size({'width':1440,'height':1050})
         await page.evaluate('setTheme("darkblue")')
         await page.locator('.tab-btn[data-tab="hist"]').click()
         await page.wait_for_function('store.fullLoaded')
         assert await page.locator('#histTableBody tr').count()>0
-        await page.evaluate('globalThis.savedRows=store.rows')
+        await page.wait_for_load_state('networkidle')
+        await page.evaluate('''()=>{globalThis.savedRows=store.rows;globalThis.navigationFetches=[];
+            const originalFetch=fetch;globalThis.fetch=(url,options)=>{navigationFetches.push({view:currentPage,url:String(url)});return originalFetch(url,options)};}''')
         count=len(requests)
         await page.locator('[data-page="analytics"]').click()
         await page.wait_for_function('analyticsState.model!==null')
         assert await page.locator('#page-main').is_hidden()
+        await page.wait_for_load_state('networkidle')
+        assert not any(r['station']==0 for r in requests[count:]),requests[count:]
         await page.locator('[data-page="modern"]').click()
         assert await page.locator('#tab-hist').is_visible()
         assert await page.evaluate('analyticsCharts.size===0 && store.rows===savedRows')
-        assert len(requests)==count
+        navigation=await page.evaluate('navigationFetches')
+        assert all(r['view']=='analytics' for r in navigation),navigation
+        assert all(configs[0]['sheetId'] not in r['url'] for r in navigation),navigation
+        await page.wait_for_timeout(100)
+        assert len(await page.evaluate('navigationFetches'))==len(navigation)
         await page.evaluate('resetStationStore()')
         assert await page.locator('#stationDataEmpty').is_visible()
         assert await page.locator('#stationData').is_hidden()
@@ -110,6 +168,6 @@ async def main():
         assert not errors,errors
         version=browser.version
         await browser.close()
-    output.write_text(json.dumps({'browser':version,'layouts':layouts,'pageErrors':errors,'checks':['shared data/charts','history Back/Forward','three station configs','zero/missing voltage','subtabs','analytics lifecycle','empty state','direct modern URL','theme switch'],'transport':'Controlled CSV/UV, real Chart.js/Paho with SRI'},indent=2)+'\n')
+    output.write_text(json.dumps({'browser':version,'layouts':layouts,'pageErrors':errors,'checks':['shared data/charts','history Back/Forward','three station configs','zero/missing voltage','subtabs','analytics lifecycle','empty state','direct modern URL','theme switch','card preferences/reload/station isolation','classic view restores cards','empty selection recovery','picker bounds/Escape','help dismissal when hiding source'],'transport':'Controlled CSV/UV, real Chart.js/Paho with SRI'},indent=2)+'\n')
     print(output)
 asyncio.run(main())

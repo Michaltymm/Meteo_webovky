@@ -2057,7 +2057,7 @@
     body[data-view="modern"] .table-card table td { padding:.68rem 1.1rem; white-space:normal; overflow-wrap:anywhere; }
     body[data-view="modern"] .table-card table td:first-child { color:var(--muted); }
     body[data-view="modern"] .extreme-source-button[hidden] { display:none; }
-    body[data-view="modern"] .sensor-row { grid-template-columns:repeat(7,minmax(0,1fr)); gap:.8rem; margin-bottom:1.1rem; }
+    body[data-view="modern"] .sensor-row { grid-template-columns:repeat(var(--modern-card-count,7),minmax(0,1fr)); gap:.8rem; margin-bottom:1.1rem; }
     body[data-view="modern"] .sensor-tile { min-width:0; text-align:left; border:1px solid var(--border); border-radius:18px; padding:1.1rem; min-height:128px; }
     body[data-view="modern"] .sensor-tile:hover { border-color:var(--accent); }
     body[data-view="modern"] .sensor-tile .st-lbl { font-size:.65rem; letter-spacing:.03em; line-height:1.5; min-height:2.7em; }
@@ -2077,7 +2077,7 @@
     @media(max-width:1150px) {
       body[data-view="modern"] .top-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
       body[data-view="modern"] .top-row>.table-card:last-child { grid-column:1/-1; }
-      body[data-view="modern"] .sensor-row { grid-template-columns:repeat(4,minmax(0,1fr)); }
+      body[data-view="modern"] .sensor-row { grid-template-columns:repeat(var(--modern-card-count-tablet,4),minmax(0,1fr)); }
     }
     @media(max-width:650px) {
       body[data-view="modern"] .page-wrapper { padding:1rem .8rem 2rem; }
@@ -2089,14 +2089,36 @@
       body[data-view="modern"] .top-row { grid-template-columns:minmax(0,1fr); }
       body[data-view="modern"] .current-card { min-height:205px; padding:1.4rem; }
       body[data-view="modern"] .big-val { font-size:4.8rem; }
-      body[data-view="modern"] .sensor-row { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      body[data-view="modern"] .sensor-tile:last-child { grid-column:1/-1; }
+      body[data-view="modern"] .sensor-row { grid-template-columns:repeat(var(--modern-card-count-mobile,2),minmax(0,1fr)); }
+      body[data-view="modern"] .sensor-row.modern-odd .sensor-tile.modern-last { grid-column:1/-1; }
       body[data-view="modern"] .sensor-tile { min-height:118px; padding:1rem; }
       body[data-view="modern"] .sensor-tile .st-lbl { min-height:0; }
       body[data-view="modern"] .chart-wrapper,body[data-view="modern"] .chart-card { padding:.85rem; border-radius:16px; }
       body[data-view="modern"] .chart-canvas-wrap { height:280px; }
     }
     @media(max-width:480px) { .page-link { font-size:.7rem; padding:.35rem .3rem; text-align:center; } }
+
+    .modern-toolbar { display:flex; align-items:end; gap:.75rem; min-width:0; }
+    .modern-card-picker { position:relative; flex-shrink:0; }
+    .modern-card-picker>summary { min-height:46px; padding:.75rem; border:1px solid var(--border); border-radius:12px; background:var(--bg2); color:var(--text); font-size:.8rem; cursor:pointer; }
+    .modern-card-picker>summary span { color:var(--muted); margin-left:.35rem; font-variant-numeric:tabular-nums; }
+    .modern-card-picker>summary:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    .modern-card-options { position:absolute; right:0; top:calc(100% + .5rem); z-index:30; width:300px; max-width:calc(100vw - 2rem); max-height:60vh; overflow-y:auto; overscroll-behavior:contain; padding:1rem; border:1px solid var(--border); border-radius:14px; background:var(--bg2); box-shadow:0 12px 32px #0004; }
+    .modern-card-options fieldset { border:0; min-width:0; }
+    .modern-card-options legend { font-size:.83rem; font-weight:600; padding:0 65px .4rem 0; min-height:44px; }
+    .modern-card-close { position:absolute; top:.6rem; right:.7rem; min-height:44px; padding:.4rem .6rem; background:var(--bg3); color:var(--text); border:1px solid var(--border); border-radius:8px; cursor:pointer; }
+    .modern-card-options label { display:flex; gap:.65rem; align-items:center; min-height:44px; font-size:.83rem; cursor:pointer; }
+    .modern-card-options input { width:20px; height:20px; flex-shrink:0; accent-color:var(--accent); }
+    .modern-card-options p { font-size:.73rem; line-height:1.5; margin:.5rem 0 .8rem; color:var(--muted); }
+    .modern-card-options .ana-button { width:100%; }
+    #sensorCards[hidden], .sensor-tile[hidden], #modernCardsEmpty[hidden] { display:none; }
+    .modern-cards-empty { margin-bottom:1rem; border:1px dashed var(--border); border-radius:14px; padding:1rem; color:var(--muted); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; font-size:.85rem; }
+    @media(max-width:650px) {
+      .modern-toolbar { flex-wrap:wrap; align-items:stretch; }
+      .modern-toolbar .modern-station-control { flex:1; min-width:180px; }
+      .modern-card-picker { align-self:end; }
+      .modern-card-options { position:fixed; top:auto; bottom:1rem; left:1rem; right:1rem; width:auto; max-width:none; max-height:65vh; z-index:110; }
+    }
   </style>
 </head>
 
@@ -2110,8 +2132,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0131"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.13.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0140"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.14.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2412,9 +2434,28 @@
         <h1 id="modernHeading">Počasí, přehledně.</h1>
         <p>Aktuální hodnoty, historie a souvislosti na jednom místě.</p>
       </div>
-      <label class="modern-station-control" for="modernStation">Vybraná meteostanice
-        <select id="modernStation" onchange="switchStation(Number(this.value))"></select>
-      </label>
+      <div class="modern-toolbar">
+        <label class="modern-station-control" for="modernStation">Vybraná meteostanice
+          <select id="modernStation" onchange="switchStation(Number(this.value))"></select>
+        </label>
+        <details class="modern-card-picker" id="modernCardPicker" ontoggle="if(this.open)closeInfoPopover()">
+          <summary>Upravit karty <span id="modernCardCount">7/7</span></summary>
+          <div class="modern-card-options">
+            <fieldset><legend>Senzorové karty této stanice</legend>
+              <button type="button" class="modern-card-close" onclick="closeModernCardPicker(true)">Hotovo</button>
+              <label><input type="checkbox" id="modernShow-pressure" onchange="setModernCardVisible('pressure', this.checked)" checked> Tlak</label>
+              <label><input type="checkbox" id="modernShow-rainInc" onchange="setModernCardVisible('rainInc', this.checked)" checked> Přírůstek srážek</label>
+              <label><input type="checkbox" id="modernShow-rain" onchange="setModernCardVisible('rain', this.checked)" checked> Celkový déšť</label>
+              <label><input type="checkbox" id="modernShow-tank" onchange="setModernCardVisible('tank', this.checked)" checked> Nádrž</label>
+              <label><input type="checkbox" id="modernShow-voltage" onchange="setModernCardVisible('voltage', this.checked)" checked> Napětí</label>
+              <label><input type="checkbox" id="modernShow-absHum" onchange="setModernCardVisible('absHum', this.checked)" checked> Absolutní vlhkost</label>
+              <label><input type="checkbox" id="modernShow-vpd" onchange="setModernCardVisible('vpd', this.checked)" checked> VPD vzduchu</label>
+            </fieldset>
+            <p id="modernCardStorage">Volba se uloží v tomto prohlížeči zvlášť pro každou stanici.</p>
+            <button type="button" class="ana-button" onclick="resetModernCards()">Obnovit všechny karty</button>
+          </div>
+        </details>
+      </div>
     </section>
     <p id="stationDataEmpty" hidden style="color:var(--muted);padding:1rem 0">
       Data vybrané stanice zatím nejsou k dispozici.
@@ -2524,46 +2565,50 @@
     </div>
 
     <!-- ══ EXTRA SENSORS ══ -->
-    <div class="sensor-row">
-      <div class="sensor-tile" style="border-top-color:var(--yellow)" onclick="openExplorerWith('pressure')"
+    <div class="sensor-row" id="sensorCards">
+      <div class="sensor-tile" id="sensorCard-pressure" style="border-top-color:var(--yellow)" onclick="openExplorerWith('pressure')"
         title="Zobrazit v grafu">
         <div class="st-lbl">⬆ Tlak</div>
         <div class="st-val" id="curPressure">–</div>
         <div class="st-unit">hPa</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--blue)" onclick="openExplorerWith('rainInc')"
+      <div class="sensor-tile" id="sensorCard-rainInc" style="border-top-color:var(--blue)" onclick="openExplorerWith('rainInc')"
         title="Zobrazit v grafu">
         <div class="st-lbl">🌧 Přírůstek</div>
         <div class="st-val" id="curRainInc">–</div>
         <div class="st-unit">mm</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--teal)" onclick="openExplorerWith('rain')"
+      <div class="sensor-tile" id="sensorCard-rain" style="border-top-color:var(--teal)" onclick="openExplorerWith('rain')"
         title="Zobrazit v grafu">
         <div class="st-lbl">☔ Celk. déšť</div>
         <div class="st-val" id="curRainTotal">–</div>
         <div class="st-unit">mm</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--teal)">
+      <div class="sensor-tile" id="sensorCard-tank" style="border-top-color:var(--teal)">
         <div class="st-lbl">🪣 Nádrž</div>
         <div class="st-val" id="curTank">–</div>
         <div class="st-unit">mm</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--purple)" onclick="openExplorerWith('voltage')"
+      <div class="sensor-tile" id="sensorCard-voltage" style="border-top-color:var(--purple)" onclick="openExplorerWith('voltage')"
         title="Zobrazit v grafu">
         <div class="st-lbl">🔋 Napětí</div>
         <div class="st-val" id="curVoltage">–</div>
         <div class="st-unit">V</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--teal)" onclick="openExplorerWith('absHum')" title="Zobrazit v grafu">
+      <div class="sensor-tile" id="sensorCard-absHum" style="border-top-color:var(--teal)" onclick="openExplorerWith('absHum')" title="Zobrazit v grafu">
         <div class="st-lbl" id="absoluteHumidityLabel">Absolutní vlhkost</div>
         <div class="st-val" id="curAbsHum">–</div>
         <div class="st-unit">g/m³ · vypočteno</div>
       </div>
-      <div class="sensor-tile" style="border-top-color:var(--yellow)" onclick="openExplorerWith('vpd')" title="Zobrazit v grafu">
+      <div class="sensor-tile" id="sensorCard-vpd" style="border-top-color:var(--yellow)" onclick="openExplorerWith('vpd')" title="Zobrazit v grafu">
         <div class="st-lbl">VPD vzduchu<button type="button" class="info-trigger" data-info-text="Vypočtený deficit tlaku vodní páry ve vzduchu." aria-label="VPD vzduchu: vysvětlení"><span class="info-glyph" aria-hidden="true">i</span></button></div>
         <div class="st-val" id="curVPD">–</div>
         <div class="st-unit">kPa · vypočteno</div>
       </div>
+    </div>
+    <div id="modernCardsEmpty" class="modern-cards-empty" hidden>
+      <p>Všechny senzorové karty této stanice jsou skryté.</p>
+      <button type="button" class="ana-button" onclick="resetModernCards()">Zobrazit všechny karty</button>
     </div>
     <details class="comparison-data" id="humidityMetricsInfo" data-info>
       <summary>Jak se počítají vlhkostní metriky</summary>
@@ -5857,7 +5902,81 @@
     function appPageFromHash() {
       return location.hash === "#analytika" ? "analytics" : location.hash === "#moderni" ? "modern" : "main";
     }
+    const MODERN_CARD_KEYS = ["pressure", "rainInc", "rain", "tank", "voltage", "absHum", "vpd"];
+    function normalizeModernCards(input) {
+      const defaults = () => STATION_DEFAULTS.map(() => [...MODERN_CARD_KEYS]);
+      if (!input || input.version !== 1 || !Array.isArray(input.stations) || input.stations.length !== 3) return defaults();
+      return input.stations.map(list => {
+        if (!Array.isArray(list) || list.length > 32 || list.some(key => typeof key !== "string")) return [...MODERN_CARD_KEYS];
+        const selected = MODERN_CARD_KEYS.filter(key => list.includes(key));
+        return list.length && !selected.length ? [...MODERN_CARD_KEYS] : selected;
+      });
+    }
+    function loadModernCards() {
+      const text = preferences.getItem("meteoModernCards");
+      if (!text || text.length > 4096) return normalizeModernCards(null);
+      try { return normalizeModernCards(JSON.parse(text)); } catch { return normalizeModernCards(null); }
+    }
+    let modernCards = loadModernCards(), modernCardsSignature = "", modernCardsContext = null;
+    function syncModernCards() {
+      const modern = currentPage === "modern", context = modern ? activeIdx : null;
+      if (context !== modernCardsContext) el("modernCardPicker").open = false;
+      modernCardsContext = context;
+      const selected = modern ? modernCards[activeIdx] : MODERN_CARD_KEYS;
+      const signature = [currentPage, activeIdx, selected.join(","), preferences.persistent].join("|");
+      if (modernCardsSignature === signature) return;
+      modernCardsSignature = signature;
+      for (const key of MODERN_CARD_KEYS) {
+        el("sensorCard-" + key).hidden = !selected.includes(key);
+        el("sensorCard-" + key).classList.toggle("modern-last", key === selected.at(-1));
+        el("modernShow-" + key).checked = modernCards[activeIdx].includes(key);
+      }
+      const row = el("sensorCards");
+      row.hidden = modern && !selected.length;
+      row.classList.toggle("modern-odd", selected.length % 2 === 1);
+      row.style.setProperty?.("--modern-card-count", Math.max(1, selected.length));
+      row.style.setProperty?.("--modern-card-count-tablet", Math.max(1, Math.min(4, selected.length)));
+      row.style.setProperty?.("--modern-card-count-mobile", Math.max(1, Math.min(2, selected.length)));
+      el("modernCardsEmpty").hidden = !modern || !!selected.length;
+      setNodeText(el("modernCardCount"), modernCards[activeIdx].length + "/" + MODERN_CARD_KEYS.length);
+      setNodeText(el("modernCardStorage"), preferences.persistent
+        ? "Volba se uloží v tomto prohlížeči zvlášť pro každou stanici."
+        : "Úložiště není dostupné. Volba platí jen pro tuto relaci.");
+    }
+    function persistModernCards() {
+      closeInfoPopover();
+      preferences.setItem("meteoModernCards", JSON.stringify({ version: 1, stations: modernCards }));
+      syncModernCards();
+    }
+    function setModernCardVisible(key, visible) {
+      if (currentPage !== "modern" || !MODERN_CARD_KEYS.includes(key) || typeof visible !== "boolean") return;
+      const selected = modernCards[activeIdx];
+      if (selected.includes(key) === visible) return;
+      modernCards[activeIdx] = MODERN_CARD_KEYS.filter(candidate => candidate === key ? visible : selected.includes(candidate));
+      persistModernCards();
+    }
+    function resetModernCards() {
+      if (currentPage !== "modern") return;
+      modernCards[activeIdx] = [...MODERN_CARD_KEYS];
+      persistModernCards();
+    }
+    function closeModernCardPicker(restoreFocus = false) {
+      const picker = el("modernCardPicker");
+      picker.open = false;
+      if (restoreFocus) picker.querySelector("summary").focus({ preventScroll: true });
+    }
+    document.addEventListener("click", event => {
+      const picker = el("modernCardPicker");
+      if (picker.open && !picker.contains(event.target)) picker.open = false;
+    }, true);
+    document.addEventListener("keydown", event => {
+      const picker = el("modernCardPicker");
+      if (event.key === "Escape" && picker.open) {
+        closeModernCardPicker(true);
+      }
+    });
     function syncModernStation() {
+      syncModernCards();
       if (currentPage !== "modern") return;
       const select = el("modernStation");
       const options = stations.map((station,index) => `<option value="${index}">${escapeHTML(station.name)}</option>`).join("");

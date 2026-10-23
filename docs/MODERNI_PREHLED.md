@@ -1,4 +1,4 @@
-# Moderní přehled — v0.12.0
+# Moderní přehled — v0.14.0
 
 Nové samostatné zobrazení je v horní navigaci mezi hlavním přehledem a analytikou:
 [otevřít vývojový přehled](https://michaltymm.github.io/Meteo_webovky/dev/#moderni).
@@ -25,13 +25,40 @@ volbu nesmaže. Nikde nevznikají duplicitní ID ani druhá sada grafů.
 - URL podporuje přímé otevření, nový panel prohlížeče a Zpět/Vpřed.
 - Chybějící senzory zůstávají „–“, platná nula se zachovává; neodvozují se nové meteorologické hodnoty.
 
-Volba jednotlivých karet a ukládání preferencí podle stanice z METEO-011 jsou
-další samostatné části roadmapy; nová stránka je neimplementuje.
+## Výběr karet podle stanice
+
+Od v0.14.0 otevřete „Upravit karty“ vedle výběru stanice. Zaškrtnutím vybíráte
+tlak, přírůstek srážek, celkový déšť, nádrž, napětí, absolutní vlhkost a VPD.
+Volba platí pro aktivní stanici a ukládá se v tomto prohlížeči; po obnovení
+stránky se zachová. Hlavní teplota, vlhkost, rosný bod a statistiky zůstávají viditelné.
+
+„Obnovit všechny karty“ vrátí výchozí výběr právě zvolené stanice. Při skrytí
+všech senzorových karet se zobrazí přímo v přehledu obnovovací tlačítko.
+Klasický přehled nadále ukazuje všechny karty. Skrytím se nemění data, výpočty,
+grafy ani dostupnost historie. Chybějící hodnota se automaticky neschovává.
+
+Výběr podporuje klávesnici, Hotovo, Escape a kliknutí mimo panel. Mobilní panel
+má omezenou výšku a posun obsahu; nedostupné storage umožní nastavení jen pro
+aktuální relaci a tento rozsah vysvětlí. Neplatná předvolba obnoví použitelné
+výchozí nastavení. Vysvětlení ⓘ z v0.13.1 nadále používají prodlevu1500ms;
+skrytí zdrojové karty zavře jejich aktivní nebo čekající panel.
+
+Předvolby používají samostatný klíč meteoModernCards se schema version1, třemi
+poli povolených ID a limitem4096znaků. Vývojový web má prefix meteoDev: jako
+ostatní předvolby; hodnoty se nekopírují do exportu konfigurace zdrojů.
 
 ## Ověření
 
-`node --test tests/*.test.js`: **251/251 prošlo**, včetně pěti nových regresí
-navigace, sdílení stavu, prázdných/nulových hodnot a bezpečného názvu stanice.
+`node --test tests/*.test.js`: **263/263 prošlo** ve v0.14.0; zahrnuje9nových
+regresí předvoleb, izolace stanic, reloadu, obnovy, blokovaného/poškozeného storage,
+klasického přehledu, odvolání hoveru a stabilních DOM aktualizací.
+Moderní browser harness navíc ověřil checkboxy, Hotovo/Escape, zachování výběru
+po reloadu,7→3→7karet při přepnutí vzhledu,0fetch a8→8Chart při volbě karet,
+obnovu prázdného výběru a panel ve všech8kombinacích viewport/téma.
+`check-info-browser.cjs` také prošel s původní nápovědou včetně1500ms a dotyku.
+Podklady v této etapě: `/workspace/validation/meteo-cards/` mimo repozitář.
+
+Původní ověření v0.12.0:
 
 `scripts/check-modern-dashboard-browser.py` použil skutečný Chromium154,
 původní tři konfigurace a skutečné Chart.js/Paho se SRI; CSV/UV jsou řízené

@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.14.0
+
+- V moderním přehledu lze přes „Upravit karty“ vybrat senzorové karty zvlášť pro každou stanici. Volba se uloží v prohlížeči; všechny karty lze jedním tlačítkem obnovit.
+- Původní přehled nadále ukazuje všechny karty. Skrytí karty nemění měření, statistiky ani dostupnost grafů a nápovědy.
+
 ## v0.13.1
 
 - Nápověda ⓘ se myší otevře až po 1,5 sekundy nad ikonou. Krátké přejetí ji nespustí a po odjetí se čekání zruší. Klepnutí, kliknutí a klávesnice otevírají nápovědu okamžitě.

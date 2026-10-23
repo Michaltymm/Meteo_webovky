@@ -1,13 +1,14 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.14.0: METEO-011 DONE v rozsahu7volitelných senzorových karet. Moderní přehled má „Upravit karty“, uložený výběr po stanici (meteoModernCards, schema1, devprefix), bezpečné defaulty/validaci, session fallback a obnovení všech. Klasický přehled vždy7karet. syncModernCards se volá přes syncModernStation při vstupu/updateUI/refresh a používá podpis pro omezení DOM. Data a grafy beze změny; žádné fetch ani nové Chart. Skrývání zavře infoPopover a pendingInfoTrigger,1500ms nápověda zachována.263/263Node + moderní a info Chromium harnessy prošly. Viz docs/MODERNI_PREHLED.md a docs/performance/MODERNI_KARTY.md. Výchozí revize4a88d7e, pouzecodex-dev.
 - v0.13.1: hover nápovědy má jednotný dwell 1500 ms. Odjetí, přechod na jinou ikonu, Escape, scroll, resize, skrytí stránky a invalidace ruší čekání. Kliknutí/dotyk/klávesnice jsou okamžité. 254/254 Node testů včetně 3 nových časovačových regresí a rozšířený Chromium harness prošly; rychlé přejetí a aktivní→čekající ikona ověřeny.
 - v0.13.0: společná nápověda ⓘ nahrazuje tlačítka podkladů minima/maxima, 17 vysvětlujících sekcí a původní srážkové otazníky. Jediný panel v body, přesun původního DOM bez klonování; živé poznámky, tabulky i ovládání zachované. Hover/odjetí, dotyk, fokus/Enter/Tab/Escape; zavření při navigaci, scrollu mimo panel, resize a invalidaci dat. Ověřeno 251/251 Node testů + scripts/check-info-browser.cjs v Chromium 153 (řízené CSV/UV, skutečné Chart/Paho se SRI), 1440/390/320px, obě témata/přehledy/analytika, bez pageerror a bez dodatečného fetch/Chart při otevření nápovědy. METEO-010/011/012/030/063 dílčí UI; širší úkoly zůstávají otevřené. Fyzický Safari/iPhone neověřen.
 - v0.12.0: třetí horní stránka Moderní přehled (`#moderni`) je alternativní design celého dashboardu. `currentPage=modern` používá původní page-main, společný DOM/store/grafy a všechny dolní záložky; žádné duplikované ID, druhé grafy, fetch/polling při přepnutí. CSS pouze body[data-view=modern], atribut přežije setTheme. syncModernStation bezpečně naplní výběr stanic při vstupu/updateUI/refresh. Původní #prehled a #analytika zachovány, Back/Forward/direct URL testované. Viz docs/MODERNI_PREHLED.md; METEO-011 částečně realizováno, personalizace karet dále.251/251Node testů a oba Chromium browser harnessy prošly.
 - Bezpečnostní závěry: [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md), 5 potvrzených podmíněných nálezů opraveno; 246/246 Node testů a Chromium regrese prošly. Infrastruktura, striktní CSP, úplná modernizace archivu a fyzické Safari/iOS zůstávají mimo ověřený rozsah. Nasazení viz SECURITY_ROADMAP.
 - Bezpečnostní série: [docs/SECURITY_ROADMAP.md](docs/SECURITY_ROADMAP.md); etapy 1–10 dokončeny v dostupném rozsahu, otevřená externí ověření uvedena zvlášť. SEC-001/002: konfigurace validovaná před resetem, jen podporovaná pole, odolné předvolby při blokaci/poškození. 7 nových + 34 souvisejících regresí prošlo. Soukromé nálezy mimo repozitář.
 - Aktualizováno 2026-10-22; práce výhradně na `codex-dev`, výchozí revize této etapy `b80169c`; původní audit `fbb9659`. Ověřuj proti kódu.
-- Verze webu: 0.13.1 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
+- Verze webu: 0.14.0 v hlavičce `#appVersion`; stručná historie vydání v `RELEASE_NOTES.md`, pravidla v AGENTS.md.
 - Statický český dashboard tří meteostanic; aktivní aplikace je kořenový `index.html`.
 - HTML obsahuje CSS, konfiguraci, CSV parser, výpočty i všechny grafy; žádný framework/build/npm manifest.
 - Node.js `server.js` pouze poskytuje soubory; data nestahuje ani neukládá.
@@ -20,7 +21,7 @@
 - `Git/MQTT_webovky/index.html` je odlišná starší stránka; její účel jako archivu není potvrzen.
 - `Navrhy_Vylepseni.md` je audit Opusu s aktuální tabulkou realizace; pozor na odlišná Wxx ID workspace auditu (B.2).
 - AUD-001 DONE: server omezuje veřejné cesty i reálné cíle symlinků; 6 regresních testů prošlo.
-- Testy: `node --test tests/*.test.js` (251/251 prošlo po přidání moderního přehledu); server má factory `createServer(rootDir)`.
+- Testy: `node --test tests/*.test.js` (263/263 prošlo po výběru karet); server má factory `createServer(rootDir)`.
 - AUD-002/004/009 DONE: generační kontext, rušení síťových operací, await parseru, jeden spravovaný MQTT klient.
 - AUD-003/005/006/007/008/011/012 DONE: bezpečný HTML výstup, grafy bez napětí, CSV/datum, roky, obnova i prázdné stavy.
 - AUD-013/FUT-004 DONE: plné statistiky, min/max redukce, cache rozsahu, aktivní grafy a bezpečné agregace; 250k test.
@@ -444,3 +445,11 @@ Fyzický Safari/iPhone a živé meteorologické zdroje nejsou tímto testem ově
 Dílčí METEO-010/011: nápověda na hover čeká 1500 ms souvislého pobytu myši nad stejnou ikonou. Při odjetí nebo změně ikony se čekání ruší; nová ikona má vlastní celou prodlevu. Časovač se ruší také při Escape, navigaci, scrollu mimo panel, resize, skrytí stránky a invalidaci dat. Skrytý/odpojený prvek se dodatečně neotevře. Kliknutí, dotyk a klávesnice zůstávají okamžité. Jediný čekající časovač; žádná příprava obsahu, načtení dat nebo nový graf před jeho dokončením.
 
 Ověřeno:254/254Node testů (3 nové regrese čekání/záměny/zrušení/neplatného cíle) a rozšířený `scripts/check-info-browser.cjs` vChromium153 s původními Chart.js/Paho a řízeným CSV/UV. Krátké přejetí po1000ms zůstalo zavřené i po původním termínu, přechod po850ms začal celé čekání znovu; ověřeno i přepnutí zotevřeného panelu, Escape během čekání, okamžitý dotyk, navigace/invalidation a původní všechny scénáře.0pageerror. Předchozí v0.13.0 byla nasazena v89bf6d3, Actions#27Success; nové nasazení se ověřuje zvlášť. Fyzický Safari/iPhone neověřen.
+
+## Personalizace moderního přehledu — v0.14.0
+
+Před zahájením načteny cizí změny89bf6d3 a4a88d7e fast-forwardem; následná úprava navazuje na jejich ovladač nápovědy, neopakuje audit. Karty sID sensorCard-* a checkboxy modernShow-* zůstávají ve společném DOM; zobrazení řídí pouze moderní preference. Ostatní stavy obnovují všech7karet. Temperatura/RH/Td a statistika jsou pevné. Nativní details není data-info a nepřevádí se na hover tooltip; panel se zavírá Hotovo/Escape/kliknutím mimo nebo změnou stránky/stanice. Pořadí klíčů je pevné, unknown/poškozené/velké preference se bezpečně normalizují. Při skrývání se zavře i živý portál nápovědy; bez kopírování obsahu či statických klonů.
+
+Ověřeno263/263Node (9nových) a Chromium154 s původními configs a řízenými CSV/UV: reload/per-station izolace/klasika/empty/reset/keyboard/Hotovo,8layoutů2témata,0pageerror, Chart8→8 a0nových fetch při nastavení. Původní info harness prošel včetně1500ms/touch. Screenshotdesktop+mobil prohlédnut. Browser test nyní zaznamenává fetch přímo ve chvíli volání s currentPage: legitimní cizí historie analytiky se nesměšuje s přepnutím vzhledu; návrat nevytváří žádné další volání. Syntetický VM benchmark1k/10k/100k/250k řádků je v performance/MODERNI_KARTY.md; neměří DOM layout ani živý mobil.
+
+Další vhodná etapa: METEO-009 — jasně rozlišit stáří měření, poslední synchronizaci a neúplnou historii; stav ověřovat proti načítacímu kontextu bez nových požadavků. Konfigurace/workflow/main/archiv vtéto etapě neměněny.

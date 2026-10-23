@@ -71,7 +71,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | Malý DOM update, bez dalších fetchů | METEO-048 | Připraveno k realizaci |
 | METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu; v0.13.0 společné ⓘ: hover/touch/klávesnice, ARIA, Escape a návrat fokusu, panel ve viewportu; ostatní taby/fokus dále | IMP-006 | Rozpracováno |
-| METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.12.0 samostatný moderní přehled, responzivní karty a sdílené komponenty bez dalšího fetch/grafů | METEO-054; výběr karet a per-station preference dále; viz MODERNI_PREHLED.md | Rozpracováno |
+| METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.14.0 výběr 7 senzorových karet pro každou stanici, uložení/obnova a responzivní rozložení; bez dalších fetch/grafů | METEO-054; rozsah a důkazy v MODERNI_PREHLED.md | Dokončeno |
 | METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
 
 ## 3. Meteorologické metriky
@@ -1549,3 +1549,11 @@ Fyzický Safari/iPhone a živé meteorologické zdroje nejsou tímto testem ově
 Dílčí METEO-010/011: nápověda na hover čeká 1500 ms souvislého pobytu myši nad stejnou ikonou. Při odjetí nebo změně ikony se čekání ruší; nová ikona má vlastní celou prodlevu. Časovač se ruší také při Escape, navigaci, scrollu mimo panel, resize, skrytí stránky a invalidaci dat. Skrytý/odpojený prvek se dodatečně neotevře. Kliknutí, dotyk a klávesnice zůstávají okamžité. Jediný čekající časovač; žádná příprava obsahu, načtení dat nebo nový graf před jeho dokončením.
 
 Ověřeno:254/254Node testů (3 nové regrese čekání/záměny/zrušení/neplatného cíle) a rozšířený `scripts/check-info-browser.cjs` vChromium153 s původními Chart.js/Paho a řízeným CSV/UV. Krátké přejetí po1000ms zůstalo zavřené i po původním termínu, přechod po850ms začal celé čekání znovu; ověřeno i přepnutí zotevřeného panelu, Escape během čekání, okamžitý dotyk, navigace/invalidation a původní všechny scénáře.0pageerror. Předchozí v0.13.0 byla nasazena v89bf6d3, Actions#27Success; nové nasazení se ověřuje zvlášť. Fyzický Safari/iPhone neověřen.
+
+## METEO-011 — výběr senzorových karet, v0.14.0
+
+Navazuje na načtené změny89bf6d3/4a88d7e (sjednocené ⓘ a prodleva1500ms), které jsou zachované. V moderním přehledu nativní „Upravit karty“ vybírá7senzorových karet zvlášť pro každou stanici. Verze1 předvolby se ukládá do odděleného meteoDev:meteoModernCards na vývojovém webu, validuje tvar/ID/délku; poškozená data obnoví použitelné výchozí nastavení. Blokované storage podporuje relaci s vysvětlením v ovládání. Všechny karty lze skrýt a následně obnovit; klasický přehled ukazuje všechny. Hlavní teplota/vlhkost/rosný bod a statistiky zůstávají pevnou částí přehledu.
+
+DONE v tomto rozsahu: kompaktní responzivní dashboard + výběr senzorových karet + per-station preference. Žádné nové METEO ID. Data/statistiky/historie/grafy se nefiltrovaly, preference nemění konfigurace zdrojů. Skrytí zavře aktivní i čekající nápovědu; opakovaný refresh nemění znovu viditelnost, pokud se preference nezměnily. Panel má checkboxy44px, Hotovo/Escape/kliknutí mimo a použitelný obnovovací stav.
+
+Důkazy:263/263Node testů,9nových regresí v tests/modern-cards.test.js; rozšířený moderní Chromium harness (3stanice, reload, přesný záznam fetch fáze, prázdný výběr, obnova,320/390/800/1440px, obě témata), původní check-info-browser.cjs včetně1500ms a dotyku prošel.0pageerror,8původních Chart instancí,0nových fetch při volbě karet. [Podrobnosti](MODERNI_PREHLED.md), [mikroměření](performance/MODERNI_KARTY.md). Fyzický Safari/iPhone a živé zdroje tím neověřeny.
