@@ -1724,3 +1724,13 @@ METEO-064; fyzikální kvalita/deduplikace METEO-047 a časový kontrakt048.
 Další etapa **METEO-008**: podle měření etapy13 rozdělit první přípravu velkého
 analytického modelu na malé ověřitelné části. Zachovat přesné statistiky,
 generation guard a rozpočet paměti; worker/závislosti až s doloženým přínosem.
+
+Publikování v0.18.0 ověřeno 2026-10-23: [Actions #34](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39973854413)
+pro [17e46ba](https://github.com/Michaltymm/Meteo_webovky/commit/17e46badf8697b084336dc93c952f28484cc57a5)
+**Success** — build20s, deploy10s, celkem39s,1artefakt. Kód implementován,
+308/308 lokálních Node a oba cílené browser harnessy prošly; workflow
+potvrzuje nasazení. Přímý živý Pages host není v síťové politice prostředí,
+jeho widgety ani skutečné MQTT tím ověřeny nejsou. Odesláno jen do codex-dev,
+main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Existující upozornění
+Actions runtime/ubuntu-latest přetrvávají; workflow se neměnilo. Následující
+commit zapisuje pouze tuto evidenci. Pokračovat METEO-008, neopakovat METEO-050.

@@ -615,3 +615,13 @@ METEO-050 DONE v rozsahu provozního panelu; log/export dál METEO-064,
 fyzikální kvalita METEO-047, zóny048. Další METEO-008 podle existujícího
 profilu etapy13: rozdělit první tvorbu velkého analytického modelu a ověřit
 nezměněné plné výpočty. Main/archiv/config/workflow se zde neupravují.
+
+Publikování v0.18.0 ověřeno 2026-10-23: [Actions #34](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39973854413)
+pro [17e46ba](https://github.com/Michaltymm/Meteo_webovky/commit/17e46badf8697b084336dc93c952f28484cc57a5)
+**Success**, build20s/deploy10s/celkem39s,1artefakt. Implementace i ověření
+308/308 Node a oba browser harnessy dokončené; nasazení potvrzené workflow.
+Přímý živý Pages host je mimo síťovou politiku, skutečné MQTT/neřízené zdroje
+neověřeny. Vzdálený codex-dev potvrzen na17e46ba, main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Existující varování runtime
+Actions/ubuntu-latest bez změny workflow. Následující commit je jen tato evidence;
+příští etapa METEO-008 podle výše uvedeného checkpointu.
