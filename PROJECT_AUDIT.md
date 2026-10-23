@@ -480,3 +480,12 @@ Následující etapa METEO-050 má získat počty a důvody odmítnutí přímo 
 nesmí veřejně vypisovat celé měření či citlivý obsah. METEO-048 (výslovná zóna)
 a METEO-027/045 (měřicí plán, výpadky) nejsou touto etapou dokončeny.
 Produkční větev, konfigurace, publikační workflow a archiv se nemění.
+
+
+Publikování v0.15.0 ověřeno: [Actions #30](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39942543568)
+pro [f45d1cf](https://github.com/Michaltymm/Meteo_webovky/commit/f45d1cf6765a7bba478e0c64f64f484263449d8f)
+**Success** — build 17 s, deploy 15 s, celkem 40 s. Odesláno pouze do codex-dev;
+main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages host
+není podle síťové politiky prostředí dostupný; nasazení potvrzuje workflow,
+nikoli přímá návštěva. Existující upozornění na runtime Actions a ubuntu-latest
+přetrvávají, workflow se v této etapě neměnilo. Následující commit je jen evidence.

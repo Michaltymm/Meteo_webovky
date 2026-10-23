@@ -1583,3 +1583,12 @@ pageerror. Aktualizace čte pouze první řádek a délku, používá existujíc
 timer a nepřidává požadavky/grafy. [Chování a omezení](STAV_DAT.md),
 [měření před/po](performance/STAV_DAT.md). Živý broker ani fyzický iPhone tím
 ověřeny nejsou. Další doporučený krok: METEO-050, čítače validace při parseru.
+
+
+Publikování v0.15.0 ověřeno: [Actions #30](https://github.com/Michaltymm/Meteo_webovky/actions/runs/39942543568)
+pro [f45d1cf](https://github.com/Michaltymm/Meteo_webovky/commit/f45d1cf6765a7bba478e0c64f64f484263449d8f)
+**Success** — build 17 s, deploy 15 s, celkem 40 s. Odesláno pouze do codex-dev;
+main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Přímý živý Pages host
+není podle síťové politiky prostředí dostupný; nasazení potvrzuje workflow,
+nikoli přímá návštěva. Existující upozornění na runtime Actions a ubuntu-latest
+přetrvávají, workflow se v této etapě neměnilo. Následující commit je jen evidence.
