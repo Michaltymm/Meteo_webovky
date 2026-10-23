@@ -1,0 +1,252 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "scenario": "Cold complete analytical model over identical original rows; local assets, startup and redraw excluded; five samples after one warmup",
+  "limits": "Computation callbacks and completion only; not paint, INP, actual network, physical phone or long-term heap",
+  "results": [
+    {
+      "rows": 1000,
+      "modelSignatureSHA256": "51e772187db98cfe59ea514f16a1f19159169d0f688bd16999dd395acdc962a3",
+      "samples": [
+        {
+          "wallMs": 5.699999999254942,
+          "requestMs": 5.699999999254942,
+          "computeMs": 5.699999999254942,
+          "longestComputeMs": 5.699999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 5.900000000372529,
+          "heapAfterGCBytes": 2853624
+        },
+        {
+          "wallMs": 8.599999999627471,
+          "requestMs": 8.599999999627471,
+          "computeMs": 8.599999999627471,
+          "longestComputeMs": 8.599999999627471,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 8.699999999254942,
+          "heapAfterGCBytes": 2931916
+        },
+        {
+          "wallMs": 5.700000001117587,
+          "requestMs": 5.700000001117587,
+          "computeMs": 5.700000001117587,
+          "longestComputeMs": 5.700000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 5.800000000745058,
+          "heapAfterGCBytes": 2894540
+        },
+        {
+          "wallMs": 5.200000001117587,
+          "requestMs": 5.200000001117587,
+          "computeMs": 5.200000001117587,
+          "longestComputeMs": 5.200000001117587,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 5.400000000372529,
+          "heapAfterGCBytes": 2934720
+        },
+        {
+          "wallMs": 6.100000001490116,
+          "requestMs": 6.100000001490116,
+          "computeMs": 6.100000001490116,
+          "longestComputeMs": 6.100000001490116,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 6.200000001117587,
+          "heapAfterGCBytes": 2895600
+        }
+      ],
+      "median": {
+        "wallMs": 5.700000001117587,
+        "requestMs": 5.700000001117587,
+        "computeMs": 5.700000001117587,
+        "longestComputeMs": 5.700000001117587,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 5.900000000372529,
+        "heapAfterGCBytes": 2895600
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "modelSignatureSHA256": "86660dc344ac8769a300f9af7479b67c76c5c4fe8947b3f7fcfb03b5949ab40b",
+      "samples": [
+        {
+          "wallMs": 28.799999998882413,
+          "requestMs": 28.799999998882413,
+          "computeMs": 28.799999998882413,
+          "longestComputeMs": 28.799999998882413,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 28.90000000037253,
+          "heapAfterGCBytes": 4369860
+        },
+        {
+          "wallMs": 52.90000000037253,
+          "requestMs": 52.90000000037253,
+          "computeMs": 52.90000000037253,
+          "longestComputeMs": 52.90000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 52.90000000037253,
+          "heapAfterGCBytes": 4403932
+        },
+        {
+          "wallMs": 27.800000000745058,
+          "requestMs": 27.800000000745058,
+          "computeMs": 27.800000000745058,
+          "longestComputeMs": 27.800000000745058,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 27.90000000037253,
+          "heapAfterGCBytes": 4404620
+        },
+        {
+          "wallMs": 39.90000000037253,
+          "requestMs": 39.90000000037253,
+          "computeMs": 39.90000000037253,
+          "longestComputeMs": 39.90000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 40.09999999962747,
+          "heapAfterGCBytes": 4405040
+        },
+        {
+          "wallMs": 51.80000000074506,
+          "requestMs": 51.80000000074506,
+          "computeMs": 51.80000000074506,
+          "longestComputeMs": 51.80000000074506,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 52,
+          "heapAfterGCBytes": 4403380
+        }
+      ],
+      "median": {
+        "wallMs": 39.90000000037253,
+        "requestMs": 39.90000000037253,
+        "computeMs": 39.90000000037253,
+        "longestComputeMs": 39.90000000037253,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 40.09999999962747,
+        "heapAfterGCBytes": 4403932
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "modelSignatureSHA256": "610411fb3f3a66d2770b76a640f1f980ef8cb0dff4e732a58747af66ec8bc468",
+      "samples": [
+        {
+          "wallMs": 152.40000000037253,
+          "requestMs": 152.40000000037253,
+          "computeMs": 152.40000000037253,
+          "longestComputeMs": 152.40000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 152.60000000149012,
+          "heapAfterGCBytes": 18962604
+        },
+        {
+          "wallMs": 197,
+          "requestMs": 197,
+          "computeMs": 197,
+          "longestComputeMs": 197,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 197.19999999925494,
+          "heapAfterGCBytes": 19038076
+        },
+        {
+          "wallMs": 182.10000000149012,
+          "requestMs": 182.10000000149012,
+          "computeMs": 182.10000000149012,
+          "longestComputeMs": 182.10000000149012,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 182.30000000074506,
+          "heapAfterGCBytes": 18998288
+        },
+        {
+          "wallMs": 160.59999999962747,
+          "requestMs": 160.59999999962747,
+          "computeMs": 160.59999999962747,
+          "longestComputeMs": 160.59999999962747,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 160.7999999988824,
+          "heapAfterGCBytes": 18999576
+        },
+        {
+          "wallMs": 186.7000000011176,
+          "requestMs": 186.7000000011176,
+          "computeMs": 186.7000000011176,
+          "longestComputeMs": 186.7000000011176,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 186.90000000037253,
+          "heapAfterGCBytes": 19039208
+        }
+      ],
+      "median": {
+        "wallMs": 182.10000000149012,
+        "requestMs": 182.10000000149012,
+        "computeMs": 182.10000000149012,
+        "longestComputeMs": 182.10000000149012,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 182.30000000074506,
+        "heapAfterGCBytes": 18999576
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "modelSignatureSHA256": "bbc31b4c4f2bf2d4f448c608d816f1799108dc0c86ff5988f4ca595c49edbc5e",
+      "samples": [
+        {
+          "wallMs": 353.40000000037253,
+          "requestMs": 353.40000000037253,
+          "computeMs": 353.40000000037253,
+          "longestComputeMs": 353.40000000037253,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 353.59999999962747,
+          "heapAfterGCBytes": 43281668
+        },
+        {
+          "wallMs": 413.7999999988824,
+          "requestMs": 413.7999999988824,
+          "computeMs": 413.7999999988824,
+          "longestComputeMs": 413.7999999988824,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 414.09999999962747,
+          "heapAfterGCBytes": 43362684
+        },
+        {
+          "wallMs": 430.30000000074506,
+          "requestMs": 430.30000000074506,
+          "computeMs": 430.30000000074506,
+          "longestComputeMs": 430.30000000074506,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 430.5,
+          "heapAfterGCBytes": 43322704
+        },
+        {
+          "wallMs": 356.30000000074506,
+          "requestMs": 356.30000000074506,
+          "computeMs": 356.30000000074506,
+          "longestComputeMs": 356.30000000074506,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 356.5,
+          "heapAfterGCBytes": 43324124
+        },
+        {
+          "wallMs": 389.59999999962747,
+          "requestMs": 389.59999999962747,
+          "computeMs": 389.59999999962747,
+          "longestComputeMs": 389.59999999962747,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 389.8999999985099,
+          "heapAfterGCBytes": 43324792
+        }
+      ],
+      "median": {
+        "wallMs": 389.59999999962747,
+        "requestMs": 389.59999999962747,
+        "computeMs": 389.59999999962747,
+        "longestComputeMs": 389.59999999962747,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 389.8999999985099,
+        "heapAfterGCBytes": 43324124
+      },
+      "pageErrors": []
+    }
+  ]
+}

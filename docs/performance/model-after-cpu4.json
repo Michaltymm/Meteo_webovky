@@ -1,0 +1,69 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "scenario": "Cold complete analytical model over identical original rows; local assets, startup and redraw excluded; five samples after one warmup",
+  "limits": "Computation callbacks and completion only; not paint, INP, actual network, physical phone or long-term heap",
+  "results": [
+    {
+      "rows": 100000,
+      "modelSignatureSHA256": "610411fb3f3a66d2770b76a640f1f980ef8cb0dff4e732a58747af66ec8bc468",
+      "samples": [
+        {
+          "wallMs": 951.9000000003725,
+          "requestMs": 0.8000000007450581,
+          "computeMs": 663.3000000044703,
+          "longestComputeMs": 19.800000000745058,
+          "computeTurns": 70,
+          "heartbeatMaxGapMs": 33.69999999925494,
+          "heapAfterGCBytes": 19061924
+        },
+        {
+          "wallMs": 992.5999999996275,
+          "requestMs": 0.3999999985098839,
+          "computeMs": 701.8999999891967,
+          "longestComputeMs": 23.40000000037253,
+          "computeTurns": 73,
+          "heartbeatMaxGapMs": 33.19999999925494,
+          "heapAfterGCBytes": 19078636
+        },
+        {
+          "wallMs": 888.1999999992549,
+          "requestMs": 0.7999999988824129,
+          "computeMs": 631.4000000040978,
+          "longestComputeMs": 20.300000000745058,
+          "computeTurns": 66,
+          "heartbeatMaxGapMs": 30.09999999962747,
+          "heapAfterGCBytes": 19042732
+        },
+        {
+          "wallMs": 925.2000000011176,
+          "requestMs": 1,
+          "computeMs": 642.3000000007451,
+          "longestComputeMs": 17.699999999254942,
+          "computeTurns": 71,
+          "heartbeatMaxGapMs": 28.5,
+          "heapAfterGCBytes": 19044008
+        },
+        {
+          "wallMs": 890.0999999996275,
+          "requestMs": 0.900000000372529,
+          "computeMs": 625.7000000048429,
+          "longestComputeMs": 20.09999999962747,
+          "computeTurns": 65,
+          "heartbeatMaxGapMs": 30.59999999962747,
+          "heapAfterGCBytes": 19045532
+        }
+      ],
+      "median": {
+        "wallMs": 925.2000000011176,
+        "requestMs": 0.8000000007450581,
+        "computeMs": 642.3000000007451,
+        "longestComputeMs": 20.09999999962747,
+        "computeTurns": 70,
+        "heartbeatMaxGapMs": 30.59999999962747,
+        "heapAfterGCBytes": 19045532
+      },
+      "pageErrors": []
+    }
+  ]
+}

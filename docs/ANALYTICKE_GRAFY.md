@@ -119,6 +119,15 @@ značek velkých mezer; XY≤580 skutečných reprezentantů24×24buněk a krajn
 hodnot. Počet XY bodů neznamená hustotu výskytu. mV/h má≤396 reprezentantů
 min/max časových binů, statistický počet původních sklonů je zvlášť.
 
+Od v0.18.1 se model společného Sheets výřezu od10 000vybraných řádků
+připravuje po krátkých dávkách. Stránka mezi nimi může obsloužit ovládání;
+celé dokončení může trvat déle. Během čekání se zobrazí stav přípravy místo
+starého grafu, export je dostupný až po překreslení. Změna období/dat/stanice,
+odchod a skrytí stránky zruší starou práci; statistiky se zveřejní až celé.
+Menší výřezy, nezávislé grafy a MQTT/both zůstávají synchronní. Omezení a
+[měření před/po](performance/ANALYTICKY_MODEL.md); všechny výpočty nadále
+používají původní měření a stejný algoritmus.
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.
@@ -135,9 +144,10 @@ Centrální stavy zůstávají v [roadmapě](NAPADY_A_ROADMAP.md), bez nových I
   nejistota vztahů031 a metadata071 zůstávají dalšími etapami.
 - Heatmapa srážek/pokrytí034 potřebuje srážkový/měřicí kontrakt; nevyvozuje
   se dostupnost senzoru z počtu buněk.
-- Pro skutečně obrovské historie lze podle měření přidat dělené přípravy
-  modelu/worker nebo ověřené serverové agregace. První úplný250k výpočet
-  má cenu O(n); žádný příslib nulové prodlevy nebo fyzického iOS měření.
+- Dávkovaný společný Sheets model je první část008. Další jsou porovnání,
+  noční analýza, vyhlazení/heatmapa a velký parser; worker nebo ověřené
+  serverové agregace až s měřením. První úplný250k výpočet má cenu O(n);
+  žádný příslib nulové prodlevy nebo fyzického iOS měření.
 
 Ověření a surové profily: [ETAPA13](performance/ETAPA13.md). Safari/WebKit
 v tomto prostředí není instalovaný; testované je skutečné Chromium včetně

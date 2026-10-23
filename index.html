@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0180"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0181"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3135,7 +3135,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(0,.5)" aria-label="Přiblížit graf 1">+</button><button class="ana-button" onclick="analyticsZoom(0,2)" aria-label="Oddálit graf 1">−</button>
             <button class="ana-button" onclick="analyticsPan(0,-.25)" aria-label="Posunout graf 1 zpět">←</button><button class="ana-button" onclick="analyticsPan(0,.25)" aria-label="Posunout graf 1 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(0)">Reset</button><button class="ana-button" onclick="analyticsExport(0)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(0)">Reset</button><button class="ana-button" id="anaExport0" onclick="analyticsExport(0)">PNG</button>
           </div><label><input id="anaSmooth0" type="checkbox" onchange="analyticsRedraw()"> Klouzavý průměr posledních 5 měření (bez doplňování mezer)</label></details>
         </article>
         <article class="ana-card" id="anaCard1" data-analytics-card="1">
@@ -3150,7 +3150,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(1,.5)" aria-label="Přiblížit graf 2">+</button><button class="ana-button" onclick="analyticsZoom(1,2)" aria-label="Oddálit graf 2">−</button>
             <button class="ana-button" onclick="analyticsPan(1,-.25)" aria-label="Posunout graf 2 zpět">←</button><button class="ana-button" onclick="analyticsPan(1,.25)" aria-label="Posunout graf 2 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(1)">Reset</button><button class="ana-button" onclick="analyticsExport(1)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(1)">Reset</button><button class="ana-button" id="anaExport1" onclick="analyticsExport(1)">PNG</button>
           </div></details>
         </article>
         <article class="ana-card" id="anaCard2" data-analytics-card="2">
@@ -3165,7 +3165,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(2,.5)" aria-label="Přiblížit graf 3">+</button><button class="ana-button" onclick="analyticsZoom(2,2)" aria-label="Oddálit graf 3">−</button>
             <button class="ana-button" onclick="analyticsPan(2,-.25)" aria-label="Posunout graf 3 zpět">←</button><button class="ana-button" onclick="analyticsPan(2,.25)" aria-label="Posunout graf 3 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(2)">Reset</button><button class="ana-button" onclick="analyticsExport(2)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(2)">Reset</button><button class="ana-button" id="anaExport2" onclick="analyticsExport(2)">PNG</button>
           </div><label><input id="anaSmooth2" type="checkbox" onchange="analyticsRedraw()"> Klouzavý průměr posledních 5 měření (bez doplňování mezer)</label></details>
         </article>
         <article class="ana-card" id="anaCard3" data-analytics-card="3">
@@ -3180,7 +3180,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(3,.5)" aria-label="Přiblížit graf 4">+</button><button class="ana-button" onclick="analyticsZoom(3,2)" aria-label="Oddálit graf 4">−</button>
             <button class="ana-button" onclick="analyticsPan(3,-.25)" aria-label="Posunout graf 4 zpět">←</button><button class="ana-button" onclick="analyticsPan(3,.25)" aria-label="Posunout graf 4 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(3)">Reset</button><button class="ana-button" onclick="analyticsExport(3)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(3)">Reset</button><button class="ana-button" id="anaExport3" onclick="analyticsExport(3)">PNG</button>
           </div></details>
         </article>
         <article class="ana-card" id="anaCard4" data-analytics-card="4">
@@ -3195,7 +3195,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(4,.5)" aria-label="Přiblížit graf 5">+</button><button class="ana-button" onclick="analyticsZoom(4,2)" aria-label="Oddálit graf 5">−</button>
             <button class="ana-button" onclick="analyticsPan(4,-.25)" aria-label="Posunout graf 5 zpět">←</button><button class="ana-button" onclick="analyticsPan(4,.25)" aria-label="Posunout graf 5 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(4)">Reset</button><button class="ana-button" onclick="analyticsExport(4)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(4)">Reset</button><button class="ana-button" id="anaExport4" onclick="analyticsExport(4)">PNG</button>
           </div></details>
         </article>
         <article class="ana-card" id="anaCard5" data-analytics-card="5">
@@ -3210,7 +3210,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(5,.5)" aria-label="Přiblížit graf 6">+</button><button class="ana-button" onclick="analyticsZoom(5,2)" aria-label="Oddálit graf 6">−</button>
             <button class="ana-button" onclick="analyticsPan(5,-.25)" aria-label="Posunout graf 6 zpět">←</button><button class="ana-button" onclick="analyticsPan(5,.25)" aria-label="Posunout graf 6 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(5)">Reset</button><button class="ana-button" onclick="analyticsExport(5)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(5)">Reset</button><button class="ana-button" id="anaExport5" onclick="analyticsExport(5)">PNG</button>
           </div></details>
         </article>
         <article class="ana-card" id="anaCard6" data-analytics-card="6">
@@ -3225,7 +3225,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(6,.5)" aria-label="Přiblížit graf 7">+</button><button class="ana-button" onclick="analyticsZoom(6,2)" aria-label="Oddálit graf 7">−</button>
             <button class="ana-button" onclick="analyticsPan(6,-.25)" aria-label="Posunout graf 7 zpět">←</button><button class="ana-button" onclick="analyticsPan(6,.25)" aria-label="Posunout graf 7 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(6)">Reset</button><button class="ana-button" onclick="analyticsExport(6)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(6)">Reset</button><button class="ana-button" id="anaExport6" onclick="analyticsExport(6)">PNG</button>
           </div><label><input id="anaRegression" type="checkbox" onchange="analyticsRedraw()"> Zobrazit popisnou regresní přímku</label></details>
         </article>
         <article class="ana-card" id="anaCard7" data-analytics-card="7">
@@ -3241,7 +3241,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(7,.5)" aria-label="Přiblížit graf 8">+</button><button class="ana-button" onclick="analyticsZoom(7,2)" aria-label="Oddálit graf 8">−</button>
             <button class="ana-button" onclick="analyticsPan(7,-.25)" aria-label="Posunout graf 8 zpět">←</button><button class="ana-button" onclick="analyticsPan(7,.25)" aria-label="Posunout graf 8 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(7)">Reset</button><button class="ana-button" onclick="analyticsExport(7)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(7)">Reset</button><button class="ana-button" id="anaExport7" onclick="analyticsExport(7)">PNG</button>
           </div></details>
         </article>
         <article class="ana-card" id="anaCard8" data-analytics-card="8">
@@ -3260,7 +3260,7 @@
           <details><summary>Možnosti grafu</summary><div class="ana-actions">
             <button class="ana-button" onclick="analyticsZoom(8,.5)" aria-label="Přiblížit graf 9">+</button><button class="ana-button" onclick="analyticsZoom(8,2)" aria-label="Oddálit graf 9">−</button>
             <button class="ana-button" onclick="analyticsPan(8,-.25)" aria-label="Posunout graf 9 zpět">←</button><button class="ana-button" onclick="analyticsPan(8,.25)" aria-label="Posunout graf 9 vpřed">→</button>
-            <button class="ana-button" onclick="analyticsReset(8)">Reset</button><button class="ana-button" onclick="analyticsExport(8)">PNG</button>
+            <button class="ana-button" onclick="analyticsReset(8)">Reset</button><button class="ana-button" id="anaExport8" onclick="analyticsExport(8)">PNG</button>
           </div></details>
         </article>
       </div>
@@ -5257,16 +5257,23 @@
 
     // O(n) bucket min/max per displayed metric. Keep endpoints and a missing
     // value marker per metric/bucket; never change the underlying measurements.
-    function sampleExtrema(rows, getters, limit = 800) {
+    function finishSteps(steps) {
+      let step; do { step = steps.next(); } while (!step.done);
+      return step.value;
+    }
+    function sampleExtrema(rows, getters, limit = 800) { return finishSteps(sampleExtremaSteps(rows, getters, limit)); }
+    function* sampleExtremaSteps(rows, getters, limit = 800) {
       if (rows.length <= limit) return rows;
       const buckets = Math.max(1, Math.floor((limit - 2) / (3 * getters.length)));
       const indices = new Set([0, rows.length - 1]);
+      let work = 0;
       for (let bucket = 0; bucket < buckets; bucket++) {
         const start = Math.floor(bucket * rows.length / buckets);
         const end = Math.floor((bucket + 1) * rows.length / buckets);
         for (const get of getters) {
           let min = Infinity, max = -Infinity, minIndex = -1, maxIndex = -1, gap = -1;
           for (let i = start; i < end; i++) {
+            if ((++work & 1023) === 0) yield;
             const value = get(rows[i]);
             if (!Number.isFinite(value)) { if (gap < 0) gap = i; continue; }
             if (value < min) { min = value; minIndex = i; }
@@ -7116,7 +7123,8 @@
     const analyticsCharts = new Map(), analyticsStationCache = new Map();
     const analyticsState = { model: null, range: '7', domain: null, views: new Map(), visible: new Set(),
       observer: null, heatObserver:null, abort: null, epoch: 0, loading: null, requested: new Set(), errors: new Map(),
-      all: false, expanded: null, heatPage: 0, heat: null, cursor: null, xy: null, drawing: false };
+      all: false, expanded: null, heatPage: 0, heat: null, cursor: null, xy: null, drawing: false,
+      job: null, modelError: false };
     const ANA_COLORS = { temp:'#e74c3c', hum:'#2980b9', pressure:'#16a085', voltage:'#9b59b6', dew:'#e67e22', rain:'#3498db' };
     const ANA_CACHE_LIMIT = 16 * 1024 * 1024;
 
@@ -7131,13 +7139,15 @@
       const days = range === '24h' ? 1 : Number(range);
       return [1,7,30,90,365].includes(days) ? {from:latest-days*86400000,to:latest} : null;
     }
-    function analyticsSummarize(rows) {
+    function analyticsSummarize(rows) { return finishSteps(analyticsSummarySteps(rows)); }
+    function* analyticsSummarySteps(rows) {
       const stats = Object.fromEntries(['temp','hum','pressure','voltage'].map(k=>[k,{count:0,sum:0,min:null,max:null,avg:null}]));
       const days = new Map(), rateBins = Array.from({length:198},()=>({min:null,max:null}));
       const pair = {count:0,meanT:0,meanV:0,m2T:0,m2V:0,covariance:0,minT:null,maxT:null,minV:null,maxV:null};
       const statKeys=Object.keys(stats),dayFields=[['voltageMin','voltage','min'],['voltageMax','voltage','max'],['rainMax','rain','max'],['incMax','rainInc','max']];
       let count=0, previous=null, rateCount=0, gapCount=0,dayNumber=null,d;
       for(let i=0;i<rows.length;i++) {
+        if(i && (i & 1023)===0) yield;
         const r=rows[i],time=+r.ts;
         if(!Number.isFinite(time)) { previous=null; continue; }
         count++;
@@ -7172,7 +7182,8 @@
         previous=r;
       }
       for(const s of Object.values(stats)){s.avg=s.count?s.sum/s.count:null;delete s.sum;}
-      for(const d of days.values())d.temp=d.count?d.sum/d.count:null;
+      let dayIndex=0;
+      for(const d of days.values()){if((++dayIndex & 1023)===0)yield;d.temp=d.count?d.sum/d.count:null;}
       Object.assign(pair,pairRelationship(pair));
       const rates=[...new Set(rateBins.flatMap(b=>[b.min,b.max]).filter(Boolean))].sort((a,b)=>a.x-b.x);
       return {count,stats,days:[...days.values()],pair,rates,rateCount,gapCount};
@@ -7212,8 +7223,9 @@
       const av=valid(a),bv=valid(b);
       return analyticsMatch(av.length,i=>av[i],bv.length,i=>bv[i],toleranceMs);
     }
-    function analyticsInvalidate() { analyticsState.model=null;analyticsState.heat=null; }
+    function analyticsInvalidate() { analyticsCancelModel();analyticsState.model=null;analyticsState.heat=null;analyticsState.modelError=false; }
     function analyticsStop(reset=false) {
+      analyticsCancelModel();analyticsState.modelError=false;
       analyticsState.epoch++;analyticsState.abort?.abort();analyticsState.abort=null;analyticsState.loading=null;
       analyticsState.observer?.disconnect();analyticsState.observer=null;analyticsState.heatObserver?.disconnect();analyticsState.heatObserver=null;
       for(const chart of analyticsCharts.values())chart.destroy?.();analyticsCharts.clear();
@@ -7241,6 +7253,7 @@
       analyticsInvalidate();analyticsRedraw();
     }
     function analyticsZoom(id,factor) {
+      if(id===6 && el('anaCanvas6').style.visibility==='hidden')return;
       if(id===6&&analyticsCharts.has(6)) {
         const c=analyticsCharts.get(6),x=c.scales.x,y=c.scales.y;
         const cx=(x.min+x.max)/2,cy=(y.min+y.max)/2;
@@ -7251,6 +7264,7 @@
       analyticsSetDomain(id,{from:center-half,to:center+half});
     }
     function analyticsPan(id,fraction) {
+      if(id===6 && el('anaCanvas6').style.visibility==='hidden')return;
       if(id===6&&analyticsState.xy){const x=analyticsState.xy.x,w=x.max-x.min;analyticsState.xy.x={min:x.min+w*fraction,max:x.max+w*fraction};analyticsDrawCard(6);return;}
       const d=analyticsDomain(id);if(d)analyticsSetDomain(id,{from:d.from+(d.to-d.from)*fraction,to:d.to+(d.to-d.from)*fraction});
     }
@@ -7268,6 +7282,7 @@
       setTimeout(()=>{analyticsCharts.get(id)?.resize();if(id===8)analyticsHeatmap();},60);
     }
     function analyticsExport(id) {
+      if(analyticsState.job || analyticsState.modelError || el('anaCanvas'+id).style.visibility==='hidden')return;
       const canvas=el('anaCanvas'+id),out=document.createElement('canvas');out.width=canvas.width;out.height=canvas.height+(id===8?75:55);
       const ctx=out.getContext('2d');ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--bg2');ctx.fillRect(0,0,out.width,out.height);
       ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--text');ctx.font='12px sans-serif';
@@ -7276,27 +7291,86 @@
       if(id===8)ctx.fillText(el('anaHeatLegend').textContent,8,57);
       ctx.drawImage(canvas,0,id===8?75:55);const link=document.createElement('a');link.download='meteo-graf-'+(id+1)+'.png';link.href=out.toDataURL('image/png');link.click();
     }
-    function analyticsBuildModel(domain) {
-      const {start,end}=historyRangeBounds(store.rows,domain.from,domain.to),rows=store.rows.slice(start,end).reverse();
-      const summary=analyticsSummarize(rows),getters=['temp','hum','pressure','voltage','rain','rainInc'].map(k=>r=>r[k]);getters.push(r=>dewPoint(r.temp,r.hum));
+    function analyticsBuildModel(domain) { return finishSteps(analyticsModelSteps(domain)); }
+    function* analyticsModelSteps(domain) {
+      const source=store.rows,length=source.length,{start,end}=historyRangeBounds(source,domain.from,domain.to),rows=new Array(end-start);
+      for(let i=end-1;i>=start;i--){const j=end-1-i;if(j && (j & 1023)===0)yield;rows[j]=source[i];}
+      const summary=yield* analyticsSummarySteps(rows),getters=['temp','hum','pressure','voltage','rain','rainInc'].map(k=>r=>r[k]);getters.push(r=>dewPoint(r.temp,r.hum));
       const gaps=new Map();
-      for(let i=1;i<rows.length;i++)if(+rows[i].ts-(+rows[i-1].ts)>10800000){const bucket=Math.min(148,Math.floor(i*149/rows.length));if(!gaps.has(bucket))gaps.set(bucket,{ts:new Date(+rows[i-1].ts+1),anaGap:true});}
-      const samples=[...sampleExtrema(rows,getters,450),...gaps.values()].sort((a,b)=>a.ts-b.ts);
+      for(let i=1;i<rows.length;i++){if((i & 1023)===0)yield;if(+rows[i].ts-(+rows[i-1].ts)>10800000){const bucket=Math.min(148,Math.floor(i*149/rows.length));if(!gaps.has(bucket))gaps.set(bucket,{ts:new Date(+rows[i-1].ts+1),anaGap:true});}}
+      const samples=[...(yield* sampleExtremaSteps(rows,getters,450)),...gaps.values()].sort((a,b)=>a.ts-b.ts);
       // XY representatives from two-dimensional cells, preserving actual source pairs.
       const pair=summary.pair,cells=new Map(),{minT,maxT,minV,maxV}=pair;
       const extremes=[];let loT,hiT,loV,hiV;
-      for(const r of rows)if(Number.isFinite(r.temp)&&Number.isFinite(r.voltage)){
+      for(let i=0;i<rows.length;i++){if(i && (i & 1023)===0)yield;const r=rows[i];if(Number.isFinite(r.temp)&&Number.isFinite(r.voltage)){
         const x=Math.min(23,Math.floor((r.temp-minT)/(maxT-minT||1)*24)),y=Math.min(23,Math.floor((r.voltage-minV)/(maxV-minV||1)*24));if(!cells.has(x+':'+y))cells.set(x+':'+y,r);
         if(!loT||r.temp<loT.temp)loT=r;if(!hiT||r.temp>hiT.temp)hiT=r;if(!loV||r.voltage<loV.voltage)loV=r;if(!hiV||r.voltage>hiV.voltage)hiV=r;
-      }
+      }}
       extremes.push(loT,hiT,loV,hiV);
       const xy=[...new Set([...cells.values(),...extremes].filter(Boolean))].map(r=>({x:r.temp,y:r.voltage,ts:+r.ts}));
-      return {source:store.rows,length:store.rows.length,from:domain.from,to:domain.to,rows,summary,samples,xy,pair,minT,maxT};
+      return {source,length,from:domain.from,to:domain.to,rows,summary,samples,xy,pair,minT,maxT};
     }
-    function analyticsModel(id) {
+    function analyticsModelBusy(busy) {
+      el('anaGrid').setAttribute?.('aria-busy',String(busy));
+      if(busy){setNodeText(el('anaHeatLegend'),'');setNodeText(el('anaHeatDetail'),'Připravuji graf pro vybrané období.');}
+      if(busy)for(let i=0;i<9;i++){
+        el('anaExport'+i).disabled=true;
+        el('anaCanvas'+i).style.visibility='hidden';
+        setNodeText(el('anaEmpty'+i),'Připravuji graf…');el('anaEmpty'+i).hidden=false;
+        setNodeText(el('anaNote'+i),'Připravuji graf pro vybrané období.');
+      }
+    }
+    function analyticsCancelModel() {
+      const job=analyticsState.job;
+      if(!job)return;
+      analyticsState.job=null;clearTimeout(job.timer);job.steps.return();
+      analyticsModelBusy(false);
+    }
+    function analyticsRunModelJob(job) {
+      const current=()=>analyticsState.job===job && analyticsActive() && !document.hidden && el('anaSync').checked && CFG.source==='sheets' &&
+        isCurrentStation(job.context) && store.rows===job.source && store.rows.length===job.length &&
+        analyticsState.domain?.from===job.domain.from && analyticsState.domain?.to===job.domain.to;
+      if(!current()){if(analyticsState.job===job)analyticsCancelModel();return;}
+      const started=sheetsNow();
+      try{
+        for(let steps=0;steps<64;steps++){
+          const step=job.steps.next();
+          if(step.done){
+            if(!current()){if(analyticsState.job===job)analyticsCancelModel();return;}
+            analyticsState.model=step.value;analyticsState.job=null;analyticsModelBusy(false);
+            analyticsRedraw();return;
+          }
+          const now=sheetsNow();if(started!==null && now!==null && now-started>=8)break;
+        }
+        job.timer=setTimeout(()=>analyticsRunModelJob(job),0);
+      }catch{
+        if(analyticsState.job!==job)return;
+        analyticsCancelModel();analyticsState.modelError=true;
+        for(let i=0;i<9;i++)setNodeText(el('anaEmpty'+i),'Příprava grafu selhala. Změňte období nebo obnovte data.');
+        analyticsUpdateStatus();
+      }
+    }
+    function analyticsModel(id,cooperative=false) {
       const d=analyticsDomain(id);if(!d)return null;
       const current=analyticsState.model;
       if(current&&current.source===store.rows&&current.length===store.rows.length&&current.from===d.from&&current.to===d.to)return current;
+      // Streaming sources retain the immediate path: frequent appends must not
+      // keep cancelling a large model before it can ever finish.
+      if(cooperative && el('anaSync').checked && CFG.source==='sheets'){
+        const {start,end}=historyRangeBounds(store.rows,d.from,d.to);
+        if(end-start>=10000){
+          if(document.hidden || analyticsState.modelError)return null;
+          const job=analyticsState.job;
+          if(!job || job.source!==store.rows || job.length!==store.rows.length || job.domain.from!==d.from || job.domain.to!==d.to){
+            analyticsCancelModel();
+            const next={context:stationContext(),source:store.rows,length:store.rows.length,domain:{...d},timer:null,steps:analyticsModelSteps({...d})};
+            analyticsState.job=next;analyticsModelBusy(true);analyticsUpdateStatus();
+            next.timer=setTimeout(()=>analyticsRunModelJob(next),0);
+          }
+          return null;
+        }
+      }
+      analyticsCancelModel();
       const m=analyticsBuildModel(d);
       // One common model; independent card windows are transient, never an unbounded cache.
       if(el('anaSync').checked||!analyticsState.model)analyticsState.model=m;
@@ -7325,7 +7399,9 @@
     function analyticsDrawCard(id) {
       if(!analyticsActive()||!analyticsState.visible.has(id))return;
       if(id===8){analyticsHeatmap();return;}
-      const m=analyticsModel(id);if(!m)return;
+      const m=analyticsModel(id,true);if(!m)return;
+      el('anaExport'+id).disabled=false;
+      el('anaCanvas'+id).style.visibility='';setNodeText(el('anaEmpty'+id),'Pro vybrané období nejsou dostupná data.');
       const d=analyticsDomain(id),s=m.summary,axis=(title,position='left')=>({type:'linear',position,title:{display:true,text:title}});
       const t=r=>r.temp,v=r=>r.voltage,h=r=>r.hum,p=r=>r.pressure;
       const dayPoints=field=>sampleExtrema(s.days,[r=>r[field]],350).map(r=>({x:Math.max(d.from,Math.min(d.to,r.time+12*3600000)),y:r[field],day:r.key,count:field.startsWith('voltage')?r.voltageCount:field==='rainMax'?r.rainCount:field==='incMax'?r.incCount:r.count}));
@@ -7455,7 +7531,9 @@
     function analyticsHeatPage(delta){analyticsState.heatPage=Math.max(0,analyticsState.heatPage+delta);analyticsState.heat=null;analyticsHeatmap();}
     function analyticsHeatmap() {
       if(!analyticsActive()||!analyticsState.visible.has(8))return;
-      const m=analyticsModel(8);if(!m)return;
+      const m=analyticsModel(8,true);if(!m)return;
+      el('anaExport8').disabled=false;
+      el('anaCanvas8').style.visibility='';setNodeText(el('anaEmpty8'),'Pro vybrané období nejsou dostupná data.');
       const allKeys=m.summary.days.map(d=>d.key).reverse(),pages=Math.max(1,Math.ceil(allKeys.length/14));
       analyticsState.heatPage=Math.min(pages-1,analyticsState.heatPage);
       const keys=allKeys.slice(analyticsState.heatPage*14,(analyticsState.heatPage+1)*14),signature=[m.from,m.to,analyticsState.heatPage].join(':');
@@ -7527,7 +7605,8 @@
       setNodeText(el('anaStatus'),`${stations[activeIdx]?.name||'Stanice'}${analyticsState.all?' — společná karta porovnává všechny stanice; ostatní karty používají tuto aktivní stanici':''}\n`+
         `${store.fullLoaded?'Celá dostupná':'Částečná'} načtená historie: ${store.rows.length.toLocaleString('cs-CZ')} záznamů. Poslední měření: ${last?intervalTimestamp(last.ts):'–'}.\n`+
         (d?`Výřez: ${intervalTimestamp(new Date(d.from))} až ${intervalTimestamp(new Date(d.to))}.`:store.rows.length?'Neplatné vlastní období: zadejte platné datum od–do.':'Data vybrané stanice zatím nejsou k dispozici.')+
-        (analyticsState.loading?' Načítám teplotní historii ostatních stanic…':''));
+        (analyticsState.loading?' Načítám teplotní historii ostatních stanic…':'')+
+        (analyticsState.job?' Připravuji grafy pro vybrané období…':analyticsState.modelError?' Příprava grafů selhala. Změňte období nebo obnovte data.':''));
     }
     function buildAnalytics() {
       if(!analyticsActive())return;
@@ -7539,7 +7618,7 @@
       if(!store.rows.length){analyticsUpdateStatus();return;}
       analyticsState.range=el('anaRange').value||'7';
       const base=analyticsRange(store.rows,analyticsState.range,el('anaFrom').value,el('anaTo').value);
-      if(!base){analyticsState.domain=null;analyticsState.model=null;analyticsState.heat=null;const c=el('anaCanvas8');c.getContext('2d').clearRect?.(0,0,c.width,c.height);setNodeText(el('anaHeatDetail'),'Neplatné období.');for(const chart of analyticsCharts.values()){chart.data.datasets=[];chart.update('none');}for(let i=0;i<9;i++)el('anaEmpty'+i).hidden=false;analyticsUpdateStatus();return;}
+      if(!base){analyticsInvalidate();analyticsState.domain=null;const c=el('anaCanvas8');c.getContext('2d').clearRect?.(0,0,c.width,c.height);setNodeText(el('anaHeatDetail'),'Neplatné období.');for(const chart of analyticsCharts.values()){chart.data.datasets=[];chart.update('none');}for(let i=0;i<9;i++){setNodeText(el('anaEmpty'+i),'Pro vybrané období nejsou dostupná data.');el('anaEmpty'+i).hidden=false;}analyticsUpdateStatus();return;}
       const changed=!analyticsState.base||analyticsState.base.from!==base.from||analyticsState.base.to!==base.to;
       analyticsState.base=base;if(changed||!analyticsState.domain){analyticsState.domain=base;analyticsState.views.clear();analyticsState.xy=null;analyticsInvalidate();}
       analyticsUpdateStatus();
@@ -7560,6 +7639,10 @@
       finally{el('anaRefresh').disabled=false;}
     }
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&analyticsState.expanded!==null&&analyticsActive())analyticsExpand(analyticsState.expanded);});
+    document.addEventListener('visibilitychange',()=>{
+      if(document.hidden)analyticsCancelModel();
+      else if(analyticsActive())analyticsRedraw();
+    });
 
     // One help controller for static and dynamically rendered explanations.
     // Move the original DOM (not copies) so IDs, live notes and controls survive.

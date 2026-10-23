@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | Méně blokování UI, cena kopírování/persistence | Benchmark skutečných CSV, METEO-004 | K posouzení |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 společný Sheets model od10k v dávkách, přesné výpočty; menší blokování za delší celkové čekání. Parser a navazující výpočty dále | Profil etapy13, ověřené plné výsledky; worker/persistence a METEO-004 dále, viz performance/ANALYTICKY_MODEL.md | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -1734,3 +1734,52 @@ jeho widgety ani skutečné MQTT tím ověřeny nejsou. Odesláno jen do codex-d
 main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Existující upozornění
 Actions runtime/ubuntu-latest přetrvávají; workflow se neměnilo. Následující
 commit zapisuje pouze tuto evidenci. Pokračovat METEO-008, neopakovat METEO-050.
+
+## METEO-008 — dávkovaný společný analytický model, v0.18.1
+
+První část je implementovaná a ověřená; celé ID zůstává **Rozpracováno**.
+Navazuje na existující etapu13 a checkpointfcdcbba; dokončený provozní panel
+METEO-050 se znovu neanalyzuje. První velká příprava modelu měla v novém
+základním měření250k389,6ms souvislého JS, CPU×4/100k834,4ms. To odůvodňuje
+rozdělení práce před zaváděním workeru nebo dalších závislostí.
+
+Pro Sheets se společným výřezem od10k vybraných řádků se jeden model připravuje
+kooperativně: stejné generátory pro kopii odkazů, plný souhrn, mezery, min/max
+sampling a XY. Kontrolní body po1024položkách, rozpočet~8ms/max64kroků na úlohu,
+další dávka přes setTimeout(0). Žádné přepočty statistik z redukovaných bodů,
+další requesty ani kopie původních měření. Nativní plánování a GC mohou
+rozpočet překročit, nejde o záruku16ms snímků.
+
+Změna dat/období/zoomu/stanice, neplatné vlastní datum, odchod nebo skrytí
+stránky uzavře generátor a zruší časovač. Publikuje se až celý model po
+ověření identity úlohy, relace stanice, původního zdroje/délky a domény.
+Staré callbacky nemohou oživit grafy. Při čekání se stará plátna nepředkládají
+jako nový výřez; stav přípravy/aria-busy, staré heatmapové detaily vyčištěné,
+PNG zakázané do skutečného překreslení karty. Chyba nevyvolává nekonečný retry.
+
+Malé rozsahy, nezávislé výřezy a MQTT/both zachovávají synchronní cestu.
+U streamu by časté appendy mohly nedokončenou práci stále rušit; konzistentní
+streaming snapshot vyžaduje samostatné řešení, nikoli oslabení generačních
+kontrol. Všechny tři dodané konfigurace jsou nadále Sheets a nebyly měněny.
+
+**Ověření:**321/321 Node včetně13nových deterministických regresí.
+Původní data/pořadí/duplicity/null/nuly/extrémy, cache/coalescing, rušení,
+A→B→A, nedostupný časovač, chyba/obnova a PNG; doplněný streaming assertion
+ověřen znovu cíleně. Nový skutečný Chromium154 harness100k dokončení/9grafů,
+zoom/reset/PNG, přepínání3původních konfigurací, řízené pozastavení callbacků
+při rušení a4layouty (320/1440px ×2témata), bez pageerror/socketů. Původní
+info harness také prošel (hover1500ms, dotyk, klávesnice, živé poznámky).
+
+**Před/po:**1k/10k/100k/250k aCPU×4/100k, sekvenčně a se stejným generátorem.
+Celé souhrny i vzorkované časové/XY body mají přesně shodný podpis. U250k
+medián nejdelšího bloku389,6→10,7ms, ale celé dokončení389,6→685,6ms;
+CPU×4/100k blok834,4→20,1ms a celek834,4→925,2ms. Jde o lepší dostupnost
+hlavního vlákna za delší čekání, nikoli tvrzení rychlejší celkové přípravy.
+Modelový profil nezahrnuje parser, síť, vykreslení, INP nebo fyzický iOS;
+heap poGC není peak nebo důkaz vícedenní stability.
+[Metodika, omezení a surové výsledky](performance/ANALYTICKY_MODEL.md).
+
+**Další pokračování:** METEO-008 — změřit navazující přípravu porovnání stanic
+a podle nákladů rozdělit její nejdražší průchod. Velký CSV parser, vyhlazení,
+noční analýza, heatmapové buňky/vykreslení, nezávislé rozsahy a streaming dále.
+Worker/IndexedDB až po doložení režie přenosu/paměti, obecná cache004 samostatně.

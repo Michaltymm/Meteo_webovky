@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.1
+
+- Příprava velkých analytických grafů z Google Sheets se společným časovým výřezem probíhá po krátkých dávkách, aby během výpočtu šlo dál ovládat stránku.
+- Změna období, stanice nebo odchod z analytiky zruší rozpracovanou přípravu. Během čekání se starý graf nevydává za nový a export je dostupný až po dokončení.
+
 ## v0.18.0
 
 - Diagnostika pod ⓘ nově ukazuje obsloužené MQTT zprávy, uložená měření a počty odmítnutí podle důvodu, bez ukládání obsahu zpráv.

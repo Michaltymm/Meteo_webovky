@@ -1,0 +1,252 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "scenario": "Cold complete analytical model over identical original rows; local assets, startup and redraw excluded; five samples after one warmup",
+  "limits": "Computation callbacks and completion only; not paint, INP, actual network, physical phone or long-term heap",
+  "results": [
+    {
+      "rows": 1000,
+      "modelSignatureSHA256": "51e772187db98cfe59ea514f16a1f19159169d0f688bd16999dd395acdc962a3",
+      "samples": [
+        {
+          "wallMs": 6.5,
+          "requestMs": 6.5,
+          "computeMs": 6.5,
+          "longestComputeMs": 6.5,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 6.599999999627471,
+          "heapAfterGCBytes": 2864348
+        },
+        {
+          "wallMs": 7.699999999254942,
+          "requestMs": 7.699999999254942,
+          "computeMs": 7.699999999254942,
+          "longestComputeMs": 7.699999999254942,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 7.799999998882413,
+          "heapAfterGCBytes": 2969348
+        },
+        {
+          "wallMs": 5.299999998882413,
+          "requestMs": 5.299999998882413,
+          "computeMs": 5.299999998882413,
+          "longestComputeMs": 5.299999998882413,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 5.299999998882413,
+          "heapAfterGCBytes": 2912500
+        },
+        {
+          "wallMs": 6,
+          "requestMs": 6,
+          "computeMs": 6,
+          "longestComputeMs": 6,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 6.099999999627471,
+          "heapAfterGCBytes": 2972544
+        },
+        {
+          "wallMs": 6,
+          "requestMs": 6,
+          "computeMs": 6,
+          "longestComputeMs": 6,
+          "computeTurns": 1,
+          "heartbeatMaxGapMs": 6.100000001490116,
+          "heapAfterGCBytes": 2914544
+        }
+      ],
+      "median": {
+        "wallMs": 6,
+        "requestMs": 6,
+        "computeMs": 6,
+        "longestComputeMs": 6,
+        "computeTurns": 1,
+        "heartbeatMaxGapMs": 6.100000001490116,
+        "heapAfterGCBytes": 2914544
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "modelSignatureSHA256": "86660dc344ac8769a300f9af7479b67c76c5c4fe8947b3f7fcfb03b5949ab40b",
+      "samples": [
+        {
+          "wallMs": 34.19999999925494,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 33.5,
+          "longestComputeMs": 11.200000001117587,
+          "computeTurns": 5,
+          "heartbeatMaxGapMs": 20,
+          "heapAfterGCBytes": 4429076
+        },
+        {
+          "wallMs": 32.90000000037253,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 32.600000001490116,
+          "longestComputeMs": 10.300000000745058,
+          "computeTurns": 5,
+          "heartbeatMaxGapMs": 19.5,
+          "heapAfterGCBytes": 4442628
+        },
+        {
+          "wallMs": 28.799999998882413,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 28.5,
+          "longestComputeMs": 8.599999999627471,
+          "computeTurns": 5,
+          "heartbeatMaxGapMs": 17.299999998882413,
+          "heapAfterGCBytes": 4443896
+        },
+        {
+          "wallMs": 28.5,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 28.40000000037253,
+          "longestComputeMs": 9.199999999254942,
+          "computeTurns": 5,
+          "heartbeatMaxGapMs": 18.299999998882413,
+          "heapAfterGCBytes": 4444420
+        },
+        {
+          "wallMs": 29.800000000745058,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 29.400000002235174,
+          "longestComputeMs": 8.400000000372529,
+          "computeTurns": 5,
+          "heartbeatMaxGapMs": 17,
+          "heapAfterGCBytes": 4446020
+        }
+      ],
+      "median": {
+        "wallMs": 29.800000000745058,
+        "requestMs": 0.09999999962747097,
+        "computeMs": 29.400000002235174,
+        "longestComputeMs": 9.199999999254942,
+        "computeTurns": 5,
+        "heartbeatMaxGapMs": 18.299999998882413,
+        "heapAfterGCBytes": 4443896
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "modelSignatureSHA256": "610411fb3f3a66d2770b76a640f1f980ef8cb0dff4e732a58747af66ec8bc468",
+      "samples": [
+        {
+          "wallMs": 308.1000000014901,
+          "requestMs": 0.5,
+          "computeMs": 204.89999999664724,
+          "longestComputeMs": 11,
+          "computeTurns": 32,
+          "heartbeatMaxGapMs": 17.199999999254942,
+          "heapAfterGCBytes": 19026892
+        },
+        {
+          "wallMs": 286.69999999925494,
+          "requestMs": 0.19999999925494194,
+          "computeMs": 188.3999999947846,
+          "longestComputeMs": 9.899999998509884,
+          "computeTurns": 31,
+          "heartbeatMaxGapMs": 18.399999998509884,
+          "heapAfterGCBytes": 19040820
+        },
+        {
+          "wallMs": 277.40000000037253,
+          "requestMs": 0.19999999925494194,
+          "computeMs": 182.49999999813735,
+          "longestComputeMs": 9.199999999254942,
+          "computeTurns": 30,
+          "heartbeatMaxGapMs": 16.90000000037253,
+          "heapAfterGCBytes": 19041780
+        },
+        {
+          "wallMs": 274.7000000011176,
+          "requestMs": 0.2000000011175871,
+          "computeMs": 180.2000000011176,
+          "longestComputeMs": 9.599999999627471,
+          "computeTurns": 30,
+          "heartbeatMaxGapMs": 18,
+          "heapAfterGCBytes": 19042472
+        },
+        {
+          "wallMs": 293.80000000074506,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 194.99999999254942,
+          "longestComputeMs": 9.699999999254942,
+          "computeTurns": 31,
+          "heartbeatMaxGapMs": 18.5,
+          "heapAfterGCBytes": 19042404
+        }
+      ],
+      "median": {
+        "wallMs": 286.69999999925494,
+        "requestMs": 0.19999999925494194,
+        "computeMs": 188.3999999947846,
+        "longestComputeMs": 9.699999999254942,
+        "computeTurns": 31,
+        "heartbeatMaxGapMs": 18,
+        "heapAfterGCBytes": 19041780
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "modelSignatureSHA256": "bbc31b4c4f2bf2d4f448c608d816f1799108dc0c86ff5988f4ca595c49edbc5e",
+      "samples": [
+        {
+          "wallMs": 636.1999999992549,
+          "requestMs": 0.2999999988824129,
+          "computeMs": 389.6000000014901,
+          "longestComputeMs": 10.299999998882413,
+          "computeTurns": 67,
+          "heartbeatMaxGapMs": 19.699999999254942,
+          "heapAfterGCBytes": 43344624
+        },
+        {
+          "wallMs": 631.3000000007451,
+          "requestMs": 0.09999999962747097,
+          "computeMs": 384.49999999441206,
+          "longestComputeMs": 10.700000001117587,
+          "computeTurns": 67,
+          "heartbeatMaxGapMs": 20.59999999962747,
+          "heapAfterGCBytes": 43359868
+        },
+        {
+          "wallMs": 685.5999999996275,
+          "requestMs": 0.30000000074505806,
+          "computeMs": 422.5,
+          "longestComputeMs": 12,
+          "computeTurns": 71,
+          "heartbeatMaxGapMs": 21.600000001490116,
+          "heapAfterGCBytes": 43361896
+        },
+        {
+          "wallMs": 686.8000000007451,
+          "requestMs": 0.30000000074505806,
+          "computeMs": 424.5999999959022,
+          "longestComputeMs": 10.400000000372529,
+          "computeTurns": 71,
+          "heartbeatMaxGapMs": 17.09999999962747,
+          "heapAfterGCBytes": 43362928
+        },
+        {
+          "wallMs": 693.2999999988824,
+          "requestMs": 0.19999999925494194,
+          "computeMs": 429.20000000856817,
+          "longestComputeMs": 12.400000000372529,
+          "computeTurns": 71,
+          "heartbeatMaxGapMs": 17.09999999962747,
+          "heapAfterGCBytes": 43364032
+        }
+      ],
+      "median": {
+        "wallMs": 685.5999999996275,
+        "requestMs": 0.2999999988824129,
+        "computeMs": 422.5,
+        "longestComputeMs": 10.700000001117587,
+        "computeTurns": 71,
+        "heartbeatMaxGapMs": 19.699999999254942,
+        "heapAfterGCBytes": 43361896
+      },
+      "pageErrors": []
+    }
+  ]
+}

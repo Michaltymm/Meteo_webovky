@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Dávkovaná příprava analytického modelu](ANALYTICKY_MODEL.md): první část
+METEO-008; blokování a celé dokončení před/po na1k–250k, CPU×4 a přesná shoda
+souhrnů i vizuálních bodů. Menší blokování může prodloužit celkové čekání.
+
 [MQTT diagnostika](MQTT_DIAGNOSTIKA.md): skutečný handler před/po s historií
 1k–250k, přijaté/odmítnuté dávky a zachování původních řádků; žádný živý broker.
 
