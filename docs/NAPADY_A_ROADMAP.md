@@ -1893,3 +1893,16 @@ nových requestů, zoom/reset/2PNG, rušení modelu i porovnání a320/1440px ×
 Bez pageerror a bez otevřených socketů. Data jsou lokální řízené CSV/UV,
 živé služby/broker a fyzický Safari/iOS se neověřovaly. Sada342/342 Node
 zahrnuje původní Pages sestavení/server a regresní funkce všech stanic.
+
+Publikování v0.18.3 ověřeno 2026-10-24: [Actions #37](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40072329934)
+pro [a9cfa0a](https://github.com/Michaltymm/Meteo_webovky/commit/a9cfa0a02e319aa24e70bfb96b07b2104a11febc)
+**Success**, build33s/deploy11s/celkem52s,1artefakt.342/342 lokálních Node,
+rozšířený skutečný100k browser i všech12přesných profilových porovnání prošly.
+Implementované a lokálně ověřené změny jsou podle workflow také nasazené.
+Přímý Pages host není v síťové politice prostředí; jeho živé widgety,
+skutečné služby/MQTT a fyzický Safari/iOS tím ověřeny nejsou. Odesláno pouze
+do codex-dev, main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Původní upozornění Actions runtime/ubuntu-latest přetrvávají; workflow se
+neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoint:
+METEO-008, volitelné vyhlazení podle již hotového profilu NOCNI_ANALYZA.md;
+neopakovat model, porovnání ani binární výběr nočního úseku.
