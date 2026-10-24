@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.4 (2026-10-24): další část METEO-008 hotová, celé ID Rozpracováno. analyticsMoving pro T/tlak počítá původní 5měřicí průměry a stejný single-metric min/max/gap sampling v jednom průchodu;199košů, oba endpointy, první shody/mezery, ≤600bodů, bez pole n bodů. Pořadí součtů/odečtů, nuly/null/duplicity/>3h a úplné statistiky/modelové memo zachované. Pomocně O(limit), čas stále O(n) synchronně. Před/po250k T regular36,3→28,8ms, dense53,6→24ms; tlak32,4→22,3 a37,6→20,9ms. CPU×4/100k T64,3→59,4 a73→54,4ms; malé T/10k mírně pomalejší. Odhad alokací250kT29,28→16,30MB a25,75→16,73MB; není peak/RSS nebo důkaz celkové úspory RAM. Všech10časových +2alokační SHA shodných.350/350Node,8nových v analytics-moving (původní algoritmus+obecný sampler,150náhodných T/tlak historií,250kProxy právěnčtení/frozen zdroj). Rozšířený Chromium154/100k/9grafů/3konfigurace/zoom/PNG/320–1440px/obě témata prošel, včetně obou smoothing ovladačů/memo/plných souhrnů bez requestů; žádný pageerror/socket. Baselinef47c9d2, viz docs/performance/VYHLAZENI.md. Dále heatmapové buňky podle již uložených profilů, případně oddělit agregaci/plátno; neopakovat hotový model/párování/noc/vyhlazení. Parser, nezávislé rozsahy a streaming dále. Pouze codex-dev; publikování zapsat na konci etapy.
 - v0.18.3 (2026-10-24): třetí malá část METEO-008 hotová, celé ID Rozpracováno. Profil heatmapy/vyhlazení/noci vybral zbytečný plný průchod noční analýzy. Vzestupný původní model, dvě binární inkluzivní meze, průchod jen západ–východ: O(log n+k), O(1) pomocně, bez cache/requestů/nového plánovače. Duplicity/nuly/null/mezery>3h/astronomie/DST/text/částečná noc zachované. Před/po250k regular32,7→0,1ms, dense68,6→12ms, celá hustá noc85,9→36,3ms; CPU×4/100k regular63,6→0,8ms, celá hustá noc156,1→61,9ms. Hustá noc zůstává synchronní O(k), žádná záruka16ms/INP. Všech12přesných SHA shodných.342/342Node,10nových testů/reference/100náhodných historií/DST3zón/Proxy250k<200čtení. Opravena jen testovací fixture visibleDay, selhání data-status potvrzeno i na původním HTML; produkční visibility beze změny. Viz docs/performance/NOCNI_ANALYZA.md. Baseline0f2ad15, pouze codex-dev. Dále navázat na již provedený profil volitelného vyhlazení a jeho plné dočasné pole; neopakovat model/porovnání/noční výběr. Rozšířený Chromium154/100k/9grafů/3konfigurace/zoom/PNG/320–1440px/obě témata prošel, včetně přesného nočního textu/memo bez requestů; žádný pageerror/socket. Actions #37/40072329934 Success pro a9cfa0a (build33s/deploy11s/celkem52s); evidence na konci etapy. main stále2405c5d.
 - v0.18.2: druhá část METEO-008 hotová, celé ID Rozpracováno. Velké porovnání pro Sheets/společný výřez má samostatný comparisonJob až nad hotovým modelem. Stejný workSlice~8ms/max64kroků; matcher kontrolní body512, filtr/sampling1024, synchronní API dokončí stejné generátory. Pravidla10min/nejbližší/dřívější/one-to-one/duplicit a plné statistiky zachované. Snapshot cache/source/model/context/domain/loading/errors, atomický commit; invalidace/odchod/skrytí ruší, změna cizí cache zneplatní/restartuje viditelnou kartu. Busy/PNG jen karta8, ostatní model/grafy/cizí fetch zůstávají.332/332Node včetně11nových, skutečný Chromium100k/9grafů/3konfigurace/zoom/PNG/320–1440px +info harness prošly, bez pageerror/socketů. Přesné podpisy datasetů i nezaokrouhlených match výsledků před/po shodné.250k/+5s blok149,5→8,5ms, celek149,5→281,8ms; CPU×4/100k blok266→9,6ms, celek266→445,2ms. Menší blokování, nikoli celkové zrychlení; viz docs/performance/POROVNANI_STANIC.md. Baseline9fd455b. Dále profil heatmapy/vyhlazení/noční analýzy; velký CSV parser a streaming/nezávislé rozsahy dále. Jen codex-dev.
 - v0.18.1: první část METEO-008 hotová, celé ID Rozpracováno. Společný Sheets výřez od10k vybraných řádků připravuje jeden model v dávkách ~8ms/max64kroků; kontrolní body po1024položkách, stejné generátory pro synchronní API i UI. Kopie referencí/úplný souhrn/gapy/minmax/XY, přesné pořadí výpočtů zachováno. Rušení na každou invalidaci/odchod/skrytí, guard identity/context/source/length/domain; žádný částečný commit. Busy skrývá staré plátno, čistí staré heat detaily a vypíná PNG do překreslení. Malé/nezávislé a MQTT/both zůstávají synchronní kvůli riziku opakovaného rušení streamem.321/321Node (včetně13nových cílených), nový skutečný Chromium harness100k/9grafů/3stanice/PNG/zoom/320–1440px prošel. Před/po modelu250k: nejdelší blok389,6→10,7ms, celé dokončení389,6→685,6ms; CPU×4/100k834,4→20,1ms blok a834,4→925,2ms celek, přesně stejné podpisy celých souhrnů/bodů. Bez tvrzení rychlejšího celého webu/INP. Viz docs/performance/ANALYTICKY_MODEL.md. Baselinefcdcbba; dále podle profilu rozdělit první přípravu porovnání stanic. Velký CSV parser, night/smoothing/heatmapa, nezávislé výřezy a streaming snapshot dále.
@@ -783,3 +784,42 @@ Původní upozornění Actions runtime/ubuntu-latest přetrvávají; workflow se
 neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoint:
 METEO-008, volitelné vyhlazení podle již hotového profilu NOCNI_ANALYZA.md;
 neopakovat model, porovnání ani binární výběr nočního úseku.
+
+## METEO-008 — jednoprůchodové vyhlazení, v0.18.4 (2026-10-24)
+
+Další malá část je hotová; celé ID zůstává **Rozpracováno**. Výchozíf47c9d2,
+navazuje na profil NOCNI_ANALYZA. Neopakovány hotové analýzy/model/párování/noc.
+Původní analyticsMoving vytvářelo n bodů a pak je znovu procházelo samplerem.
+Nový průchod počítá každý původní průměr a zároveň zachovává pouze kandidáty
+stejných199košů: první min/max/neplatnou hodnotu a oba konce, nakonec pořadí
+indexů. Do600řádků všechny body jako dříve. Obecný sampler se neměnil.
+
+Přesné pořadí součtů/odečtů/fronty5hodnot, nuly/null/nonfinite, duplicity,
+reset na mezeře>3h a původní numerické přetečení zachované. Živá pomocná
+paměť O(limit) místo O(n), neukládá n bodů. Čas stále O(n) a synchronní,
+žádný příslib16ms nebo nulové režie. Statistiky z plných dat a memo modelu
+beze změny; žádný request/timer/cache navíc nebo změna konfigurací.
+
+Sekvenční před/po1k/10k/100k/250k, po5min a100ms, T i tlak; CPU×4/100k.
+250kT regular36,3→28,8ms, dense53,6→24,0ms; tlak32,4→22,3 a37,6→20,9ms.
+CPU×4 T64,3→59,4 a73→54,4ms. Malé T/10k1,8→1,9 a1,7→2,1ms: obecné
+zrychlení malých rozsahů doloženo není. Samostatný vzorkovaný odhad alokací
+250kT29 282 448→16 301 940B a25 753 380→16 733 468B (~44/~35 % méně),
+nikoli peak/RSS nebo celková úspora RAM. Heap na návratu/poGC zůstává podobný.
+SHA všechT/tlakových bodů na10časových i2alokačních scénářích přesně shodný.
+[Metodika, omezení a surové výsledky](performance/VYHLAZENI.md).
+
+350/350 Node,8nových v analytics-moving.test.js: původní dvouprůchodový
+algoritmus+nezměněný sampler jako reference,150náhodných historií proT/tlak,
+hranice600/601/602, mezery/extrémy/shody/duplicity/null/0/nonfinite/-0,
+250kProxy právěnčtení, zmrazený původní zdroj/cache a žádné requesty/timery.
+Skutečný Chromium154 prošel100k/9grafů/3původní konfigurace/zoom/reset/PNG,
+320/1440px ×2témata. Nově oba smoothing ovladače zap/vyp/zap, stejné memo,
+nezměněné plné souhrny a žádné requesty. Bez pageerror/socketů. Data řízená
+CSV/UV, lokální skutečné SRI knihovny; živé služby/MQTT/fyzické iOS neověřeny.
+
+Další checkpoint008: heatmapové buňky husté historie podle již uloženého
+profilu NOCNI_ANALYZA, podle potřeby oddělit agregaci a cenu plátna. Neopakovat
+hotový model/porovnání/noční meze/vyhlazení. Velký parser, dávkování další
+synchronní práce, nezávislé výřezy a konzistentní streaming snapshot dále.
+Worker/persistence až s měřením. Žádná změna main/configů/archivu/workflow.

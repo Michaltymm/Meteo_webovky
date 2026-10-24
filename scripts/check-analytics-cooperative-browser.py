@@ -199,6 +199,29 @@ async def main():
         await page.evaluate('analyticsState.model.rows=savedNightRows;delete analyticsState.model.nightText;analyticsDrawCard(5)')
         checks.append('battery card renders exact observed night ΔV/time, partial-night explanation and memo without requests')
 
+        smooth_requests = len(requests)
+        await page.evaluate('globalThis.smoothModel=analyticsState.model;globalThis.smoothSummary=JSON.stringify(smoothModel.summary)')
+        for card, field in [(0, 'smoothTemp'), (2, 'smoothPressure')]:
+            await page.locator(f'#anaCard{card}').scroll_into_view_if_needed()
+            controls = page.locator(f'#anaCard{card} > details:not(.ana-info)')
+            await controls.locator('summary').click()
+            await page.locator(f'#anaSmooth{card}').check()
+            assert await page.evaluate('''({card,field})=>{
+              const points=smoothModel[field],chart=analyticsCharts.get(card);
+              globalThis.smoothMemo=points;
+              return analyticsState.model===smoothModel && points.length<=600 &&
+                chart.data.datasets.some(ds=>ds.data===points && ds.label.startsWith('Průměr 5')) &&
+                JSON.stringify(smoothModel.summary)===smoothSummary;
+            }''', {'card': card, 'field': field})
+            await page.locator(f'#anaSmooth{card}').uncheck()
+            assert await page.evaluate('(card)=>!analyticsCharts.get(card).data.datasets.some(ds=>ds.label.startsWith("Průměr 5"))', card)
+            await page.locator(f'#anaSmooth{card}').check()
+            assert await page.evaluate('(field)=>smoothModel[field]===smoothMemo', field)
+            await page.locator(f'#anaSmooth{card}').uncheck()
+            await controls.locator('summary').click()
+        assert len(requests) == smooth_requests
+        checks.append('temperature/pressure smoothing controls use bounded points and the same memo, preserve full statistics, toggle without requests')
+
         await page.locator('#anaCard0').scroll_into_view_if_needed()
         options = page.locator('#anaCard0 > details:not(.ana-info)')
         await options.locator('summary').click()

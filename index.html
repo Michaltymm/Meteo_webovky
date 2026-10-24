@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0183"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.3</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0184"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.4</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7386,11 +7386,31 @@
       return m;
     }
     function analyticsMoving(rows,metric) {
-      const points=[],queue=[];let sum=0,prev=null;
-      for(const r of rows){const x=+r.ts,v=r[metric];if(!Number.isFinite(v)||(prev!==null&&x-prev>10800000)){queue.length=0;sum=0;}
-        if(Number.isFinite(v)){queue.push(v);sum+=v;if(queue.length>5)sum-=queue.shift();}
-        points.push({x,y:queue.length===5?sum/5:null});prev=x;}
-      return sampleExtrema(points,[p=>p.y],600);
+      const limit=600,sampled=rows.length>limit,buckets=sampled?Math.floor((limit-2)/3):1;
+      const points=[],selected=new Map(),queue=[];let sum=0,prev=null;
+      // Match sampleExtrema's single-metric buckets, first ties/gap and
+      // endpoints while computing every original rolling mean in order.
+      // Retain only bucket candidates, never a full temporary point array.
+      for(let bucket=0;bucket<buckets;bucket++){
+        const start=Math.floor(bucket*rows.length/buckets),end=Math.floor((bucket+1)*rows.length/buckets);
+        let min=Infinity,max=-Infinity,minPoint=null,maxPoint=null,gap=null;
+        for(let i=start;i<end;i++){
+          const r=rows[i],x=+r.ts,v=r[metric];
+          if(!Number.isFinite(v)||(prev!==null&&x-prev>10800000)){queue.length=0;sum=0;}
+          if(Number.isFinite(v)){queue.push(v);sum+=v;if(queue.length>5)sum-=queue.shift();}
+          const y=queue.length===5?sum/5:null;prev=x;
+          if(!sampled){points.push({x,y});continue;}
+          const finite=Number.isFinite(y);
+          if(i===0||i===rows.length-1||(finite?(y<min||y>max):gap===null)){
+            const entry=[i,{x,y}];
+            if(i===0||i===rows.length-1)selected.set(i,entry[1]);
+            if(!finite){if(gap===null)gap=entry;}
+            else{if(y<min){min=y;minPoint=entry;}if(y>max){max=y;maxPoint=entry;}}
+          }
+        }
+        for(const entry of [minPoint,maxPoint,gap])if(entry)selected.set(entry[0],entry[1]);
+      }
+      return sampled?[...selected].sort((a,b)=>a[0]-b[0]).map(entry=>entry[1]):points;
     }
     function analyticsPalette(){const c=getComputedStyle(document.body);return {text:c.getPropertyValue('--text').trim(),grid:c.getPropertyValue('--border').trim()};}
     const analyticsCursorPlugin={id:'analyticsCursor',afterEvent(chart,args){

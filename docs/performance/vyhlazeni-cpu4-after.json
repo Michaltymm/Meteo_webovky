@@ -1,0 +1,74 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "scenario": "Prepared full model; only temperature and pressure smoothing; regular5min, dense100ms, optional100ms ending sunrise+1s",
+  "limits": "Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory",
+  "results": [
+    {
+      "rows": 100000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "8005e74b3ae894b7772f3730feae6b77f3ad7c39588d89a75b1f0aa6d0b70290",
+      "samples": [
+        {
+          "movingMs": 77.80000000447035,
+          "pressureMs": 41.899999998509884
+        },
+        {
+          "movingMs": 46.900000005960464,
+          "pressureMs": 40
+        },
+        {
+          "movingMs": 59.400000005960464,
+          "pressureMs": 47.19999999552965
+        },
+        {
+          "movingMs": 48.79999999701977,
+          "pressureMs": 57.600000001490116
+        },
+        {
+          "movingMs": 65.30000000447035,
+          "pressureMs": 37.600000001490116
+        }
+      ],
+      "median": {
+        "movingMs": 59.400000005960464,
+        "pressureMs": 41.899999998509884
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "4b9d983da640f554c51de726cb5df2bef12a87ffd11c7de0e86e93ef8abd3843",
+      "samples": [
+        {
+          "movingMs": 66.69999999552965,
+          "pressureMs": 54.70000000298023
+        },
+        {
+          "movingMs": 53.5,
+          "pressureMs": 50.29999999701977
+        },
+        {
+          "movingMs": 54.399999998509884,
+          "pressureMs": 54.399999998509884
+        },
+        {
+          "movingMs": 56.100000001490116,
+          "pressureMs": 43
+        },
+        {
+          "movingMs": 54.400000005960464,
+          "pressureMs": 50.5
+        }
+      ],
+      "median": {
+        "movingMs": 54.400000005960464,
+        "pressureMs": 50.5
+      },
+      "pageErrors": []
+    }
+  ]
+}

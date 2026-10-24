@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 společný Sheets model, v0.18.2 porovnání v dávkách; v0.18.3 binární výběr nočního intervalu. Přesné výpočty zachované; parser/vyhlazení/heatmapa dále | Profil etapy13 a další před/po, ověřené plné výsledky; worker/persistence a METEO-004 dále, viz performance/ANALYTICKY_MODEL.md, POROVNANI_STANIC.md a NOCNI_ANALYZA.md | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 společný Sheets model, v0.18.2 porovnání v dávkách; v0.18.3 binární noční meze, v0.18.4 vyhlazení bez plného pole bodů. Přesné výpočty zachované; parser/heatmapa/další dávkování dále | Profil etapy13 a další před/po, ověřené plné výsledky; worker/persistence a METEO-004 dále, viz performance/ANALYTICKY_MODEL.md, POROVNANI_STANIC.md, NOCNI_ANALYZA.md a VYHLAZENI.md | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -1906,3 +1906,42 @@ Původní upozornění Actions runtime/ubuntu-latest přetrvávají; workflow se
 neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoint:
 METEO-008, volitelné vyhlazení podle již hotového profilu NOCNI_ANALYZA.md;
 neopakovat model, porovnání ani binární výběr nočního úseku.
+
+## METEO-008 — jednoprůchodové vyhlazení, v0.18.4 (2026-10-24)
+
+Další malá část je hotová; celé ID zůstává **Rozpracováno**. Výchozíf47c9d2,
+navazuje na profil NOCNI_ANALYZA. Neopakovány hotové analýzy/model/párování/noc.
+Původní analyticsMoving vytvářelo n bodů a pak je znovu procházelo samplerem.
+Nový průchod počítá každý původní průměr a zároveň zachovává pouze kandidáty
+stejných199košů: první min/max/neplatnou hodnotu a oba konce, nakonec pořadí
+indexů. Do600řádků všechny body jako dříve. Obecný sampler se neměnil.
+
+Přesné pořadí součtů/odečtů/fronty5hodnot, nuly/null/nonfinite, duplicity,
+reset na mezeře>3h a původní numerické přetečení zachované. Živá pomocná
+paměť O(limit) místo O(n), neukládá n bodů. Čas stále O(n) a synchronní,
+žádný příslib16ms nebo nulové režie. Statistiky z plných dat a memo modelu
+beze změny; žádný request/timer/cache navíc nebo změna konfigurací.
+
+Sekvenční před/po1k/10k/100k/250k, po5min a100ms, T i tlak; CPU×4/100k.
+250kT regular36,3→28,8ms, dense53,6→24,0ms; tlak32,4→22,3 a37,6→20,9ms.
+CPU×4 T64,3→59,4 a73→54,4ms. Malé T/10k1,8→1,9 a1,7→2,1ms: obecné
+zrychlení malých rozsahů doloženo není. Samostatný vzorkovaný odhad alokací
+250kT29 282 448→16 301 940B a25 753 380→16 733 468B (~44/~35 % méně),
+nikoli peak/RSS nebo celková úspora RAM. Heap na návratu/poGC zůstává podobný.
+SHA všechT/tlakových bodů na10časových i2alokačních scénářích přesně shodný.
+[Metodika, omezení a surové výsledky](performance/VYHLAZENI.md).
+
+350/350 Node,8nových v analytics-moving.test.js: původní dvouprůchodový
+algoritmus+nezměněný sampler jako reference,150náhodných historií proT/tlak,
+hranice600/601/602, mezery/extrémy/shody/duplicity/null/0/nonfinite/-0,
+250kProxy právěnčtení, zmrazený původní zdroj/cache a žádné requesty/timery.
+Skutečný Chromium154 prošel100k/9grafů/3původní konfigurace/zoom/reset/PNG,
+320/1440px ×2témata. Nově oba smoothing ovladače zap/vyp/zap, stejné memo,
+nezměněné plné souhrny a žádné requesty. Bez pageerror/socketů. Data řízená
+CSV/UV, lokální skutečné SRI knihovny; živé služby/MQTT/fyzické iOS neověřeny.
+
+Další checkpoint008: heatmapové buňky husté historie podle již uloženého
+profilu NOCNI_ANALYZA, podle potřeby oddělit agregaci a cenu plátna. Neopakovat
+hotový model/porovnání/noční meze/vyhlazení. Velký parser, dávkování další
+synchronní práce, nezávislé výřezy a konzistentní streaming snapshot dále.
+Worker/persistence až s měřením. Žádná změna main/configů/archivu/workflow.

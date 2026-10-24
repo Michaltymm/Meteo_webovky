@@ -20,7 +20,10 @@ def main():
     parser.add_argument('--counts',default='1000,10000,100000,250000')
     parser.add_argument('--cpu',type=float,default=1)
     parser.add_argument('--distributions',default='regular,dense')
+    parser.add_argument('--moving-only',action='store_true',help='Only the next smoothing stage, for temperature and pressure')
+    parser.add_argument('--allocations-only',action='store_true',help='Separate untimed temperature smoothing allocation sample (requires --moving-only)')
     args=parser.parse_args()
+    if args.allocations_only and not args.moving_only:parser.error('--allocations-only requires --moving-only')
     html=Path(args.html).read_text().split('// Init: téma, stanice, config')[0]+'</script></body></html>'
     chart,paho=Path(args.chartjs).read_bytes(),Path(args.paho).read_bytes()
     results=[]
@@ -42,7 +45,7 @@ def main():
                 page.route('**/*',route);page.goto('http://meteo.test/dev/index.html')
                 cdp=page.context.new_cdp_session(page);cdp.send('Performance.enable')
                 cdp.send('Emulation.setCPUThrottlingRate',{'rate':args.cpu})
-                page.evaluate('''({count,step,distribution})=>{
+                page.evaluate('''({count,step,distribution,movingOnly})=>{
                   let end=Date.parse('2026-10-24T12:00:00+02:00');
                   if(distribution==='night')end=+calcSunTimes(50.08,14.42,new Date(end)).rise+1000;
                   store.rows=Array.from({length:count},(_,i)=>({ts:new Date(end-i*step),
@@ -57,6 +60,12 @@ def main():
                   analyticsState.visible=new Set([8]);el('anaHeatMetric').value='temp';
                   globalThis.measure=()=>{
                     const time=fn=>{const start=performance.now(),value=fn();return {ms:performance.now()-start,value}};
+                    if(movingOnly){
+                      const moving=time(()=>analyticsMoving(m.rows,'temp'));
+                      const pressure=time(()=>analyticsMoving(m.rows,'pressure'));
+                      if(!m.rows.every((r,i)=>r===store.rows[store.rows.length-1-i]))throw Error('Source changed');
+                      return {timings:{movingMs:moving.ms,pressureMs:pressure.ms},results:{moving:moving.value,pressure:pressure.value}};
+                    }
                     analyticsState.heat=null;const heat=time(()=>analyticsHeatmap());
                     const cells=JSON.stringify({keys:analyticsState.heat.keys,cells:analyticsState.heat.cells});
                     const warm=time(()=>analyticsHeatmap());
@@ -66,8 +75,27 @@ def main():
                     return {timings:{heatColdMs:heat.ms,heatWarmMs:warm.ms,movingMs:moving.ms,nightMs:night.ms},
                       results:{heat:cells,moving:moving.value,night:night.value}};
                   };
-                }''',{'count':count,'step':step,'distribution':distribution})
+                }''',{'count':count,'step':step,'distribution':distribution,'movingOnly':args.moving_only})
                 page.evaluate('measure()')
+                if args.allocations_only:
+                    page.evaluate('globalThis.allocationResult=null')
+                    cdp.send('HeapProfiler.collectGarbage')
+                    before=cdp.send('Runtime.getHeapUsage')['usedSize']
+                    cdp.send('HeapProfiler.startSampling',{'samplingInterval':32768,
+                        'includeObjectsCollectedByMajorGC':True,'includeObjectsCollectedByMinorGC':True})
+                    points=page.evaluate('globalThis.allocationResult=analyticsMoving(m.rows,"temp");allocationResult.length')
+                    profile=cdp.send('HeapProfiler.stopSampling')['profile']
+                    after=cdp.send('Runtime.getHeapUsage')['usedSize']
+                    cdp.send('HeapProfiler.collectGarbage')
+                    retained=cdp.send('Runtime.getHeapUsage')['usedSize']
+                    def total(node):return node['selfSize']+sum(total(child) for child in node['children'])
+                    signature=hashlib.sha256(json.dumps(page.evaluate('allocationResult'),separators=(',',':')).encode()).hexdigest()
+                    assert not errors,errors
+                    results.append({'rows':count,'distribution':distribution,'stepMs':step,
+                        'signatureSHA256':signature,'points':points,'estimatedAllocatedBytes':total(profile['head']),
+                        'heapBeforeBytes':before,'heapAtReturnBytes':after,'heapAfterGCBytes':retained,
+                        'allocationSamplingInterval':32768,'pageErrors':errors})
+                    page.close();continue
                 samples=[];signatures=[]
                 for _ in range(5):
                     cdp.send('HeapProfiler.collectGarbage')
@@ -81,8 +109,8 @@ def main():
         version=browser.version;browser.close()
     out=Path(args.output);out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
-        'scenario':'Prepared full model; cold/warm heatmap, moving mean and last completed night; regular5min, dense100ms, optional100ms ending sunrise+1s',
-        'limits':'Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory',
+        'scenario':('Prepared full model; only temperature and pressure smoothing' if args.moving_only else 'Prepared full model; cold/warm heatmap, moving mean and last completed night')+'; regular5min, dense100ms, optional100ms ending sunrise+1s',
+        'limits':('Separate sampled allocation estimate, including collected objects and evaluator overhead; heap snapshots at call boundaries, not peak/RSS or proof of leaks' if args.allocations_only else 'Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory'),
         'results':results},indent=2)+'\n');print(out)
 
 

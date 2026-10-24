@@ -142,6 +142,13 @@ a vysvětlení částečného pozorování se nemění. O(log n+k), bez další 
 nebo požadavků. Hustá noc stále vyžaduje O(k) synchronní práce.
 [Profil heatmapy/vyhlazení/noci a výsledky před/po](performance/NOCNI_ANALYZA.md).
 
+Od v0.18.4 se vyhlazení teploty a tlaku v kartách1/3 počítá i vizuálně vybírá
+v jednom průchodu. Stejné průměry posledních5původních měření, stejné koše,
+první extrémy/mezery a koncové body; odpadá plné dočasné pole bodů. Živé
+pracovní místo je omezené počtem reprezentantů, výpočet zůstává O(n)
+a synchronní. Hotové memo na modelu a úplné statistiky se nemění.
+[Časová měření, alokace a limity](performance/VYHLAZENI.md).
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.
@@ -158,8 +165,9 @@ Centrální stavy zůstávají v [roadmapě](NAPADY_A_ROADMAP.md), bez nových I
   nejistota vztahů031 a metadata071 zůstávají dalšími etapami.
 - Heatmapa srážek/pokrytí034 potřebuje srážkový/měřicí kontrakt; nevyvozuje
   se dostupnost senzoru z počtu buněk.
-- Dávkovaný společný Sheets model, porovnání a omezený noční průchod jsou
-  dokončené části008. Další jsou vyhlazení/heatmapa, případné dávkování velmi
+- Dávkovaný společný Sheets model, porovnání, omezený noční průchod a
+  jednoprůchodové vyhlazení jsou dokončené části008. Další jsou heatmapa,
+  případné dávkování zbývajících synchronních průchodů včetně velmi
   husté noci a velký parser; worker nebo ověřené
   serverové agregace až s měřením. První úplný250k výpočet má cenu O(n);
   žádný příslib nulové prodlevy nebo fyzického iOS měření.

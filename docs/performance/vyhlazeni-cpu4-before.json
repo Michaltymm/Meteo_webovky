@@ -1,0 +1,74 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "scenario": "Prepared full model; only temperature and pressure smoothing; regular5min, dense100ms, optional100ms ending sunrise+1s",
+  "limits": "Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory",
+  "results": [
+    {
+      "rows": 100000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "8005e74b3ae894b7772f3730feae6b77f3ad7c39588d89a75b1f0aa6d0b70290",
+      "samples": [
+        {
+          "movingMs": 94.89999999850988,
+          "pressureMs": 63.899999998509884
+        },
+        {
+          "movingMs": 68.90000000596046,
+          "pressureMs": 64.5
+        },
+        {
+          "movingMs": 64.29999999701977,
+          "pressureMs": 61.5
+        },
+        {
+          "movingMs": 63.399999998509884,
+          "pressureMs": 57.79999999701977
+        },
+        {
+          "movingMs": 62.100000001490116,
+          "pressureMs": 53.600000001490116
+        }
+      ],
+      "median": {
+        "movingMs": 64.29999999701977,
+        "pressureMs": 61.5
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "4b9d983da640f554c51de726cb5df2bef12a87ffd11c7de0e86e93ef8abd3843",
+      "samples": [
+        {
+          "movingMs": 101.39999999850988,
+          "pressureMs": 53.600000001490116
+        },
+        {
+          "movingMs": 74.80000000447035,
+          "pressureMs": 65.5
+        },
+        {
+          "movingMs": 73,
+          "pressureMs": 68.5
+        },
+        {
+          "movingMs": 72,
+          "pressureMs": 61.899999998509884
+        },
+        {
+          "movingMs": 64.10000000149012,
+          "pressureMs": 57.79999999701977
+        }
+      ],
+      "median": {
+        "movingMs": 73,
+        "pressureMs": 61.899999998509884
+      },
+      "pageErrors": []
+    }
+  ]
+}

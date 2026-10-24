@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.4
+
+- Vyhlazování teploty a tlaku v analytických grafech připravuje body v jednom průchodu a uchovává jen omezený výběr pro graf. U dlouhé historie odpadá velké dočasné pole.
+- Pětiměřicí průměry, vybrané extrémy, mezery i původní statistiky zůstávají stejné; nevznikají další síťové požadavky.
+
 ## v0.18.3
 
 - Noční změna napětí v analytických grafech se počítá jen z příslušného časového úseku. Dlouhá historie tak zbytečně nezdržuje otevření bateriového grafu.

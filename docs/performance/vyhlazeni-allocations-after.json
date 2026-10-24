@@ -1,0 +1,34 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "scenario": "Prepared full model; only temperature and pressure smoothing; regular5min, dense100ms, optional100ms ending sunrise+1s",
+  "limits": "Separate sampled allocation estimate, including collected objects and evaluator overhead; heap snapshots at call boundaries, not peak/RSS or proof of leaks",
+  "results": [
+    {
+      "rows": 250000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "128722f4b46b99c2b5c1d4f1d1892f60d5eac5572e9bbc84ce0f667d3f9dca34",
+      "points": 598,
+      "estimatedAllocatedBytes": 16301940,
+      "heapBeforeBytes": 37587388,
+      "heapAtReturnBytes": 37664136,
+      "heapAfterGCBytes": 37657736,
+      "allocationSamplingInterval": 32768,
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "b55fddab2fe82f0c41ba5981f3a1c938e3dfa934069a6ad5e5ca425cbb6342b6",
+      "points": 598,
+      "estimatedAllocatedBytes": 16733468,
+      "heapBeforeBytes": 37431640,
+      "heapAtReturnBytes": 37508388,
+      "heapAfterGCBytes": 37501988,
+      "allocationSamplingInterval": 32768,
+      "pageErrors": []
+    }
+  ]
+}
