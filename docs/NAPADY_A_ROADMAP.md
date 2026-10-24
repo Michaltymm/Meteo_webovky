@@ -1945,3 +1945,17 @@ profilu NOCNI_ANALYZA, podle potřeby oddělit agregaci a cenu plátna. Neopakov
 hotový model/porovnání/noční meze/vyhlazení. Velký parser, dávkování další
 synchronní práce, nezávislé výřezy a konzistentní streaming snapshot dále.
 Worker/persistence až s měřením. Žádná změna main/configů/archivu/workflow.
+
+Publikování v0.18.4 ověřeno 2026-10-24: [Actions #38](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40100574221)
+pro [1aff09c](https://github.com/Michaltymm/Meteo_webovky/commit/1aff09c7d6d167318a3986be1c09c3ad259eab0e)
+**Success**, build30s/deploy30s/celkem67s,1artefakt.350/350 lokálních Node,
+rozšířený skutečný100k browser a10časových+2alokační přesná porovnání prošly.
+Kód je implementovaný, lokálně ověřený a podle workflow také nasazený.
+Přímý Pages host není v síťové politice prostředí, jeho živé widgety ani
+skutečné externí služby/MQTT a fyzický Safari/iOS tím ověřeny nejsou.
+Odesláno pouze do codex-dev; main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Původní upozornění Actions
+runtime/ubuntu-latest přetrvávají, workflow se neměnilo. Následující commit
+obsahuje pouze tuto evidenci. Další checkpoint METEO-008: heatmapové buňky
+nad hustou historií podle existujícího profilu, případně oddělit cenu
+agregace a plátna; neopakovat hotové model/párování/noční meze/vyhlazení.
