@@ -179,6 +179,26 @@ async def main():
         assert await page.evaluate('analyticsState.model.summary.stats.temp.count===largeOriginal.filter(r=>Number.isFinite(r.temp)).length')
         checks.append('100k complete exact-source model, bounded samples, all eight Chart graphs plus heatmap')
 
+        # A valid observed night must reach the real battery card and its memo.
+        # Keep other model fields intact; no data fetch or transport is involved.
+        await page.locator('#anaCard5').scroll_into_view_if_needed()
+        night_requests = len(requests)
+        await page.evaluate('''()=>{
+          globalThis.savedNightRows=analyticsState.model.rows;
+          const day=new Date(2026,9,23),rise=calcSunTimes(Number(CFG.lat),Number(CFG.lon),day).rise;
+          const end=+rise-3600000,start=end-2*3600000;
+          analyticsState.model.rows=[{ts:new Date(start),voltage:4.125},
+            {ts:new Date(end),voltage:4.1},{ts:new Date(+rise+3600000),voltage:4.2}];
+          delete analyticsState.model.nightText;analyticsDrawCard(5);
+          globalThis.expectedNight='Pozorovaný úsek poslední dokončené noci: '+fmt(-25,2)+' mV za '+fmt(2,2)+' h; '+fmtTime(new Date(start))+'–'+fmtTime(new Date(end))+'. Nepokrývá nutně celou noc.';
+        }''')
+        assert await page.evaluate('analyticsState.model.nightText===expectedNight && el("anaNote5").textContent.endsWith(expectedNight)')
+        await page.evaluate('analyticsDrawCard(5)')
+        assert await page.evaluate('analyticsState.model.nightText===expectedNight')
+        assert len(requests) == night_requests
+        await page.evaluate('analyticsState.model.rows=savedNightRows;delete analyticsState.model.nightText;analyticsDrawCard(5)')
+        checks.append('battery card renders exact observed night ΔV/time, partial-night explanation and memo without requests')
+
         await page.locator('#anaCard0').scroll_into_view_if_needed()
         options = page.locator('#anaCard0 > details:not(.ana-info)')
         await options.locator('summary').click()

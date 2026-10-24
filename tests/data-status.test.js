@@ -4,7 +4,10 @@ const {app}=require('./helpers/app');
 const settle=()=>new Promise(setImmediate);
 const csv='Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti\n22.10.2026,12:00,0,1010,50,0,0,,4';
 function fixture(){const a=app();a.run(`globalThis.NativeDate=Date;globalThis.clock=+new Date(2026,9,23,12);
- globalThis.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[clock]))}static now(){return clock}};renderDataStatus()`);return a;}
+ globalThis.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[clock]))}static now(){return clock}};
+ // Align the application's day snapshot with the fixture clock; this test
+ // checks minute updates, not a rollover from the machine's current date.
+ visibleDay=localDateKey();renderDataStatus()`);return a;}
 async function accept(a,full=false,body=csv){const pending=a.run(`fetchSheets(${full})`);a.respond(a.requests.length-1,body);await settle();a.tick();await pending;}
 async function rejectExport(a,body=null){const pending=a.run('fetchSheets(true)');for(let i=0;i<3;i++){const index=a.requests.length-1;if(body===null)a.requests[index].reject(new Error('controlled failure'));else a.respond(index,body);await settle();a.tick();await settle();}await pending;}
 

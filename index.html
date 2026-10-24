@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0182"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.2</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0183"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.3</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7454,8 +7454,12 @@
       if(rise&&rise>last){day.setDate(day.getDate()-1);rise=calcSunTimes(lat,lon,day).rise;}
       day.setDate(day.getDate()-1);const sunset=calcSunTimes(lat,lon,day).set;
       if(!rise||!sunset||+rise>+last)return 'Poslední dokončená noc není v rozsahu doložená.';
+      // Model rows are ascending original measurements. Keep both boundaries
+      // inclusive, including duplicates, without scanning unrelated history.
+      const boundary=(time,after)=>{let lo=0,hi=rows.length;while(lo<hi){const mid=(lo+hi)>>>1,t=+rows[mid].ts;if(after?t<=time:t<time)lo=mid+1;else hi=mid;}return lo;};
+      const start=boundary(+sunset,false),stop=boundary(+rise,true);
       let first=null,end=null,previous=null,broken=false;
-      for(const row of rows){if(row.ts<sunset||row.ts>rise)continue;if(!Number.isFinite(row.voltage)){broken=true;continue;}if(previous&&+row.ts-+previous.ts>10800000)broken=true;if(!first)first=row;end=row;previous=row;}
+      for(let i=start;i<stop;i++){const row=rows[i];if(!Number.isFinite(row.voltage)){broken=true;continue;}if(previous&&+row.ts-+previous.ts>10800000)broken=true;if(!first)first=row;end=row;previous=row;}
       if(!first||!end||+end.ts<=+first.ts||broken)return 'Pro noční změnu chybí souvislý pozorovaný úsek (mezery >3 h nebo chybějící V).';
       return `Pozorovaný úsek poslední dokončené noci: ${fmt((end.voltage-first.voltage)*1000,2)} mV za ${fmt((end.ts-first.ts)/3600000,2)} h; ${fmtTime(first.ts)}–${fmtTime(end.ts)}. Nepokrývá nutně celou noc.`;
     }

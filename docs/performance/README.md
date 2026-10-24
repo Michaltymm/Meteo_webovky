@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Noční analýza a profil zbývajících grafů](NOCNI_ANALYZA.md): třetí část
+METEO-008, výběr jediné noci binárními mezemi; přesná shoda1k–250k iCPU×4,
+včetně husté noční historie, která nadále vyžaduje průchod všemi jejími body.
+
 [Dávkované porovnání stanic](POROVNANI_STANIC.md): další část METEO-008;
 shodné/posunuté časy,1k–250k,CPU×4, cena párování a přesná shoda výsledků.
 Čeká jen karta porovnání, menší bloky mohou prodloužit celkové dokončení.

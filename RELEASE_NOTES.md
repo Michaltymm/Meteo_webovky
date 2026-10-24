@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.3
+
+- Noční změna napětí v analytických grafech se počítá jen z příslušného časového úseku. Dlouhá historie tak zbytečně nezdržuje otevření bateriového grafu.
+- Původní hodnoty, duplicity, pravidla pro mezery a chybějící napětí i označení neúplného nočního pozorování zůstávají zachované.
+
 ## v0.18.2
 
 - Velké porovnání stanic z Google Sheets se společným výřezem se připravuje po dávkách. Během párování zůstávají ostatní grafy použitelné.

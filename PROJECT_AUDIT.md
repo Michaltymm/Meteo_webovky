@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.3 (2026-10-24): třetí malá část METEO-008 hotová, celé ID Rozpracováno. Profil heatmapy/vyhlazení/noci vybral zbytečný plný průchod noční analýzy. Vzestupný původní model, dvě binární inkluzivní meze, průchod jen západ–východ: O(log n+k), O(1) pomocně, bez cache/requestů/nového plánovače. Duplicity/nuly/null/mezery>3h/astronomie/DST/text/částečná noc zachované. Před/po250k regular32,7→0,1ms, dense68,6→12ms, celá hustá noc85,9→36,3ms; CPU×4/100k regular63,6→0,8ms, celá hustá noc156,1→61,9ms. Hustá noc zůstává synchronní O(k), žádná záruka16ms/INP. Všech12přesných SHA shodných.342/342Node,10nových testů/reference/100náhodných historií/DST3zón/Proxy250k<200čtení. Opravena jen testovací fixture visibleDay, selhání data-status potvrzeno i na původním HTML; produkční visibility beze změny. Viz docs/performance/NOCNI_ANALYZA.md. Baseline0f2ad15, pouze codex-dev. Dále navázat na již provedený profil volitelného vyhlazení a jeho plné dočasné pole; neopakovat model/porovnání/noční výběr. Rozšířený Chromium154/100k/9grafů/3konfigurace/zoom/PNG/320–1440px/obě témata prošel, včetně přesného nočního textu/memo bez requestů; žádný pageerror/socket. Publikování evidovat na konci etapy.
 - v0.18.2: druhá část METEO-008 hotová, celé ID Rozpracováno. Velké porovnání pro Sheets/společný výřez má samostatný comparisonJob až nad hotovým modelem. Stejný workSlice~8ms/max64kroků; matcher kontrolní body512, filtr/sampling1024, synchronní API dokončí stejné generátory. Pravidla10min/nejbližší/dřívější/one-to-one/duplicit a plné statistiky zachované. Snapshot cache/source/model/context/domain/loading/errors, atomický commit; invalidace/odchod/skrytí ruší, změna cizí cache zneplatní/restartuje viditelnou kartu. Busy/PNG jen karta8, ostatní model/grafy/cizí fetch zůstávají.332/332Node včetně11nových, skutečný Chromium100k/9grafů/3konfigurace/zoom/PNG/320–1440px +info harness prošly, bez pageerror/socketů. Přesné podpisy datasetů i nezaokrouhlených match výsledků před/po shodné.250k/+5s blok149,5→8,5ms, celek149,5→281,8ms; CPU×4/100k blok266→9,6ms, celek266→445,2ms. Menší blokování, nikoli celkové zrychlení; viz docs/performance/POROVNANI_STANIC.md. Baseline9fd455b. Dále profil heatmapy/vyhlazení/noční analýzy; velký CSV parser a streaming/nezávislé rozsahy dále. Jen codex-dev.
 - v0.18.1: první část METEO-008 hotová, celé ID Rozpracováno. Společný Sheets výřez od10k vybraných řádků připravuje jeden model v dávkách ~8ms/max64kroků; kontrolní body po1024položkách, stejné generátory pro synchronní API i UI. Kopie referencí/úplný souhrn/gapy/minmax/XY, přesné pořadí výpočtů zachováno. Rušení na každou invalidaci/odchod/skrytí, guard identity/context/source/length/domain; žádný částečný commit. Busy skrývá staré plátno, čistí staré heat detaily a vypíná PNG do překreslení. Malé/nezávislé a MQTT/both zůstávají synchronní kvůli riziku opakovaného rušení streamem.321/321Node (včetně13nových cílených), nový skutečný Chromium harness100k/9grafů/3stanice/PNG/zoom/320–1440px prošel. Před/po modelu250k: nejdelší blok389,6→10,7ms, celé dokončení389,6→685,6ms; CPU×4/100k834,4→20,1ms blok a834,4→925,2ms celek, přesně stejné podpisy celých souhrnů/bodů. Bez tvrzení rychlejšího celého webu/INP. Viz docs/performance/ANALYTICKY_MODEL.md. Baselinefcdcbba; dále podle profilu rozdělit první přípravu porovnání stanic. Velký CSV parser, night/smoothing/heatmapa, nezávislé výřezy a streaming snapshot dále.
 - v0.18.0: METEO-050 DONE v rozsahu provozního panelu CSV/časování/MQTT. Živé zprávy mají lokální čítače obsloužených/uložených/odmítnutých a 8 pevných důvodů, chyby aplikace oddělené včetně selhání po uložení. Limity, číselná pravidla, duplicity i nulové/chybějící senzory zachovány. Reconnect drží čítače, reset/změna stanice čistí, staré callbacky ignorovány; metadata bez payloadu/topicu/hostu/chyb. MQTT ponechá otevřenou jen diagnostiku; původní podklady dál zavírá. 308/308 Node (12 nových), Chromium: 24 původních +12 MQTT layoutů, bez pageerror/socketů; původní tři konfigurace zůstávají Sheets. Před/po skutečného handleru 1k–250k: bez prokázaného zrychlení, metadata 310 B JSON, žádný scan historie. Viz docs/MQTT_DIAGNOSTIKA.md a docs/performance/MQTT_DIAGNOSTIKA.md. Baseline068db56, pouze codex-dev. Dále METEO-008 podle existujících měření; log/export METEO-064, fyzikální kvalita METEO-047 a živý broker dále neověřené.
@@ -725,3 +726,47 @@ codex-devcebf40a, main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
 Původní upozornění Actions runtime/ubuntu-latest trvají; bez změny workflow.
 Následující commit jen evidence, další checkpoint008: profil heatmapových
 buněk/vyhlazení/noční analýzy; nevracet se k dokončenému modelu a porovnání.
+
+## METEO-008 — výběr nočního intervalu, v0.18.3 (2026-10-24)
+
+Třetí malá část je implementovaná a ověřená; celé ID zůstává **Rozpracováno**.
+Výchozí0f2ad15. Dokončené model/párování ani METEO-050 se neopakují. Nový
+profil zbývající heatmapy/vyhlazení/noci na1k/10k/100k/250k ukázal zbytečný
+průchod celé historie při výpočtu jediného nočního úseku v kartě6. Heatmapa
+pravidelné historie už omezuje14dní, vyhlazení je volitelné. Opravena pouze noc.
+
+Dvě binární meze ve vzestupném původním modelu vyberou západ≤čas≤východ,
+včetně všech duplicit. Následuje stejný výpočet se stejným pořadím a kontrolou
+V/mezery>3h. O(log n+k), pomocně O(1), žádná redukce pro statistiky, nový
+plánovač/cache/request nebo změna konfigurací. Astronomie, místní zóna/DST,
+pozorovaný rozdíl mV a délka částečného úseku zůstávají. Není odhad energie,
+kapacity ani potvrzené nabíjení; METEO-020 není touto optimalizací celé hotové.
+
+Sekvenční před/po:250k regular32,7→0,1ms, dense68,6→12,0ms, night85,9→36,3ms;
+CPU×4/100k regular63,6→0,8ms, dense109,9→0,2ms, night156,1→61,9ms. SHAcelého
+textu nočního výsledku, všech heatmapových buněk a bodů vyhlazení se na všech
+12scénářích přesně shoduje. Hustá noc stále znamená O(k) synchronního průchodu,
+nikoli záruku16ms nebo INP. Vyhlazení/heatmapa se neměnily; jejich kolísání
+není vydáváno za přínos změny. Paměť, síť a celý paint se touto etapou neměřily.
+[Metodika, výsledky a surová data](performance/NOCNI_ANALYZA.md).
+
+342/342 Node,10nových v analytics-night.test.js: nezávislá původní lineární
+reference, hranice/duplicity/0/null/nonfinite, mezery, prázdná a částečná noc,
+předvýchodový fallback, skutečná astronomie přes DST ve3zónách,100náhodných
+historií, dense20k a250k Proxy s<200přístupy, neměnnost dat. Starší test
+minutového stavu dat selhal i na výchozím HTML kvůli kalendářnímu snapshotu
+z data stroje. Fixture nově srovná visibleDay se svými hodinami; produkční
+visibility se nemění, opravená fixture10/10 prošla i s výchozím HTML.
+
+Další checkpoint008: využít již změřené volitelné vyhlazení a omezit/rozdělit
+jeho plné dočasné pole bodů při zachování přesného pořadí průměrů a vzorkování.
+Hustá noc, heatmapa, velký parser, nezávislé rozsahy a streaming snapshot
+zůstávají samostatně. Worker/persistence až podle měření. Jen codex-dev,
+žádná změna main, původních konfigurací, archivu nebo workflow.
+
+Skutečný Chromium154 browser po změně prošel:100k původních řádků, všech9grafů,
+3původní konfigurace (včetně0/nullV), přesná noční poznámka/memo v kartě6 bez
+nových requestů, zoom/reset/2PNG, rušení modelu i porovnání a320/1440px ×2témata.
+Bez pageerror a bez otevřených socketů. Data jsou lokální řízené CSV/UV,
+živé služby/broker a fyzický Safari/iOS se neověřovaly. Sada342/342 Node
+zahrnuje původní Pages sestavení/server a regresní funkce všech stanic.

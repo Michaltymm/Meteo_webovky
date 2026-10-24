@@ -1,0 +1,53 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "scenario": "Prepared full model; cold/warm heatmap, moving mean and last completed night; regular5min, dense100ms, optional100ms ending sunrise+1s",
+  "limits": "Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory",
+  "results": [
+    {
+      "rows": 250000,
+      "distribution": "night",
+      "stepMs": 100,
+      "signatureSHA256": "906c9e4c8fb8ccdc1276397bd73b9b1d695a9595809a251d7cb6bd5d06c59388",
+      "samples": [
+        {
+          "heatColdMs": 45.29999999701977,
+          "heatWarmMs": 0.30000000447034836,
+          "movingMs": 37.69999999552965,
+          "nightMs": 85.20000000298023
+        },
+        {
+          "heatColdMs": 41.600000001490116,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 40.099999994039536,
+          "nightMs": 85.90000000596046
+        },
+        {
+          "heatColdMs": 42.29999999701977,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 34.5,
+          "nightMs": 87.79999999701977
+        },
+        {
+          "heatColdMs": 42.5,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 32.29999999701977,
+          "nightMs": 85
+        },
+        {
+          "heatColdMs": 44.599999994039536,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 33.70000000298023,
+          "nightMs": 90.69999999552965
+        }
+      ],
+      "median": {
+        "heatColdMs": 42.5,
+        "heatWarmMs": 0.20000000298023224,
+        "movingMs": 34.5,
+        "nightMs": 85.90000000596046
+      },
+      "pageErrors": []
+    }
+  ]
+}

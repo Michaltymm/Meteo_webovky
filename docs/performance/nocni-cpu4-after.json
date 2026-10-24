@@ -1,0 +1,143 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "scenario": "Prepared full model; cold/warm heatmap, moving mean and last completed night; regular5min, dense100ms, optional100ms ending sunrise+1s",
+  "limits": "Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory",
+  "results": [
+    {
+      "rows": 100000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "db571a249b41e5080ab255fa61dfe32b8fa91686452b67410986586f49c8ec47",
+      "samples": [
+        {
+          "heatColdMs": 18.399999998509884,
+          "heatWarmMs": 5.100000001490116,
+          "movingMs": 79.39999999850988,
+          "nightMs": 0.7000000029802322
+        },
+        {
+          "heatColdMs": 25.399999998509884,
+          "heatWarmMs": 7,
+          "movingMs": 81.29999999701977,
+          "nightMs": 0.8999999985098839
+        },
+        {
+          "heatColdMs": 13.799999997019768,
+          "heatWarmMs": 3.6999999955296516,
+          "movingMs": 61.400000005960464,
+          "nightMs": 1.0999999940395355
+        },
+        {
+          "heatColdMs": 18.19999999552965,
+          "heatWarmMs": 4.300000004470348,
+          "movingMs": 70.5,
+          "nightMs": 0.7999999970197678
+        },
+        {
+          "heatColdMs": 11.800000004470348,
+          "heatWarmMs": 1,
+          "movingMs": 70.10000000149012,
+          "nightMs": 0.20000000298023224
+        }
+      ],
+      "median": {
+        "heatColdMs": 18.19999999552965,
+        "heatWarmMs": 4.300000004470348,
+        "movingMs": 70.5,
+        "nightMs": 0.7999999970197678
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "2fe5b3d4ed002a7a05b028989e127dd188db10d6a73082ef286596817487fb47",
+      "samples": [
+        {
+          "heatColdMs": 65.30000000447035,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 70,
+          "nightMs": 0.20000000298023224
+        },
+        {
+          "heatColdMs": 78.89999999850988,
+          "heatWarmMs": 1,
+          "movingMs": 94.60000000149012,
+          "nightMs": 0.10000000149011612
+        },
+        {
+          "heatColdMs": 83.10000000149012,
+          "heatWarmMs": 2.5999999940395355,
+          "movingMs": 75.20000000298023,
+          "nightMs": 0.7000000029802322
+        },
+        {
+          "heatColdMs": 72.19999999552965,
+          "heatWarmMs": 0.30000000447034836,
+          "movingMs": 92.19999999552965,
+          "nightMs": 0.5
+        },
+        {
+          "heatColdMs": 78.5,
+          "heatWarmMs": 0.19999999552965164,
+          "movingMs": 88.5,
+          "nightMs": 0.10000000149011612
+        }
+      ],
+      "median": {
+        "heatColdMs": 78.5,
+        "heatWarmMs": 0.30000000447034836,
+        "movingMs": 88.5,
+        "nightMs": 0.20000000298023224
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "night",
+      "stepMs": 100,
+      "signatureSHA256": "6472c145590e2972be9c9a019343e27a5e3d85398ce75cc9986e7f74b607c033",
+      "samples": [
+        {
+          "heatColdMs": 80.10000000149012,
+          "heatWarmMs": 0.19999999552965164,
+          "movingMs": 76.20000000298023,
+          "nightMs": 52.79999999701977
+        },
+        {
+          "heatColdMs": 82.70000000298023,
+          "heatWarmMs": 0.8000000044703484,
+          "movingMs": 87.79999999701977,
+          "nightMs": 65.89999999850988
+        },
+        {
+          "heatColdMs": 81.70000000298023,
+          "heatWarmMs": 1.0999999940395355,
+          "movingMs": 69.90000000596046,
+          "nightMs": 61.899999998509884
+        },
+        {
+          "heatColdMs": 82.09999999403954,
+          "heatWarmMs": 1,
+          "movingMs": 60.30000000447035,
+          "nightMs": 66.39999999850988
+        },
+        {
+          "heatColdMs": 87.20000000298023,
+          "heatWarmMs": 1.6000000014901161,
+          "movingMs": 66.19999999552965,
+          "nightMs": 51.70000000298023
+        }
+      ],
+      "median": {
+        "heatColdMs": 82.09999999403954,
+        "heatWarmMs": 1,
+        "movingMs": 69.90000000596046,
+        "nightMs": 61.899999998509884
+      },
+      "pageErrors": []
+    }
+  ]
+}

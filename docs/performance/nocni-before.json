@@ -1,0 +1,368 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 1,
+  "scenario": "Prepared full model; cold/warm heatmap, moving mean and last completed night; 5min vs dense100ms",
+  "limits": "Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory",
+  "results": [
+    {
+      "rows": 1000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "6ae412a517bdfe4e89b19f54ed220b74b416d9738a031b42887c906da3dc5a0e",
+      "samples": [
+        {
+          "heatColdMs": 1.2000000029802322,
+          "heatWarmMs": 0.30000000447034836,
+          "movingMs": 0.5,
+          "nightMs": 0.10000000149011612
+        },
+        {
+          "heatColdMs": 1.1000000014901161,
+          "heatWarmMs": 0.19999999552965164,
+          "movingMs": 0.4000000059604645,
+          "nightMs": 0.19999999552965164
+        },
+        {
+          "heatColdMs": 1.2999999970197678,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 0.5,
+          "nightMs": 0.19999999552965164
+        },
+        {
+          "heatColdMs": 1.2999999970197678,
+          "heatWarmMs": 0.30000000447034836,
+          "movingMs": 0.29999999701976776,
+          "nightMs": 0.3999999985098839
+        },
+        {
+          "heatColdMs": 1.1000000014901161,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 0.3999999985098839,
+          "nightMs": 0.20000000298023224
+        }
+      ],
+      "median": {
+        "heatColdMs": 1.2000000029802322,
+        "heatWarmMs": 0.20000000298023224,
+        "movingMs": 0.4000000059604645,
+        "nightMs": 0.19999999552965164
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 1000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "8ccfbc2421ef9c6269ee7d73212402782e150867d4d5ea8a7814f163ccc9879d",
+      "samples": [
+        {
+          "heatColdMs": 1,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 0.5,
+          "nightMs": 0.29999999701976776
+        },
+        {
+          "heatColdMs": 0.7999999970197678,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 0.5999999940395355,
+          "nightMs": 0.30000000447034836
+        },
+        {
+          "heatColdMs": 0.8999999985098839,
+          "heatWarmMs": 0.19999999552965164,
+          "movingMs": 0.4000000059604645,
+          "nightMs": 0.3999999985098839
+        },
+        {
+          "heatColdMs": 0.9000000059604645,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 0.29999999701976776,
+          "nightMs": 0.5
+        },
+        {
+          "heatColdMs": 0.8999999985098839,
+          "heatWarmMs": 0.10000000149011612,
+          "movingMs": 0.29999999701976776,
+          "nightMs": 0.30000000447034836
+        }
+      ],
+      "median": {
+        "heatColdMs": 0.8999999985098839,
+        "heatWarmMs": 0.20000000298023224,
+        "movingMs": 0.4000000059604645,
+        "nightMs": 0.30000000447034836
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "c9cfc2125fb92bed22276ffa2e6ed763e7d43298ee2135ba18fb5084f7485082",
+      "samples": [
+        {
+          "heatColdMs": 3.5,
+          "heatWarmMs": 1.4000000059604645,
+          "movingMs": 4.199999995529652,
+          "nightMs": 2.100000001490116
+        },
+        {
+          "heatColdMs": 3.399999998509884,
+          "heatWarmMs": 0.7000000029802322,
+          "movingMs": 3.7000000029802322,
+          "nightMs": 1.2999999970197678
+        },
+        {
+          "heatColdMs": 3.2000000029802322,
+          "heatWarmMs": 0.6000000014901161,
+          "movingMs": 4.899999998509884,
+          "nightMs": 1.6999999955296516
+        },
+        {
+          "heatColdMs": 3.399999998509884,
+          "heatWarmMs": 0.6999999955296516,
+          "movingMs": 1.8000000044703484,
+          "nightMs": 2.100000001490116
+        },
+        {
+          "heatColdMs": 3.5999999940395355,
+          "heatWarmMs": 0.6000000014901161,
+          "movingMs": 1.6999999955296516,
+          "nightMs": 1.8000000044703484
+        }
+      ],
+      "median": {
+        "heatColdMs": 3.399999998509884,
+        "heatWarmMs": 0.6999999955296516,
+        "movingMs": 3.7000000029802322,
+        "nightMs": 1.8000000044703484
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 10000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "d7ff81267bcc3cece0fc9f8f9491547b4256ac72b5569c724b16aa3e652f2db0",
+      "samples": [
+        {
+          "heatColdMs": 3.6999999955296516,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 3,
+          "nightMs": 3.2000000029802322
+        },
+        {
+          "heatColdMs": 3.6999999955296516,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 2.600000001490116,
+          "nightMs": 3.1999999955296516
+        },
+        {
+          "heatColdMs": 4.200000002980232,
+          "heatWarmMs": 0.09999999403953552,
+          "movingMs": 2.600000001490116,
+          "nightMs": 3.100000001490116
+        },
+        {
+          "heatColdMs": 4.0999999940395355,
+          "heatWarmMs": 0.10000000149011612,
+          "movingMs": 2.399999998509884,
+          "nightMs": 3
+        },
+        {
+          "heatColdMs": 3.9000000059604645,
+          "heatWarmMs": 0.10000000149011612,
+          "movingMs": 1.6000000014901161,
+          "nightMs": 2.899999998509884
+        }
+      ],
+      "median": {
+        "heatColdMs": 3.9000000059604645,
+        "heatWarmMs": 0.10000000149011612,
+        "movingMs": 2.600000001490116,
+        "nightMs": 3.100000001490116
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "db571a249b41e5080ab255fa61dfe32b8fa91686452b67410986586f49c8ec47",
+      "samples": [
+        {
+          "heatColdMs": 4,
+          "heatWarmMs": 0.6000000014901161,
+          "movingMs": 24.5,
+          "nightMs": 15.799999997019768
+        },
+        {
+          "heatColdMs": 3.5,
+          "heatWarmMs": 0.7999999970197678,
+          "movingMs": 22.600000001490116,
+          "nightMs": 17.100000001490116
+        },
+        {
+          "heatColdMs": 3.7000000029802322,
+          "heatWarmMs": 0.7000000029802322,
+          "movingMs": 16,
+          "nightMs": 13.700000002980232
+        },
+        {
+          "heatColdMs": 4.100000001490116,
+          "heatWarmMs": 0.7000000029802322,
+          "movingMs": 14.200000002980232,
+          "nightMs": 14.899999998509884
+        },
+        {
+          "heatColdMs": 3.899999998509884,
+          "heatWarmMs": 0.6999999955296516,
+          "movingMs": 14.700000002980232,
+          "nightMs": 14.700000002980232
+        }
+      ],
+      "median": {
+        "heatColdMs": 3.899999998509884,
+        "heatWarmMs": 0.7000000029802322,
+        "movingMs": 16,
+        "nightMs": 14.899999998509884
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "2fe5b3d4ed002a7a05b028989e127dd188db10d6a73082ef286596817487fb47",
+      "samples": [
+        {
+          "heatColdMs": 20.700000002980232,
+          "heatWarmMs": 0.09999999403953552,
+          "movingMs": 17.400000005960464,
+          "nightMs": 25
+        },
+        {
+          "heatColdMs": 20.19999999552965,
+          "heatWarmMs": 0.10000000149011612,
+          "movingMs": 20.69999999552965,
+          "nightMs": 24.900000005960464
+        },
+        {
+          "heatColdMs": 19.900000005960464,
+          "heatWarmMs": 0.19999999552965164,
+          "movingMs": 14.399999998509884,
+          "nightMs": 26.100000001490116
+        },
+        {
+          "heatColdMs": 20,
+          "heatWarmMs": 0.19999999552965164,
+          "movingMs": 12.700000002980232,
+          "nightMs": 24.600000001490116
+        },
+        {
+          "heatColdMs": 19.799999997019768,
+          "heatWarmMs": 3.100000001490116,
+          "movingMs": 14.200000002980232,
+          "nightMs": 24.600000001490116
+        }
+      ],
+      "median": {
+        "heatColdMs": 20,
+        "heatWarmMs": 0.19999999552965164,
+        "movingMs": 14.399999998509884,
+        "nightMs": 24.900000005960464
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "9704df6828a1c3621508fda0fb88e7d29f22e9af0380c70113f7b28d1d54760c",
+      "samples": [
+        {
+          "heatColdMs": 3.7999999970197678,
+          "heatWarmMs": 0.7000000029802322,
+          "movingMs": 38.29999999701977,
+          "nightMs": 35.899999998509884
+        },
+        {
+          "heatColdMs": 4.5,
+          "heatWarmMs": 0.7999999970197678,
+          "movingMs": 41.600000001490116,
+          "nightMs": 32.70000000298023
+        },
+        {
+          "heatColdMs": 4.100000001490116,
+          "heatWarmMs": 0.7000000029802322,
+          "movingMs": 35.70000000298023,
+          "nightMs": 33.29999999701977
+        },
+        {
+          "heatColdMs": 3.7000000029802322,
+          "heatWarmMs": 0.8000000044703484,
+          "movingMs": 31.899999998509884,
+          "nightMs": 31.299999997019768
+        },
+        {
+          "heatColdMs": 3.8000000044703484,
+          "heatWarmMs": 0.6000000014901161,
+          "movingMs": 32.30000000447035,
+          "nightMs": 32.099999994039536
+        }
+      ],
+      "median": {
+        "heatColdMs": 3.8000000044703484,
+        "heatWarmMs": 0.7000000029802322,
+        "movingMs": 35.70000000298023,
+        "nightMs": 32.70000000298023
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 250000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "baf584b3ba9169b6cae28eb17036dba508b279f778f63339c66f50317c6d1687",
+      "samples": [
+        {
+          "heatColdMs": 40.600000001490116,
+          "heatWarmMs": 0.09999999403953552,
+          "movingMs": 39.70000000298023,
+          "nightMs": 68.60000000149012
+        },
+        {
+          "heatColdMs": 45.5,
+          "heatWarmMs": 0.10000000149011612,
+          "movingMs": 42.29999999701977,
+          "nightMs": 68.20000000298023
+        },
+        {
+          "heatColdMs": 44,
+          "heatWarmMs": 0.20000000298023224,
+          "movingMs": 36.79999999701977,
+          "nightMs": 70.39999999850988
+        },
+        {
+          "heatColdMs": 45,
+          "heatWarmMs": 0.30000000447034836,
+          "movingMs": 33.399999998509884,
+          "nightMs": 67.5
+        },
+        {
+          "heatColdMs": 42.100000001490116,
+          "heatWarmMs": 0.29999999701976776,
+          "movingMs": 35.399999998509884,
+          "nightMs": 71.5
+        }
+      ],
+      "median": {
+        "heatColdMs": 44,
+        "heatWarmMs": 0.20000000298023224,
+        "movingMs": 36.79999999701977,
+        "nightMs": 68.60000000149012
+      },
+      "pageErrors": []
+    }
+  ]
+}
