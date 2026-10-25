@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0184"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.4</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0185"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.5</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7633,6 +7633,22 @@
     }
     function analyticsHeatChanged(){analyticsHeatmap();}
     function analyticsHeatPage(delta){analyticsState.heatPage=Math.max(0,analyticsState.heatPage+delta);analyticsState.heat=null;analyticsHeatmap();}
+    function analyticsHeatCells(source,keys,from,to) {
+      const cells=keys.map(()=>Array.from({length:24},()=>({temp:{sum:0,count:0,min:null,max:null},hum:{sum:0,count:0,min:null,max:null}})));
+      const metrics=['temp','hum'];
+      // Source is descending, page keys newest first. Calendar bounds retain
+      // DST/partial days; scan every original record oldest first within each
+      // day, preserving duplicate and floating-point accumulation order.
+      for(let day=keys.length-1;day>=0;day--){
+        const bounds=localDayBounds(keys[day]);
+        const {start,end}=historyRangeBounds(source,Math.max(from,bounds.from),Math.min(to,bounds.to));
+        for(let i=end-1;i>=start;i--){
+          const row=source[i],hour=row.ts.getHours();
+          for(const metric of metrics){const v=row[metric],s=cells[day][hour][metric];if(!Number.isFinite(v))continue;s.sum+=v;s.count++;s.min=s.min===null?v:Math.min(s.min,v);s.max=s.max===null?v:Math.max(s.max,v);}
+        }
+      }
+      return cells;
+    }
     function analyticsHeatmap() {
       if(!analyticsActive()||!analyticsState.visible.has(8))return;
       const m=analyticsModel(8,true);if(!m)return;
@@ -7643,13 +7659,7 @@
       const keys=allKeys.slice(analyticsState.heatPage*14,(analyticsState.heatPage+1)*14),signature=[m.from,m.to,analyticsState.heatPage].join(':');
       let heat=analyticsState.heat;
       if(!heat||heat.source!==store.rows||heat.length!==store.rows.length||heat.signature!==signature){
-        const cells=keys.map(()=>Array.from({length:24},()=>({temp:{sum:0,count:0,min:null,max:null},hum:{sum:0,count:0,min:null,max:null}})));
-        if(keys.length){const low=localDayBounds(keys.at(-1)).from,high=localDayBounds(keys[0]).to;
-          const {start,end}=historyRangeBounds(store.rows,Math.max(m.from,low),Math.min(m.to,high)),map=new Map(keys.map((key,i)=>[key,i]));
-          for(let i=end-1;i>=start;i--){const row=store.rows[i],day=map.get(localDateKey(row.ts));if(day===undefined)continue;
-            for(const metric of ['temp','hum']){const v=row[metric],s=cells[day][row.ts.getHours()][metric];if(!Number.isFinite(v))continue;s.sum+=v;s.count++;s.min=s.min===null?v:Math.min(s.min,v);s.max=s.max===null?v:Math.max(s.max,v);}
-          }
-        }
+        const cells=analyticsHeatCells(store.rows,keys,m.from,m.to);
         heat={source:store.rows,length:store.rows.length,signature,cells,keys,row:0,hour:0};analyticsState.heat=heat;
       }
       const metric=el('anaHeatMetric').value==='hum'?'hum':'temp',unit=metric==='temp'?'°C':'%',stat=m.summary.stats[metric];

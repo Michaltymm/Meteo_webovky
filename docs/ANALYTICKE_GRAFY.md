@@ -149,6 +149,13 @@ pracovní místo je omezené počtem reprezentantů, výpočet zůstává O(n)
 a synchronní. Hotové memo na modelu a úplné statistiky se nemění.
 [Časová měření, alokace a limity](performance/VYHLAZENI.md).
 
+Od v0.18.5 heatmapa vybírá původní záznamy binárně pro každý z nejvýše14dnů
+stránky. Hodinu čte jednou pro T/RH, neformátuje znovu datum každého řádku.
+Stejné pořadí součtů a přesné počty/min/max/průměry, včetně částečných dnů,
+duplicit a opakované místní hodiny. Cache/detail/stránkování/škála se nemění.
+Čas O(d log n+k), d≤14; velká hustá stránka nadále vyžaduje synchronní O(k).
+[Agregace, celé volání a meze měření](performance/HEATMAPA.md).
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.
@@ -165,10 +172,11 @@ Centrální stavy zůstávají v [roadmapě](NAPADY_A_ROADMAP.md), bez nových I
   nejistota vztahů031 a metadata071 zůstávají dalšími etapami.
 - Heatmapa srážek/pokrytí034 potřebuje srážkový/měřicí kontrakt; nevyvozuje
   se dostupnost senzoru z počtu buněk.
-- Dávkovaný společný Sheets model, porovnání, omezený noční průchod a
-  jednoprůchodové vyhlazení jsou dokončené části008. Další jsou heatmapa,
+- Dávkovaný společný Sheets model, porovnání, omezený noční průchod,
+  jednoprůchodové vyhlazení a denní výběr heatmapových buněk jsou
+  dokončené části008. Další jsou velký CSV parser a
   případné dávkování zbývajících synchronních průchodů včetně velmi
-  husté noci a velký parser; worker nebo ověřené
+  husté noci/heatmapy; worker nebo ověřené
   serverové agregace až s měřením. První úplný250k výpočet má cenu O(n);
   žádný příslib nulové prodlevy nebo fyzického iOS měření.
 

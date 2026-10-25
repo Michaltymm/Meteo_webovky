@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.5
+
+- Hodinová heatmapa připravuje teplotu a vlhkost po jednotlivých zobrazených dnech, takže hustá historie vyžaduje méně opakovaných výpočtů data a hodiny.
+- Hodinové průměry, počty a extrémy zůstávají stejné, včetně duplicit, částečných dnů a přechodů mezi letním a zimním časem. Další stahování dat není potřeba.
+
 ## v0.18.4
 
 - Vyhlazování teploty a tlaku v analytických grafech připravuje body v jednom průchodu a uchovává jen omezený výběr pro graf. U dlouhé historie odpadá velké dočasné pole.

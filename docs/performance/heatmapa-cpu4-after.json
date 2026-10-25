@@ -1,0 +1,98 @@
+{
+  "browser": "154.0.8037.57",
+  "cpuRate": 4.0,
+  "scenario": "Prepared full model; cold/warm heatmap with timed aggregation; regular5min, dense100ms, optional100ms ending sunrise+1s",
+  "limits": "Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory",
+  "results": [
+    {
+      "rows": 100000,
+      "distribution": "regular",
+      "stepMs": 300000,
+      "signatureSHA256": "3d1c85762cef85fc7f10777945235578539d160fadea663ee2d1d0cf50984d9d",
+      "samples": [
+        {
+          "heatColdMs": 12.299999997019768,
+          "aggregationMs": 5.5,
+          "heatRemainderMs": 6.799999997019768,
+          "heatWarmMs": 4.200000002980232
+        },
+        {
+          "heatColdMs": 13.399999991059303,
+          "aggregationMs": 8.699999988079071,
+          "heatRemainderMs": 4.700000002980232,
+          "heatWarmMs": 4.600000008940697
+        },
+        {
+          "heatColdMs": 8.599999994039536,
+          "aggregationMs": 2.2999999970197678,
+          "heatRemainderMs": 6.299999997019768,
+          "heatWarmMs": 0.7999999970197678
+        },
+        {
+          "heatColdMs": 7.399999991059303,
+          "aggregationMs": 3,
+          "heatRemainderMs": 4.399999991059303,
+          "heatWarmMs": 1.5999999940395355
+        },
+        {
+          "heatColdMs": 7.9000000059604645,
+          "aggregationMs": 2.5,
+          "heatRemainderMs": 5.4000000059604645,
+          "heatWarmMs": 4.299999997019768
+        }
+      ],
+      "median": {
+        "heatColdMs": 8.599999994039536,
+        "aggregationMs": 3,
+        "heatRemainderMs": 5.4000000059604645,
+        "heatWarmMs": 4.200000002980232
+      },
+      "pageErrors": []
+    },
+    {
+      "rows": 100000,
+      "distribution": "dense",
+      "stepMs": 100,
+      "signatureSHA256": "45445ff3d95a905b07f793e3f7d11966d2e5b84a73efab9e4f4a860d5152d19c",
+      "samples": [
+        {
+          "heatColdMs": 40.599999994039536,
+          "aggregationMs": 38.20000000298023,
+          "heatRemainderMs": 2.3999999910593033,
+          "heatWarmMs": 0.8999999910593033
+        },
+        {
+          "heatColdMs": 59.79999999701977,
+          "aggregationMs": 56.79999999701977,
+          "heatRemainderMs": 3,
+          "heatWarmMs": 0.7000000029802322
+        },
+        {
+          "heatColdMs": 43.29999999701977,
+          "aggregationMs": 38.1000000089407,
+          "heatRemainderMs": 5.199999988079071,
+          "heatWarmMs": 0.20000000298023224
+        },
+        {
+          "heatColdMs": 40.900000005960464,
+          "aggregationMs": 38.099999994039536,
+          "heatRemainderMs": 2.800000011920929,
+          "heatWarmMs": 1.0999999940395355
+        },
+        {
+          "heatColdMs": 63.400000005960464,
+          "aggregationMs": 60.19999998807907,
+          "heatRemainderMs": 3.2000000178813934,
+          "heatWarmMs": 1.0999999940395355
+        }
+      ],
+      "median": {
+        "heatColdMs": 43.29999999701977,
+        "aggregationMs": 38.20000000298023,
+        "heatRemainderMs": 3,
+        "heatWarmMs": 0.8999999910593033
+      },
+      "pageErrors": []
+    }
+  ]
+}

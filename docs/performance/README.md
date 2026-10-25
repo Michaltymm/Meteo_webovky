@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Denní výběr heatmapových buněk](HEATMAPA.md): další část METEO-008,
+samostatná agregace a celé cold/warm volání1k–250k, CPU×4; přesná shoda
+všech T/RH buněk, zachované místní dny a DST. Hustá data zůstávají synchronní.
+
 [Jednoprůchodové vyhlazení](VYHLAZENI.md): další část METEO-008, přesně stejné
 průměry i vybrané body bez plného dočasného pole;1k–250k, CPU×4 a samostatný
 vzorkovaný odhad alokací. Výpočet všech původních průměrů nadále O(n).

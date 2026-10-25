@@ -21,10 +21,18 @@ def main():
     parser.add_argument('--cpu',type=float,default=1)
     parser.add_argument('--distributions',default='regular,dense')
     parser.add_argument('--moving-only',action='store_true',help='Only the next smoothing stage, for temperature and pressure')
+    parser.add_argument('--heat-only',action='store_true',help='Only heatmap cold/warm draw, with aggregation measured separately')
     parser.add_argument('--allocations-only',action='store_true',help='Separate untimed temperature smoothing allocation sample (requires --moving-only)')
     args=parser.parse_args()
     if args.allocations_only and not args.moving_only:parser.error('--allocations-only requires --moving-only')
+    if args.heat_only and (args.moving_only or args.allocations_only):parser.error('--heat-only cannot be combined with smoothing modes')
     html=Path(args.html).read_text().split('// Init: téma, stanice, config')[0]+'</script></body></html>'
+    if args.heat_only:
+        # Instrument the same cold-cache block in both revisions, without
+        # replacing its algorithm. The remainder includes DOM/layout/canvas.
+        start=html.index('        const cells=',html.index('    function analyticsHeatmap()'))
+        end=html.index('        heat={source:',start)
+        html=html[:start]+'        globalThis.heatAggregationStart=performance.now();\n'+html[start:end]+'        globalThis.heatAggregationMs=performance.now()-heatAggregationStart;\n'+html[end:]
     chart,paho=Path(args.chartjs).read_bytes(),Path(args.paho).read_bytes()
     results=[]
     with sync_playwright() as p:
@@ -45,7 +53,7 @@ def main():
                 page.route('**/*',route);page.goto('http://meteo.test/dev/index.html')
                 cdp=page.context.new_cdp_session(page);cdp.send('Performance.enable')
                 cdp.send('Emulation.setCPUThrottlingRate',{'rate':args.cpu})
-                page.evaluate('''({count,step,distribution,movingOnly})=>{
+                page.evaluate('''({count,step,distribution,movingOnly,heatOnly})=>{
                   let end=Date.parse('2026-10-24T12:00:00+02:00');
                   if(distribution==='night')end=+calcSunTimes(50.08,14.42,new Date(end)).rise+1000;
                   store.rows=Array.from({length:count},(_,i)=>({ts:new Date(end-i*step),
@@ -69,13 +77,18 @@ def main():
                     analyticsState.heat=null;const heat=time(()=>analyticsHeatmap());
                     const cells=JSON.stringify({keys:analyticsState.heat.keys,cells:analyticsState.heat.cells});
                     const warm=time(()=>analyticsHeatmap());
+                    if(heatOnly){
+                      if(!m.rows.every((r,i)=>r===store.rows[store.rows.length-1-i]))throw Error('Source changed');
+                      return {timings:{heatColdMs:heat.ms,aggregationMs:heatAggregationMs,
+                        heatRemainderMs:Math.max(0,heat.ms-heatAggregationMs),heatWarmMs:warm.ms},results:{heat:cells}};
+                    }
                     const moving=time(()=>analyticsMoving(m.rows,'temp'));
                     const night=time(()=>analyticsNight(m.rows));
                     if(!m.rows.every((r,i)=>r===store.rows[store.rows.length-1-i]))throw Error('Source changed');
                     return {timings:{heatColdMs:heat.ms,heatWarmMs:warm.ms,movingMs:moving.ms,nightMs:night.ms},
                       results:{heat:cells,moving:moving.value,night:night.value}};
                   };
-                }''',{'count':count,'step':step,'distribution':distribution,'movingOnly':args.moving_only})
+                }''',{'count':count,'step':step,'distribution':distribution,'movingOnly':args.moving_only,'heatOnly':args.heat_only})
                 page.evaluate('measure()')
                 if args.allocations_only:
                     page.evaluate('globalThis.allocationResult=null')
@@ -109,7 +122,7 @@ def main():
         version=browser.version;browser.close()
     out=Path(args.output);out.parent.mkdir(parents=True,exist_ok=True)
     out.write_text(json.dumps({'browser':version,'cpuRate':args.cpu,
-        'scenario':('Prepared full model; only temperature and pressure smoothing' if args.moving_only else 'Prepared full model; cold/warm heatmap, moving mean and last completed night')+'; regular5min, dense100ms, optional100ms ending sunrise+1s',
+        'scenario':('Prepared full model; cold/warm heatmap with timed aggregation' if args.heat_only else 'Prepared full model; only temperature and pressure smoothing' if args.moving_only else 'Prepared full model; cold/warm heatmap, moving mean and last completed night')+'; regular5min, dense100ms, optional100ms ending sunrise+1s',
         'limits':('Separate sampled allocation estimate, including collected objects and evaluator overhead; heap snapshots at call boundaries, not peak/RSS or proof of leaks' if args.allocations_only else 'Synchronous JS/canvas calls only, no CSV/network, whole-page paint, INP, physical phone or long-term memory'),
         'results':results},indent=2)+'\n');print(out)
 

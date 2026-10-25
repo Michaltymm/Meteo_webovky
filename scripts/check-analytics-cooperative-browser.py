@@ -179,6 +179,30 @@ async def main():
         assert await page.evaluate('analyticsState.model.summary.stats.temp.count===largeOriginal.filter(r=>Number.isFinite(r.temp)).length')
         checks.append('100k complete exact-source model, bounded samples, all eight Chart graphs plus heatmap')
 
+        heat_requests = len(requests)
+        await page.evaluate('''()=>{
+          globalThis.heatMemo=analyticsState.heat;
+          globalThis.checkHeatCell=()=>{
+            const h=analyticsState.heat,key=h.keys[h.row],expected={temp:{sum:0,count:0,min:null,max:null},hum:{sum:0,count:0,min:null,max:null}};
+            for(let i=store.rows.length-1;i>=0;i--){const r=store.rows[i];if(+r.ts<analyticsState.model.from||+r.ts>analyticsState.model.to||localDateKey(r.ts)!==key||r.ts.getHours()!==h.hour)continue;
+              for(const metric of ['temp','hum']){const v=r[metric],s=expected[metric];if(!Number.isFinite(v))continue;s.sum+=v;s.count++;s.min=s.min===null?v:Math.min(s.min,v);s.max=s.max===null?v:Math.max(s.max,v);}}
+            return JSON.stringify(h.cells[h.row][h.hour])===JSON.stringify(expected);
+          };
+        }''')
+        assert await page.evaluate('checkHeatCell()')
+        await page.locator('#anaCanvas8').press('ArrowRight')
+        assert await page.evaluate('analyticsState.heat===heatMemo && heatMemo.hour===1 && checkHeatCell()')
+        await page.select_option('#anaHeatMetric', 'hum')
+        assert await page.evaluate('analyticsState.heat===heatMemo && checkHeatCell()')
+        assert '%' in await page.locator('#anaHeatDetail').text_content()
+        await page.select_option('#anaHeatMetric', 'temp')
+        await page.locator('#anaHeatPageNext').click()
+        assert await page.evaluate('analyticsState.heat!==heatMemo && analyticsState.heatPage===1 && checkHeatCell()')
+        await page.locator('#anaHeatPagePrev').click()
+        assert await page.evaluate('analyticsState.heatPage===0 && checkHeatCell()')
+        assert len(requests) == heat_requests
+        checks.append('heatmap exact original-cell values, keyboard selection, metric reuse, older/newer page and details without requests')
+
         # A valid observed night must reach the real battery card and its memo.
         # Keep other model fields intact; no data fetch or transport is involved.
         await page.locator('#anaCard5').scroll_into_view_if_needed()
