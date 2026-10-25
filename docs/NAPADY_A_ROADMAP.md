@@ -2123,3 +2123,17 @@ comparator časů a režii převodu Date, zachovat původní měření a stabili
 Vlastní sort/worker až s doloženou potřebou. Hotový lexer/validaci ani
 grafové etapy neopakovat. UI commit/agregace, cizí parsery a streaming
 zůstávají dalšími částmi. Jen codex-dev, main/configy/archiv/workflow beze změny.
+
+Publikování v0.18.7 ověřeno 2026-10-25: [Actions #41](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40224596645)
+pro [3a9ebe3](https://github.com/Michaltymm/Meteo_webovky/commit/3a9ebe3b7ae9fdf04228bf7c8dc4b75ea2e89563)
+**Success**, build24s/deploy9s/celkem40s,1artefakt.375/375 lokálních Node,
+rozšířený skutečný12k browser/3konfigurace a5přesných profilových porovnání
+prošly. Kód implementován, lokálně ověřen a podle workflow také nasazen.
+Přímý Pages host není v síťové politice prostředí; jeho živé widgety,
+skutečné služby/MQTT a fyzický Safari/iOS tím ověřeny nejsou. Pouze codex-dev,
+main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Původní upozornění
+Actions runtime/ubuntu-latest přetrvávají, workflow se neměnilo. Následující
+commit zapisuje pouze tuto evidenci. Další checkpoint008: náklady Date
+převodů v nativním comparatoru podle neuspořádaného100k profilu; nejprve
+ověřit numerické timestampy a stabilitu, nepsat nový sort bez potřeby.
+Hotový lexer/validaci a grafové etapy neopakovat, celé008 Rozpracováno.
