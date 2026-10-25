@@ -156,6 +156,12 @@ duplicit a opakované místní hodiny. Cache/detail/stránkování/škála se ne
 Čas O(d log n+k), d≤14; velká hustá stránka nadále vyžaduje synchronní O(k).
 [Agregace, celé volání a meze měření](performance/HEATMAPA.md).
 
+Od v0.18.6 velká obnova aktivní Sheets stanice dávkuje lexikální čtení CSV
+polí. Následná validace/řazení zatím zůstává souvislá; čistý parser cizích
+stanic a MQTT/both se nemění. Přepnutí stanice zruší rozpracované čtení,
+přechod mezi pohledy je zachová, publikují se až celá ověřená měření.
+[Rozsah, přesná data a zbývající blokování](performance/CSV_LEXER.md).
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.

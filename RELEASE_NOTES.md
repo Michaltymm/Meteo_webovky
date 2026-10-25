@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.6
+
+- Čtení polí velkých CSV exportů aktivní stanice z Google Sheets probíhá po krátkých dávkách. Mezi nimi lze dál ovládat stránku; validace a řazení zatím zůstávají souvislé.
+- Přepnutí stanice rozpracované čtení zruší. Původní historie zůstává dostupná až do úplného ověření nového exportu; hodnoty, limity i diagnostické počty se nemění.
+
 ## v0.18.5
 
 - Hodinová heatmapa připravuje teplotu a vlhkost po jednotlivých zobrazených dnech, takže hustá historie vyžaduje méně opakovaných výpočtů data a hodiny.

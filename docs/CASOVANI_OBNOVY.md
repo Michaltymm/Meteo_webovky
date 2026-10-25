@@ -12,13 +12,19 @@ příčinu chyby ani nepotvrzuje poruchu čidla nebo serveru.
 | --- | --- | --- |
 | Celá obnova | Vytvoření nového fetchSheets požadavku → dokončení loadSheets | Obsahuje i yield před parserem, retry a ostatní obsluhu; není součtem jen tří uvedených složek |
 | Přenos CSV | stationText od fetch přes kontrolu odpovědi po přečtení celého obsahu | Součet všech úspěšných i neúspěšných pokusů, včetně fallback proxy; není čistou latencí serveru |
-| Rozbor CSV | parseHistoryCSV včetně lexeru, validace, čítačů a řazení | Součet všech běhů, včetně odmítnutých CSV; bez předchozího yield a bez UI |
+| Rozbor CSV | Lexer, validace, čítače a řazení; synchronní parseHistoryCSV nebo součet lexikálních dávek a parseHistoryRows | Součet práce všech pokusů, včetně odmítnutých CSV; bez čekání na frontu a bez UI |
 | Data a přehled | Commit store, invalidace, zveřejnění reportu, refreshUI a případné synchronní full-load callbacky | Zahrnuje úplné statistiky a bezprostřední aktualizace grafů; nezahrnuje pozdější lazy/asynchronní grafy, layout/paint celého snímku ani samostatnou obsluhu stavu |
 
 Data a přehled může mít dva měřené bloky: základní aktualizaci a obsluhu
 čekajících ensureFullData callbacků. Jejich pořadí, výjimky a generační ochrana
 se nemění. Za přenos se neoznačuje čekání na desetimilisekundový yield parseru.
 Celkový čas končí před zveřejněním nového časového reportu, aby se panel neměřil sám.
+
+Od v0.18.6 aktivní Sheets exporty od262144UTF-16jednotek dávkují lexer;
+čekání mezi dávkami patří pouze do celé obnovy, nikoli do rozboru. Jeden
+export stále znamená jeden parserový pokus i při lexikálním selhání.
+Validace/řazení zatím zůstávají synchronní. Rozsah a omezení:
+[CSV lexer](performance/CSV_LEXER.md).
 
 ## Výsledky a životní cyklus
 

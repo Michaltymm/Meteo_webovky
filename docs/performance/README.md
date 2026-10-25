@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Dávkované čtení CSV polí](CSV_LEXER.md): první část velkého aktivního Sheets
+parseru v METEO-008, lexikální dávky a přesná shoda1k–250k. Validace/řazení
+zůstávají souvislé; celé načítání zatím není plynulé ani obecně rychlejší.
+
 [Denní výběr heatmapových buněk](HEATMAPA.md): další část METEO-008,
 samostatná agregace a celé cold/warm volání1k–250k, CPU×4; přesná shoda
 všech T/RH buněk, zachované místní dny a DST. Hustá data zůstávají synchronní.
