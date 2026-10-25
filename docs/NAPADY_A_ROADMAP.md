@@ -2007,3 +2007,17 @@ kontrola vybrané heatmapové buňky z původních měření, šipka klávesnice
 přepnutí T/RH se stejnou cache, starší/novější stránka a detail bez requestů.
 Bez pageerror/socketů; řízené CSV/UV a lokální skutečné SRI knihovny.
 Živé služby/MQTT a fyzický Safari/iOS nejsou tímto ověřeny.
+
+Publikování v0.18.5 ověřeno 2026-10-25: [Actions #39](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40146173307)
+pro [a05fb8b](https://github.com/Michaltymm/Meteo_webovky/commit/a05fb8bc1509e311d1d341205d02d4293e4f3332)
+**Success**, build28s/deploy11s/celkem47s,1artefakt.357/357 lokálních Node,
+rozšířený skutečný100k browser a všech10přesných profilových porovnání prošly.
+Implementované a lokálně ověřené změny jsou podle workflow také nasazené.
+Přímý Pages host není v síťové politice prostředí, jeho živé widgety ani
+skutečné služby/MQTT nebo fyzický Safari/iOS tím ověřeny nejsou. Pouze
+codex-dev; main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Původní upozornění Actions runtime/ubuntu-latest přetrvávají, workflow se
+neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoint
+METEO-008: velký CSV parser podle uloženého profilu CASOVANI_OBNOVY,
+malá ověřitelná část při zachování limitů/čítačů/generačních guardů.
+Neopakovat hotový model/párování/noční meze/vyhlazení/denní výběr heatmapy.
