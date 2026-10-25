@@ -2069,3 +2069,16 @@ přechod do moderního pohledu během pozastaveného čtení, zrušení při zm�
 stanice a pozdní starý iterator,320/1440px po responzivním přepočtu grafů.
 Bez pageerror/socketů; řízené CSV/UV a lokální skutečné SRI knihovny,
 žádný živý broker/služba nebo fyzický Safari/iOS.
+
+Publikování v0.18.6 ověřeno 2026-10-25: [Actions #40](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40190011963)
+pro [b952b31](https://github.com/Michaltymm/Meteo_webovky/commit/b952b31738dd345febb3d7cf4adaebc8809bbfe8)
+**Success**, build30s/deploy25s/celkem62s,1artefakt.367/367 lokálních Node,
+nový skutečný12k browser/3konfigurace a4přesná profilová porovnání prošly.
+Implementováno, lokálně ověřeno a podle workflow nasazeno. Přímý Pages host
+není v síťové politice prostředí, jeho živé widgety ani skutečné služby/MQTT
+nebo fyzický Safari/iOS tím ověřeny nejsou. Jen codex-dev; main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Původní upozornění Actions
+runtime/ubuntu-latest přetrvávají, workflow se neměnilo. Následující commit
+zapisuje pouze tuto evidenci. Pokračovat parseHistoryRows (filter/validace/
+převod) podle výše uvedeného checkpointu; stále přibližně1,9s souvislé práce
+250k. Dokončený lexer a grafové etapy neopakovat, celé008 Rozpracováno.
