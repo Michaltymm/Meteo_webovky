@@ -26,6 +26,11 @@ export stále znamená jeden parserový pokus i při lexikálním selhání.
 Validace/řazení zatím zůstávají synchronní. Rozsah a omezení:
 [CSV lexer](performance/CSV_LEXER.md).
 
+Od v0.18.7 se ve stejné velké aktivní Sheets cestě dávkuje také filtrace
+a validace/převod řádků. Parse.ms sčítá CPU obou fází bez fronty, jeden
+export nadále znamená jeden pokus. Nativní řazení zůstává v parse čase
+a je stále souvislé. [Měření a omezení](performance/CSV_VALIDACE.md).
+
 ## Výsledky a životní cyklus
 
 - Časování je samostatné vůči poslednímu rozboru CSV i poslednímu úspěchu

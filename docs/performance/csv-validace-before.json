@@ -1,0 +1,909 @@
+{
+  "node": "v24.19.0",
+  "results": [
+    {
+      "rows": 1000,
+      "samplesMs": [
+        10.02932100000001,
+        15.444640000000007,
+        10.952331999999998,
+        10.924919999999986,
+        12.647807
+      ],
+      "medianMs": 10.95,
+      "heapAfterMiB": [
+        6.661003112792969,
+        6.86126708984375,
+        8.375007629394531,
+        8.395797729492188,
+        8.367668151855469
+      ],
+      "longestParseBlocksMs": [
+        9.411511000000004,
+        14.732907999999995,
+        10.353520000000003,
+        10.337875999999994,
+        12.103046000000006
+      ],
+      "medianLongestBlockMs": 10.35,
+      "parseCalls": [
+        [
+          {
+            "name": "parseCSV",
+            "ms": 0.8454440000000005
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 8.532667000000004
+          },
+          {
+            "name": "parseHistoryCSV",
+            "ms": 9.411511000000004
+          }
+        ],
+        [
+          {
+            "name": "parseCSV",
+            "ms": 1.993193000000005
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 12.695087000000001
+          },
+          {
+            "name": "parseHistoryCSV",
+            "ms": 14.732907999999995
+          }
+        ],
+        [
+          {
+            "name": "parseCSV",
+            "ms": 1.7079740000000072
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 8.606196999999995
+          },
+          {
+            "name": "parseHistoryCSV",
+            "ms": 10.353520000000003
+          }
+        ],
+        [
+          {
+            "name": "parseCSV",
+            "ms": 1.8044889999999896
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 8.516531000000015
+          },
+          {
+            "name": "parseHistoryCSV",
+            "ms": 10.337875999999994
+          }
+        ],
+        [
+          {
+            "name": "parseCSV",
+            "ms": 1.8945039999999835
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 10.192097000000018
+          },
+          {
+            "name": "parseHistoryCSV",
+            "ms": 12.103046000000006
+          }
+        ]
+      ],
+      "sortCallsMs": [
+        [
+          0.1253189999999904
+        ],
+        [
+          0.19873899999998912
+        ],
+        [
+          0.1950340000000068
+        ],
+        [
+          0.18677200000001903
+        ],
+        [
+          0.18193399999998405
+        ]
+      ],
+      "signatureSHA256": "0c1b870ee72bd41c3ca866e508e3f004e029ec92fce3b4254ca6faea74bdab4c",
+      "preserved": [
+        1000,
+        2997,
+        334
+      ],
+      "timing": "{\"scope\":\"full\",\"completedAt\":1792954733933,\"outcome\":\"ok\",\"unchanged\":false,\"totalMs\":12.531682000000018,\"transfer\":{\"runs\":1,\"ms\":0.11316099999999096},\"parse\":{\"runs\":1,\"ms\":12.108465000000024},\"ui\":{\"runs\":1,\"ms\":0.03403099999999881}}"
+    },
+    {
+      "rows": 10000,
+      "samplesMs": [
+        90.69942900000001,
+        92.18554799999998,
+        86.06748900000002,
+        94.06591200000003,
+        103.72936100000004
+      ],
+      "medianMs": 92.19,
+      "heapAfterMiB": [
+        20.86559295654297,
+        19.66088104248047,
+        19.560348510742188,
+        19.640045166015625,
+        31.307579040527344
+      ],
+      "longestParseBlocksMs": [
+        82.96173999999996,
+        82.95187599999997,
+        79.71248399999996,
+        88.03549399999997,
+        91.87401799999998
+      ],
+      "medianLongestBlockMs": 82.96,
+      "parseCalls": [
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.488737000000015
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 82.96173999999996
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.013473999999974
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.22667200000000776
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 82.95187599999997
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.3790050000000065
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 79.71248399999996
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.145554000000061
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 88.03549399999997
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.786675999999943
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.0410180000000082
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 91.87401799999998
+          }
+        ]
+      ],
+      "sortCallsMs": [
+        [
+          2.3823699999999803
+        ],
+        [
+          2.717584000000045
+        ],
+        [
+          1.777627999999936
+        ],
+        [
+          1.981916999999953
+        ],
+        [
+          3.2641380000000026
+        ]
+      ],
+      "signatureSHA256": "1faecc8bca2739612e5118ccbb840750ef3a02c5f03d91534ff060b0802ddabf",
+      "preserved": [
+        10000,
+        29994,
+        3334
+      ],
+      "timing": "{\"scope\":\"full\",\"completedAt\":1792954734572,\"outcome\":\"ok\",\"unchanged\":false,\"totalMs\":103.57332600000007,\"transfer\":{\"runs\":1,\"ms\":0.2647989999999254},\"parse\":{\"runs\":1,\"ms\":102.75474199999996},\"ui\":{\"runs\":1,\"ms\":0.06388599999991129}}"
+    },
+    {
+      "rows": 100000,
+      "samplesMs": [
+        829.5669200000002,
+        867.5382570000002,
+        807.3359930000001,
+        797.6713289999998,
+        801.8044380000001
+      ],
+      "medianMs": 807.34,
+      "heapAfterMiB": [
+        81.05223083496094,
+        93.62998962402344,
+        93.5647201538086,
+        92.62037658691406,
+        92.6242446899414
+      ],
+      "longestParseBlocksMs": [
+        769.8090420000001,
+        809.5297190000001,
+        750.5949440000004,
+        745.3099300000003,
+        748.6482610000003
+      ],
+      "medianLongestBlockMs": 750.59,
+      "parseCalls": [
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.011621999999988
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.336252999999942
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.662420999999995
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.70868100000007
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.393917000000101
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.028823000000102
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.44639600000005
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.7439510000001519
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 769.8090420000001
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.668524000000161
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.720699999999852
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.703864999999951
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.787600000000111
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.5631029999999555
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.394175000000359
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 4.806062000000111
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 809.5297190000001
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.550126999999975
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.339441999999963
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.8325190000000475
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.8048069999999825
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.377503000000161
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.695730000000367
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.750101000000086
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 750.5949440000004
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.62350399999923
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.780770000000302
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.701882999999725
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.806408999999803
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.603933999999754
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.996967000000041
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.7319930000003296
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 745.3099300000003
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.835963999999876
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.018949000000248
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.094274000000041
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.192261000000144
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.637525000000096
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.110678000000007
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.836921999999504
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 748.6482610000003
+          }
+        ]
+      ],
+      "sortCallsMs": [
+        [
+          15.2744560000001
+        ],
+        [
+          14.586079000000154
+        ],
+        [
+          13.910751999999775
+        ],
+        [
+          13.445910999999796
+        ],
+        [
+          14.076680999999553
+        ]
+      ],
+      "signatureSHA256": "be1760fa57c6e4621fcc3aa3a2b13d1fd63cff531c7090f9bd42d656e628bd32",
+      "preserved": [
+        100000,
+        299995,
+        33334
+      ],
+      "timing": "{\"scope\":\"full\",\"completedAt\":1792954740296,\"outcome\":\"ok\",\"unchanged\":false,\"totalMs\":801.2358109999996,\"transfer\":{\"runs\":1,\"ms\":0.8526250000004438},\"parse\":{\"runs\":1,\"ms\":788.4792890000008},\"ui\":{\"runs\":1,\"ms\":0.06518800000048941}}"
+    },
+    {
+      "rows": 250000,
+      "samplesMs": [
+        2151.3970169999993,
+        2023.0735909999985,
+        2019.4631809999992,
+        2073.354842999999,
+        2172.181141000001
+      ],
+      "medianMs": 2073.35,
+      "heapAfterMiB": [
+        147.3383560180664,
+        168.81494903564453,
+        194.49372100830078,
+        178.67593383789062,
+        147.39226531982422
+      ],
+      "longestParseBlocksMs": [
+        1996.7179340000002,
+        1857.9258499999996,
+        1860.7782669999997,
+        1906.7646029999996,
+        2005.796907
+      ],
+      "medianLongestBlockMs": 1906.76,
+      "parseCalls": [
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.081924000000072
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.610381000000416
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.075323999999455
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.220702999999048
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.569182000001092
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.529609000001074
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.7434139999986655
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.493168000000878
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.220346000000063
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.157995999999912
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.829180999999153
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.773767000000589
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.082678999999189
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.710191000000123
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.059226999999737
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.509798999999475
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.17236800000137
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.55973400000039
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 1996.7179340000002
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.643622999999934
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.955383000000438
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.167671999999584
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.0936710000005405
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.544119000000137
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.72644500000024
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.671444999999949
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.168927999999141
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 10.376223999999638
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.870027000000846
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.8989740000015445
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.380622999999105
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.028166000000056
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.878743999999642
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.372119999999995
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.00625299999956
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.823360000000321
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.4759070000000065
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.6642709999996441
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 1857.9258499999996
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.532484999999724
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.8798900000001595
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.838326000000961
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.873908999999912
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.050419999999576
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.507558000001154
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.123258999999962
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.876170000001366
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.6956649999992806
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.369166000000405
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.609397999998691
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.649137999998857
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.726552000000083
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.737661000001026
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.5025170000008075
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.6648910000003525
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.807596000000558
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.366602000000057
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 1860.7782669999997
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.794099000000642
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.199741000000358
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.092618000000584
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.413640000000669
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.137864000000263
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.377516000000469
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.7592230000009295
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.463417999999365
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.317906000000221
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.706775000000562
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.092545999999857
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.961228000000119
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.020464000001084
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.9817389999989246
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.964954999999463
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.467082999999548
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.735477999998693
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.1343760000017937
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 1906.7646029999996
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.131451999997807
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.699731000000611
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.643825999999535
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.76945600000181
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.971934000001056
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.644888000002538
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.932715000002645
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.487607999999454
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.848619000000326
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.120648000000074
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.843519999998534
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.734070000002248
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.767957000000024
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.799134000000777
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.608305999998265
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.5921720000005735
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.498261000000639
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.6205809999992198
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 2005.796907
+          }
+        ]
+      ],
+      "sortCallsMs": [
+        [
+          45.109285000000455
+        ],
+        [
+          31.066847999998572
+        ],
+        [
+          33.05157800000052
+        ],
+        [
+          32.382440000001225
+        ],
+        [
+          35.1495279999981
+        ]
+      ],
+      "signatureSHA256": "c9983724f5c0a5701bd6ddc2c44991b062c4b86631954d9e2a5482c54e66d269",
+      "preserved": [
+        250000,
+        749995,
+        83334
+      ],
+      "timing": "{\"scope\":\"full\",\"completedAt\":1792954754681,\"outcome\":\"ok\",\"unchanged\":false,\"totalMs\":2169.027900000001,\"transfer\":{\"runs\":1,\"ms\":4.8484950000020035},\"parse\":{\"runs\":1,\"ms\":2131.787350999999},\"ui\":{\"runs\":1,\"ms\":0.05796800000098301}}"
+    }
+  ]
+}

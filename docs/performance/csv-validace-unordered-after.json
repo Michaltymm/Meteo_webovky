@@ -1,0 +1,1948 @@
+{
+  "node": "v24.19.0",
+  "scenario": "deterministic unordered timestamps",
+  "results": [
+    {
+      "rows": 100000,
+      "samplesMs": [
+        1021.2266550000002,
+        1054.097472,
+        1023.2845620000003,
+        1036.1829579999994,
+        1016.3865760000008
+      ],
+      "medianMs": 1023.28,
+      "heapAfterMiB": [
+        65.59493255615234,
+        66.29092407226562,
+        66.24545288085938,
+        64.96651458740234,
+        65.4158935546875
+      ],
+      "longestParseBlocksMs": [
+        242.4851090000002,
+        256.434072,
+        249.8225309999998,
+        238.2471030000006,
+        242.61022599999978
+      ],
+      "medianLongestBlockMs": 242.61,
+      "parseCalls": [
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.405356000000211
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.748630000000048
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.649250999999822
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.747318000000178
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.28434100000004
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.970894999999928
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.0345199999999295
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.3630229999998846
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.8836999999998625
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 4.086986999999908
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.2506459999999606
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.0717809999998735
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.563415999999961
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.6182879999998931
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.655929000000015
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.897613999999976
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.768688999999995
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.764693999999963
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.60376099999985
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.016652000000022
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.6545279999998
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.992345999999998
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.612854999999854
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.877644000000146
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.211971000000176
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.82881899999984
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.534983999999895
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.634577000000036
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.420615999999882
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.617742000000135
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.501647000000048
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.443950000000086
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.75246500000003
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.999186999999893
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.451471000000083
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.849110999999994
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.479714000000058
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.65359699999999
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.696078999999827
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.835080000000062
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.69904500000007
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.990843999999925
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.819385000000011
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.002060999999912
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.63349600000015
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.76317199999994
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.842009999999846
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.46451100000013
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.514046999999891
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.706646000000092
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.640486999999894
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.448417000000063
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.536010000000033
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.50307900000007
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.623049999999921
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.038105000000087
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.698544000000084
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.596075999999812
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.296043999999938
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.106367999999975
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.604558999999881
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.798702000000048
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.258507000000009
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.630370999999968
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.621206999999913
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.234421999999995
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.003391999999849
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.601728000000094
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.997434000000112
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.51514700000007
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.518301999999949
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.119828000000098
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.556940000000168
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.499103000000105
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.673446000000013
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.656367000000046
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.169404000000213
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.843602000000146
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.542277999999897
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.843802000000096
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.678063000000066
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.583430000000135
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.599384999999984
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.500045
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.735930000000053
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.451221999999916
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.41527700000006
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.442328000000089
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.074670000000197
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.560535999999956
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.548606999999947
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.742170000000215
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.530730999999832
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 242.4851090000002
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.04502900000034
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.306219999999939
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.930633000000398
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.9937589999999545
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.6298109999997905
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.187000000000353
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.64742699999988
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.08977700000014
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.8071259999996983
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 4.392186000000038
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.821049999999559
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.4257079999997586
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.0512629999998353
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.5970649999999296
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.3852130000000216
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 10.49474999999984
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.807207999999719
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.720903999999791
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.318566999999803
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.63019099999974
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.141841000000113
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.435848000000078
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.678583999999773
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.562879000000066
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.863432000000103
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.954709000000094
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.946618000000399
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.782529999999952
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.203245000000152
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.315902999999707
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.823663000000124
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.67466800000011
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.617823000000044
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.764372999999978
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.791153000000122
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.926527000000078
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.024374999999964
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.897763999999825
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.36730099999977
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.31984999999986
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.090122999999949
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.041860999999699
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.156554000000142
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.75222500000018
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.887657999999647
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.903052000000116
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.024014999999963
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.287430999999742
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.063434000000143
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.981079000000136
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.097986000000219
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.049031000000014
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.591461999999865
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.958314999999857
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.61656099999982
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.89709300000004
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.646054999999706
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.419249000000036
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.988460000000032
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.777842999999848
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.621857999999975
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.256403999999748
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.15985899999987
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.001149999999598
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.984805000000051
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.748258000000078
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.818764999999985
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.854318000000148
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.98210199999994
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.14219200000025
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.894739999999729
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.652454000000034
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.233989999999721
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.19790600000033
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.710512000000108
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.630677999999989
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.6641410000002
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.594907999999577
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.153799000000163
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.287640999999894
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.443194999999832
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.817833999999948
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.62551399999984
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.347141000000192
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.414522999999917
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.926486999999725
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.078496000000086
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.758714000000055
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.26937399999997
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.561297000000195
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.895971999999801
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.30393499999991
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.166087999999945
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 256.434072
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.168648999999732
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.8995780000000195
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.605193999999756
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.76900999999998
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.299012999999832
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.330677000000378
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.399861999999757
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.49265400000013
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.7531479999997828
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.4461750000000393
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.9709560000001147
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.506029000000126
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.0735779999999977
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.6713780000000042
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.033543000000009
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.032897999999932
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.5914029999999
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.78710799999999
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.963132000000314
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.755959999999959
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.620386000000053
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.544561999999587
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.583320000000185
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.602919999999813
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.718804000000091
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.686795999999958
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.225156999999854
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.495006999999987
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.53594800000019
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.613005000000157
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.509449000000131
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.6077879999998
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.758053000000018
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.608748999999989
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.476670000000013
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.630842999999913
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.986617999999908
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.638844000000063
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.996483000000353
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.422749000000294
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.9158809999999
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.90927099999999
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.731314000000111
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.655407999999625
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.824924000000465
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.511301000000458
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.715218999999706
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.76364199999989
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.792806000000382
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.71081199999935
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.604471999999987
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.600977000000057
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.870403000000806
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.729040000000168
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.277766000000156
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.457758000000467
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.767727999999806
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.711303000000044
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.363004999999248
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.70778799999971
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.101370999999745
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.615780000000086
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.702218999999786
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.779096000000209
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.491782000000057
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.759654999999839
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.205949000000146
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.093058000000383
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.935680999999931
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.31380099999933
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.177034999999705
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.738764999999148
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.568677999999636
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.653953000000001
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.970793999999842
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.796250999999756
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.703147000000172
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.978886999999304
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.494576999999481
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.48274499999934
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.580635999999686
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.288211999999476
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.862150999999358
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.710311999999249
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.666895999999724
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.995380999999725
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.438901999999871
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.698223000000326
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.512714000000415
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.749571000000287
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.83304599999974
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.550060000000485
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 249.8225309999998
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.881242000000384
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.716051000000334
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.619875999999749
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.980959999999868
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.79595099999915
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.0126570000002175
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.30493800000022
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.510557999999946
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 4.224713999999949
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.46912599999996
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.4076209999993807
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.0237520000000586
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.4278209999993123
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.087854999999763
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 10.369772000000012
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.011825999999928
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.60850500000015
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.568937999999434
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.731814000000668
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.784343000000263
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.926327000000128
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.786016000000018
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.591222000000016
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.561797000000297
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.62051700000029
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.6831200000006
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.823201000000154
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.680616999999984
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.510710999999901
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.687717000000703
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.955611999999746
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.073448000000099
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.702260000000024
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.656520000000455
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.785304999999425
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.77135399999952
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.700265999999829
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.51377500000035
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.799465999999484
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.729600000000573
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.970172999999704
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.976983999999902
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.62786799999958
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.752484999999979
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.602378999999928
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.56811800000014
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.553194999999505
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.684842999999091
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.50941899999998
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.056452999999237
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.783972000000176
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.023193000000902
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.708198000000266
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.567635999999766
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.855450000000019
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.932065999999395
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.684863000000405
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.603591000000051
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.593786000000364
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.874799000000166
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.143102999999428
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.129402000000482
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.083313999999518
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.775840000000244
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.665173999999752
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.625012999999853
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.569720999999845
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.53390599999966
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.043021999999837
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.6345280000005
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.716171000000031
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.682509999999638
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.181150999999772
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.939687000000049
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 10.172904999999446
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.319303000000218
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.250064000000748
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.950362999999925
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.62928599999941
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.694594999999936
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.60716599999978
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.654207999999926
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.447634999999536
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.61213300000054
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.497540999999728
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.48906800000077
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.910233000000517
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.517730999999912
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.641056999999819
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.556851000000279
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.47207299999991
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.570701000000554
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.658844999999928
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.848528999999871
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 238.2471030000006
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.047874000000775
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.031648000000132
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.657102000000123
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.818535000000338
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.327666000000136
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.149282999999741
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.4555780000000595
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.069376000000375
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.031708999999864
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 3.800464999999349
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.9264650000004622
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.9448840000004566
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.020636999999624
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.4068800000004558
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 2.018920999999864
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.125700999999935
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.775166000000354
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.252411000000393
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 10.010389999999461
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.69687199999953
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.589779000000817
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.568397000000004
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.668488999999681
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.58498200000031
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.934468999999808
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.678142999999181
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.718213000000105
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.704733000000488
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.959547000000384
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.694707999999991
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.833126999999877
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.594136000000617
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.699145000000499
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.916782999999668
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.786256000000321
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.996111999999812
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.953878000000259
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.634015999999974
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.626514999999927
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.519685000000209
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.66489300000012
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.685433999999987
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.493295000000217
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.874518999999964
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.844853999999941
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.568077000000812
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.577951999999641
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.719825999999557
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.704752999999982
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.948489999999765
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.568236999999499
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.513184000000365
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.553165000000263
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.63921399999981
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.574255999999878
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 9.01246699999956
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.87874499999998
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.54518300000018
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.535918999999922
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.665192999999817
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.551032000000305
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.537350999999944
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.54583300000013
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.867168000000675
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.543088999999782
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.584662000000208
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.549869999999828
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.747658000000229
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.734988000000158
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.574938000000657
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.540665999999874
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.557301000000734
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.589669999999387
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.556700000000092
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.576219999999921
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.97256599999946
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.582578999999896
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.542699999999968
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.563470000000052
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.615358000000015
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.502148000000489
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.488376000000244
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.590170999999827
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.491611999999805
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.494276000000355
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.481576999999561
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.476077999999688
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.51341500000035
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.534657000000152
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.58295999999973
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.546014000000469
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.602098999999725
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 8.875339999999596
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 242.61022599999978
+          }
+        ]
+      ],
+      "sortCallsMs": [
+        [
+          237.9287549999999
+        ],
+        [
+          249.87572200000022
+        ],
+        [
+          243.0533230000001
+        ],
+        [
+          237.03641900000002
+        ],
+        [
+          237.99959000000035
+        ]
+      ],
+      "signatureSHA256": "a0543f7a0618722d9a492fb389a246c0a478ee999da5ed5ac33d57eb9b4244dc",
+      "preserved": [
+        100000,
+        299995,
+        33334
+      ],
+      "timing": "{\"scope\":\"full\",\"completedAt\":1792955027240,\"outcome\":\"ok\",\"unchanged\":false,\"totalMs\":1015.0587160000005,\"transfer\":{\"runs\":1,\"ms\":0.9554290000005494},\"parse\":{\"runs\":1,\"ms\":987.613110000002},\"ui\":{\"runs\":1,\"ms\":0.05324099999961618}}"
+    }
+  ]
+}

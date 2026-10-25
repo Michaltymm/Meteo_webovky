@@ -41,7 +41,9 @@ async def main():
         # Pause only the lexical scheduler, keeping actual parsing and the UI.
         await page.evaluate('''()=>{
           globalThis.realCSVSlice=analyticsWorkSlice;globalThis.pauseCSV=true;globalThis.heldCSV=null;
-          analyticsWorkSlice=steps=>{if(pauseCSV){heldCSV=steps;return null}return realCSVSlice(steps)};
+          globalThis.realRowsSteps=parseHistoryRowSteps;globalThis.pauseRows=true;globalThis.heldRows=null;
+          parseHistoryRowSteps=(...args)=>{const steps=realRowsSteps(...args);steps.$rows=true;globalThis.pendingReport=args[2];return steps};
+          analyticsWorkSlice=steps=>{if(pauseCSV){heldCSV=steps;return null}if(pauseRows&&steps.$rows){heldRows=steps;return null}return realCSVSlice(steps)};
           globalThis.quickRows=store.rows;globalThis.quickReport=dataStatus.sheets.validation;
           globalThis.csvCallback=0;store._onFullLoad.push(()=>csvCallback++);
         }''')
@@ -55,6 +57,11 @@ async def main():
         await page.locator('[data-page="modern"]').click()
         assert await page.evaluate('store.rows===quickRows && heldCSV!==null')
         await page.evaluate('pauseCSV=false')
+        await page.wait_for_function('heldRows!==null')
+        assert await page.evaluate('store.rows===quickRows && dataStatus.sheets.validation===quickReport && csvCallback===0')
+        await page.evaluate('realCSVSlice(heldRows)')
+        assert await page.evaluate('!pendingReport.complete && store.rows===quickRows && dataStatus.sheets.validation===quickReport')
+        await page.evaluate('pauseRows=false')
         await page.wait_for_function('store.fullLoaded && store.rows.length===12000 && dataStatus.sheets.phase==="ok"')
         assert await page.evaluate('csvCallback===1 && dataStatus.sheets.validation.accepted===12000 && dataStatus.sheets.timing.parse.runs===1')
         checks.append('large atomic load, old data/report until completion, shared request, navigation remains usable, callback once')
@@ -67,6 +74,14 @@ async def main():
         await page.evaluate('globalThis.rowsB=store.rows;pauseCSV=false;realCSVSlice(oldCSV)')
         assert await page.evaluate('store.rows===rowsB && store.rows.every(r=>r.voltage===0) && dataStatus.sheets.validation.accepted===8')
         checks.append('station switch aborts pending lexical work; queued old iterator cannot commit over the new station')
+        await page.evaluate('()=>{pauseRows=true;heldRows=null;fetchSheets(true)}')
+        await page.wait_for_function('heldRows!==null')
+        await page.evaluate('globalThis.oldRowsJob=heldRows;realCSVSlice(oldRowsJob)')
+        await page.select_option('#modernStation','2')
+        await page.wait_for_function('activeIdx===2 && store.rows.length===8 && dataStatus.sheets.phase==="ok"')
+        await page.evaluate('globalThis.rowsC=store.rows;pauseRows=false;realCSVSlice(oldRowsJob)')
+        assert await page.evaluate('store.rows===rowsC && store.rows.every(r=>r.voltage===null) && dataStatus.sheets.validation.accepted===8')
+        checks.append('filter/validation pause keeps old report and data private; station change cancels even partially validated rows')
         for index in [1,2,0]:
             if index!=await page.evaluate('activeIdx'):
                 await page.select_option('#modernStation',str(index))

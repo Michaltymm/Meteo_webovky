@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 model, v0.18.2 porovnání v dávkách; v0.18.3 noční meze, v0.18.4 omezené vyhlazení, v0.18.5 denní heatmapa; v0.18.6 lexer velkého aktivního Sheets CSV v dávkách. Validace/řazení a další dávkování dále | Přesná data/čítače, rušení a profily před/po; lexer není celý parser. Viz performance/CSV_LEXER.md a předchozí ANALYTICKY_MODEL/POROVNANI_STANIC/NOCNI_ANALYZA/VYHLAZENI/HEATMAPA. Worker/persistence/004 dále | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 model, v0.18.2 porovnání v dávkách; v0.18.3 noční meze, v0.18.4 omezené vyhlazení, v0.18.5 denní heatmapa; v0.18.6 lexer a v0.18.7 filter/validace aktivního velkého Sheets CSV v dávkách. Sort a další části dále | Přesná data/čítače, rušení a před/po včetně neuspořádaných časů. Viz performance/CSV_VALIDACE.md, CSV_LEXER a předchozí grafové profily. Worker/persistence/004 dále | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -2082,3 +2082,44 @@ runtime/ubuntu-latest přetrvávají, workflow se neměnilo. Následující comm
 zapisuje pouze tuto evidenci. Pokračovat parseHistoryRows (filter/validace/
 převod) podle výše uvedeného checkpointu; stále přibližně1,9s souvislé práce
 250k. Dokončený lexer a grafové etapy neopakovat, celé008 Rozpracováno.
+
+## METEO-008 — dávkované filtrování a validace, v0.18.7 (2026-10-25)
+
+Výchozí b6e84e6, další malá část008 hotová; celé ID **Rozpracováno**.
+parseHistoryRowSteps sdílí původní pravidla filtrování/převodu/validace,
+kontrolní body po256řádcích, stejná kompakce logických pozic, yearState,
+senzorové čítače a pořadí. Sync API dokončuje tentýž generátor. Aktivní
+Sheets obnova≥262144UTF16 s timing sdílí runCSVStepsAsync pro obě fáze,
+stejný workSlice~8ms/max64kroků a0msfrontu, žádný nový request/cache/závislost.
+Malé/přímé/cizí aMQTT/both zůstávají synchronní. Nativní sort se neměnil.
+
+Průběžný report je soukromý. Store/report/cache/fullLoaded/callbacky až po
+úplném výsledku a generačním guardu; abort ihned uzavře generátor/timer/
+listener a settle bezvýsledku i během validace nebo před finálním commitem.
+Chyby a nulový výsledek nepřepíšou staré záznamy. Parse.ms sčítá CPU bez
+fronty, jedna parse.runs naexport (i selhání), původní limity zachované.
+
+375/375Node,8nových v csv-rows-cooperative: private report během filtru/
+převodu, abort/latecallback/finální výsledek předawaitcommit, logické pozice
+blank/header/multiline, yearState přes256hranici, nulový výsledek, chyba
+převodu, stabilní sort duplicit. Původních10lexerových assertions zachováno,
+testovací drain obsluhuje obě fáze. Skutečný Chromium154/12k/3původní
+konfigurace/0/nullV/320–1440px prošel, nově pause/částečnávalidace/starý
+reportstore a stationabort vtétofázi; bez pageerror/socketů. ŘízenéCSV/UV,
+lokální SRI, skutečné služby/broker/fyzické SafariiOS neověřeny.
+
+Před/po skutečného VM fetchpipeline1k/10k/100k/250k a neuspořádaných100k,
+pětvzorků/GC, sekvenčně, všechny5SHA celých řádků/reportů přesně shodné.
+250k maxsledované synchronní volání1906,76→40,14ms, celýpipeline2073,35→
+2010,67ms, sort33,05→33,71ms. Neuspořádané100k volání997,92→242,61ms,
+sort261,56→238ms. Není tvrzeno obecné celkové zrychlení; malé1k a100k
+celkem pomalejší, skutečná fronta může čekání prodloužit. Volání není celý
+browser task/INP, UI/transport jsou v profilu náhrady. Paměť/peak/úsporaRAM
+neprokázány, plná matice zůstává. Nativní sort je nadále souvislá brzda.
+[Metodika, samostatný sort a surové výsledky](performance/CSV_VALIDACE.md).
+
+Další checkpoint008: podle neuspořádaného scénáře ověřit numerický
+comparator časů a režii převodu Date, zachovat původní měření a stabilitu.
+Vlastní sort/worker až s doloženou potřebou. Hotový lexer/validaci ani
+grafové etapy neopakovat. UI commit/agregace, cizí parsery a streaming
+zůstávají dalšími částmi. Jen codex-dev, main/configy/archiv/workflow beze změny.

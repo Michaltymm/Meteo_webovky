@@ -2155,8 +2155,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0186"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.6</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0187"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.7</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4478,7 +4478,9 @@
         if(timing && context.config.source==='sheets' && text.length>=262144){
           const decoded=await parseCSVAsync(text,context,timing);
           if(!decoded || !isCurrentStation(context))return false;
-          parsed=measureSheetsWork(timing,"parse",()=>parseHistoryRows(decoded.lines,decoded.scan,validation));
+          const result=await runCSVStepsAsync(parseHistoryRowSteps(decoded.lines,decoded.scan,validation),context,timing);
+          if(!result || !isCurrentStation(context))return false;
+          parsed=result.value;timing.parse.runs++;
         }else parsed = measureSheetsWork(timing, "parse", () => parseHistoryCSV(text, validation));
       }
       catch (error) {
@@ -4525,12 +4527,16 @@
       return parseHistoryRows(parseCSV(text,Infinity,scan),scan,validation);
     }
     function parseHistoryRows(records,scan,validation) {
+      return finishSteps(parseHistoryRowSteps(records,scan,validation));
+    }
+    function* parseHistoryRowSteps(records,scan,validation) {
       let retained = 0;
-      const lines = records.filter((row, index) => {
-        const nonempty = row.some(value => value.trim() !== "");
-        if (nonempty && scan) scan.numbers[retained++] = scan.numbers[index];
-        return nonempty;
-      });
+      const lines=[];
+      for(let index=0;index<records.length;index++){
+        if(index && (index & 255)===0)yield;
+        const row=records[index],nonempty=row.some(value=>value.trim()!=="");
+        if(nonempty){if(scan)scan.numbers[retained++]=scan.numbers[index];lines.push(row);}
+      }
       if (scan) {
         scan.numbers.length = lines.length;
         validation.total = scan.count;
@@ -4561,6 +4567,7 @@
       };
 
       for (let i = dataStart; i < lines.length; i++) {
+        if(i>dataStart && ((i-dataStart) & 255)===0)yield;
         const c = lines[i];
         const ds = stripQ(c[0]), ts2 = stripQ(c[1]);
         if (!ds || !/\d/.test(ds)) { rejected(i, "DATE_MISSING"); continue; }
@@ -4589,6 +4596,7 @@
           }
         }
       }
+      // Native stable sorting remains synchronous and is profiled separately.
       parsed.sort((a, b) => b.ts - a.ts);
       if (validation) validation.complete = true;
       return parsed;
@@ -4647,8 +4655,12 @@
       if (row.length || value !== "" || afterQuote) record();
       return records;
     }
-    function parseCSVAsync(text,context,timing) {
-      const scan={count:0,numbers:[]},steps=parseCSVSteps(text,Infinity,scan);
+    async function parseCSVAsync(text,context,timing) {
+      const scan={count:0,numbers:[]};
+      const result=await runCSVStepsAsync(parseCSVSteps(text,Infinity,scan),context,timing);
+      return result?{lines:result.value,scan}:null;
+    }
+    function runCSVStepsAsync(steps,context,timing) {
       return new Promise((resolve,reject)=>{
         let timer=null,finished=false;
         const settle=(value,error)=>{
@@ -4662,11 +4674,11 @@
           const start=sheetsNow();let result,error;
           try{result=analyticsWorkSlice(steps);}catch(e){error=e;}
           finally{const ms=sheetsElapsed(start),phase=timing.parse;phase.ms=phase.ms===null||ms===null||!Number.isFinite(phase.ms+ms)?null:phase.ms+ms;}
-          // One parse attempt per export, not per lexical slice. Success is
-          // counted by the following validation; lexical failure counts here.
+          // One attempt per export, not per slice/phase. parseAndStore counts
+          // success only after validation; a failure in either phase counts here.
           if(error){timing.parse.runs++;settle(null,error);return;}
           if(!isCurrentStation(context)){abort();return;}
-          if(result){settle({lines:result.value,scan});return;}
+          if(result){settle(result);return;}
           timer=setTimeout(run,0);
         };
         context.signal.addEventListener('abort',abort,{once:true});

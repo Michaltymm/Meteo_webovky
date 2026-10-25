@@ -1,0 +1,252 @@
+{
+  "node": "v24.19.0",
+  "scenario": "deterministic unordered timestamps",
+  "results": [
+    {
+      "rows": 100000,
+      "samplesMs": [
+        1080.3666269999999,
+        1066.560539,
+        1010.326016,
+        1009.6110990000006,
+        1071.4546279999995
+      ],
+      "medianMs": 1066.56,
+      "heapAfterMiB": [
+        73.53731536865234,
+        97.7301025390625,
+        98.14684295654297,
+        97.49761962890625,
+        97.28840637207031
+      ],
+      "longestParseBlocksMs": [
+        1023.3094200000003,
+        997.9172079999998,
+        949.1240290000001,
+        950.1025879999997,
+        1015.3075070000004
+      ],
+      "medianLongestBlockMs": 997.92,
+      "parseCalls": [
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.538306000000148
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.074260999999979
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.070255000000088
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.093610000000126
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.896882999999889
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.506210999999894
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.5101609999999255
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 1.3811709999999948
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 1023.3094200000003
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.547509999999875
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.056984999999713
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.492521000000124
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.610177999999905
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.1924699999999575
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.937922000000071
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.690743999999995
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 12.493340999999873
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 0.30779300000040166
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 997.9172079999998
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.246906999999737
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.851846000000023
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.62286099999983
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.112678999999844
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.440052000000378
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.292190000000119
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.442990000000009
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.860880000000179
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 949.1240290000001
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.769884999999704
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.718015000000378
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.747658999999658
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.0403400000004694
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.298842999999579
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.315193999999792
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.766257000000223
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 6.172739999999976
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 950.1025879999997
+          }
+        ],
+        [
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 7.078453000000081
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.863382999999885
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.651434000000336
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.712486000000354
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.607127000000219
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.9580159999995885
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 5.9153809999997975
+          },
+          {
+            "name": "analyticsWorkSlice",
+            "ms": 4.86960099999942
+          },
+          {
+            "name": "parseHistoryRows",
+            "ms": 1015.3075070000004
+          }
+        ]
+      ],
+      "sortCallsMs": [
+        [
+          261.5577129999997
+        ],
+        [
+          265.5189260000002
+        ],
+        [
+          242.9987289999999
+        ],
+        [
+          242.39344600000004
+        ],
+        [
+          269.90323199999966
+        ]
+      ],
+      "signatureSHA256": "a0543f7a0618722d9a492fb389a246c0a478ee999da5ed5ac33d57eb9b4244dc",
+      "preserved": [
+        100000,
+        299995,
+        33334
+      ],
+      "timing": "{\"scope\":\"full\",\"completedAt\":1792954991827,\"outcome\":\"ok\",\"unchanged\":false,\"totalMs\":1071.201035,\"transfer\":{\"runs\":1,\"ms\":0.8759799999997995},\"parse\":{\"runs\":1,\"ms\":1062.082236999997},\"ui\":{\"runs\":1,\"ms\":0.06099199999971461}}"
+    }
+  ]
+}

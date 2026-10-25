@@ -162,6 +162,11 @@ stanic a MQTT/both se nemění. Přepnutí stanice zruší rozpracované čtení
 přechod mezi pohledy je zachová, publikují se až celá ověřená měření.
 [Rozsah, přesná data a zbývající blokování](performance/CSV_LEXER.md).
 
+Od v0.18.7 stejná aktivní Sheets cesta dávkuje také filtraci a převod/validaci
+měření. Starý report i historie zůstávají do úplného ověření, přepnutí stanice
+ruší obě fáze. Nativní řazení a cizí parsery zůstávají synchronní.
+[Data, sort a skutečná omezení](performance/CSV_VALIDACE.md).
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.

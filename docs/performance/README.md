@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Dávkovaná validace CSV řádků](CSV_VALIDACE.md): další část METEO-008,
+filtrace/převod po dávkách, přesná data/reporty1k–250k a neuspořádané100k.
+Nativní sort měřen zvlášť, zůstává souvislý; celkové zrychlení se netvrdí.
+
 [Dávkované čtení CSV polí](CSV_LEXER.md): první část velkého aktivního Sheets
 parseru v METEO-008, lexikální dávky a přesná shoda1k–250k. Validace/řazení
 zůstávají souvislé; celé načítání zatím není plynulé ani obecně rychlejší.

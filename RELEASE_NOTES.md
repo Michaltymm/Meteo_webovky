@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.7
+
+- Velké exporty aktivní stanice z Google Sheets nově po dávkách také filtrují, ověřují a převádějí měření. Stránka mezi dávkami může reagovat na ovládání; závěrečné řazení zatím zůstává souvislé.
+- Původní historie a diagnostika zůstávají dostupné až do dokončení. Přepnutí stanice zruší i rozpracovanou validaci; zachované jsou hodnoty, odvozování roku, počty odmítnutí a pořadí shodných časů.
+
 ## v0.18.6
 
 - Čtení polí velkých CSV exportů aktivní stanice z Google Sheets probíhá po krátkých dávkách. Mezi nimi lze dál ovládat stránku; validace a řazení zatím zůstávají souvislé.

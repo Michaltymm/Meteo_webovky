@@ -8,6 +8,8 @@ function fixture(){const a=app();a.run(`globalThis.csv='Datum,Cas,Teplota,Tlak,V
   globalThis.previousRows=store.rows;globalThis.previousReport=dataStatus.sheets.validation;
   globalThis.timing=newSheetsTiming('full');`);return a;}
 function tickAll(a){let n=0;while([...a.timers.values()].some(t=>t.delay===0)){a.tick(0);assert.ok(++n<3000,'lexer must make bounded progress');}return n;}
+async function drain(a,p){let done=false;p.then(()=>done=true,()=>done=true);let n=0;
+  while(!done){await settle();a.tick(0);assert.ok(++n<3000,'all parser phases must settle');}return n;}
 async function parse(a){const p=a.run('parseAndStore(csv,stationContext(),"full",timing)');a.tick();await settle();return {p};}
 
 test('large Sheets decoding publishes only complete original rows and validation once',async()=>{
@@ -15,7 +17,7 @@ test('large Sheets decoding publishes only complete original rows and validation
   const {p}=await parse(a);
   assert.equal(a.run('store.rows===previousRows && dataStatus.sheets.validation===previousReport'),true);
   a.tick(0);assert.equal(a.run('store.rows===previousRows && dataStatus.sheets.validation===previousReport'),true);
-  assert.ok(tickAll(a)>1);assert.equal(await p,true);
+  assert.ok(await drain(a,p)>1);assert.equal(await p,true);
   assert.equal(a.run('JSON.stringify(store.rows)===JSON.stringify(expected)'),true);
   assert.equal(a.run('JSON.stringify({...dataStatus.sheets.validation,checkedAt:0})===JSON.stringify({...expectedReport,checkedAt:0})'),true);
   assert.equal(a.run('timing.parse.runs'),1);assert.equal(a.state.renders,1);assert.equal(a.requests.length,0);
@@ -53,7 +55,7 @@ test('A to B to A and a station change after decoding but before its continuatio
 test('late syntax and resource-limit failures keep old data, incomplete evidence and one parse attempt',async()=>{
   for(const suffix of ['"unterminated', 'x'.repeat(16385), ','.repeat(64)]){
     const a=fixture();a.run(`csv+='\\n'+${JSON.stringify(suffix)}`);
-    const {p}=await parse(a);const rejection=assert.rejects(p);tickAll(a);await rejection;
+    const {p}=await parse(a);const rejection=assert.rejects(p);await drain(a,p);await rejection;
     assert.equal(a.run('store.rows===previousRows'),true);assert.equal(a.state.renders,0);
     assert.equal(a.run('dataStatus.sheets.validation.complete'),false);
     assert.equal(a.run('dataStatus.sheets.validation.total'),0);
@@ -81,14 +83,15 @@ test('partial logical-record limit returns before malformed tail, including acro
 
 test('unavailable monotonic timing still finishes with finite slice budgets and no invented durations',async()=>{
   const a=fixture();a.run('delete globalThis.performance');
-  const {p}=await parse(a);assert.ok(tickAll(a)>1);assert.equal(await p,true);
+  const {p}=await parse(a);assert.ok(await drain(a,p)>1);assert.equal(await p,true);
   assert.equal(a.run('timing.parse.ms'),null);assert.equal(a.run('timing.parse.runs'),1);
 });
 
 test('lexical timing excludes scheduler waits and counts the export rather than slices',async()=>{
   const a=fixture();a.run('performance.now=()=>mono+=10');
   const {p}=await parse(a);let turns=0;
-  while([...a.timers.values()].some(t=>t.delay===0)){a.run('mono+=10000');a.tick(0);assert.ok(++turns<3000);}
+  let done=false;p.then(()=>done=true);
+  while(!done){await settle();a.run('mono+=10000');a.tick(0);assert.ok(++turns<3000);}
   assert.equal(await p,true);assert.ok(turns>1);
   assert.equal(a.run('timing.parse.runs'),1);assert.ok(a.run('timing.parse.ms<mono/10'));
 });
@@ -97,7 +100,7 @@ test('shared full load starts one request and callbacks run only after complete 
   const a=fixture();a.run('globalThis.calls=0;ensureFullData(()=>{if(store.rows.length===12000)calls++})');
   const other=a.run('fetchSheets(true)');a.respond(0,a.run('csv'));await settle();a.tick();await settle();
   assert.equal(a.run('calls'),0);assert.equal(a.run('store.fullLoaded'),false);
-  tickAll(a);await other;
+  await drain(a,other);await other;
   assert.equal(a.requests.length,1);assert.equal(a.run('calls'),1);
   assert.equal(a.run('store.fullLoaded'),true);assert.equal(a.run('dataStatus.sheets.timing.parse.runs'),1);
 });
