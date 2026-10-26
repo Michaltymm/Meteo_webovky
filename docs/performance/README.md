@@ -1,5 +1,10 @@
 # Reprodukce měření výkonu
 
+[Číselné porovnávání CSV časů](CSV_RAZENI.md): další část METEO-008,
+stejný nativní stabilní sort bez implicitních Date převodů;1k–250k,
+neuspořádané100k/250k a přesná shoda všech dat/reportů. Celková obnova
+není obecně rychlejší a sort zůstává souvislý.
+
 [Dávkovaná validace CSV řádků](CSV_VALIDACE.md): další část METEO-008,
 filtrace/převod po dávkách, přesná data/reporty1k–250k a neuspořádané100k.
 Nativní sort měřen zvlášť, zůstává souvislý; celkové zrychlení se netvrdí.

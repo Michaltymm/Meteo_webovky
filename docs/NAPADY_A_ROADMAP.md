@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 model, v0.18.2 porovnání v dávkách; v0.18.3 noční meze, v0.18.4 omezené vyhlazení, v0.18.5 denní heatmapa; v0.18.6 lexer a v0.18.7 filter/validace aktivního velkého Sheets CSV v dávkách. Sort a další části dále | Přesná data/čítače, rušení a před/po včetně neuspořádaných časů. Viz performance/CSV_VALIDACE.md, CSV_LEXER a předchozí grafové profily. Worker/persistence/004 dále | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 model, v0.18.2 porovnání v dávkách; v0.18.3 noční meze, v0.18.4 omezené vyhlazení, v0.18.5 denní heatmapa; v0.18.6 lexer a v0.18.7 filter/validace v dávkách, v0.18.8 číselný CSV comparator. Sort stále souvislý, další části zbývají | Přesná data/čítače/stabilita/rušení a před/po včetně neuspořádaných časů. Viz performance/CSV_RAZENI.md, CSV_VALIDACE, CSV_LEXER a grafové profily. Worker/persistence/004 dále | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -2137,3 +2137,41 @@ commit zapisuje pouze tuto evidenci. Další checkpoint008: náklady Date
 převodů v nativním comparatoru podle neuspořádaného100k profilu; nejprve
 ověřit numerické timestampy a stabilitu, nepsat nový sort bez potřeby.
 Hotový lexer/validaci a grafové etapy neopakovat, celé008 Rozpracováno.
+
+## METEO-008 — číselné porovnávání CSV časů, v0.18.8 (2026-10-26)
+
+Výchozí db085ab. Další malá část008 hotová, celé ID **Rozpracováno**.
+Stejný nativní stabilní sort porovnává getTime() původních platných Date
+místo jejich implicitního převodu. Změna jediného comparatoru ve sdíleném
+CSV parseru, včetně synchronních/cizích cest. Původní objekty/časy/pořadí
+shod/senzory/reporty zůstávají, žádná druhá kopie/časový sloupec/cache,
+nový request/worker/závislost. Scheduler/práh/validace/guardy se neměnily.
+Nativní řazení nadále souvislé, další části008 tím nejsou hotové.
+
+381/381Node,6nových csv-sort: původní comparator jako reference, přesná
+identita objektů a pořadí, zmrazené řádky/Date, empty/single/ties, roky1000–
+9999/epocha/půlnoc/sekundy, odmítnuté neplatné časy a diagnostika,
+100náhodných historií, UTC/Prague/NewYork včetně DST. Původní kooperativní
+CSV a ostatní regrese zachované.
+
+Nové před/po1k/10k/100k/250k shodných a100k/250k neuspořádaných časů,
+pětvzorků/warmup/GC, sekvenčně;6SHA celých řádků a reportu přesně shodných.
+Unordered100k sort310,05→51,67ms,250k1072,50→152,93ms. Maxsledovanévolání
+316,77→59,28 a1079,77→156,21ms. Equal250k sort35,69→9,92ms, ale celá obnova
+2183,24→2580,78ms. Přínos doložen pouze v ceně sortu a blokování velkých
+neuspořádaných dat, obecné celkové zrychlení se netvrdí. Volání není celý
+browser task,153ms není16ms; síť/UI jsou v profilu náhrady, žádný INP/CPU×4/
+fyzický iPhone/peak/RAMúspora nebo dlouhodobá stabilita změřena není.
+[Metodika a surové výsledky](performance/CSV_RAZENI.md).
+
+Další checkpoint008: skutečný browser profil commitu/refreshUI velkého CSV,
+oddělit DOM/úplné agregace/Chart aktualizace, protože dnešní VMnahrazujeUI.
+Použít již hotová parserová měření, neopakovat lexer/validaci/comparator ani
+grafové etapy. Další sort/worker až dle potřeby, cizí parsery/streaming
+samostatně. Main/configy/archiv/workflow beze změny, jen codex-dev.
+
+Skutečný Chromium154 harness prošel12k neuspořádanými exporty v párech
+stejných časů/odlišných poznámek u3původních konfigurací. Ověřena sestupnost,
+původní pořadí duplicit, V/0/null, private report/atomickýcommit, rušení
+v lexeru i validaci, coalescing/navigace a320/1440px; bez pageerror/socketů.
+Řízené CSV/UV a lokální skutečné SRI knihovny, ne živé služby/MQTT/iOS.

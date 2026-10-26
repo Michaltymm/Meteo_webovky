@@ -31,6 +31,9 @@ a validace/převod řádků. Parse.ms sčítá CPU obou fází bez fronty, jeden
 export nadále znamená jeden pokus. Nativní řazení zůstává v parse čase
 a je stále souvislé. [Měření a omezení](performance/CSV_VALIDACE.md).
 
+Od v0.18.8 je číselný comparator CSV časů levnější, původní nativní stabilní
+sort i hranice časování zůstávají. [Srovnání fází a celého pipeline](performance/CSV_RAZENI.md).
+
 ## Výsledky a životní cyklus
 
 - Časování je samostatné vůči poslednímu rozboru CSV i poslednímu úspěchu

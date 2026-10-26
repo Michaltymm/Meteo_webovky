@@ -167,6 +167,11 @@ měření. Starý report i historie zůstávají do úplného ověření, přepn
 ruší obě fáze. Nativní řazení a cizí parsery zůstávají synchronní.
 [Data, sort a skutečná omezení](performance/CSV_VALIDACE.md).
 
+Od v0.18.8 sdílený CSV parser porovnává při řazení přímo getTime() původních
+platných Date. Stejná stabilita, přesnost a řádkové objekty, bez nové kopie
+nebo cache; týká se i synchronní/cizí historie. Nativní sort zůstává souvislý.
+[Měření a úplná shoda výsledků](performance/CSV_RAZENI.md).
+
 Párování používá binární meze O(n log m), pro přesně sladěné exporty rychlou
 lineární větev. Vyhne se kvadratickému průchodu duplicit. Je deterministické
 monotónní chamtivé, nikoli hledání globálně největšího počtu párů.

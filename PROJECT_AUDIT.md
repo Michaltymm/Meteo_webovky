@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.8 (2026-10-26): další část METEO-008 hotová, celé ID Rozpracováno. Sdílený CSV row parser řadí b.ts.getTime()-a.ts.getTime() místo implicitního Date převodu; platné Date už ověřené, původní nativní stabilní sort/objekty/senzory/reporty/scheduler/guardy beze změny. Žádná kopie historie/cache/request/schéma navíc.381/381Node,6nových s původním comparator oracle/identitou/frozen řádky/Dates/100náhodnými historiemi/roky1000–9999/sekundami/epochou/DST3zón. Před/po6scénářů přesně shodné SHA dat/reportu. Unordered100k sort310,05→51,67ms,250k1072,5→152,93ms; maxsledovanévolání316,77→59,28 a1079,77→156,21ms. Equal250k sort35,69→9,92ms, ale celýpipeline2183,24→2580,78ms; netvrdit obecné celkové zrychlení/16ms/INP/RAM. Sort nadále souvislý, profil VM nahrazujeUI. Baseline db085ab, viz docs/performance/CSV_RAZENI.md. Dále skutečný browser commit/refreshUI velkého CSV: oddělit DOM/agregace/Chart, nezopakovat hotový parser/comparator/grafy; další sort/worker až dle dopadu. Chromium154/12k unordered/3konfigurace/320–1440px prošel, stabilní note-páry/V0null/abort vobou fázích, bez pageerror/socketů. Jen codex-dev, publikování evidovat po dokončení.
 - v0.18.7 (2026-10-25): další část METEO-008 hotová, celé ID Rozpracováno. parseHistoryRowSteps sdílí původní filtraci/převod/validaci, yield po256řádcích; sync API dokončí stejný generátor. Aktivní Sheets≥262144UTF16 s timing používá sdílený runCSVStepsAsync pro lexer i validaci, workSlice~8ms/max64,0msfrontu. Soukromé průběžné reporty, atomickýstore/report/fullLoaded/cache/callback; abort/generačníguard voboufázích/poawait včetně výsledku předcommitem. Parse.ms CPU bezfronty, runs1/export/error. Malé/přímé/cizí/MQTT/both synchronní. Nativní sort NEMĚNĚN a stále souvislý.375/375Node,8nových testů filtrování/validace/reportů/yearState/logických pozic/stability/abortu/chyby; původních10lexerových zachováno, jen testovacídrain zohledňuje druhou fázi. VM před/po250k maxsledovanévolání1906,76→40,14ms, celek2073,35→2010,67ms; sort33,05→33,71ms. Neuspořádané100k blok997,92→242,61ms, sort261,56→238ms.5SHA úplných dat/reportů shodných. Žádný obecný claim rychlejšího celku/16ms/INP/RAM. Chromium154/12k/3konfigurace/320–1440px prošel včetně private report/filtervalidationabortu, bez pageerror/socketů; živé služby/fyzické iOS neověřeny. Baselineb6e84e6, viz docs/performance/CSV_VALIDACE.md. Dále náklady Date převodů v nativním comparatoru, nejprve ověřit numerické timestampy při zachování stability; vlastní sort/worker až podle měření. Lexer/validaci/grafy neopakovat. Jen codex-dev; Actions #41/40224596645 Success pro3a9ebe3 (build24s/deploy9s/celkem40s), evidence na konci etapy. main stále2405c5d.
 - v0.18.6 (2026-10-25): první část velkého CSV v METEO-008, celé ID Rozpracováno. parseCSVSteps je původní lexer+yield po8192průchodech znaky; syncparseCSV dokončuje stejný generátor. Aktivní Sheets obnova s timing a≥262144UTF16 používá parseCSVAsync, existující workSlice~8ms/max64kroků a0ms frontu. Malé/přímé/cizí aMQTT/both synchronně. parseHistoryRows odděluje původní validaci/převod/filter/sort, ZATÍM SOUVISLE. Abort relace ihned ruší timer/iterator/listener a settle null; guard před/po dávce/poawait, bez částečného store/report/fullLoaded/cache/callback. Parse.ms sčítá CPU bezfronty, runs1/export včetně lexchyby.367/367Node,10nových testů úplných řádků/reportů/rušení/A→B→A/lateerror/uvozovekUnicodeCRLF nahranici/časování/coalescing. VM před/po250k sledované syncvolání2036,78→1878,69ms, celýpipeline2039,23→2033,67ms; maxlexdávka medián8,52ms. Všech4SHA úplných dat/reportů shodných. Validace stále~1,9s, celý parser NENÍ plynulý ani obecně rychlejší, žádný claim INP/úsporyRAM. Baselineef75168, viz docs/performance/CSV_LEXER.md. Dále dávkovat filter/validaci parseHistoryRows se zachováním logických pozic/yearState/čítačů; sort změřit zvlášť. Grafové etapy a lexer neopakovat. Chromium154/12k/3konfigurace/320–1440px prošel, atomický commit/sdílení requestu/navigace/stationabort, bez pageerror/socketů. Jen codex-dev; Actions #40/40190011963 Success prob952b31 (build30s/deploy25s/celkem62s), evidence na konci etapy. main stále2405c5d.
 - v0.18.5 (2026-10-25): další část METEO-008 hotová, celé ID Rozpracováno. analyticsHeatCells odděluje původní agregaci T/RH od UI; existující localDayBounds/historyRangeBounds pro každý z≤14dnů, nejstarší záznamy první, getHours jednou, žádný localDateKey v řádkovém průchodu. O(d log n+k), stejná omezená paměť buněk, bez kopie řádků/cache/requestů navíc. Součty/count/min/max/0/null/duplicity/částečné dny/DST přesně zachované; cache/detail/metrika/stránkování/škála beze změny.250k dense agregace42,1→23,6ms, celý cold42,7→24,3ms; regular2,4→0,8ms a4→2ms. CPU×4/100k dense agregace79,1→38,2ms, celek81,8→43,3ms. Teplá cesta nezrychlena; žádný claim16ms/INP/RAM. Všech10SHA buněk přesně shodných.357/357Node,7nových s původní referencí/100náhodnými historiemi/250kProxy/DST4zón včetně půlhodinové. Baseline8e23702, viz docs/performance/HEATMAPA.md. Dále velký CSV parser podle existujících měření CASOVANI_OBNOVY (~1,7s250k), rozdělit po malé ověřitelné části s limity/čítači/generačními guardy; neopakovat hotové model/párování/noc/vyhlazení/heatmapu. Případné dávkování hustých grafů a streaming/nezávislé rozsahy dále. Rozšířený Chromium154 prošel100k/9grafů/3konfigurace/zoom/PNG/320–1440px/obě témata, navíc přesné buňky/klávesnice/metrika/cache/stránky/detail bez requestů, žádný pageerror/socket. Jen codex-dev; Actions #39/40146173307 Success proa05fb8b (build28s/deploy11s/celkem47s), evidence na konci etapy. main stále2405c5d.
@@ -1018,3 +1019,41 @@ commit zapisuje pouze tuto evidenci. Další checkpoint008: náklady Date
 převodů v nativním comparatoru podle neuspořádaného100k profilu; nejprve
 ověřit numerické timestampy a stabilitu, nepsat nový sort bez potřeby.
 Hotový lexer/validaci a grafové etapy neopakovat, celé008 Rozpracováno.
+
+## METEO-008 — číselné porovnávání CSV časů, v0.18.8 (2026-10-26)
+
+Výchozí db085ab. Další malá část008 hotová, celé ID **Rozpracováno**.
+Stejný nativní stabilní sort porovnává getTime() původních platných Date
+místo jejich implicitního převodu. Změna jediného comparatoru ve sdíleném
+CSV parseru, včetně synchronních/cizích cest. Původní objekty/časy/pořadí
+shod/senzory/reporty zůstávají, žádná druhá kopie/časový sloupec/cache,
+nový request/worker/závislost. Scheduler/práh/validace/guardy se neměnily.
+Nativní řazení nadále souvislé, další části008 tím nejsou hotové.
+
+381/381Node,6nových csv-sort: původní comparator jako reference, přesná
+identita objektů a pořadí, zmrazené řádky/Date, empty/single/ties, roky1000–
+9999/epocha/půlnoc/sekundy, odmítnuté neplatné časy a diagnostika,
+100náhodných historií, UTC/Prague/NewYork včetně DST. Původní kooperativní
+CSV a ostatní regrese zachované.
+
+Nové před/po1k/10k/100k/250k shodných a100k/250k neuspořádaných časů,
+pětvzorků/warmup/GC, sekvenčně;6SHA celých řádků a reportu přesně shodných.
+Unordered100k sort310,05→51,67ms,250k1072,50→152,93ms. Maxsledovanévolání
+316,77→59,28 a1079,77→156,21ms. Equal250k sort35,69→9,92ms, ale celá obnova
+2183,24→2580,78ms. Přínos doložen pouze v ceně sortu a blokování velkých
+neuspořádaných dat, obecné celkové zrychlení se netvrdí. Volání není celý
+browser task,153ms není16ms; síť/UI jsou v profilu náhrady, žádný INP/CPU×4/
+fyzický iPhone/peak/RAMúspora nebo dlouhodobá stabilita změřena není.
+[Metodika a surové výsledky](performance/CSV_RAZENI.md).
+
+Další checkpoint008: skutečný browser profil commitu/refreshUI velkého CSV,
+oddělit DOM/úplné agregace/Chart aktualizace, protože dnešní VMnahrazujeUI.
+Použít již hotová parserová měření, neopakovat lexer/validaci/comparator ani
+grafové etapy. Další sort/worker až dle potřeby, cizí parsery/streaming
+samostatně. Main/configy/archiv/workflow beze změny, jen codex-dev.
+
+Skutečný Chromium154 harness prošel12k neuspořádanými exporty v párech
+stejných časů/odlišných poznámek u3původních konfigurací. Ověřena sestupnost,
+původní pořadí duplicit, V/0/null, private report/atomickýcommit, rušení
+v lexeru i validaci, coalescing/navigace a320/1440px; bez pageerror/socketů.
+Řízené CSV/UV a lokální skutečné SRI knihovny, ne živé služby/MQTT/iOS.

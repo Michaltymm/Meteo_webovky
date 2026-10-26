@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.8
+
+- Řazení CSV historie porovnává přímo číselné časové značky, takže zejména neuspořádané exporty vyžadují méně práce při načtení.
+- Zachované jsou přesné časy, všechny původní hodnoty a pořadí měření se shodným časem. Nejsou potřeba další požadavky ani nová kopie historie.
+
 ## v0.18.7
 
 - Velké exporty aktivní stanice z Google Sheets nově po dávkách také filtrují, ověřují a převádějí měření. Stránka mezi dávkami může reagovat na ovládání; závěrečné řazení zatím zůstává souvislé.

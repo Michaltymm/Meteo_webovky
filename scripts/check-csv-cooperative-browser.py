@@ -31,7 +31,11 @@ async def main():
                 quick='LIMIT 400' in parse_qs(urlparse(url).query).get('tq',[''])[0]
                 requests.append({'station':index,'quick':quick})
                 v='4.2' if index==0 else '0' if index==1 else ''
-                body='Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti\n'+'\n'.join(f'25.10.2026,12:00,{i%7},1010,50,0,0,,{v}' for i in range(8 if quick else 12000))
+                rows=['Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti,Poznamka']
+                for i in range(8 if quick else 12000):
+                    s=43200 if quick else (i//2*7919)%86400
+                    rows.append(f'25.10.2026,{s//3600:02}:{s//60%60:02}:{s%60:02},{i%7},1010,50,0,0,,{v},id{i}')
+                body='\n'.join(rows)
                 return await r.fulfill(body=body,content_type='text/csv')
             if 'api.open-meteo.com' in url:return await r.fulfill(json={'hourly':{'uv_index':[0]*24}})
             return await r.abort()
@@ -89,7 +93,9 @@ async def main():
             await page.evaluate('()=>{fetchSheets(true)}')
             await page.wait_for_function('store.fullLoaded && store.rows.length===12000 && dataStatus.sheets.phase==="ok"')
             assert await page.evaluate('(i)=>store.rows.every(r=>i===0?r.voltage===4.2:i===1?r.voltage===0:r.voltage===null)',index)
+            assert await page.evaluate('store.rows.every((r,i,rows)=>!i || +rows[i-1].ts>+r.ts || (+rows[i-1].ts===+r.ts && Number(rows[i-1].note.slice(2))<Number(r.note.slice(2))))')
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')
+        checks.append('unordered timestamp pairs from each station sort descending with stable original note order')
         for width in [320,1440]:
             await page.set_viewport_size({'width':width,'height':1000})
             await page.wait_for_timeout(300)  # Chart.js debounces responsive resizing.
