@@ -2175,3 +2175,17 @@ stejných časů/odlišných poznámek u3původních konfigurací. Ověřena ses
 původní pořadí duplicit, V/0/null, private report/atomickýcommit, rušení
 v lexeru i validaci, coalescing/navigace a320/1440px; bez pageerror/socketů.
 Řízené CSV/UV a lokální skutečné SRI knihovny, ne živé služby/MQTT/iOS.
+
+Publikování v0.18.8 ověřeno 2026-10-26: [Actions #42](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40342111776)
+pro [c32a25c](https://github.com/Michaltymm/Meteo_webovky/commit/c32a25c9b4ed72d31b10c6f5e515c9b34b5ce859)
+**Success**, build44s/deploy24s/celkem78s,1artefakt.381/381 lokálních Node,
+rozšířený skutečný12k unordered browser/3konfigurace a6přesných profilových
+porovnání prošly. Implementováno, lokálně ověřeno a podle workflow nasazeno.
+Přímý Pages host není v síťové politice prostředí, jeho živé widgety ani
+skutečné služby/MQTT nebo fyzický Safari/iOS tím ověřeny nejsou. Pouze
+codex-dev, main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Původní upozornění Actions runtime/ubuntu-latest přetrvávají; workflow se
+neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoint008:
+skutečný browser profil commitu/refreshUI velké historie (DOM/agregace/Chart),
+protože VMprofil UI nahrazuje. Neopakovat hotový parser/comparator/grafové
+etapy; podle nákladů zvolit další malou změnu. Celé008 Rozpracováno.
