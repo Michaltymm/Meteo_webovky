@@ -2234,3 +2234,16 @@ Další checkpoint: vrátit se k METEO-008, samostatně profilovat skutečný br
 commit/refreshUI velkého CSV (DOM/úplné agregace/Chart), navázat na již uložená
 parserová měření. Neopakovat dokončený lexer/validaci/comparator ani tuto UX
 etapu. `main`, konfigurace, archiv a workflow neměněny; pouze `codex-dev`.
+
+
+Publikování v0.18.9 ověřeno 2026-10-28: [Actions #43](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40672200823)
+pro [1841318](https://github.com/Michaltymm/Meteo_webovky/commit/1841318a898c72ffe7ff198d8a625d3679187e2f)
+**Success**, build31s/deploy46s/celkem88s,1artefakt. Implementace,385/385
+lokálních Node regresí a rozšířený skutečný browser prošly; nasazení vývojové
+verze potvrzuje workflow. Přímý Pages host není povolen síťovou politikou,
+živé widgety/externí služby ani fyzický Safari/iOS tím ověřeny nejsou.
+Pouze codex-dev, main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`.
+Workflow se neměnilo, jeho dřívější runtime/ubuntu-latest upozornění přetrvávají.
+Následující commit ukládá jen tuto evidenci. Další checkpoint METEO-008:
+skutečný browser profil commitu/refreshUI velkého CSV, ne opakování hotového
+parseru nebo této UI etapy.
