@@ -2354,3 +2354,16 @@ Další checkpoint: METEO-036 pro24h (lineární epochová osa a detail původn�
 vykreslení T/RH/rosného bodu. Neopakovat parser,24h výběr ani tuto IO etapu.
 Streaming snapshot, cizí parsery,004 cache a obecný worker/persistence zůstávají
 samostatné. Jen codex-dev; main/konfigurace/archiv/workflow beze změny.
+
+
+Publikování v0.18.12 ověřeno 2026-10-28: [Actions #46](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40778961209)
+pro [f5603cd](https://github.com/Michaltymm/Meteo_webovky/commit/f5603cdea90548544ae33237163c2602f4303fe9)
+**Success**, build27s/deploy25s/celkem60s,1artefakt.400/400 lokálních Node,
+nový skutečný IO browser/3konfigurace, původní CSV/data-status harness a všech
+13přesných profilových porovnání prošly. Implementováno, lokálně otestováno,
+nasazení dev potvrzeno workflow. Přímý Pages host není v povolené síťové politice;
+živé služby/broker ani fyzický Safari/iOS nejsou ověřeny. Jen codex-dev,
+main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Dřívější runtime/
+ubuntu-latest upozornění přetrvávají, workflow se neměnilo. Následující commit
+ukládá jen tuto evidenci. Dále036: skutečná časová osa24h a původní tooltip,
+potom033 min/max vykreslení. Neopakovat hotovou IO/parser/výběrovou etapu.
