@@ -1,5 +1,10 @@
 # Reprodukce měření výkonu
 
+[Skutečná obnova přehledu a výběr 24h grafu](OBNOVA_PREHLEDU.md): další část
+METEO-008, původní CSV fetch/parser/commit, skutečné DOM/agregace/Chart.js,
+1k–250k pravidelných/hustých řádků a CPU×4. Stejná všechna data, statistiky
+i celý graf; levnější příprava není příslib obecně rychlejší obnovy.
+
 [Číselné porovnávání CSV časů](CSV_RAZENI.md): další část METEO-008,
 stejný nativní stabilní sort bez implicitních Date převodů;1k–250k,
 neuspořádané100k/250k a přesná shoda všech dat/reportů. Celková obnova

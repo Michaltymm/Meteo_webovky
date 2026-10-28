@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.18.10
+
+- Graf posledních 24 hodin vybírá u historie Google Sheets přímo potřebný úsek a řadí číselné časy bez kopírování celé historie.
+- Zachované jsou všechny body grafu, původní hodnoty, pořadí měření se shodným časem i přesné statistiky.
+
 ## v0.18.9
 
 - Stav dat je nyní kompaktní rozbalovací řádek. Přesné časy přenosu, rozsah historie a diagnostika se zobrazí až po kliknutí na šipku.

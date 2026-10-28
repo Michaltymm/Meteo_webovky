@@ -2170,8 +2170,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0189"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.9</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01810"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.10</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4922,7 +4922,18 @@
         // 24h – seřazeno od nejstaršího (vázáno na nejnovější záznam, pole je řazeno sestupně)
         const lastTs = rows.length ? rows[0].ts.getTime() : Date.now();
         const cut = lastTs - 24 * 3600 * 1000;
-        const h24 = [...rows].filter(r => r.ts.getTime() >= cut).sort((a, b) => a.ts - b.ts);
+        let h24;
+        if (CFG.source === "sheets") {
+          // CSV guarantees descending timestamps: copy only the visible range.
+          const { start, end } = historyRangeBounds(rows, cut, lastTs);
+          h24 = rows.slice(start, end);
+        } else {
+          // Live receipt clocks can go backwards or precede future CSV rows.
+          // Keep the previous full predicate for MQTT/combined sources.
+          h24 = rows.filter(r => r.ts.getTime() >= cut);
+        }
+        // Retain every point and source order for equal timestamps.
+        h24.sort((a, b) => a.ts.getTime() - b.ts.getTime());
         chart24.data.labels = h24.map(r => fmtTime(r.ts));
         chart24.data.datasets[0].data = h24.map(r => r.temp);
         chart24.data.datasets[1].data = h24.map(r => r.hum);

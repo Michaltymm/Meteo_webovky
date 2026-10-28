@@ -34,6 +34,12 @@ a je stále souvislé. [Měření a omezení](performance/CSV_VALIDACE.md).
 Od v0.18.8 je číselný comparator CSV časů levnější, původní nativní stabilní
 sort i hranice časování zůstávají. [Srovnání fází a celého pipeline](performance/CSV_RAZENI.md).
 
+Od v0.18.10 je samostatně změřený také skutečný commit/přehled v prohlížeči.
+24h graf používá pro Sheets existující binární meze místo kopie/průchodu celé
+historie; všechny body a statistiky zůstávají. MQTT/both nadále vybírá plným
+predikátem kvůli možnému posunu hodin. Hranice časování se nemění.
+[Profil DOM, agregací a Chart.js](performance/OBNOVA_PREHLEDU.md).
+
 ## Výsledky a životní cyklus
 
 - Časování je samostatné vůči poslednímu rozboru CSV i poslednímu úspěchu

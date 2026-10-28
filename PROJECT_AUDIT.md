@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.10 (2026-10-28): další malá část METEO-008 hotová, celé ID Rozpracováno. Skutečný browser fetch/CSV/commit profil oddělil DOM/agregace/Chart; v hustých250k převažuje kreslení. 24h Sheets graf používá původní historyRangeBounds + slice jen okna a stabilní číselný sort, nikoli kopii/filter celého store. Všechny body/popisky/T/RH/dew/duplicity/0/null/stats beze změny. MQTT/both má plný predikát kvůli posunu hodin/budoucím CSV; bez změny streamu nebo parseru.392/392 Node,7nových v current-chart-range, actual12k browser/3konfigurace/320–1440px prošel, bez pageerror/socketů.10před/po scénářů (1k–250k regular/dense,100kCPU×4), všechny celé SHA řádků/statistik/reportů/grafu shodné.250kregular příprava4,6→0,3ms, UI29,4→28,8ms; dense příprava45,7→22,5ms/UI286,3→250,5ms. Celková obnova není obecně rychlejší (regular250k1737,8→1878ms), bez claimu16ms/INP/RAM. Viz docs/performance/OBNOVA_PREHLEDU.md. Dále líné překreslení24h karty podle viditelnosti, dirty+station/data guard; samotné kreslení dense100kCPU×4 stále787,1ms. Neopakovat parser ani hotový výběr. METEO-033/036 sampling/praváčasováosa a streaming dále. Pouze codex-dev; publikování bude doloženo na konci etapy.
 - v0.18.9 (2026-10-28): na výslovné UX zadání podle mobilního obrázku zpřehledněn panel METEO-009/010. Nativní Stav dat je při načtení zavřený; přesné časy/přenos/rozsah/počty/diagnostika pod šipkou, stručné stáří a chyba/budoucí/neplatný čas viditelné stále. Nevyužité zdroje skryté, ovládání nad počasím zachováno, min.44px. Parser/data/časový kontrakt/statistiky/načítání beze změny, O(1), bez requestů/grafů/timerů navíc.385/385 Node,4nové regrese; skutečný Chromium154/3konfigurace/3pohledy/2témata/320–1440px +12MQTT rozložení, Enter/Space/touch, varování při zavření a uzavření nápovědy prošly. Jen codex-dev. METEO-009 zůstává Dokončeno, obecné010 a008 Rozpracováno. Dále navázat již uloženým checkpointem008: skutečný browser commit/refreshUI velkého CSV (DOM/agregace/Chart); hotový parser/comparator ani UX etapu neopakovat. Actions #43/40672200823 Success pro1841318 (build31s/deploy46s/celkem88s), jen codex-dev; main stále2405c5d. Podrobnosti na konci etapy, živé služby/fyzický Safari neověřeny.
 - v0.18.8 (2026-10-26): další část METEO-008 hotová, celé ID Rozpracováno. Sdílený CSV row parser řadí b.ts.getTime()-a.ts.getTime() místo implicitního Date převodu; platné Date už ověřené, původní nativní stabilní sort/objekty/senzory/reporty/scheduler/guardy beze změny. Žádná kopie historie/cache/request/schéma navíc.381/381Node,6nových s původním comparator oracle/identitou/frozen řádky/Dates/100náhodnými historiemi/roky1000–9999/sekundami/epochou/DST3zón. Před/po6scénářů přesně shodné SHA dat/reportu. Unordered100k sort310,05→51,67ms,250k1072,5→152,93ms; maxsledovanévolání316,77→59,28 a1079,77→156,21ms. Equal250k sort35,69→9,92ms, ale celýpipeline2183,24→2580,78ms; netvrdit obecné celkové zrychlení/16ms/INP/RAM. Sort nadále souvislý, profil VM nahrazujeUI. Baseline db085ab, viz docs/performance/CSV_RAZENI.md. Dále skutečný browser commit/refreshUI velkého CSV: oddělit DOM/agregace/Chart, nezopakovat hotový parser/comparator/grafy; další sort/worker až dle dopadu. Chromium154/12k unordered/3konfigurace/320–1440px prošel, stabilní note-páry/V0null/abort vobou fázích, bez pageerror/socketů. Jen codex-dev; Actions #42/40342111776 Success proc32a25c (build44s/deploy24s/celkem78s), evidence na konci etapy. main stále2405c5d.
 - v0.18.7 (2026-10-25): další část METEO-008 hotová, celé ID Rozpracováno. parseHistoryRowSteps sdílí původní filtraci/převod/validaci, yield po256řádcích; sync API dokončí stejný generátor. Aktivní Sheets≥262144UTF16 s timing používá sdílený runCSVStepsAsync pro lexer i validaci, workSlice~8ms/max64,0msfrontu. Soukromé průběžné reporty, atomickýstore/report/fullLoaded/cache/callback; abort/generačníguard voboufázích/poawait včetně výsledku předcommitem. Parse.ms CPU bezfronty, runs1/export/error. Malé/přímé/cizí/MQTT/both synchronní. Nativní sort NEMĚNĚN a stále souvislý.375/375Node,8nových testů filtrování/validace/reportů/yearState/logických pozic/stability/abortu/chyby; původních10lexerových zachováno, jen testovacídrain zohledňuje druhou fázi. VM před/po250k maxsledovanévolání1906,76→40,14ms, celek2073,35→2010,67ms; sort33,05→33,71ms. Neuspořádané100k blok997,92→242,61ms, sort261,56→238ms.5SHA úplných dat/reportů shodných. Žádný obecný claim rychlejšího celku/16ms/INP/RAM. Chromium154/12k/3konfigurace/320–1440px prošel včetně private report/filtervalidationabortu, bez pageerror/socketů; živé služby/fyzické iOS neověřeny. Baselineb6e84e6, viz docs/performance/CSV_VALIDACE.md. Dále náklady Date převodů v nativním comparatoru, nejprve ověřit numerické timestampy při zachování stability; vlastní sort/worker až podle měření. Lexer/validaci/grafy neopakovat. Jen codex-dev; Actions #41/40224596645 Success pro3a9ebe3 (build24s/deploy9s/celkem40s), evidence na konci etapy. main stále2405c5d.
@@ -1130,3 +1131,41 @@ Workflow se neměnilo, jeho dřívější runtime/ubuntu-latest upozornění př
 Následující commit ukládá jen tuto evidenci. Další checkpoint METEO-008:
 skutečný browser profil commitu/refreshUI velkého CSV, ne opakování hotového
 parseru nebo této UI etapy.
+
+
+## METEO-008 — skutečný profil obnovy a výběr 24h grafu, v0.18.10 (2026-10-28)
+
+Dokončena jedna malá etapa, celé METEO-008 zůstává Rozpracováno. Navázáno
+přímo na checkpoint v0.18.9; dokončený parser ani grafové modely se neopakovaly.
+Skutečný browser profil CSV/fetch/commitu oddělil DOM, úplné agregace a Chart.
+U husté historie převládá kreslení. Odstraněna pouze zbytečná kopie/filter
+celé Sheets historie v24h grafu: existující binární meze +slice výřezu,
+stabilní číselný comparator. Každý původní bod a pořadí duplicit zůstává;
+vzhled, časový význam, statistiky, všechny3konfigurace, requesty/instance/timery
+beze změny. MQTT/both používá původní plný predikát, protože jeho příjem může
+předcházet budoucímu CSV nebo se mohou posunout hodiny. Řazení živého store se
+neměnilo; tento širší problém není označen jako vyřešený.
+
+**392/392 Node**,7nových regresí s původním full-scan oraclem,100náhodnými
+historiemi, inkluzivním krajem,250kProxy(<400čtení), frozen vstupem,0/null,
+prázdnem/všemi shodami, plnými statistikami mimo24h, DST3zón a skutečným MQTT
+handlerem po budoucím CSV i posunu hodin. Rozšířený Chromium154 harness prošel
+12k unordered/duplicitními CSV ve3původních konfiguracích; všechny popisky
++tři číselné řady přesně shodné se starým full-scan algoritmem. Zachovány
+atomický commit/report, rušení/sdílení/navigace a V0/null;320/1440px bez
+přetečení, žádný pageerror/socket. Živé služby/fyzický Safari neověřeny.
+
+Před/po všech10scénářů v reálném prohlížeči (1k–250k regular/dense,
+100kCPU×4) má stejné celé SHA řádků, statistik/reportu/DOM i grafu.
+Příprava grafu250kregular4,6→0,3ms, dense45,7→22,5ms. UI250kdense
+286,3→250,5ms, ale celá obnova250kregular1737,8→1878ms a malé scénáře také
+kolísají. Netvrdit obecné zrychlení celé obnovy,16ms/INP/úsporuRAM. DOM mutace
+ani počet Chart se nesnižovaly. Podrobné tabulky, raw JSON a reprodukce:
+[Obnova přehledu](docs/performance/OBNOVA_PREHLEDU.md).
+
+**Další checkpoint:** líně překreslovat24h kartu podle viditelnosti při
+zachování dirty stavu a guardu aktuální stanice/dat. Husté100kCPU×4 stále
+kreslí787,1ms, přestože příprava zlevnila. Neopakovat hotový výběr/parser;
+sampling a skutečná časová osa navazují na METEO-033/036 samostatně.
+METEO-004 cache stanic a konzistentní streaming snapshot dále. Jen codex-dev,
+main/configy/archiv/workflow neměněny. Stav publikování bude doložen níže.

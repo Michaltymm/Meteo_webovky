@@ -94,8 +94,15 @@ async def main():
             await page.wait_for_function('store.fullLoaded && store.rows.length===12000 && dataStatus.sheets.phase==="ok"')
             assert await page.evaluate('(i)=>store.rows.every(r=>i===0?r.voltage===4.2:i===1?r.voltage===0:r.voltage===null)',index)
             assert await page.evaluate('store.rows.every((r,i,rows)=>!i || +rows[i-1].ts>+r.ts || (+rows[i-1].ts===+r.ts && Number(rows[i-1].note.slice(2))<Number(r.note.slice(2))))')
+            assert await page.evaluate('''()=>{
+              const expected=[...store.rows].filter(r=>r.ts.getTime()>=store.rows[0].ts.getTime()-86400000).sort((a,b)=>a.ts-b.ts);
+              return JSON.stringify(chart24.data.labels)===JSON.stringify(expected.map(r=>fmtTime(r.ts))) &&
+                [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>
+                  JSON.stringify(chart24.data.datasets[i].data)===JSON.stringify(expected.map(get)));
+            }''')
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')
         checks.append('unordered timestamp pairs from each station sort descending with stable original note order')
+        checks.append('all 24h chart labels and three original-value datasets exactly match old full scan for each station')
         for width in [320,1440]:
             await page.set_viewport_size({'width':width,'height':1000})
             await page.wait_for_timeout(300)  # Chart.js debounces responsive resizing.

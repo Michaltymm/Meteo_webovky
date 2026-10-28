@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1 model, v0.18.2 porovnání v dávkách; v0.18.3 noční meze, v0.18.4 omezené vyhlazení, v0.18.5 denní heatmapa; v0.18.6 lexer a v0.18.7 filter/validace v dávkách, v0.18.8 číselný CSV comparator. Sort stále souvislý, další části zbývají | Přesná data/čítače/stabilita/rušení a před/po včetně neuspořádaných časů. Viz performance/CSV_RAZENI.md, CSV_VALIDACE, CSV_LEXER a grafové profily. Worker/persistence/004 dále | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 skutečný profil commitu/DOM/Chart a výběr 24h bez plného Sheets průchodu. Všechny body zachovány, vykreslování hustých dat zůstává souvislé | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/OBNOVA_PREHLEDU.md, CSV_RAZENI.md, CSV_VALIDACE, CSV_LEXER a grafové profily. Worker/persistence/004 dále | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -2247,3 +2247,41 @@ Workflow se neměnilo, jeho dřívější runtime/ubuntu-latest upozornění př
 Následující commit ukládá jen tuto evidenci. Další checkpoint METEO-008:
 skutečný browser profil commitu/refreshUI velkého CSV, ne opakování hotového
 parseru nebo této UI etapy.
+
+
+## METEO-008 — skutečný profil obnovy a výběr 24h grafu, v0.18.10 (2026-10-28)
+
+Dokončena jedna malá etapa, celé METEO-008 zůstává Rozpracováno. Navázáno
+přímo na checkpoint v0.18.9; dokončený parser ani grafové modely se neopakovaly.
+Skutečný browser profil CSV/fetch/commitu oddělil DOM, úplné agregace a Chart.
+U husté historie převládá kreslení. Odstraněna pouze zbytečná kopie/filter
+celé Sheets historie v24h grafu: existující binární meze +slice výřezu,
+stabilní číselný comparator. Každý původní bod a pořadí duplicit zůstává;
+vzhled, časový význam, statistiky, všechny3konfigurace, requesty/instance/timery
+beze změny. MQTT/both používá původní plný predikát, protože jeho příjem může
+předcházet budoucímu CSV nebo se mohou posunout hodiny. Řazení živého store se
+neměnilo; tento širší problém není označen jako vyřešený.
+
+**392/392 Node**,7nových regresí s původním full-scan oraclem,100náhodnými
+historiemi, inkluzivním krajem,250kProxy(<400čtení), frozen vstupem,0/null,
+prázdnem/všemi shodami, plnými statistikami mimo24h, DST3zón a skutečným MQTT
+handlerem po budoucím CSV i posunu hodin. Rozšířený Chromium154 harness prošel
+12k unordered/duplicitními CSV ve3původních konfiguracích; všechny popisky
++tři číselné řady přesně shodné se starým full-scan algoritmem. Zachovány
+atomický commit/report, rušení/sdílení/navigace a V0/null;320/1440px bez
+přetečení, žádný pageerror/socket. Živé služby/fyzický Safari neověřeny.
+
+Před/po všech10scénářů v reálném prohlížeči (1k–250k regular/dense,
+100kCPU×4) má stejné celé SHA řádků, statistik/reportu/DOM i grafu.
+Příprava grafu250kregular4,6→0,3ms, dense45,7→22,5ms. UI250kdense
+286,3→250,5ms, ale celá obnova250kregular1737,8→1878ms a malé scénáře také
+kolísají. Netvrdit obecné zrychlení celé obnovy,16ms/INP/úsporuRAM. DOM mutace
+ani počet Chart se nesnižovaly. Podrobné tabulky, raw JSON a reprodukce:
+[Obnova přehledu](performance/OBNOVA_PREHLEDU.md).
+
+**Další checkpoint:** líně překreslovat24h kartu podle viditelnosti při
+zachování dirty stavu a guardu aktuální stanice/dat. Husté100kCPU×4 stále
+kreslí787,1ms, přestože příprava zlevnila. Neopakovat hotový výběr/parser;
+sampling a skutečná časová osa navazují na METEO-033/036 samostatně.
+METEO-004 cache stanic a konzistentní streaming snapshot dále. Jen codex-dev,
+main/configy/archiv/workflow neměněny. Stav publikování bude doložen níže.
