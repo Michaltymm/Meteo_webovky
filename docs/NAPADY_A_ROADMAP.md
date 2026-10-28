@@ -2285,3 +2285,16 @@ kreslí787,1ms, přestože příprava zlevnila. Neopakovat hotový výběr/parse
 sampling a skutečná časová osa navazují na METEO-033/036 samostatně.
 METEO-004 cache stanic a konzistentní streaming snapshot dále. Jen codex-dev,
 main/configy/archiv/workflow neměněny. Stav publikování bude doložen níže.
+
+
+Publikování v0.18.10 ověřeno 2026-10-28: [Actions #44](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40689748473)
+pro [588c8fa](https://github.com/Michaltymm/Meteo_webovky/commit/588c8fa2f22846b42e12fe5f53efa4bdfe5258e9)
+**Success**, build38s/deploy10s/celkem56s,1artefakt.392/392 lokálních Node,
+rozšířený skutečný12k browser/3konfigurace a všech10přesných profilových
+porovnání prošly. Implementováno, lokálně otestováno a nasazení dev potvrzeno
+workflow. Přímý Pages host není v povolené síťové politice; živé služby,
+MQTT broker ani fyzický Safari/iOS ověřeny nejsou. Jen codex-dev, main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Workflow se neměnilo a dřívější
+runtime/ubuntu-latest upozornění přetrvávají. Následující commit je jen evidence.
+Pokračovat METEO-008: líné překreslení24h karty podle viditelnosti s dirty
+stavem a guardem stanice/dat; neopakovat hotový výběr, parser nebo modely.
