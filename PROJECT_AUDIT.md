@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.11: dokončena mobilní UX etapa horního bloku (METEO-010/011), do767px, bez změny desktopové geometrie.392/392 Node,66nových rozložení a původní data-status browser prošly. Viz docs/MOBILNI_ROZVRZENI.md a poslední etapu. Při pokračování výkonu navázat008/líné kreslení24h, neopakovat tuto mobilní etapu.
 - v0.18.10 (2026-10-28): další malá část METEO-008 hotová, celé ID Rozpracováno. Skutečný browser fetch/CSV/commit profil oddělil DOM/agregace/Chart; v hustých250k převažuje kreslení. 24h Sheets graf používá původní historyRangeBounds + slice jen okna a stabilní číselný sort, nikoli kopii/filter celého store. Všechny body/popisky/T/RH/dew/duplicity/0/null/stats beze změny. MQTT/both má plný predikát kvůli posunu hodin/budoucím CSV; bez změny streamu nebo parseru.392/392 Node,7nových v current-chart-range, actual12k browser/3konfigurace/320–1440px prošel, bez pageerror/socketů.10před/po scénářů (1k–250k regular/dense,100kCPU×4), všechny celé SHA řádků/statistik/reportů/grafu shodné.250kregular příprava4,6→0,3ms, UI29,4→28,8ms; dense příprava45,7→22,5ms/UI286,3→250,5ms. Celková obnova není obecně rychlejší (regular250k1737,8→1878ms), bez claimu16ms/INP/RAM. Viz docs/performance/OBNOVA_PREHLEDU.md. Dále líné překreslení24h karty podle viditelnosti, dirty+station/data guard; samotné kreslení dense100kCPU×4 stále787,1ms. Neopakovat parser ani hotový výběr. METEO-033/036 sampling/praváčasováosa a streaming dále. Pouze codex-dev; Actions #44/40689748473 Success pro588c8fa (build38s/deploy10s/celkem56s), main stále2405c5d; evidence na konci etapy.
 - v0.18.9 (2026-10-28): na výslovné UX zadání podle mobilního obrázku zpřehledněn panel METEO-009/010. Nativní Stav dat je při načtení zavřený; přesné časy/přenos/rozsah/počty/diagnostika pod šipkou, stručné stáří a chyba/budoucí/neplatný čas viditelné stále. Nevyužité zdroje skryté, ovládání nad počasím zachováno, min.44px. Parser/data/časový kontrakt/statistiky/načítání beze změny, O(1), bez requestů/grafů/timerů navíc.385/385 Node,4nové regrese; skutečný Chromium154/3konfigurace/3pohledy/2témata/320–1440px +12MQTT rozložení, Enter/Space/touch, varování při zavření a uzavření nápovědy prošly. Jen codex-dev. METEO-009 zůstává Dokončeno, obecné010 a008 Rozpracováno. Dále navázat již uloženým checkpointem008: skutečný browser commit/refreshUI velkého CSV (DOM/agregace/Chart); hotový parser/comparator ani UX etapu neopakovat. Actions #43/40672200823 Success pro1841318 (build31s/deploy46s/celkem88s), jen codex-dev; main stále2405c5d. Podrobnosti na konci etapy, živé služby/fyzický Safari neověřeny.
 - v0.18.8 (2026-10-26): další část METEO-008 hotová, celé ID Rozpracováno. Sdílený CSV row parser řadí b.ts.getTime()-a.ts.getTime() místo implicitního Date převodu; platné Date už ověřené, původní nativní stabilní sort/objekty/senzory/reporty/scheduler/guardy beze změny. Žádná kopie historie/cache/request/schéma navíc.381/381Node,6nových s původním comparator oracle/identitou/frozen řádky/Dates/100náhodnými historiemi/roky1000–9999/sekundami/epochou/DST3zón. Před/po6scénářů přesně shodné SHA dat/reportu. Unordered100k sort310,05→51,67ms,250k1072,5→152,93ms; maxsledovanévolání316,77→59,28 a1079,77→156,21ms. Equal250k sort35,69→9,92ms, ale celýpipeline2183,24→2580,78ms; netvrdit obecné celkové zrychlení/16ms/INP/RAM. Sort nadále souvislý, profil VM nahrazujeUI. Baseline db085ab, viz docs/performance/CSV_RAZENI.md. Dále skutečný browser commit/refreshUI velkého CSV: oddělit DOM/agregace/Chart, nezopakovat hotový parser/comparator/grafy; další sort/worker až dle dopadu. Chromium154/12k unordered/3konfigurace/320–1440px prošel, stabilní note-páry/V0null/abort vobou fázích, bez pageerror/socketů. Jen codex-dev; Actions #42/40342111776 Success proc32a25c (build44s/deploy24s/celkem78s), evidence na konci etapy. main stále2405c5d.
@@ -1182,3 +1183,17 @@ MQTT broker ani fyzický Safari/iOS ověřeny nejsou. Jen codex-dev, main stále
 runtime/ubuntu-latest upozornění přetrvávají. Následující commit je jen evidence.
 Pokračovat METEO-008: líné překreslení24h karty podle viditelnosti s dirty
 stavem a guardem stanice/dat; neopakovat hotový výběr, parser nebo modely.
+
+
+## Mobilní horní blok — v0.18.11 (2026-10-28)
+
+METEO-010/011: hotová dílčí mobilní etapa podle výslovného zadání. Do767px
+mřížka hlavičky/navigace,44px ovladače, jedna řada akcí, nativní rozbalení
+Slunce/Měsíc/ostatní stanice, posuvné karty a spodní panely. Doplňkové lišty
+odrolují, na nízké šířce i hlavička. Modern-intro se skládá také651–767px.
+Obsah/data/stanice/výpočty zachované, bez závislostí nebo dalších requestů.
+392/392 Node,66nových browser rozložení,12přesně shodných desktopových
+geometrií proti0c48c7b a původní diagnostický harness prošly. Bez pageerror
+a přetečení. [Rozsah, měření, testy a omezení](docs/MOBILNI_ROZVRZENI.md).
+Obecné010 Rozpracováno,011 zůstává Dokončeno. Dále checkpoint008: líné
+kreslení24h grafu podle viditelnosti. Jen codex-dev, main neměněno.

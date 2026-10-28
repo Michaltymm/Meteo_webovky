@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.18.11
+
+- Mobilní hlavička a navigace mají větší dotykové plochy; akce dat jsou v jedné zarovnané řadě.
+- Slunce, Měsíc a ostatní stanice jsou na mobilu pod rozbalením. Stanice mají vlastní posuvné karty a astronomické detaily přehledný spodní panel.
+- Na šířku se hlavička odroluje s obsahem. Opravené je i zalamování moderního přehledu mezi 651 a 767 px; desktopové rozložení zůstává zachované.
+
 ## v0.18.10
 
 - Graf posledních 24 hodin vybírá u historie Google Sheets přímo potřebný úsek a řadí číselné časy bez kopírování celé historie.

@@ -2298,3 +2298,17 @@ MQTT broker ani fyzický Safari/iOS ověřeny nejsou. Jen codex-dev, main stále
 runtime/ubuntu-latest upozornění přetrvávají. Následující commit je jen evidence.
 Pokračovat METEO-008: líné překreslení24h karty podle viditelnosti s dirty
 stavem a guardem stanice/dat; neopakovat hotový výběr, parser nebo modely.
+
+
+## Mobilní horní blok — v0.18.11 (2026-10-28)
+
+METEO-010/011: hotová dílčí mobilní etapa podle výslovného zadání. Do767px
+mřížka hlavičky/navigace,44px ovladače, jedna řada akcí, nativní rozbalení
+Slunce/Měsíc/ostatní stanice, posuvné karty a spodní panely. Doplňkové lišty
+odrolují, na nízké šířce i hlavička. Modern-intro se skládá také651–767px.
+Obsah/data/stanice/výpočty zachované, bez závislostí nebo dalších requestů.
+392/392 Node,66nových browser rozložení,12přesně shodných desktopových
+geometrií proti0c48c7b a původní diagnostický harness prošly. Bez pageerror
+a přetečení. [Rozsah, měření, testy a omezení](MOBILNI_ROZVRZENI.md).
+Obecné010 Rozpracováno,011 zůstává Dokončeno. Dále checkpoint008: líné
+kreslení24h grafu podle viditelnosti. Jen codex-dev, main neměněno.

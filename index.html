@@ -2157,6 +2157,49 @@
       .data-state dt { margin:0; padding-top:.12rem; }
       .data-state-detail { margin-top:.15rem; }
     }
+    #dashboardBars>summary { display:none; }
+    /* Shared mobile header and data controls; desktop keeps its existing layout. */
+    @media(max-width:767px) {
+      body>header { height:56px; padding:0 .65rem; gap:.5rem; display:grid; grid-template-columns:minmax(100px,.85fr) minmax(0,1.15fr); }
+      body>header .site-title { min-width:0!important; font-size:.82rem; }
+      #headerStationName { display:none!important; }
+      .nav-pills { min-width:0; gap:.4rem; }
+      .nav-pills>.dd-wrap:first-child { flex:1; min-width:0; }
+      .nav-pills .pill { min-height:44px; padding:.5rem; border-radius:10px; font-size:.8rem; }
+      .nav-pills>.dd-wrap:last-child .pill { min-width:44px; justify-content:center; font-size:1.1rem; }
+      #pillStationName { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .dd-menu { position:fixed; top:60px; right:12px; left:auto; width:min(360px,calc(100vw - 24px)); min-width:0!important; max-height:calc(100dvh - 136px); overflow-y:auto; overscroll-behavior:contain; border-radius:12px; }
+      .dd-item, .theme-btn, .cfg-full-btn, #gearSource { min-height:44px; }
+      .dd-item { white-space:normal; }
+      .page-navigation { top:56px; height:56px; }
+      .page-navigation-inner { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:5px .65rem; gap:.35rem; }
+      .page-link { min-width:0; padding:.3rem; font-size:.78rem; line-height:1.25; text-align:center; border-radius:10px; }
+      .sticky-bars { position:relative; top:auto; }
+      #dashboardBars>summary { display:list-item; min-height:44px; padding:.8rem 1rem; cursor:pointer; color:var(--text); font-size:.8rem; }
+      .sun-bar { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.15rem .5rem; padding:.35rem .65rem; font-size:.73rem; }
+      .sun-bar>.sb-sep { display:none; }
+      .sun-bar>span:not(.sb-sep) { min-height:44px; min-width:0; gap:.25rem; flex-wrap:wrap; }
+      .sun-bar>.moon-wrap { grid-column:span 2; }
+      .sun-bar .sb-icon { font-size:1rem; }
+      .sun-bar :is(.rise-popup,.sun-popup,.uv-popup,.moon-popup) { position:fixed; left:12px; right:12px; bottom:12px; top:auto; transform:none; width:auto; min-width:0; max-height:calc(100dvh - 136px); overflow-y:auto; }
+      .sun-bar :is(.rise-popup,.sun-popup,.uv-popup,.moon-popup)::before { display:none; }
+      .all-st-bar { justify-content:flex-start; padding:.35rem .65rem; gap:.5rem; scroll-snap-type:x proximity; }
+      .ov-st { position:relative; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); flex:0 0 min(340px,calc(100% - 20px)); gap:.3rem .5rem; padding:.55rem .65rem; border:1px solid var(--border); border-radius:10px; white-space:normal; scroll-snap-align:start; }
+      .ov-st:last-child { border-right:1px solid var(--border); }
+      .ov-name { grid-column:1/-1; padding-left:15px; }
+      .ov-dot { position:absolute; left:.65rem; top:.8rem; }
+      .ov-sep { display:none; }
+      .ov-item { min-width:0; font-size:.7rem; }
+      .ov-last { grid-column:1/-1; margin:0; font-size:.7rem; }
+      .status-bar, body[data-view="modern"] .status-bar { display:grid; align-items:stretch; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:.5rem; padding:0; margin-bottom:.6rem; border:0; background:transparent; }
+      .status-bar>button { width:100%; min-width:0; min-height:60px; margin:0!important; padding:.5rem!important; border-radius:10px!important; font-size:.78rem!important; line-height:1.35; justify-content:center; overflow-wrap:anywhere; }
+      .data-state { margin-bottom:1rem; }
+      .data-state>summary { gap:.6rem; }
+      .modern-intro { flex-direction:column; align-items:stretch; gap:.75rem; }
+      @media(orientation:landscape) and (max-height:500px) {
+        body>header, .page-navigation { position:relative; top:auto; }
+      }
+    }
   </style>
 </head>
 
@@ -2170,8 +2213,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01810"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.10</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01811"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.11</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2230,7 +2273,8 @@
   </nav>
 
   <!-- ── Sun/Moon bar + Overview bar, pouze na hlavní stránce ── -->
-  <div class="sticky-bars" id="dashboardBars">
+  <details class="sticky-bars" id="dashboardBars" open>
+    <summary>Slunce, Měsíc a ostatní stanice</summary>
     <div class="sun-bar" id="sunBar">
       <span class="rise-wrap" id="riseWrap" onclick="toggleRisePopup()">
         <span class="sb-icon">🌅</span><span>Východ:</span><span class="sb-val" id="sbRise">–</span>
@@ -2352,7 +2396,7 @@
         <span class="ov-last" id="ovLast2">–</span>
       </div>
     </div>
-  </div><!-- /sticky-bars -->
+  </details><!-- /sticky-bars -->
 
   <!-- Overlay pro zavření dropdownů -->
   <div id="ddOverlay" onclick="closeAllDD()" style="display:none;position:fixed;inset:0;z-index:99"></div>
@@ -8046,6 +8090,13 @@
     }
 
     // Init: téma, stanice, config
+    const mobileLayout = window.matchMedia("(max-width:767px)");
+    const syncMobileLayout = () => {
+      el("dashboardBars").open = !mobileLayout.matches;
+      for (const id of ["riseWrap", "sunWrap", "uvWrap", "moonWrap"]) el(id).classList.remove("popup-open");
+    };
+    syncMobileLayout();
+    mobileLayout.addEventListener("change", syncMobileLayout);
     initInfoTooltips();
     setTheme(theme);
     updateStationUI();

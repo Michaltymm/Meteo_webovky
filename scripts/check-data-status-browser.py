@@ -313,6 +313,8 @@ async def main():
         await page.keyboard.press('Escape')
         # Evidence popovers retain their existing invalidation behavior.
         await page.evaluate('connectMQTT();mqttClient.options.onSuccess()')
+        await page.locator('[data-info-temperature="max"]').scroll_into_view_if_needed()
+        await page.wait_for_timeout(100)  # Flush scroll before opening dismiss-on-scroll help.
         await page.locator('[data-info-temperature="max"]').click()
         assert await page.locator('#infoPopover').is_visible()
         await page.evaluate('deliver(\'{"temp":0}\')')
