@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[24h graf podle viditelnosti](LAZY_24H.md): další část METEO-008,
+skutečný commit se skrytým/viditelným grafem, 1k–250k a CPU×4. Graf pod
+obrazovkou neblokuje obnovu; jeho plné vykreslení se odkládá, nikoli ruší.
+
 [Skutečná obnova přehledu a výběr 24h grafu](OBNOVA_PREHLEDU.md): další část
 METEO-008, původní CSV fetch/parser/commit, skutečné DOM/agregace/Chart.js,
 1k–250k pravidelných/hustých řádků a CPU×4. Stejná všechna data, statistiky

@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.18.12
+
+- Graf posledních 24 hodin se při obnově připravuje až po zobrazení na obrazovce. Skrytý graf nezdržuje aktualizaci aktuálních hodnot a statistik.
+- Po přepnutí stanice, změně dat nebo návratu ze skryté stránky se zobrazí aktuální měření; všechny původní body a přesné statistiky zůstávají zachované.
+- Prohlížeče bez podpory sledování viditelnosti používají původní okamžité vykreslení.
+
 ## v0.18.11
 
 - Mobilní hlavička a navigace mají větší dotykové plochy; akce dat jsou v jedné zarovnané řadě.

@@ -94,6 +94,8 @@ async def main():
             await page.wait_for_function('store.fullLoaded && store.rows.length===12000 && dataStatus.sheets.phase==="ok"')
             assert await page.evaluate('(i)=>store.rows.every(r=>i===0?r.voltage===4.2:i===1?r.voltage===0:r.voltage===null)',index)
             assert await page.evaluate('store.rows.every((r,i,rows)=>!i || +rows[i-1].ts>+r.ts || (+rows[i-1].ts===+r.ts && Number(rows[i-1].note.slice(2))<Number(r.note.slice(2))))')
+            await page.locator('#chart24h').scroll_into_view_if_needed()
+            await page.wait_for_function('!tabDirtyState.now')
             assert await page.evaluate('''()=>{
               const expected=[...store.rows].filter(r=>r.ts.getTime()>=store.rows[0].ts.getTime()-86400000).sort((a,b)=>a.ts-b.ts);
               return JSON.stringify(chart24.data.labels)===JSON.stringify(expected.map(r=>fmtTime(r.ts))) &&

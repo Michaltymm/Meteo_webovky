@@ -1,5 +1,10 @@
 # Obnova přehledu a výběr posledních 24 hodin — v0.18.10
 
+Následující checkpoint vyřešila v0.18.12: [odložené vykreslení24h](LAZY_24H.md).
+Tato stránka zachovává původní měření. Novější benchmark přidává explicitní
+volbu viditelnosti a používá390×844; původní1280×1000 profil reprodukujte
+skriptem z commitu588c8fa, nikoli novými implicitními parametry.
+
 2026-10-28, další malá etapa METEO-008. Výchozí `7bcd82d` (HTML v0.18.9).
 Navazuje na uložený checkpoint skutečného prohlížeče; předchozí parserové
 ani analytické etapy se nepředělávaly. Celé METEO-008 zůstává Rozpracováno.

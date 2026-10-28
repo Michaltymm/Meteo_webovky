@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 skutečný profil commitu/DOM/Chart a výběr 24h bez plného Sheets průchodu. Všechny body zachovány, vykreslování hustých dat zůstává souvislé | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/OBNOVA_PREHLEDU.md, CSV_RAZENI.md, CSV_VALIDACE, CSV_LEXER a grafové profily. Worker/persistence/004 dále | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 24h výběr; v0.18.12 24h podle viditelnosti, aktuální dirty stav/stanice/resume a fallback. Všechny body zachovány, viditelné husté kreslení dále | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/LAZY_24H.md a předchozí profily. Dále036 časová osa +033 redukce; worker/persistence/004 samostatně | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -2321,3 +2321,36 @@ Success, build35s/deploy9s/celkem54s,2026-10-28. Nasazení potvrzuje workflow,
 66mobilních/desktopových kontrol a původní data-status harness prošly.
 main stále2405c5d7326909a24c41e7066bfdc4a9d1622208, jen codex-dev.
 Následující commit ukládá pouze tuto evidenci; aplikace je v78a0876.
+
+
+## METEO-008 — 24h graf podle viditelnosti, v0.18.12 (2026-10-28)
+
+Dokončena plánovaná dílčí etapa, celé008 Rozpracováno. Jeden IO používá
+existující canvas a dirty stav. Mimo viewport, při skrytí dokumentu/jiném
+tabu/stránce se hlavní graf nepřipravuje. Callback čte aktuální store po
+ověření skutečné geometrie/aktivního tabu, nepřenáší starou stanici/datový
+snapshot. Invalidace skryje staré plátno a zastaví animaci; teprve úspěšný
+build je znovu ukáže. Resume bez IO entry využívá stávající visibility handler.
+Motion/ruční resize přeskočí neviditelný graf. Bez/selhaný IO zachová okamžitou
+cestu; explicitní synchronní buildCharts API zůstalo.
+
+400/400 Node,8nových regresí; skutečný IO/Chart.js browser se3původními
+konfiguracemi/12k exporty prošel dvěma skrytými commity→jedním aktuálním
+vykreslením, V/0/null, statistikami, navigací/změnou stanice, resume a fallbackem.
+320/767/1440px, obě témata, žádný pageerror/socket. Původní cooperative CSV
+harness nyní před ověřením grafu přisune canvas; i data-status harness prošel.
+
+13před/po scénářů (offscreen1k–250k regular/dense, visible100k regular/dense,
+offscreenCPU×4/dense100k) má všechna kompletní SHA řádků/statistik/reportů/DOM
+a výsledného grafu shodná. Skrytý dense250k UI245,7→21,6ms, CPU×4/dense100k
+978,8→44,1ms. Offscreen0Chartupdate, visible1 v každém vzorku; instance8→8.
+Přesouvá se cena plného kreslení: následný samostatný kontrolní250k draw231ms,
+CPU×4/100k903,9ms. Viditelná větev má dál velkou cenu, drobné scénáře i mírná
+zhoršení jsou v tabulce. Žádný claim16ms/INP/RAM nebo univerzálního zrychlení.
+[Měření, raw JSON, reprodukce a omezení](performance/LAZY_24H.md).
+
+Další checkpoint: METEO-036 pro24h (lineární epochová osa a detail původního
+času; ne nová interpretace legacy CSV zóny). Potom METEO-033 omezené min/max
+vykreslení T/RH/rosného bodu. Neopakovat parser,24h výběr ani tuto IO etapu.
+Streaming snapshot, cizí parsery,004 cache a obecný worker/persistence zůstávají
+samostatné. Jen codex-dev; main/konfigurace/archiv/workflow beze změny.

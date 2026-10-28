@@ -1,0 +1,659 @@
+{
+  "browser": "154.0.8037.57",
+  "source": "index.html",
+  "cpu": 1,
+  "view": "visible",
+  "scope": "Offline profile of actual Sheets commit, aggregates, DOM and Chart.js.\n\nReal CSV fetch/parser/commit and original station configuration; no startup polling.\nFunction times overlap (e.g. buildCharts includes Chart.update). Not Web Vitals,\nnetwork performance, physical mobile measurements or a memory/long-task profile.\n",
+  "results": [
+    {
+      "rows": 100000,
+      "fixture": "regular",
+      "samples": [
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.7000000029802322,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.19999998807907104,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0.10000000894069672,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 14.200000002980232,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.5,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 9.200000002980232,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 26,
+              "calls": 1
+            }
+          },
+          "chartMs": 8.899999991059303,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 4,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 26.700000002980232
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 376.6999999433756
+          },
+          "totalMs": 780.8000000119209,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 289,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.4000000059604645,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 11.700000002980232,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.30000001192092896,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 7,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 20.799999997019768,
+              "calls": 1
+            }
+          },
+          "chartMs": 6.9000000059604645,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 4,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 21.200000002980232
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 357.8999999165535
+          },
+          "totalMs": 772.8000000119209,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 289,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.30000001192092896,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.19999998807907104,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 9.600000008940697,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.30000001192092896,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 5.5999999940395355,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 17.5,
+              "calls": 1
+            }
+          },
+          "chartMs": 5.299999997019768,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 4,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 17.80000001192093
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 337.90000000596046
+          },
+          "totalMs": 732.2999999970198,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 289,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.29999999701976776,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 13.200000002980232,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 1.6000000089406967,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 9.600000008940697,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 27.400000005960464,
+              "calls": 1
+            }
+          },
+          "chartMs": 9.099999994039536,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 4,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 27.799999997019768
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 325.3000000268221
+          },
+          "totalMs": 696.1000000089407,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 289,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.29999999701976776,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 5.4000000059604645,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.29999999701976776,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 6.5,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 14.200000002980232,
+              "calls": 1
+            }
+          },
+          "chartMs": 6.299999997019768,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 4,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 14.5
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 360.9999999701977
+          },
+          "totalMs": 758.1000000089407,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 289,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        }
+      ],
+      "sha256": {
+        "rows": "6ab342e6ddf56d60d3d0be4aadaa05416d94dc75a0adfed5cb30b56fd0c90703",
+        "stats": "afd7158635badd443f81a197c0ebc7fe4a3c8f14b3d79be21b27ce10c1f8bcd9",
+        "chart": "1741e5bd91df8381700f65dba1e25eff8970e30a7d3c208ec1223d214fb0e1e4"
+      },
+      "verificationDrawMs": 4.5,
+      "pageErrors": [],
+      "webSockets": 0,
+      "requests": 6
+    },
+    {
+      "rows": 100000,
+      "fixture": "dense",
+      "samples": [
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.5,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.29999999701976776,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 21.5,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 242.90000000596046,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 266.59999999403954,
+              "calls": 1
+            }
+          },
+          "chartMs": 213.8999999910593,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 6,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 267.09999999403954
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 316.9999999254942
+          },
+          "totalMs": 952.8999999910593,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 86401,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.30000001192092896,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.29999999701976776,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 20.799999997019768,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 222.90000000596046,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 245.79999999701977,
+              "calls": 1
+            }
+          },
+          "chartMs": 197.79999999701977,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 6,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 246.1000000089407
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 318.1999999731779
+          },
+          "totalMs": 866.3999999910593,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 86401,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 11.5,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 213.20000000298023,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 226.79999999701977,
+              "calls": 1
+            }
+          },
+          "chartMs": 188,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 6,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 227
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 328.69999991357327
+          },
+          "totalMs": 902.3000000119209,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 86401,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.19999998807907104,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 13,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0.09999999403953552,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 268.90000000596046,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 283.90000000596046,
+              "calls": 1
+            }
+          },
+          "chartMs": 239,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 6,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 284.09999999403954
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 352.1999999731779
+          },
+          "totalMs": 1001.9000000059605,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 86401,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        },
+        {
+          "active": false,
+          "functions": {
+            "invalidateDerivedData": {
+              "ms": 0.5999999940395355,
+              "calls": 1
+            },
+            "renderDataStatus": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "syncModernStation": {
+              "ms": 0,
+              "calls": 1
+            },
+            "updateOvBar": {
+              "ms": 0,
+              "calls": 1
+            },
+            "dataAggregates": {
+              "ms": 12.900000005960464,
+              "calls": 1
+            },
+            "syncTemperatureRecord": {
+              "ms": 0.20000000298023224,
+              "calls": 1
+            },
+            "buildHistoryRows": {
+              "ms": 0.7000000029802322,
+              "calls": 1
+            },
+            "buildCharts": {
+              "ms": 314.5,
+              "calls": 1
+            },
+            "refreshUI": {
+              "ms": 331.29999999701977,
+              "calls": 1
+            }
+          },
+          "chartMs": 277.29999999701977,
+          "chartUpdates": 1,
+          "mutations": {
+            "childList": 6,
+            "characterData": 0,
+            "attributes": 27
+          },
+          "ui": {
+            "runs": 1,
+            "ms": 332
+          },
+          "parse": {
+            "runs": 1,
+            "ms": 333
+          },
+          "totalMs": 1054.2000000029802,
+          "outcome": "ok",
+          "rows": 100000,
+          "chartPoints": 86401,
+          "chartsBefore": 8,
+          "chartsAfter": 8
+        }
+      ],
+      "sha256": {
+        "rows": "8e2ee7ba14f9546db0f71cabb5a0a42375c9eba2ec617720383ad08accbb35ee",
+        "stats": "4a1c459f58bf4bfddd2aec4805f280e2be4502431a12eae7ffcf212892432e2e",
+        "chart": "d428dd3265b834aac340620601b0798d8c2db45026e4ff30d121065a4110cf16"
+      },
+      "verificationDrawMs": 185.90000000596046,
+      "pageErrors": [],
+      "webSockets": 0,
+      "requests": 6
+    }
+  ]
+}

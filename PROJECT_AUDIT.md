@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.12 (2026-10-28): splněn checkpoint METEO-008/líné24h. Jeden IO na stávající canvas, geometry/page/tab/hidden/store guard, žádný zachycený starý snapshot nebo další timer. Dirty zůstává do viditelnosti; invalidace zastaví animaci/skryje starý graf bez změny plochy, po úspěchu se ukáže. Resume používá existující handler, motion/ruční resize nepočítají skrytý graf. Fallback bez/selhaného IO synchronní; přímý buildCharts zůstává explicitní API.400/400 Node (8nových), nový skutečný IO/3konfigurace/12k/320–1440px/obě témata a CSV/data-status browser prošly.13před/po scénářů, všechna plná SHA řádků/statistik/reportů/grafu přesně shodná. Offscreen dense250k UI245,7→21,6ms, CPU×4/dense100k978,8→44,1ms; offscreen0Chartupdate, visible1. Viditelný dense100k UI267,1ms, jednotlivý pozdější draw250k231ms: cena kreslení se přesouvá, není vyřešená16ms/INP ani obecná RAM úspora. Viz docs/performance/LAZY_24H.md. Celé008 Rozpracováno. Dále036 skutečná časová osa24h/původní tooltip, potom033 min/max redukce pro24h; hotový parser/výběr/viditelnost neopakovat. Jen codex-dev, publikování bude doloženo na konci etapy.
 - v0.18.11: dokončena mobilní UX etapa horního bloku (METEO-010/011), do767px, bez změny desktopové geometrie.392/392 Node,66nových rozložení a původní data-status browser prošly. Actions #45/40692186783 Success pro78a0876. Viz docs/MOBILNI_ROZVRZENI.md a poslední etapu. Při pokračování výkonu navázat008/líné kreslení24h, neopakovat tuto mobilní etapu.
 - v0.18.10 (2026-10-28): další malá část METEO-008 hotová, celé ID Rozpracováno. Skutečný browser fetch/CSV/commit profil oddělil DOM/agregace/Chart; v hustých250k převažuje kreslení. 24h Sheets graf používá původní historyRangeBounds + slice jen okna a stabilní číselný sort, nikoli kopii/filter celého store. Všechny body/popisky/T/RH/dew/duplicity/0/null/stats beze změny. MQTT/both má plný predikát kvůli posunu hodin/budoucím CSV; bez změny streamu nebo parseru.392/392 Node,7nových v current-chart-range, actual12k browser/3konfigurace/320–1440px prošel, bez pageerror/socketů.10před/po scénářů (1k–250k regular/dense,100kCPU×4), všechny celé SHA řádků/statistik/reportů/grafu shodné.250kregular příprava4,6→0,3ms, UI29,4→28,8ms; dense příprava45,7→22,5ms/UI286,3→250,5ms. Celková obnova není obecně rychlejší (regular250k1737,8→1878ms), bez claimu16ms/INP/RAM. Viz docs/performance/OBNOVA_PREHLEDU.md. Dále líné překreslení24h karty podle viditelnosti, dirty+station/data guard; samotné kreslení dense100kCPU×4 stále787,1ms. Neopakovat parser ani hotový výběr. METEO-033/036 sampling/praváčasováosa a streaming dále. Pouze codex-dev; Actions #44/40689748473 Success pro588c8fa (build38s/deploy10s/celkem56s), main stále2405c5d; evidence na konci etapy.
 - v0.18.9 (2026-10-28): na výslovné UX zadání podle mobilního obrázku zpřehledněn panel METEO-009/010. Nativní Stav dat je při načtení zavřený; přesné časy/přenos/rozsah/počty/diagnostika pod šipkou, stručné stáří a chyba/budoucí/neplatný čas viditelné stále. Nevyužité zdroje skryté, ovládání nad počasím zachováno, min.44px. Parser/data/časový kontrakt/statistiky/načítání beze změny, O(1), bez requestů/grafů/timerů navíc.385/385 Node,4nové regrese; skutečný Chromium154/3konfigurace/3pohledy/2témata/320–1440px +12MQTT rozložení, Enter/Space/touch, varování při zavření a uzavření nápovědy prošly. Jen codex-dev. METEO-009 zůstává Dokončeno, obecné010 a008 Rozpracováno. Dále navázat již uloženým checkpointem008: skutečný browser commit/refreshUI velkého CSV (DOM/agregace/Chart); hotový parser/comparator ani UX etapu neopakovat. Actions #43/40672200823 Success pro1841318 (build31s/deploy46s/celkem88s), jen codex-dev; main stále2405c5d. Podrobnosti na konci etapy, živé služby/fyzický Safari neověřeny.
@@ -1206,3 +1207,36 @@ Success, build35s/deploy9s/celkem54s,2026-10-28. Nasazení potvrzuje workflow,
 66mobilních/desktopových kontrol a původní data-status harness prošly.
 main stále2405c5d7326909a24c41e7066bfdc4a9d1622208, jen codex-dev.
 Následující commit ukládá pouze tuto evidenci; aplikace je v78a0876.
+
+
+## METEO-008 — 24h graf podle viditelnosti, v0.18.12 (2026-10-28)
+
+Dokončena plánovaná dílčí etapa, celé008 Rozpracováno. Jeden IO používá
+existující canvas a dirty stav. Mimo viewport, při skrytí dokumentu/jiném
+tabu/stránce se hlavní graf nepřipravuje. Callback čte aktuální store po
+ověření skutečné geometrie/aktivního tabu, nepřenáší starou stanici/datový
+snapshot. Invalidace skryje staré plátno a zastaví animaci; teprve úspěšný
+build je znovu ukáže. Resume bez IO entry využívá stávající visibility handler.
+Motion/ruční resize přeskočí neviditelný graf. Bez/selhaný IO zachová okamžitou
+cestu; explicitní synchronní buildCharts API zůstalo.
+
+400/400 Node,8nových regresí; skutečný IO/Chart.js browser se3původními
+konfiguracemi/12k exporty prošel dvěma skrytými commity→jedním aktuálním
+vykreslením, V/0/null, statistikami, navigací/změnou stanice, resume a fallbackem.
+320/767/1440px, obě témata, žádný pageerror/socket. Původní cooperative CSV
+harness nyní před ověřením grafu přisune canvas; i data-status harness prošel.
+
+13před/po scénářů (offscreen1k–250k regular/dense, visible100k regular/dense,
+offscreenCPU×4/dense100k) má všechna kompletní SHA řádků/statistik/reportů/DOM
+a výsledného grafu shodná. Skrytý dense250k UI245,7→21,6ms, CPU×4/dense100k
+978,8→44,1ms. Offscreen0Chartupdate, visible1 v každém vzorku; instance8→8.
+Přesouvá se cena plného kreslení: následný samostatný kontrolní250k draw231ms,
+CPU×4/100k903,9ms. Viditelná větev má dál velkou cenu, drobné scénáře i mírná
+zhoršení jsou v tabulce. Žádný claim16ms/INP/RAM nebo univerzálního zrychlení.
+[Měření, raw JSON, reprodukce a omezení](docs/performance/LAZY_24H.md).
+
+Další checkpoint: METEO-036 pro24h (lineární epochová osa a detail původního
+času; ne nová interpretace legacy CSV zóny). Potom METEO-033 omezené min/max
+vykreslení T/RH/rosného bodu. Neopakovat parser,24h výběr ani tuto IO etapu.
+Streaming snapshot, cizí parsery,004 cache a obecný worker/persistence zůstávají
+samostatné. Jen codex-dev; main/konfigurace/archiv/workflow beze změny.

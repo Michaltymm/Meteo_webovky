@@ -21,6 +21,7 @@ parser.add_argument('--counts', default='1000,10000,100000,250000')
 parser.add_argument('--fixtures', default='regular,dense')
 parser.add_argument('--repeats', type=int, default=5)
 parser.add_argument('--cpu', type=int, default=1)
+parser.add_argument('--view', choices=['visible','offscreen'], default='visible')
 args = parser.parse_args()
 output = Path(args.output)
 output.parent.mkdir(parents=True, exist_ok=True)
@@ -44,7 +45,7 @@ with sync_playwright() as p:
                 lines.append(f'{ts:%d.%m.%Y},{ts:%H:%M:%S},{temp},1010,{hum},0,{i%23/10},,4.1,id{i}')
             body = '\n'.join(lines)
             quick = '\n'.join(lines[:401])
-            page = browser.new_page(viewport={'width': 1280, 'height': 1000}, timezone_id='Europe/Prague', reduced_motion='reduce')
+            page = browser.new_page(viewport={'width': 390, 'height': 844}, timezone_id='Europe/Prague', reduced_motion='reduce')
             # Freeze civil "today" only; leave performance.now/timers native.
             page.add_init_script('''{
               const NativeDate=Date, epoch='''+str(int(now.timestamp()*1000))+''';
@@ -79,6 +80,7 @@ with sync_playwright() as p:
               CFG={...CFG,...config,source:'sheets'};
               globalThis.seed=parseHistoryCSV(quick);
               showAppPage('main',{scroll:false});
+              if(typeof initCurrentChartVisibility==='function')initCurrentChartVisibility();
               globalThis.profile=null;
               for(const name of ['invalidateDerivedData','refreshUI','dataAggregates','buildCharts','renderDataStatus',
                                   'syncModernStation','updateOvBar','buildHistoryRows','syncTemperatureRecord']){
@@ -113,12 +115,17 @@ with sync_playwright() as p:
             samples = []
             for repeat in range(args.repeats + 1):
                 page.evaluate('''()=>{
+                  scrollTo(0,0);
                   resetStationStore();store.rows=seed;store.fullLoaded=false;invalidateDerivedData();refreshUI();
                   globalThis.seedCharts=Object.keys(Chart.instances).length;
                   profile={active:false,functions:{},chartMs:0,chartUpdates:0,
                     mutations:{childList:0,characterData:0,attributes:0}};
                 }''')
+                if args.view == 'visible':
+                    page.locator('#chart24h').scroll_into_view_if_needed()
                 page.wait_for_timeout(350)  # Chart.js responsive resizing is asynchronous.
+                visible=page.evaluate('''()=>{const r=el('chart24h').getBoundingClientRect();return r.bottom>0&&r.top<innerHeight}''')
+                assert visible == (args.view == 'visible'), (args.view, visible)
                 client.send('HeapProfiler.collectGarbage')
                 sample = page.evaluate('''async()=>{
                   await fetchSheets(true);
@@ -134,6 +141,9 @@ with sync_playwright() as p:
                     samples.append(sample)
             # Signatures are computed after all timed work, never from sampled stats.
             signature = page.evaluate('''()=>{
+              // Verify the complete eventual chart outside the commit timing.
+              const start=performance.now();buildCharts('now');
+              const verificationDrawMs=performance.now()-start;
               const a=dataAggregates();
               const validation={...dataStatus.sheets.validation,checkedAt:0};
               const summary={days:[...a.days],months:[...a.months],years:[...a.years],
@@ -141,19 +151,20 @@ with sync_playwright() as p:
               const dom=Object.fromEntries(['curTemp','curHum','curDew','statTempMin','statTempMax','statRainMax',
                 'dayTempMin','dayTempMax','dayTempAvg','dayHumMin','dayHumMax','dayHumAvg','dayRain','historyRows']
                 .map(id=>[id,el(id).textContent]));
-              return {rows:JSON.stringify(store.rows),
+              return {verificationDrawMs,rows:JSON.stringify(store.rows),
                 stats:JSON.stringify({summary,validation,dom}),chart:JSON.stringify(chart24.data)};
             }''')
-            hashes = {key: hashlib.sha256(value.encode()).hexdigest() for key, value in signature.items()}
+            hashes = {key: hashlib.sha256(signature[key].encode()).hexdigest() for key in ['rows','stats','chart']}
             assert not errors and not sockets, (errors, sockets)
             assert len(requests) == args.repeats + 1, requests
             results.append({'rows': count, 'fixture': fixture, 'samples': samples, 'sha256': hashes,
+                            'verificationDrawMs': signature['verificationDrawMs'],
                             'pageErrors': errors, 'webSockets': len(sockets), 'requests': len(requests)})
-            output.write_text(json.dumps({'browser': browser.version, 'source': args.html, 'cpu': args.cpu,
+            output.write_text(json.dumps({'browser': browser.version, 'source': args.html, 'cpu': args.cpu, 'view':args.view,
                 'scope': __doc__, 'results': results}, indent=2)+'\n')
             print(f'{fixture}/{count}: '+json.dumps({'uiMs': [s['ui']['ms'] for s in samples],
                 'aggregatesMs': [s['functions']['dataAggregates']['ms'] for s in samples],
-                'buildChartsMs': [s['functions']['buildCharts']['ms'] for s in samples],
+                'buildChartsMs': [s['functions'].get('buildCharts',{}).get('ms',0) for s in samples],
                 'chartMs': [s['chartMs'] for s in samples]}), flush=True)
             page.close()
     browser.close()

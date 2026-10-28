@@ -2213,8 +2213,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01811"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.11</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01812"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.12</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4753,12 +4753,47 @@
        UI REFRESH - Lazy Loading
     ══════════════════════════════════════════════ */
     const tabDirtyState = {};
+    let currentChartObserver = null;
+    function currentChartCanRender() {
+      if (document.hidden || !store.rows.length) return false;
+      // Keep the original synchronous path without a working observer.
+      if (!currentChartObserver) return true;
+      if (analyticsActive() || document.querySelector(".tab-btn.active")?.dataset.tab !== "now") return false;
+      const canvas = el("chart24h");
+      if (!canvas.getClientRects().length) return false;
+      const r = canvas.getBoundingClientRect();
+      return r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth;
+    }
+    function hideCurrentChart() {
+      tabDirtyState.now = true;
+      chart24.stop?.();
+      el("chart24h").style.visibility = "hidden";
+    }
+    function refreshVisibleCurrentChart() {
+      if (!analyticsActive() && document.querySelector(".tab-btn.active")?.dataset.tab === "now" && currentChartCanRender()) refreshTab("now");
+    }
+    function initCurrentChartVisibility() {
+      if (currentChartObserver || typeof IntersectionObserver === "undefined") return;
+      let observer;
+      try {
+        observer = new IntersectionObserver(entries => {
+          // A queued notification never captures station data or an old range.
+          if (currentChartObserver === observer && entries.some(e => e.target === el("chart24h") && e.isIntersecting)) refreshVisibleCurrentChart();
+        }, { threshold: 0.01 });
+        currentChartObserver = observer;
+        observer.observe(el("chart24h"));
+      } catch {
+        observer?.disconnect();
+        currentChartObserver = null;
+      }
+    }
     function markAllTabsDirty() {
       document.querySelectorAll(".tab-btn").forEach(b => tabDirtyState[b.dataset.tab] = true);
     }
 
     function refreshTab(tab) {
       if (analyticsActive() || !tabDirtyState[tab]) return;
+      if (tab === "now" && !currentChartCanRender()) { hideCurrentChart(); return; }
       if (tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain") {
         buildCharts(tab);
       }
@@ -4983,6 +5018,7 @@
         chart24.data.datasets[1].data = h24.map(r => r.hum);
         chart24.data.datasets[2].data = h24.map(r => dewPoint(r.temp, r.hum));
         chart24.update();
+        el("chart24h").style.visibility = "";
       }
 
       if (!tab || tab === "rain") {
@@ -5328,6 +5364,7 @@
     let explorerRangeCache = null;
 
     function invalidateDerivedData({ keepDataDiagnostics = false } = {}) {
+      hideCurrentChart();
       if (!keepDataDiagnostics || !activeInfo || activeInfo.trigger !== el("dataValidationTrigger")) closeInfoPopover();
       analyticsInvalidate();
       aggregateCache = null;
@@ -6498,6 +6535,7 @@
       charts.filter(Boolean).forEach(ch => {
         try {
           // Pouze pokud canvas leží v aktivním pane
+          if (ch === chart24 && currentChartObserver && (!currentChartCanRender() || tabDirtyState.now)) return;
           if (pane.contains(ch.canvas)) ch.resize();
         } catch (e) { /* ignore */ }
       });
@@ -7239,6 +7277,7 @@
       const uvAttemptToday = pollAttempts.uv !== null && localDateKey(new Date(pollAttempts.uv)) === day;
       periodicRefresh("uv", uvStore.date === day || uvAttemptToday ? 3600000 : 0, fetchUVData, context);
       periodicRefresh("overview", 300000, fetchAllOv, context);
+      refreshVisibleCurrentChart();
     }
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -7246,6 +7285,7 @@
       for (const chart of [chart24, chartRain, chartVoltage, chartMonthly, chartYearly, chartCompare, chartOverview]) {
         chart.stop?.();
         chart.options.animation = chartAnimation();
+        if (chart === chart24 && currentChartObserver && !currentChartCanRender()) { hideCurrentChart(); continue; }
         chart.update("none");
       }
       // Explorer and the large battery plots remain unanimated in either mode.
@@ -8090,6 +8130,7 @@
     }
 
     // Init: téma, stanice, config
+    initCurrentChartVisibility();
     const mobileLayout = window.matchMedia("(max-width:767px)");
     const syncMobileLayout = () => {
       el("dashboardBars").open = !mobileLayout.matches;

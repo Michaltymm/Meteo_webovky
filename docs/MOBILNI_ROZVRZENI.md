@@ -53,3 +53,7 @@ Tato mobilní etapa je hotová. Obecné METEO-010 zůstává Rozpracováno
 Při pokračování výkonnostní roadmapy navázat na uložený checkpoint
 METEO-008: líné kreslení24h karty podle viditelnosti. Tuto UX etapu ani
 hotový parser/výběr neopakovat.
+
+Navazující checkpoint líného24h vykreslení splněn vev0.18.12:
+[rozsah, měření a další krok](performance/LAZY_24H.md). Mobilní layout této
+etapy zůstal zachovaný; další práce podle centrální roadmapy.

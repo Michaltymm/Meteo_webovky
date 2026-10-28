@@ -42,6 +42,12 @@ predikátem kvůli možnému posunu hodin. Hranice časování se nemění.
 
 ## Výsledky a životní cyklus
 
+Od v0.18.12 se 24h graf mimo obrazovku odkládá do vstupu do viewportu.
+UI čas obnovy obsahuje úplné statistiky a viditelné grafy; pozdější IO
+vykreslení 24h karty jej zpětně nepřepisuje. Nižší UI čas proto neznamená,
+že už byl skrytý graf vykreslený. Data/parse/report zůstávají úplné.
+[Hranice, měření a omezení](performance/LAZY_24H.md).
+
 - Časování je samostatné vůči poslednímu rozboru CSV i poslednímu úspěchu
   transportu. Neúspěšná obnova dostane vlastní výsledek/časy; původní měření
   a timestamp úspěchu se jí nemění.
