@@ -2305,10 +2305,19 @@ stavem a guardem stanice/dat; neopakovat hotový výběr, parser nebo modely.
 METEO-010/011: hotová dílčí mobilní etapa podle výslovného zadání. Do767px
 mřížka hlavičky/navigace,44px ovladače, jedna řada akcí, nativní rozbalení
 Slunce/Měsíc/ostatní stanice, posuvné karty a spodní panely. Doplňkové lišty
-odrolují, na nízké šířce i hlavička. Modern-intro se skládá také651–767px.
+odrolují, při malé výšce na šířku i hlavička. Modern-intro se skládá také651–767px.
 Obsah/data/stanice/výpočty zachované, bez závislostí nebo dalších requestů.
 392/392 Node,66nových browser rozložení,12přesně shodných desktopových
 geometrií proti0c48c7b a původní diagnostický harness prošly. Bez pageerror
 a přetečení. [Rozsah, měření, testy a omezení](MOBILNI_ROZVRZENI.md).
 Obecné010 Rozpracováno,011 zůstává Dokončeno. Dále checkpoint008: líné
 kreslení24h grafu podle viditelnosti. Jen codex-dev, main neměněno.
+
+
+Nasazení v0.18.11: [78a0876](https://github.com/Michaltymm/Meteo_webovky/commit/78a08767f365bd9ae555c04fd75876680ca0c9db),
+[Actions #45](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40692186783)
+Success, build35s/deploy9s/celkem54s,2026-10-28. Nasazení potvrzuje workflow,
+živý Pages host není v povolené síťové politice. Lokální392/392 Node,
+66mobilních/desktopových kontrol a původní data-status harness prošly.
+main stále2405c5d7326909a24c41e7066bfdc4a9d1622208, jen codex-dev.
+Následující commit ukládá pouze tuto evidenci; aplikace je v78a0876.
