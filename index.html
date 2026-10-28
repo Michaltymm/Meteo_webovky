@@ -2120,13 +2120,27 @@
       .modern-card-options { position:fixed; top:auto; bottom:1rem; left:1rem; right:1rem; width:auto; max-width:none; max-height:65vh; z-index:110; }
     }
 
-    .data-state { display:grid; grid-template-columns:1fr 1.25fr 1fr; gap:.7rem 1rem; padding:.8rem 1rem; margin:0 0 1.4rem; border:1px solid var(--border); border-radius:10px; background:var(--bg2); font-size:.78rem; }
-    .data-state>div { min-width:0; }
+    .data-state { margin:0 0 1.4rem; border:1px solid var(--border); border-radius:10px; background:var(--bg2); font-size:.78rem; }
+    .data-state>summary { display:flex; align-items:center; gap:.65rem; min-height:48px; padding:.65rem 1rem; cursor:pointer; list-style:none; }
+    .data-state>summary::-webkit-details-marker { display:none; }
+    .data-state>summary::after { content:""; width:7px; height:7px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg); flex-shrink:0; margin-left:.25rem; }
+    .data-state[open]>summary::after { transform:rotate(225deg); }
+    .data-state>summary:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:10px; }
+    .data-state-heading { flex-shrink:0; font-weight:600; }
+    #dataStatusSummary { flex:1; min-width:0; color:var(--muted); line-height:1.5; overflow-wrap:anywhere; }
+    #dataStatusSummary.data-state-error { color:var(--red); }
+    #dataStatusSummary.data-state-warning { color:var(--yellow); }
+    .data-state-grid { display:grid; grid-template-columns:1fr 1.25fr 1fr; gap:.7rem 1rem; margin:0; padding:.8rem 1rem; border-top:1px solid var(--border); }
+    .data-state-grid>div { min-width:0; }
     .data-state dt { color:var(--muted); font-size:.69rem; margin-bottom:.35rem; }
     .data-state dd { margin:0; line-height:1.5; overflow-wrap:anywhere; }
     .data-state-detail { display:block; color:var(--muted); white-space:pre-line; font-size:.72rem; margin-top:.25rem; }
     .data-state-error { color:var(--red); }
     .data-state-warning { color:var(--yellow); }
+    .data-transport { display:flex; flex-wrap:wrap; gap:.5rem 1rem; padding:0 1rem .8rem; color:var(--muted); font-size:.72rem; }
+    .data-source { display:inline-flex; align-items:center; gap:.4rem; min-width:0; }
+    .data-source[hidden] { display:none; }
+    .status-bar button { min-height:44px; }
     .csv-validation-table { width:100%; border-collapse:collapse; font-size:.75rem; margin:.7rem 0; }
     .csv-validation-table th,.csv-validation-table td { text-align:right; padding:.4rem .25rem; border-bottom:1px solid var(--border); }
     .csv-validation-table th:first-child,.csv-validation-table td:first-child { text-align:left; }
@@ -2137,8 +2151,9 @@
     body[data-view="modern"] .data-state { border-radius:16px; }
     body[data-view="modern"] .status-bar { margin-bottom:.7rem; }
     @media(max-width:650px) {
-      .data-state { grid-template-columns:1fr; padding:.8rem; gap:.8rem; }
-      .data-state>div { display:grid; grid-template-columns:105px minmax(0,1fr); column-gap:.65rem; }
+      .data-state>summary { padding:.65rem .8rem; }
+      .data-state-grid { grid-template-columns:1fr; padding:.8rem; gap:.8rem; }
+      .data-state-grid>div { display:grid; grid-template-columns:105px minmax(0,1fr); column-gap:.65rem; }
       .data-state dt { margin:0; padding-top:.12rem; }
       .data-state-detail { margin-top:.15rem; }
     }
@@ -2155,8 +2170,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0188"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.8</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0189"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.9</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2436,25 +2451,28 @@
 
     <!-- ══ STATUS BAR ══ -->
     <div class="status-bar">
-      <div class="dot" id="gsDot"></div>
-      <span id="gsStatusText">Google Sheets: nezadáno</span>
-      <div class="dot" id="mqttDot"></div>
-      <span id="mqttStatusText">MQTT: neaktivní</span>
       <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()" title="Obnovit data"><span
-          class="refresh-icon">↻</span> Refresh</button>
+          class="refresh-icon" aria-hidden="true">↻</span> Obnovit</button>
       <button class="partial-badge" id="partialBadge" onclick="fetchSheets(true)" style="display:none"
         title="Zobrazena jen poslední data – kliknutím načíst celou historii">⚡ Částečná historie · Načíst vše</button>
-      <span id="gsLastFetch"></span>
       <button onclick="toggleFullCfg()"
         style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:.2rem .7rem;font-size:.75rem;cursor:pointer"
         title="Nastavení zdroje dat">⚙ Nastavení</button>
     </div>
 
-    <dl class="data-state" aria-label="Stáří a rozsah dat">
+    <details class="data-state" id="dataStatusDetails" ontoggle="if(!this.open)closeInfoPopover()">
+      <summary><span class="data-state-heading">Stav dat</span><span id="dataStatusSummary" role="status" aria-atomic="true">Zatím bez dat</span></summary>
+      <dl class="data-state-grid" aria-label="Stáří a rozsah dat">
       <div><dt id="dataRecordLabel">Poslední záznam</dt><dd><span id="dataRecordTime">Zatím bez dat</span><span id="dataRecordAge" class="data-state-detail"></span></dd></div>
       <div><dt>Přenos dat <button type="button" class="info-trigger" data-info-text="Úspěšná kontrola Sheets potvrzuje přenos a zpracování exportu, nikoli nové měření. Čas CSV je vyložen v zóně prohlížeče. MQTT uvádí čas přijetí platné zprávy, nikoli čas měření čidla. Samotné stáří záznamu bez známého měřicího plánu neprokazuje výpadek stanice." aria-label="Jak rozlišit měření a synchronizaci"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataTransferState" role="status">Čeká na ověření</span><span id="dataLastSync" class="data-state-detail">Dosud bez úspěšného přenosu</span></dd></div>
       <div><dt>Načtená historie <button type="button" id="dataValidationTrigger" class="info-trigger" aria-label="Podrobnosti validace dat"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataHistoryScope">Bez načtených dat</span><span id="dataHistoryCount" class="data-state-detail">Počet záznamů: 0</span></dd></div>
-    </dl>
+      </dl>
+      <div class="data-transport">
+        <span id="sheetsTransport" class="data-source"><span class="dot" id="gsDot" aria-hidden="true"></span><span id="gsStatusText">Google Sheets: nezadáno</span></span>
+        <span id="mqttTransport" class="data-source" hidden><span class="dot" id="mqttDot" aria-hidden="true"></span><span id="mqttStatusText">MQTT: neaktivní</span></span>
+        <span id="gsLastFetch"></span>
+      </div>
+    </details>
     <div id="dataValidationPanel" hidden></div>
 
     <main class="app-page" id="page-main" aria-label="Hlavní přehled">
@@ -6245,6 +6263,16 @@
         : !sheets && mqttRow ? "Živé zprávy této relace" : "Částečná historie";
       setNodeText(el("dataHistoryScope"), scope);
       setNodeText(el("dataHistoryCount"), "Počet záznamů: " + store.rows.length.toLocaleString("cs-CZ"));
+      // Keep actionable problems visible even when technical details are closed.
+      const invalidTime = row && !Number.isFinite(timestamp), futureTime = Number.isFinite(timestamp) && timestamp > now;
+      const recordSummary = futureTime ? "Čas záznamu je v budoucnosti" : invalidTime ? "Čas záznamu není dostupný"
+        : row ? (mqttRow ? "Příjem: " : "Měření: ") + dataAge(timestamp, now) : "Zatím bez dat";
+      const loading = sheets && dataStatus.sheets.phase === "loading" || mqtt && ["idle", "connecting"].includes(dataStatus.mqtt.phase);
+      setNodeText(el("dataStatusSummary"), (error ? "Chyba přenosu dat · " : loading ? "Načítání dat… · " : "") + recordSummary);
+      const summaryClass = error ? "data-state-error" : invalidTime || futureTime ? "data-state-warning" : "";
+      if (el("dataStatusSummary").className !== summaryClass) el("dataStatusSummary").className = summaryClass;
+      el("sheetsTransport").hidden = !sheets;
+      el("mqttTransport").hidden = !mqtt;
     }
 
     function updateVisibleDataStatus() {

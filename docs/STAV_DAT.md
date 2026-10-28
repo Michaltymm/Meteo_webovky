@@ -1,5 +1,34 @@
 # Stav a stáří dat — METEO-009, v0.15.0
 
+## Kompaktní zobrazení od v0.18.9
+
+Panel je ve všech třech pohledech při načtení zavřený. Celý řádek **Stav dat**
+se šipkou je ovladatelný kliknutím, dotykem a klávesnicí Enter/mezerník.
+Ve stručném souhrnu zůstává stáří měření, případně místního příjmu MQTT.
+Načítání, chyba přenosu, budoucí nebo neplatný čas jsou viditelné i při zavření;
+souběžná chyba přenosu nezakryje upozornění na budoucí čas. Ze stáří samotného
+se nadále neodvozuje porucha ani vymyšlený práh zastarání.
+
+Přesné časy, rozsah historie, počet záznamů, stav jednotlivých zdrojů a původní
+ⓘ s CSV/časováním/MQTT diagnostikou zůstávají uvnitř panelu. U Sheets se
+nezobrazuje nevyužívané MQTT; u čistého MQTT se nezobrazuje Sheets. Obnovení,
+načtení celé historie a nastavení jsou dostupné i bez rozbalení. Zavření panelu
+zavře jeho nápovědu, aby nezůstala viset nad počasím.
+
+Jde o nativní `details/summary`, bez knihovny, dalšího timeru nebo úložiště
+předvolby. Obnova dat ani přepnutí stanice samy panel neotevírají/neuzavírají.
+Přehled dál aktualizuje jen první řádek a délku historie, nikoli její průchod.
+Časový kontrakt, parser, statistiky a načítací cesty se touto UI úpravou nemění.
+
+Ověřeno 2026-10-28: 385/385 Node testů, z toho čtyři nové regrese stručného
+souhrnu. `scripts/check-data-status-browser.py` ověřil nativní Enter/mezerník/
+dotyk, skryté podrobnosti, otevřená varování, 24 kombinací pohledu/tématu/šířky,
+12 MQTT rozložení, všechny tři původní konfigurace a žádný nový požadavek/graf
+při rozbalování. Řízené CSV/UV a lokální skutečné SRI knihovny; bez pageerror
+či WebSocketu. Nejde o kontrolu živých služeb nebo fyzického Safari/iPhonu.
+
+## Význam údajů
+
 Společný panel nad hlavním, moderním i analytickým pohledem odděluje tři
 informace, které dříve splývaly v čase aktualizace:
 

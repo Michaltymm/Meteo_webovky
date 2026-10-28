@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.18.9
+
+- Stav dat je nyní kompaktní rozbalovací řádek. Přesné časy přenosu, rozsah historie a diagnostika se zobrazí až po kliknutí na šipku.
+- Chyba přenosu a upozornění na budoucí čas záznamu zůstávají viditelné i při zavřeném panelu. Nepoužívané zdroje dat se nezobrazují.
+- Nad počasím zůstávají tlačítka Obnovit, načtení celé historie a Nastavení; ovládání je přizpůsobené dotyku.
+
 ## v0.18.8
 
 - Řazení CSV historie porovnává přímo číselné časové značky, takže zejména neuspořádané exporty vyžadují méně práce při načtení.

@@ -38,7 +38,7 @@ async def main():
     gate.set()
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path='/usr/bin/chromium', headless=True)
-        page = await browser.new_page(viewport={'width': 1440, 'height': 1000}, timezone_id='Europe/Prague', reduced_motion='reduce')
+        page = await browser.new_page(viewport={'width': 1440, 'height': 1000}, timezone_id='Europe/Prague', reduced_motion='reduce', has_touch=True)
         await page.clock.set_fixed_time(now)
         page.on('pageerror', lambda e: errors.append(str(e)))
         page.on('websocket', lambda socket: sockets.append(socket.url))
@@ -79,8 +79,30 @@ async def main():
         await page.route('**/*', route)
         await page.goto('http://meteo.test/dev/')
         await page.wait_for_function('dataStatus.sheets.phase==="ok" && store.rows.length===4')
-        assert await page.locator('#dataRecordAge').inner_text() == 'Před 1 d 0 h'
-        assert await page.locator('#dataHistoryScope').inner_text() == 'Částečná historie'
+        assert await page.locator('#dataRecordAge').text_content() == 'Před 1 d 0 h'
+        assert await page.locator('#dataHistoryScope').text_content() == 'Částečná historie'
+        details = page.locator('#dataStatusDetails')
+        summary = details.locator(':scope > summary')
+        assert await details.evaluate('e=>!e.open')
+        assert await page.locator('#dataRecordTime').is_hidden()
+        assert await page.locator('#gsStatusText').is_hidden()
+        assert await page.locator('#partialBadge').is_visible()
+        assert 'Měření: Před 1 d' in await page.locator('#dataStatusSummary').inner_text()
+        assert await page.locator('#mqttTransport').is_hidden()
+        await page.wait_for_load_state('networkidle')
+        before_toggle = len(requests)
+        await page.evaluate('globalThis.disclosureRows=store.rows;globalThis.disclosureCharts=Object.keys(Chart.instances).length')
+        await summary.focus()
+        await summary.press('Enter')
+        assert await details.evaluate('e=>e.open')
+        assert await page.locator('#dataRecordTime').is_visible()
+        assert await page.locator('#sheetsTransport').is_visible()
+        await summary.press('Space')
+        assert await details.evaluate('e=>!e.open')
+        await summary.tap()
+        assert await details.evaluate('e=>e.open')
+        assert len(requests) == before_toggle
+        assert await page.evaluate('store.rows===disclosureRows && Object.keys(Chart.instances).length===disclosureCharts')
         assert await page.evaluate('dataStatus.sheets.validation.accepted===4 && dataStatus.sheets.validation.rejected===2')
         assert await page.evaluate('''dataStatus.sheets.timing.scope==='partial' && dataStatus.sheets.timing.outcome==='ok' &&
           dataStatus.sheets.timing.transfer.ms>=40 && dataStatus.sheets.timing.parse.runs===1 && dataStatus.sheets.timing.ui.runs===1 &&
@@ -103,7 +125,10 @@ async def main():
         assert await page.locator('#dataRecordTime').inner_text() != await page.locator('#dataLastSync').inner_text()
         await page.locator('.data-state [data-info-text]').click()
         assert 'nikoli nové měření' in await page.locator('#infoBody').inner_text()
-        await page.keyboard.press('Escape')
+        await summary.click()
+        assert await details.evaluate('e=>!e.open')
+        assert await page.locator('#infoPopover').is_hidden()
+        await summary.click()
         await page.evaluate('globalThis.originalRows=store.rows;globalThis.recordTime=store.rows[0].ts.getTime()')
         await page.clock.set_fixed_time(now+timedelta(minutes=10))
         await page.evaluate('fetchSheets()')
@@ -118,6 +143,7 @@ async def main():
         await page.clock.set_fixed_time(now+timedelta(minutes=20))
         await page.evaluate('fetchSheets(true)')
         assert await page.locator('#dataTransferState').inner_text() == 'Sheets: chyba obnovy'
+        assert 'Chyba přenosu dat' in await page.locator('#dataStatusSummary').inner_text()
         assert await page.evaluate('dataStatus.sheets.timing.outcome==="error" && dataStatus.sheets.timing.transfer.runs===3 && dataStatus.sheets.timing.parse.runs===3 && dataStatus.sheets.timing.ui.runs===0')
         assert await page.evaluate('store.rows===originalRows && dataStatus.sheets.successAt===lastSuccess && store.fullLoaded')
         assert 'Před 10 min' in await page.locator('#dataLastSync').inner_text()
@@ -158,13 +184,31 @@ async def main():
         for view in ['main', 'modern', 'analytics']:
             await page.locator(f'[data-page="{view}"]').click()
             if view == 'analytics':
+                # Charts intentionally initialize only when visible. At a narrow
+                # viewport an expanded diagnostic panel can put them below fold.
+                await page.locator('#anaGrid').scroll_into_view_if_needed()
                 await page.wait_for_function('analyticsState.model!==null')
             for theme in ['darkblue', 'light']:
                 await page.evaluate('(theme)=>setTheme(theme)', theme)
                 for width in [1440, 800, 390, 320]:
                     await page.set_viewport_size({'width': width, 'height': 1000})
-                    await page.wait_for_timeout(150)  # Chart.js resize is asynchronous.
+                    await page.wait_for_timeout(300)  # Chart.js resize is asynchronous.
                     assert await page.locator('.data-state').is_visible()
+                    if await details.evaluate('e=>e.open'):
+                        await summary.click()
+                    compact_box = await details.bounding_box()
+                    assert compact_box['height'] <= 112, (view, theme, width, compact_box)
+                    assert await page.locator('#dataHistoryCount').is_hidden()
+                    assert await page.locator('#dataRecordTime').is_hidden()
+                    assert await page.locator('#gsStatusText').is_hidden()
+                    assert await page.locator('#mqttTransport').is_hidden()
+                    if view == 'modern' and width in [1440, 390, 320]:
+                        await page.evaluate('scrollTo(0,0)')
+                        await page.screenshot(path=str(output.with_name(f'compact-{theme}-{width}.png')))
+                    await summary.click()
+                    expanded_box = await details.bounding_box()
+                    assert expanded_box['height'] > compact_box['height']+80, (view, theme, width)
+                    assert await page.locator('#dataHistoryCount').is_visible()
                     overflow = await page.evaluate('document.documentElement.scrollWidth>innerWidth+1')
                     if overflow:
                         await page.screenshot(path=str(output.with_name('overflow.png')))
@@ -178,7 +222,8 @@ async def main():
                     if view == 'modern' and width in [1440, 320]:
                         await page.screenshot(path=str(output.with_name(f'validation-{theme}-{width}.png')))
                     await page.keyboard.press('Escape')
-                    layouts.append({'view': view, 'theme': theme, 'width': width})
+                    layouts.append({'view': view, 'theme': theme, 'width': width,
+                                    'compactHeight': compact_box['height'], 'expandedHeight': expanded_box['height']})
                     if view == 'modern' and width in [1440, 320]:
                         await page.screenshot(path=str(output.with_name(f'state-{theme}-{width}.png')))
         # A short failure report can grow when its explanation is expanded.
@@ -197,6 +242,19 @@ async def main():
         await page.evaluate('fetchSheets(true)')
         assert 'budoucnosti' in await page.locator('#dataRecordAge').inner_text()
         assert await page.locator('#dataRecordTime').get_attribute('class') == 'data-state-warning'
+        await summary.click()
+        assert await details.evaluate('e=>!e.open')
+        assert await page.locator('#dataRecordTime').is_hidden()
+        assert 'Čas záznamu je v budoucnosti' in await page.locator('#dataStatusSummary').inner_text()
+        assert await page.locator('#dataStatusSummary').get_attribute('class') == 'data-state-warning'
+        failed = True
+        await page.evaluate('fetchSheets(true)')
+        assert await details.evaluate('e=>!e.open')
+        assert 'Chyba přenosu dat' in await page.locator('#dataStatusSummary').inner_text()
+        assert 'budoucnosti' in await page.locator('#dataStatusSummary').inner_text()
+        assert await page.locator('#dataStatusSummary').get_attribute('class') == 'data-state-error'
+        failed = False
+        await summary.click()
 
         # Exercise the actual MQTT handler with a local Client double. The real
         # SRI Paho file was loaded, but no broker/socket is contacted by this QA.
@@ -261,6 +319,9 @@ async def main():
         assert await page.locator('#infoPopover').is_hidden()
 
         await page.evaluate('cancelStationWork();resetStationStore();CFG={...CFG,source:"mqtt"};connectMQTT();mqttClient.options.onSuccess();deliver(\'{"temp":0}\')')
+        assert await page.locator('#sheetsTransport').is_hidden()
+        assert await page.locator('#mqttTransport').is_visible()
+        assert 'Příjem:' in await page.locator('#dataStatusSummary').inner_text()
         for view in ['main', 'modern', 'analytics']:
             await page.locator(f'[data-page="{view}"]').click()
             await page.wait_for_load_state('networkidle')
@@ -304,6 +365,9 @@ async def main():
                    'CSV counts/rejection reasons/positions', 'diagnostics without fetch/new Chart', 'diagnostic popup bounds in all layouts',
                    'controlled 60ms transport and separate parser/UI timings', 'no stale costs for unchanged exports', 'failure/recovery timings',
                    'collapsed timing explanation', 'expanded short error report stays in viewport',
+                   'native disclosure closed on load, Enter/Space/touch, no fetch/Chart/row replacement',
+                   'closing disclosure dismisses help; inactive sources hidden', 'compact/expanded heights in 24 layouts',
+                   'future and simultaneous transfer error visible with details closed',
                    'MQTT counts/reasons/private content excluded', 'live popup survives accepted MQTT with stable counter nodes',
                    'processing error after commit', 'reconnect/size stop/stale clients', 'evidence popup invalidation', 'pure MQTT 12 layouts and station reset'],
         'transport': 'Controlled CSV/UV; real Chart.js and Paho with SRI; MQTT Client double, no broker/socket'}, indent=2)+'\n')

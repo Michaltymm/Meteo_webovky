@@ -69,8 +69,8 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | v0.15.0 O(1) panel, starý záznam ≠ nová kontrola, oddělený MQTT příjem; bez dalších fetchů | Stávající časový kontrakt; explicitní zóna dále METEO-048, rozsah v STAV_DAT.md | Dokončeno |
-| METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu; v0.13.0 společné ⓘ: hover/touch/klávesnice, ARIA, Escape a návrat fokusu, panel ve viewportu; ostatní taby/fokus dále | IMP-006 | Rozpracováno |
+| METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | v0.15.0 O(1) panel; v0.18.9 podrobnosti pod šipkou, stáří a problémy viditelné i při zavření, nepoužívané zdroje skryté; bez dalších fetchů | Stávající časový kontrakt; explicitní zóna dále METEO-048, rozsah v STAV_DAT.md | Dokončeno |
+| METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu; v0.13.0 společné ⓘ; v0.18.9 nativní details stavu dat, Enter/mezerník/dotyk a ovládací cíle ≥44px; ostatní taby/fokus dále | IMP-006 | Rozpracováno |
 | METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.14.0 výběr 7 senzorových karet pro každou stanici, uložení/obnova a responzivní rozložení; bez dalších fetch/grafů | METEO-054; rozsah a důkazy v MODERNI_PREHLED.md | Dokončeno |
 | METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
 
@@ -2189,3 +2189,48 @@ neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoin
 skutečný browser profil commitu/refreshUI velké historie (DOM/agregace/Chart),
 protože VMprofil UI nahrazuje. Neopakovat hotový parser/comparator/grafové
 etapy; podle nákladů zvolit další malou změnu. Celé008 Rozpracováno.
+
+
+## METEO-009/010 — přehledný stav dat pod šipkou, v0.18.9 (2026-10-28)
+
+Výslovná úprava UX podle mobilního obrázku má přednost před plánovaným
+profilováním METEO-008; jeho již uložená měření se neopakovala. Existující
+METEO-009 zůstává Dokončeno, obecné METEO-010 Rozpracováno. Nevzniká nové ID
+ani konkurenční backlog.
+
+- Velký stále viditelný blok je nyní nativní details/summary **Stav dat**, při
+  načtení zavřený. Přesné časy, UTC offset, synchronizace, rozsah a počet řádků
+  i diagnostická ⓘ zůstávají uvnitř. Nejsou odstraněny provozní informace.
+- Stručný viditelný souhrn rozlišuje měření a příjem MQTT. Načítání, chyba
+  přenosu, budoucí a neplatný čas nezmizí při zavření; souběh chyby a budoucího
+  času ukáže obojí. Původní měření se neopravují odhadem a stáří neznamená
+  automaticky poruchu čidla.
+- Nad počasím zůstává Obnovit, načtení celé historie a Nastavení. Stav Sheets/
+  MQTT je pod šipkou a nevyužívaný zdroj je skrytý i tam. Celý summary má
+  minimálně48px a akce44px, viditelný fokus, nativní Enter/mezerník/dotyk.
+  Zavření panelu zavře nápovědu. Obnova ani změna stanice svévolně nemění
+  uživatelské rozbalení. Bez úložiště, nových závislostí nebo časovače.
+- Původní parser, komunikační cesty, všechny tři konfigurace, pořadí/preciznost
+  měření, statistiky, cache a líné grafy zůstaly beze změny. Souhrn O(1) nad
+  prvním řádkem a délkou; rozbalení nevyvolá fetch ani nový Chart.
+
+Ověření: **385/385 Node**, čtyři nové regrese v `tests/data-status.test.js`.
+Rozšířený `scripts/check-data-status-browser.py` se skutečným Chromium154,
+Chart.js/Paho odpovídajícími SRI a řízenými CSV/UV prošel třemi původními
+konfiguracemi,24kombinacemi3pohledů×2témat×4šířek(320/390/800/1440px)
+a12MQTTrozloženími. Nativní Enter/mezerník/tap, zavření nápovědy, souběh
+chyby/budoucího času při zavření, načtení celé historie, nulové/chybějící
+napětí a ochrany staré relace prošly. Žádný pageerror ani WebSocket.
+Soubory evidence: `/workspace/validation/meteo-compact-status/` (targeted,
+node-tests, browser.json a screenshoty). [Význam a omezení](STAV_DAT.md).
+
+Změřená výška panelu v řízeném hlavním přehledu/tmavém tématu: zavřený50px,
+rozbalený286,9px na390px a322,9px na320px. Jde o geometrii stejné nové verze,
+nikoli srovnání rychlosti se starou verzí. Bez horizontálního přetečení ve všech
+24rozloženích. Nebyla měřena CPU/INP/spotřeba RAM a netvrdí se výkonnostní
+zrychlení. Živé služby/MQTT broker a fyzický Safari/iPhone neověřeny.
+
+Další checkpoint: vrátit se k METEO-008, samostatně profilovat skutečný browser
+commit/refreshUI velkého CSV (DOM/úplné agregace/Chart), navázat na již uložená
+parserová měření. Neopakovat dokončený lexer/validaci/comparator ani tuto UX
+etapu. `main`, konfigurace, archiv a workflow neměněny; pouze `codex-dev`.

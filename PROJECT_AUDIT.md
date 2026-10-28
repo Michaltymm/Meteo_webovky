@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.9 (2026-10-28): na výslovné UX zadání podle mobilního obrázku zpřehledněn panel METEO-009/010. Nativní Stav dat je při načtení zavřený; přesné časy/přenos/rozsah/počty/diagnostika pod šipkou, stručné stáří a chyba/budoucí/neplatný čas viditelné stále. Nevyužité zdroje skryté, ovládání nad počasím zachováno, min.44px. Parser/data/časový kontrakt/statistiky/načítání beze změny, O(1), bez requestů/grafů/timerů navíc.385/385 Node,4nové regrese; skutečný Chromium154/3konfigurace/3pohledy/2témata/320–1440px +12MQTT rozložení, Enter/Space/touch, varování při zavření a uzavření nápovědy prošly. Jen codex-dev. METEO-009 zůstává Dokončeno, obecné010 a008 Rozpracováno. Dále navázat již uloženým checkpointem008: skutečný browser commit/refreshUI velkého CSV (DOM/agregace/Chart); hotový parser/comparator ani UX etapu neopakovat. Podrobnosti a stav publikování na konci této etapy; živé služby/fyzický Safari neověřeny.
 - v0.18.8 (2026-10-26): další část METEO-008 hotová, celé ID Rozpracováno. Sdílený CSV row parser řadí b.ts.getTime()-a.ts.getTime() místo implicitního Date převodu; platné Date už ověřené, původní nativní stabilní sort/objekty/senzory/reporty/scheduler/guardy beze změny. Žádná kopie historie/cache/request/schéma navíc.381/381Node,6nových s původním comparator oracle/identitou/frozen řádky/Dates/100náhodnými historiemi/roky1000–9999/sekundami/epochou/DST3zón. Před/po6scénářů přesně shodné SHA dat/reportu. Unordered100k sort310,05→51,67ms,250k1072,5→152,93ms; maxsledovanévolání316,77→59,28 a1079,77→156,21ms. Equal250k sort35,69→9,92ms, ale celýpipeline2183,24→2580,78ms; netvrdit obecné celkové zrychlení/16ms/INP/RAM. Sort nadále souvislý, profil VM nahrazujeUI. Baseline db085ab, viz docs/performance/CSV_RAZENI.md. Dále skutečný browser commit/refreshUI velkého CSV: oddělit DOM/agregace/Chart, nezopakovat hotový parser/comparator/grafy; další sort/worker až dle dopadu. Chromium154/12k unordered/3konfigurace/320–1440px prošel, stabilní note-páry/V0null/abort vobou fázích, bez pageerror/socketů. Jen codex-dev; Actions #42/40342111776 Success proc32a25c (build44s/deploy24s/celkem78s), evidence na konci etapy. main stále2405c5d.
 - v0.18.7 (2026-10-25): další část METEO-008 hotová, celé ID Rozpracováno. parseHistoryRowSteps sdílí původní filtraci/převod/validaci, yield po256řádcích; sync API dokončí stejný generátor. Aktivní Sheets≥262144UTF16 s timing používá sdílený runCSVStepsAsync pro lexer i validaci, workSlice~8ms/max64,0msfrontu. Soukromé průběžné reporty, atomickýstore/report/fullLoaded/cache/callback; abort/generačníguard voboufázích/poawait včetně výsledku předcommitem. Parse.ms CPU bezfronty, runs1/export/error. Malé/přímé/cizí/MQTT/both synchronní. Nativní sort NEMĚNĚN a stále souvislý.375/375Node,8nových testů filtrování/validace/reportů/yearState/logických pozic/stability/abortu/chyby; původních10lexerových zachováno, jen testovacídrain zohledňuje druhou fázi. VM před/po250k maxsledovanévolání1906,76→40,14ms, celek2073,35→2010,67ms; sort33,05→33,71ms. Neuspořádané100k blok997,92→242,61ms, sort261,56→238ms.5SHA úplných dat/reportů shodných. Žádný obecný claim rychlejšího celku/16ms/INP/RAM. Chromium154/12k/3konfigurace/320–1440px prošel včetně private report/filtervalidationabortu, bez pageerror/socketů; živé služby/fyzické iOS neověřeny. Baselineb6e84e6, viz docs/performance/CSV_VALIDACE.md. Dále náklady Date převodů v nativním comparatoru, nejprve ověřit numerické timestampy při zachování stability; vlastní sort/worker až podle měření. Lexer/validaci/grafy neopakovat. Jen codex-dev; Actions #41/40224596645 Success pro3a9ebe3 (build24s/deploy9s/celkem40s), evidence na konci etapy. main stále2405c5d.
 - v0.18.6 (2026-10-25): první část velkého CSV v METEO-008, celé ID Rozpracováno. parseCSVSteps je původní lexer+yield po8192průchodech znaky; syncparseCSV dokončuje stejný generátor. Aktivní Sheets obnova s timing a≥262144UTF16 používá parseCSVAsync, existující workSlice~8ms/max64kroků a0ms frontu. Malé/přímé/cizí aMQTT/both synchronně. parseHistoryRows odděluje původní validaci/převod/filter/sort, ZATÍM SOUVISLE. Abort relace ihned ruší timer/iterator/listener a settle null; guard před/po dávce/poawait, bez částečného store/report/fullLoaded/cache/callback. Parse.ms sčítá CPU bezfronty, runs1/export včetně lexchyby.367/367Node,10nových testů úplných řádků/reportů/rušení/A→B→A/lateerror/uvozovekUnicodeCRLF nahranici/časování/coalescing. VM před/po250k sledované syncvolání2036,78→1878,69ms, celýpipeline2039,23→2033,67ms; maxlexdávka medián8,52ms. Všech4SHA úplných dat/reportů shodných. Validace stále~1,9s, celý parser NENÍ plynulý ani obecně rychlejší, žádný claim INP/úsporyRAM. Baselineef75168, viz docs/performance/CSV_LEXER.md. Dále dávkovat filter/validaci parseHistoryRows se zachováním logických pozic/yearState/čítačů; sort změřit zvlášť. Grafové etapy a lexer neopakovat. Chromium154/12k/3konfigurace/320–1440px prošel, atomický commit/sdílení requestu/navigace/stationabort, bez pageerror/socketů. Jen codex-dev; Actions #40/40190011963 Success prob952b31 (build30s/deploy25s/celkem62s), evidence na konci etapy. main stále2405c5d.
@@ -1071,3 +1072,48 @@ neměnilo. Následující commit zapisuje pouze tuto evidenci. Další checkpoin
 skutečný browser profil commitu/refreshUI velké historie (DOM/agregace/Chart),
 protože VMprofil UI nahrazuje. Neopakovat hotový parser/comparator/grafové
 etapy; podle nákladů zvolit další malou změnu. Celé008 Rozpracováno.
+
+
+## Kompaktní stav dat — v0.18.9 (2026-10-28)
+
+Výslovná úprava UX podle mobilního obrázku má přednost před plánovaným
+profilováním METEO-008; jeho již uložená měření se neopakovala. Existující
+METEO-009 zůstává Dokončeno, obecné METEO-010 Rozpracováno. Nevzniká nové ID
+ani konkurenční backlog.
+
+- Velký stále viditelný blok je nyní nativní details/summary **Stav dat**, při
+  načtení zavřený. Přesné časy, UTC offset, synchronizace, rozsah a počet řádků
+  i diagnostická ⓘ zůstávají uvnitř. Nejsou odstraněny provozní informace.
+- Stručný viditelný souhrn rozlišuje měření a příjem MQTT. Načítání, chyba
+  přenosu, budoucí a neplatný čas nezmizí při zavření; souběh chyby a budoucího
+  času ukáže obojí. Původní měření se neopravují odhadem a stáří neznamená
+  automaticky poruchu čidla.
+- Nad počasím zůstává Obnovit, načtení celé historie a Nastavení. Stav Sheets/
+  MQTT je pod šipkou a nevyužívaný zdroj je skrytý i tam. Celý summary má
+  minimálně48px a akce44px, viditelný fokus, nativní Enter/mezerník/dotyk.
+  Zavření panelu zavře nápovědu. Obnova ani změna stanice svévolně nemění
+  uživatelské rozbalení. Bez úložiště, nových závislostí nebo časovače.
+- Původní parser, komunikační cesty, všechny tři konfigurace, pořadí/preciznost
+  měření, statistiky, cache a líné grafy zůstaly beze změny. Souhrn O(1) nad
+  prvním řádkem a délkou; rozbalení nevyvolá fetch ani nový Chart.
+
+Ověření: **385/385 Node**, čtyři nové regrese v `tests/data-status.test.js`.
+Rozšířený `scripts/check-data-status-browser.py` se skutečným Chromium154,
+Chart.js/Paho odpovídajícími SRI a řízenými CSV/UV prošel třemi původními
+konfiguracemi,24kombinacemi3pohledů×2témat×4šířek(320/390/800/1440px)
+a12MQTTrozloženími. Nativní Enter/mezerník/tap, zavření nápovědy, souběh
+chyby/budoucího času při zavření, načtení celé historie, nulové/chybějící
+napětí a ochrany staré relace prošly. Žádný pageerror ani WebSocket.
+Soubory evidence: `/workspace/validation/meteo-compact-status/` (targeted,
+node-tests, browser.json a screenshoty). [Význam a omezení](docs/STAV_DAT.md).
+
+Změřená výška panelu v řízeném hlavním přehledu/tmavém tématu: zavřený50px,
+rozbalený286,9px na390px a322,9px na320px. Jde o geometrii stejné nové verze,
+nikoli srovnání rychlosti se starou verzí. Bez horizontálního přetečení ve všech
+24rozloženích. Nebyla měřena CPU/INP/spotřeba RAM a netvrdí se výkonnostní
+zrychlení. Živé služby/MQTT broker a fyzický Safari/iPhone neověřeny.
+
+Další checkpoint: vrátit se k METEO-008, samostatně profilovat skutečný browser
+commit/refreshUI velkého CSV (DOM/úplné agregace/Chart), navázat na již uložená
+parserová měření. Neopakovat dokončený lexer/validaci/comparator ani tuto UX
+etapu. `main`, konfigurace, archiv a workflow neměněny; pouze `codex-dev`.

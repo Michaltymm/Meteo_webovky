@@ -96,3 +96,53 @@ test('minute updates are O(1), preserve statistics and generate no fetch or rend
  assert.equal(a.run('store.rows===rowsBefore && aggregateCache===cacheBefore'),true);
  a.run('globalThis.realRows=store.rows;store.rows=new Proxy(realRows,{get(target,key){if(key!=="0"&&key!=="length")throw new Error("history scan");return target[key]}});renderDataStatus()');
 });
+
+test('compact status keeps record age distinct from transport and never toggles disclosure during refresh',async()=>{
+ const a=fixture();a.run('el("dataStatusDetails").open=false');await accept(a);
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Měření: Před 1 d 0 h');
+ assert.equal(a.nodes.get('dataStatusSummary').className,'');
+ assert.equal(a.nodes.get('dataStatusDetails').open,false);
+ a.nodes.get('dataStatusDetails').open=true;a.run('clock+=60000;renderDataStatus()');
+ assert.equal(a.nodes.get('dataStatusDetails').open,true);
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Měření: Před 1 d 0 h');
+});
+
+test('compact status exposes loading, failed transfer and recovery while retaining original records',async()=>{
+ const a=fixture();assert.equal(a.nodes.get('dataStatusSummary').textContent,'Zatím bez dat');
+ a.run('setDataSourcePhase("sheets","loading")');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Načítání dat… · Zatím bez dat');
+ await accept(a,true);a.run('globalThis.originalRows=store.rows');
+ await rejectExport(a);
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Chyba přenosu dat · Měření: Před 1 d 0 h');
+ assert.equal(a.nodes.get('dataStatusSummary').className,'data-state-error');
+ assert.equal(a.run('store.rows===originalRows'),true);
+ await accept(a);assert.equal(a.nodes.get('dataStatusSummary').className,'');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Měření: Před 1 d 0 h');
+});
+
+test('compact warnings include future and invalid clocks, even when transfer also fails',()=>{
+ const a=fixture();a.run('store.rows=[{ts:new Date(clock+1)}];renderDataStatus()');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Čas záznamu je v budoucnosti');
+ assert.equal(a.nodes.get('dataStatusSummary').className,'data-state-warning');
+ a.run('setDataSourcePhase("sheets","error")');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Chyba přenosu dat · Čas záznamu je v budoucnosti');
+ assert.equal(a.nodes.get('dataStatusSummary').className,'data-state-error');
+ a.run('dataStatus.sheets.phase="ok";store.rows=[{ts:new Date(NaN)}];renderDataStatus()');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Čas záznamu není dostupný');
+ assert.equal(a.nodes.get('dataStatusSummary').className,'data-state-warning');
+ a.run('store.rows=[{ts:new Date(clock)}];renderDataStatus()');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Měření: Před méně než minutou');
+ assert.equal(a.nodes.get('dataStatusSummary').className,'');
+});
+
+test('compact status shows only configured sources and identifies MQTT receipt rather than sensor time',()=>{
+ const a=fixture();assert.equal(a.nodes.get('sheetsTransport').hidden,false);assert.equal(a.nodes.get('mqttTransport').hidden,true);
+ a.run('CFG.source="mqtt";CFG.mqttHost="fixture.invalid";connectMQTT()');
+ a.clients[0].options.onSuccess();a.clients[0].onMessageArrived({payloadString:'{"temp":0}'});a.run('renderDataStatus()');
+ assert.equal(a.nodes.get('dataStatusSummary').textContent,'Příjem: Před méně než minutou');
+ assert.equal(a.nodes.get('sheetsTransport').hidden,true);assert.equal(a.nodes.get('mqttTransport').hidden,false);
+ a.clients[0].onConnectionLost({});
+ assert.match(a.nodes.get('dataStatusSummary').textContent,/Chyba přenosu dat · Příjem:/);
+ a.run('CFG.source="both";renderDataStatus()');
+ assert.equal(a.nodes.get('sheetsTransport').hidden,false);assert.equal(a.nodes.get('mqttTransport').hidden,false);
+});
