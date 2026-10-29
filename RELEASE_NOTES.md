@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.18.13
+
+- Graf posledních 24 hodin nyní zobrazuje skutečné časové rozestupy měření v hlavním i moderním přehledu.
+- Detail bodu obsahuje datum, sekundy a UTC posun podle času uloženého v aplikaci.
+- Chybějící hodnoty a mezery delší než tři hodiny se nespojují čárou; osamocená měření mají viditelný bod. Vysvětlení je pod ikonou informací, původní měření a přesné statistiky zůstávají zachovány.
+
 ## v0.18.12
 
 - Graf posledních 24 hodin se při obnově připravuje až po zobrazení na obrazovce. Skrytý graf nezdržuje aktualizaci aktuálních hodnot a statistik.

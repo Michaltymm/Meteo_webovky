@@ -1,5 +1,9 @@
 # Reprodukce měření výkonu
 
+[Skutečná časová osa 24h](CASOVA_OSA_24H.md): METEO-036, epochové souřadnice,
+přesný původní čas a přerušení dlouhých mezer; porovnání režie proti category
+grafu na1k–250k při zachování všech měření a úplných statistik.
+
 [24h graf podle viditelnosti](LAZY_24H.md): další část METEO-008,
 skutečný commit se skrytým/viditelným grafem, 1k–250k a CPU×4. Graf pod
 obrazovkou neblokuje obnovu; jeho plné vykreslení se odkládá, nikoli ruší.

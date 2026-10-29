@@ -10,9 +10,9 @@ const oracle = `globalThis.checkOriginalChart=()=>{
   const expected=[...source].filter(r=>r.ts.getTime()>=latest-86400000).sort((a,b)=>a.ts-b.ts);
   buildCharts('now');
   return store.rows===source && JSON.stringify(source)===before &&
-    JSON.stringify(chart24.data.labels)===JSON.stringify(expected.map(r=>fmtTime(r.ts))) &&
+    JSON.stringify(chart24.data.labels)===JSON.stringify(expected.map(r=>r.ts.getTime())) &&
     [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>
-      JSON.stringify(chart24.data.datasets[i].data)===JSON.stringify(expected.map(get)));
+      JSON.stringify(chart24.data.datasets[i].data.filter(p=>!p.gap))===JSON.stringify(expected.map(r=>({x:r.ts.getTime(),y:get(r)}))));
 }`;
 
 test('24h selection includes the exact boundary, uses latest measurement and retains equal-time order, zeros and nulls', () => {
@@ -22,7 +22,7 @@ test('24h selection includes the exact boundary, uses latest measurement and ret
     globalThis.valid=checkOriginalChart()`);
   assert.equal(a.run('valid'),true);
   assert.equal(a.run('chart24.data.labels.length'),6);
-  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data)'),'[4,5,3,2,0,null]');
+  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data.filter(p=>!p.gap).map(p=>p.y))'),'[4,5,3,2,0,null]');
   assert.equal(a.run('chart24.updates'),1);
 });
 
@@ -62,7 +62,7 @@ test('250k old rows are not copied or linearly visited for a 289-point current w
     buildCharts('now')`);
   assert.ok(a.run('visits')<400);
   assert.equal(a.run('chart24.data.labels.length'),289);
-  assert.equal(a.run('chart24.data.datasets[0].data.includes(85)'),true);
+  assert.equal(a.run('chart24.data.datasets[0].data.map(p=>p.y).includes(85)'),true);
   assert.equal(a.run('source.length'),250000);
 });
 
@@ -75,7 +75,7 @@ test('current chart selection does not shrink full-history statistics or evict t
   assert.equal(a.run('dataAggregates()===snapshot'),true);
   assert.equal(a.run('snapshot.temperature.count'),3);
   assert.equal(a.run('snapshot.temperature.max'),85);
-  assert.equal(a.run('chart24.data.datasets[0].data.includes(85)'),false);
+  assert.equal(a.run('chart24.data.datasets[0].data.map(p=>p.y).includes(85)'),false);
   assert.match(a.nodes.get('statTempMax').textContent,/85/);
   assert.equal(a.run('store.rows.length'),3);
 });
@@ -103,7 +103,7 @@ test('MQTT/both retain the old chart selection when received time precedes a CSV
     const client=a.clients[0];client.options.onSuccess();
     client.onMessageArrived({payloadString:'{"temp":0,"humidity":0}'});
     assert.equal(a.run('checkOriginalChart()'),true,source+' future CSV');
-    assert.equal(a.run('chart24.data.datasets[0].data.includes(77)'),true);
+    assert.equal(a.run('chart24.data.datasets[0].data.map(p=>p.y).includes(77)'),true);
     a.run('clock-=3600000');
     client.onMessageArrived({payloadString:'{"temp":1,"humidity":50}'});
     assert.equal(a.run('checkOriginalChart()'),true,source+' clock reversal');

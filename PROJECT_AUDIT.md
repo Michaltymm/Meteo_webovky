@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.18.13 (2026-10-29): checkpoint036/24h dokončen. Hlavní/moderní graf na skutečné lineární epochové ose, původní tooltip datum/sekundy/UTC offset, přímé segmenty, null a >3h mezery přerušené; osamocené body marker z cached segmentů. Všechny původní body/pořadí/0/null a plné statistiky zachované, žádná nová interpretace legacy CSV zóny ani request/dependency.407/407 Node (7nových), skutečný IO/Chart.js/3konfigurace/12k/320–1440px/obě témata včetně pixelů, mouse/touch/legendy/DST/single/empty a původní CSV browser prošly.9 před/po profilů, všechna SHA řádků/statistik/reportu/původních měření shodná; nový formát grafu mění jeho hash. Hustých100k UI258,3→98ms, CPU×4 936,7→378,7ms; pravidelných100k UI20,3→21,5ms, load728,6→778,1ms. Bez claimu16ms/INP/RAM/obecného zrychlení. Viz docs/performance/CASOVA_OSA_24H.md.036 proostatní category grafy a008 Rozpracováno,033 průzkumník stále hotový. Dále033 bounded min/max24h všechT/RH/Td s původními extrémy/null/gap/tooltipy; neopakovat hotovou osu/parser/výběr/IO. Jen codex-dev; publikování doložit na konci etapy.
 - v0.18.12 (2026-10-28): splněn checkpoint METEO-008/líné24h. Jeden IO na stávající canvas, geometry/page/tab/hidden/store guard, žádný zachycený starý snapshot nebo další timer. Dirty zůstává do viditelnosti; invalidace zastaví animaci/skryje starý graf bez změny plochy, po úspěchu se ukáže. Resume používá existující handler, motion/ruční resize nepočítají skrytý graf. Fallback bez/selhaného IO synchronní; přímý buildCharts zůstává explicitní API.400/400 Node (8nových), nový skutečný IO/3konfigurace/12k/320–1440px/obě témata a CSV/data-status browser prošly.13před/po scénářů, všechna plná SHA řádků/statistik/reportů/grafu přesně shodná. Offscreen dense250k UI245,7→21,6ms, CPU×4/dense100k978,8→44,1ms; offscreen0Chartupdate, visible1. Viditelný dense100k UI267,1ms, jednotlivý pozdější draw250k231ms: cena kreslení se přesouvá, není vyřešená16ms/INP ani obecná RAM úspora. Viz docs/performance/LAZY_24H.md. Celé008 Rozpracováno. Dále036 skutečná časová osa24h/původní tooltip, potom033 min/max redukce pro24h; hotový parser/výběr/viditelnost neopakovat. Jen codex-dev; Actions #46/40778961209 Success prof5603cd (build27s/deploy25s/celkem60s), main stále2405c5d; evidence na konci etapy.
 - v0.18.11: dokončena mobilní UX etapa horního bloku (METEO-010/011), do767px, bez změny desktopové geometrie.392/392 Node,66nových rozložení a původní data-status browser prošly. Actions #45/40692186783 Success pro78a0876. Viz docs/MOBILNI_ROZVRZENI.md a poslední etapu. Při pokračování výkonu navázat008/líné kreslení24h, neopakovat tuto mobilní etapu.
 - v0.18.10 (2026-10-28): další malá část METEO-008 hotová, celé ID Rozpracováno. Skutečný browser fetch/CSV/commit profil oddělil DOM/agregace/Chart; v hustých250k převažuje kreslení. 24h Sheets graf používá původní historyRangeBounds + slice jen okna a stabilní číselný sort, nikoli kopii/filter celého store. Všechny body/popisky/T/RH/dew/duplicity/0/null/stats beze změny. MQTT/both má plný predikát kvůli posunu hodin/budoucím CSV; bez změny streamu nebo parseru.392/392 Node,7nových v current-chart-range, actual12k browser/3konfigurace/320–1440px prošel, bez pageerror/socketů.10před/po scénářů (1k–250k regular/dense,100kCPU×4), všechny celé SHA řádků/statistik/reportů/grafu shodné.250kregular příprava4,6→0,3ms, UI29,4→28,8ms; dense příprava45,7→22,5ms/UI286,3→250,5ms. Celková obnova není obecně rychlejší (regular250k1737,8→1878ms), bez claimu16ms/INP/RAM. Viz docs/performance/OBNOVA_PREHLEDU.md. Dále líné překreslení24h karty podle viditelnosti, dirty+station/data guard; samotné kreslení dense100kCPU×4 stále787,1ms. Neopakovat parser ani hotový výběr. METEO-033/036 sampling/praváčasováosa a streaming dále. Pouze codex-dev; Actions #44/40689748473 Success pro588c8fa (build38s/deploy10s/celkem56s), main stále2405c5d; evidence na konci etapy.
@@ -1253,3 +1254,37 @@ main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Dřívější runtime/
 ubuntu-latest upozornění přetrvávají, workflow se neměnilo. Následující commit
 ukládá jen tuto evidenci. Dále036: skutečná časová osa24h a původní tooltip,
 potom033 min/max vykreslení. Neopakovat hotovou IO/parser/výběrovou etapu.
+
+
+## METEO-036 — skutečná časová osa 24h, v0.18.13 (2026-10-29)
+
+Dokončena dílčí etapa checkpointu po v0.18.12. Hlavní i moderní přehled sdílí
+původní graf na lineární epochové ose: skutečné rozestupy, původní čas
+s datem/sekundami/UTC offsetem a nezaokrouhlené hodnoty T/RH/Td. Samostatné
+options, bez date adaptéru či závislosti. Přímé segmenty bez spline překmitů,
+null a mezery >3h přerušené; vizuální oddělovač není měření ani výpadek.
+Osamocené původní body mají marker z cached segmentů Chart.js (včetně pixelové
+regrese). Podrobnosti pod stávající ikonou informací. Všechny původní body,
+stabilita duplicit, nuly/null, výběr, líné kreslení a plné statistiky zachovány.
+Žádná změna interpretace CSV zóny, konfigurací, requestů/timerů/instancí.
+
+407/407 Node, 7 nových regresí; původní range/visibility oracle zachován
+a přizpůsoben pouze epochovému formátu. Skutečný Chromium154/Chart.js/IO:
+3 původní konfigurace, 12k exporty, 320/767/1440px, obě témata, přesný
+poměr pixelů 1min:1h, mezery/null/izolované body, mouse/touch tooltip,
+kliknutá legenda/navigace/resume/fallback, explicitní DST, single/empty.
+Původní cooperative CSV browser také prošel, žádný pageerror/socket.
+
+9 před/po profilů viditelného grafu (1k–250k pravidelně/hustě, CPU×4/100k),
+plné SHA řádků/statistik/reportu/původních měření shodné. Formát grafu a jeho
+celý hash se záměrně mění. Hustých100k UI258,3→98,0ms, CPU×4 936,7→378,7ms;
+pravidelných100k UI20,3→21,5ms a load728,6→778,1ms. Žádný obecný claim
+16ms/INP/úspory RAM ani rychlejšího loadu. [Reprodukce, raw JSON, výpočty,
+testy a omezení](docs/performance/CASOVA_OSA_24H.md).
+
+Celé036 dále Rozpracováno (ostatní category grafy). Průzkumník033 zůstává
+hotový; další checkpoint je rozšíření min/max vizualizace033 na24h T/RH/Td
+s původními časy, extrémy, null/gap a tooltipy, bez změny podkladů statistik.
+Neopakovat hotovou036/24h, parser, výběr ani IO. Explicitní zóna048, streaming
+a004 cache samostatně. Pouze codex-dev; main/konfigurace/archiv/workflow
+beze změny. Stav publikování bude doložen samostatně.

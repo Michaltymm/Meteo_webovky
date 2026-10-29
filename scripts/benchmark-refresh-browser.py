@@ -151,10 +151,21 @@ with sync_playwright() as p:
               const dom=Object.fromEntries(['curTemp','curHum','curDew','statTempMin','statTempMax','statRainMax',
                 'dayTempMin','dayTempMax','dayTempAvg','dayHumMin','dayHumMax','dayHumAvg','dayRain','historyRows']
                 .map(id=>[id,el(id).textContent]));
+              // Compare original measurements across category/epoch chart formats.
+              // The old numeric chart has only category labels; recover timestamps
+              // by its independently checked original full-scan selection.
+              const selected=store.rows.filter(r=>r.ts.getTime()>=store.rows[0].ts.getTime()-86400000)
+                .sort((a,b)=>a.ts-b.ts);
+              const measurements=chart24.data.datasets.map(ds=>ds.data.filter(p=>!p?.gap)
+                .map((p,i)=>typeof p==='object'&&p!==null?p:{x:selected[i].ts.getTime(),y:p}));
+              const expected=[r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)]
+                .map(get=>selected.map(r=>({x:r.ts.getTime(),y:get(r)})));
+              if(JSON.stringify(measurements)!==JSON.stringify(expected))throw Error('original chart measurements differ');
               return {verificationDrawMs,rows:JSON.stringify(store.rows),
-                stats:JSON.stringify({summary,validation,dom}),chart:JSON.stringify(chart24.data)};
+                stats:JSON.stringify({summary,validation,dom}),chart:JSON.stringify(chart24.data),
+                measurements:JSON.stringify(measurements)};
             }''')
-            hashes = {key: hashlib.sha256(signature[key].encode()).hexdigest() for key in ['rows','stats','chart']}
+            hashes = {key: hashlib.sha256(signature[key].encode()).hexdigest() for key in ['rows','stats','chart','measurements']}
             assert not errors and not sockets, (errors, sockets)
             assert len(requests) == args.repeats + 1, requests
             results.append({'rows': count, 'fixture': fixture, 'samples': samples, 'sha256': hashes,

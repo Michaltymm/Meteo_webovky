@@ -16,7 +16,7 @@ async def main():
     errors=[];requests=[];sockets=[];checks=[]
     async with async_playwright() as p:
         browser=await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
-        page=await browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Prague',reduced_motion='reduce')
+        page=await browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Prague',reduced_motion='reduce',has_touch=True)
         page.on('pageerror',lambda e:errors.append(str(e)));page.on('websocket',lambda s:sockets.append(s.url))
         async def route(r):
             url=r.request.url;name=urlparse(url).path.split('/')[-1]
@@ -48,8 +48,8 @@ async def main():
         async def exact_chart():
             assert await page.evaluate('''()=>{
               const rows=store.rows.filter(r=>r.ts>=store.rows[0].ts.getTime()-86400000).sort((a,b)=>a.ts-b.ts);
-              return JSON.stringify(chart24.data.labels)===JSON.stringify(rows.map(r=>fmtTime(r.ts)))&&
-                [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>JSON.stringify(chart24.data.datasets[i].data)===JSON.stringify(rows.map(get)));
+              return JSON.stringify(chart24.data.labels)===JSON.stringify(rows.map(r=>r.ts.getTime()))&&
+                [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>JSON.stringify(chart24.data.datasets[i].data.filter(p=>!p.gap))===JSON.stringify(rows.map(r=>({x:r.ts.getTime(),y:get(r)}))));
             }''')
         for index in [0,1,2]:
             if index:
@@ -102,6 +102,69 @@ async def main():
                 await exact_chart()
                 assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
         checks.append('320/767/1440px and both themes preserve all plotted values without horizontal overflow')
+        # Actual pixel spacing, line segments and user tooltip on the epoch axis.
+        await page.set_viewport_size({'width':390,'height':844})
+        await page.evaluate('''()=>{
+          const start=Date.parse('2026-10-28T09:00:15Z');
+          store.rows=[0,60000,3600000,18000000,18060000,18120000].map((dt,i)=>({
+            ts:new Date(start+dt),temp:i===1?null:10+i,hum:i===2?null:50})).reverse();
+          invalidateDerivedData();refreshUI();
+        }''')
+        await page.locator('#chart24h').scroll_into_view_if_needed()
+        await page.wait_for_function('!tabDirtyState.now');await page.wait_for_timeout(150)
+        assert await page.evaluate('''()=>{
+          const data=chart24.data.datasets[0].data, x=chart24.scales.x;
+          const ratio=(x.getPixelForValue(data[1].x)-x.getPixelForValue(data[0].x))/
+            (x.getPixelForValue(data[2].x)-x.getPixelForValue(data[0].x));
+          const p=chart24.getDatasetMeta(0).data[2], pixel=chart24.ctx.getImageData(Math.round(p.x),Math.round(p.y),1,1).data;
+          return pixel[0]===231&&pixel[1]===76&&pixel[2]===60 &&
+            chart24.getDatasetMeta(0).dataset.segments.every(s=>!(s.start<1&&s.end>1)) &&
+            Math.abs(ratio-1/60)<1e-9 && chart24.data.datasets.every((ds,i)=>{
+            const gap=ds.data.findIndex(p=>p.gap);
+            return gap===3 && chart24.getDatasetMeta(i).dataset.segments.every(s=>!(s.start<gap&&s.end>gap));
+          });
+        }''')
+        point=await page.evaluate('''()=>{
+          const r=el('chart24h').getBoundingClientRect(), p=chart24.getDatasetMeta(0).data.at(-1);
+          return {x:r.left+p.x,y:r.top+p.y,title:intervalTimestamp(new Date(chart24.data.labels.at(-1)))};
+        }''')
+        await page.mouse.move(point['x'],point['y']);await page.wait_for_timeout(100)
+        assert await page.evaluate('(title)=>chart24.tooltip.title[0]===title && chart24.tooltip.dataPoints.every(p=>p.raw.x===chart24.data.labels.at(-1))',point['title'])
+        await page.mouse.move(0,0)
+        await page.touchscreen.tap(point['x'],point['y']);await page.wait_for_timeout(100)
+        assert await page.evaluate('(title)=>chart24.tooltip.title[0]===title',point['title'])
+        traffic=len(requests)
+        legend=await page.evaluate('''()=>{
+          const r=el('chart24h').getBoundingClientRect(), box=chart24.legend.legendHitBoxes[1];
+          return {x:r.left+box.left+box.width/2,y:r.top+box.top+box.height/2};
+        }''')
+        await page.mouse.click(legend['x'],legend['y'])
+        assert await page.evaluate('!chart24.isDatasetVisible(1)')
+        await page.locator('[data-page="main"]').click();await page.locator('#chart24h').scroll_into_view_if_needed()
+        assert await page.evaluate('!chart24.isDatasetVisible(1) && chart24.options.scales.x.type==="linear"')
+        await page.evaluate('chart24.setDatasetVisibility(1,true);chart24.update("none")')
+        await page.evaluate('setTheme("darkblue")')
+        await page.screenshot(path=str(output.with_name(output.stem+'-chart.png')),full_page=False)
+        await page.locator('#tab-now .chart-wrapper details > summary').click()
+        assert await page.locator('#tab-now .chart-wrapper details').evaluate('(node)=>node.open')
+        assert len(requests)==traffic
+        await page.screenshot(path=str(output.with_suffix('.png')),full_page=False)
+        checks.append('irregular 1min/1h pixel spacing exactly 1:60; real Chart.js segments break at >3h/null and isolated sample has exact colored pixel; mouse/touch original tooltip, clicked legend state and expandable explanation survive main/modern navigation')
+        await page.evaluate('''()=>{
+          store.rows=[{ts:new Date('2026-10-25T01:30:15Z'),temp:2,hum:50},
+            {ts:new Date('2026-10-25T00:30:15Z'),temp:1,hum:50}];
+          invalidateDerivedData();buildCharts('now');
+        }''')
+        assert await page.evaluate('''()=>{
+          const data=chart24.data.datasets[0].data, title=chart24.options.plugins.tooltip.callbacks.title;
+          return data[1].x-data[0].x===3600000 && title([{raw:data[0]}]).includes('02:30:15 UTC+02:00') &&
+            title([{raw:data[1]}]).includes('02:30:15 UTC+01:00');
+        }''')
+        await page.evaluate('store.rows=[{ts:new Date(0),temp:0,hum:0}];buildCharts("now")')
+        assert await page.evaluate('chart24.getDatasetMeta(0).data[0].options.radius===2 && chart24.scales.x.min===-60000 && chart24.scales.x.max===60000')
+        await page.evaluate('store.rows=[];buildCharts("now")')
+        assert await page.evaluate('chart24.data.datasets.every(ds=>ds.data.length===0) && !Object.hasOwn(chart24.config.options.scales.x,"min")')
+        checks.append('Europe/Prague repeated DST hour keeps distinct epoch/offsets; single zero point has visible marker/finite domain; empty clears old bounds')
         await page.close()
         fallback=await browser.new_page(viewport={'width':390,'height':844},reduced_motion='reduce')
         await fallback.add_init_script('globalThis.IntersectionObserver=undefined')

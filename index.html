@@ -2213,8 +2213,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01812"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.12</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01813"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.13</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2758,6 +2758,10 @@
       <div class="chart-wrapper">
         <div class="chart-title">Posledních 24 hodin – Teplota &amp; Vlhkost</div>
         <div class="chart-canvas-wrap"><canvas id="chart24h"></canvas></div>
+        <details class="ana-info" data-info>
+          <summary>Podrobnosti grafu</summary>
+          <p class="ana-note">Rozestupy odpovídají času měření v zóně prohlížeče. Detail bodu ukazuje datum, sekundy a UTC posun. Rosný bod je vypočtený z teploty a vlhkosti stejného záznamu. Chybějící hodnoty a mezery delší než 3 hodiny se nespojují; tato hranice není vyhodnocením dostupnosti stanice.</p>
+        </details>
       </div>
     </div>
 
@@ -4932,15 +4936,66 @@
       scales: baseScales
     };
 
-    function mkChart(id, type, datasets, scales) {
-      return new Chart(el(id).getContext("2d"), { type, data: { labels: [], datasets }, plugins: [crosshairPlugin], options: { ...baseOpts, scales: scales || baseScales } });
+    function mkChart(id, type, datasets, scales, plugins = []) {
+      return new Chart(el(id).getContext("2d"), { type, data: { labels: [], datasets }, plugins: [crosshairPlugin, ...plugins], options: { ...baseOpts, scales: scales || baseScales } });
+    }
+
+    function drawCurrentChartIsolated(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      ctx.save();
+      ctx.beginPath();ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);ctx.clip();
+      chart.data.datasets.forEach((ds, i) => {
+        if (ds.pointRadius !== 0 || !chart.isDatasetVisible(i)) return;
+        const meta = chart.getDatasetMeta(i);
+        ctx.fillStyle = ds.borderColor;
+        // Reuse Chart.js's cached segments; no per-sample styling callback.
+        for (const segment of meta.dataset.segments) {
+          const point = meta.data[segment.start];
+          if (segment.start !== segment.end || !point || point.skip) continue;
+          ctx.beginPath();ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);ctx.fill();
+        }
+      });
+      ctx.restore();
     }
 
     const chart24 = mkChart("chart24h", "line", [
       { label: "Teplota [°C]", borderColor: "#e74c3c", backgroundColor: "rgba(231,76,60,.1)", tension: .35, pointRadius: 0, borderWidth: 2, yAxisID: "yTemp", data: [] },
       { label: "Vlhkost [%]", borderColor: "#2980b9", backgroundColor: "rgba(41,128,185,.1)", tension: .35, pointRadius: 0, borderWidth: 2, yAxisID: "yHum", data: [] },
       { label: "Rosný bod [°C]", borderColor: "#16a085", backgroundColor: "transparent", tension: .35, pointRadius: 0, borderWidth: 1.5, borderDash: [4, 3], yAxisID: "yTemp", data: [] }
-    ]);
+    ], { ...baseScales, x: { ...baseScales.x, type: "linear",
+      ticks: { ...baseScales.x.ticks, maxTicksLimit: 6, callback: value => fmtTime(new Date(value)) },
+      title: { display: true, text: "Čas (zóna prohlížeče)", color: "#95a5a6", font: { size: 10 } }
+    } }, [{ id: "currentIsolated", afterDatasetsDraw: drawCurrentChartIsolated }]);
+    // Aligned original samples, including duplicate timestamps. No date adapter
+    // or category spacing; do not connect missing values or long unobserved spans.
+    chart24.options.parsing = false;
+    chart24.options.normalized = false;
+    chart24.options.interaction = { mode: "index", axis: "x", intersect: false };
+    chart24.options.plugins = { ...baseOpts.plugins, tooltip: {
+      mode: "index", axis: "x", intersect: false, callbacks: {
+        title: items => items.length ? intervalTimestamp(new Date(items[0].raw.x)) : "",
+        label: ctx => ctx.dataset.label + ": " + (Number.isFinite(ctx.raw.y) ? String(ctx.raw.y) : "–")
+      }
+    } };
+    chart24.data.datasets.forEach(ds => { ds.tension = 0; ds.spanGaps = false; });
+
+    function currentChartData(rows) {
+      const labels = [], series = [[], [], []];
+      let previous = null;
+      for (const row of rows) {
+        const x = row.ts.getTime();
+        if (previous !== null && x - previous > 10800000) {
+          // Rendering separator, never a measurement or an input to statistics.
+          for (const data of series) data.push({ x: previous + 1, y: null, gap: true });
+        }
+        labels.push(x);
+        const values = [row.temp, row.hum, dewPoint(row.temp, row.hum)];
+        for (let i = 0; i < series.length; i++) series[i].push({ x, y: Number.isFinite(values[i]) ? values[i] : null });
+        previous = x;
+      }
+      return { labels, series };
+    }
 
     const chartRain = mkChart("chartRain", "bar", [
       { label: "Srážky (mm)", backgroundColor: "rgba(41,128,185,.75)", data: [] }
@@ -5013,10 +5068,18 @@
         }
         // Retain every point and source order for equal timestamps.
         h24.sort((a, b) => a.ts.getTime() - b.ts.getTime());
-        chart24.data.labels = h24.map(r => fmtTime(r.ts));
-        chart24.data.datasets[0].data = h24.map(r => r.temp);
-        chart24.data.datasets[1].data = h24.map(r => r.hum);
-        chart24.data.datasets[2].data = h24.map(r => dewPoint(r.temp, r.hum));
+        const { labels, series } = currentChartData(h24);
+        chart24.data.labels = labels;
+        chart24.data.datasets.forEach((ds, i) => { ds.data = series[i]; });
+        const first = labels[0], last = labels.at(-1);
+        chart24.data.datasets.forEach(ds => { ds.pointRadius = first === last ? 2 : 0; });
+        if (labels.length) {
+          chart24.options.scales.x.min = first === last ? first - 60000 : first;
+          chart24.options.scales.x.max = first === last ? last + 60000 : last;
+        } else {
+          delete chart24.options.scales.x.min;
+          delete chart24.options.scales.x.max;
+        }
         chart24.update();
         el("chart24h").style.visibility = "";
       }

@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 24h výběr; v0.18.12 24h podle viditelnosti, aktuální dirty stav/stanice/resume a fallback. Všechny body zachovány, viditelné husté kreslení dále | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/LAZY_24H.md a předchozí profily. Dále036 časová osa +033 redukce; worker/persistence/004 samostatně | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 24h výběr; v0.18.12 24h podle viditelnosti, aktuální dirty stav/stanice/resume a fallback. Všechny body zachovány, viditelné husté kreslení dále | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/LAZY_24H.md a předchozí profily. 036/24h hotová ve v0.18.13; dále033 redukce24h, worker/persistence/004 samostatně | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -121,7 +121,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-033 Min/max redukce pro průzkumník, plné statistiky a zoom | Současná historie | S / P0 | Max 800 pozorovaných bodů; bez animace; zachová extrémy každé veličiny | AUD-013 / Opus P07 | Dokončeno |
 | METEO-034 Kalendářní a hodinová heatmapa T/RH/srážek/pokrytí | Současné denní/hodinové agregace | S / P2 | v0.10.0 vlastní canvas T/RH,14dnů×24hodin na stránku, plné průměry a detail; srážky/pokrytí dále | METEO-038/048, srážky METEO-017 | Rozpracováno |
 | METEO-035 Histogram a teplotní profil hodiny/dne/měsíce | Současná historie | S / P2 | O(n) agregace, desítky sloupců | METEO-038; volba časového vážení | Nápad |
-| METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | v0.10.0 nová analytika na lineární epochové ose, původní tooltipy/UTC offsety a null mezery; starší category grafy dále | METEO-033/048; nyní category osa | Rozpracováno |
+| METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | v0.10.0 analytika, v0.18.13 také hlavní/moderní24h: lineární epochová osa, přesné tooltipy/UTC offsety, null a mezery>3h. Ostatní starší category grafy dále | METEO-033/048; nyní category osa | Rozpracováno |
 | METEO-037 Fullscreen a PNG export grafu | Aktuální vykreslený graf | N / P2 | v0.10.0 celá šířka/Escape a PNG s metadaty pro analytické karty; ostatní grafy/nativní fullscreen dále | METEO-010; popisek rozsahu/stanice | Rozpracováno |
 
 ## 8. Historická data a statistiky
@@ -2367,3 +2367,37 @@ main stále `2405c5d7326909a24c41e7066bfdc4a9d1622208`. Dřívější runtime/
 ubuntu-latest upozornění přetrvávají, workflow se neměnilo. Následující commit
 ukládá jen tuto evidenci. Dále036: skutečná časová osa24h a původní tooltip,
 potom033 min/max vykreslení. Neopakovat hotovou IO/parser/výběrovou etapu.
+
+
+## METEO-036 — skutečná časová osa 24h, v0.18.13 (2026-10-29)
+
+Dokončena dílčí etapa checkpointu po v0.18.12. Hlavní i moderní přehled sdílí
+původní graf na lineární epochové ose: skutečné rozestupy, původní čas
+s datem/sekundami/UTC offsetem a nezaokrouhlené hodnoty T/RH/Td. Samostatné
+options, bez date adaptéru či závislosti. Přímé segmenty bez spline překmitů,
+null a mezery >3h přerušené; vizuální oddělovač není měření ani výpadek.
+Osamocené původní body mají marker z cached segmentů Chart.js (včetně pixelové
+regrese). Podrobnosti pod stávající ikonou informací. Všechny původní body,
+stabilita duplicit, nuly/null, výběr, líné kreslení a plné statistiky zachovány.
+Žádná změna interpretace CSV zóny, konfigurací, requestů/timerů/instancí.
+
+407/407 Node, 7 nových regresí; původní range/visibility oracle zachován
+a přizpůsoben pouze epochovému formátu. Skutečný Chromium154/Chart.js/IO:
+3 původní konfigurace, 12k exporty, 320/767/1440px, obě témata, přesný
+poměr pixelů 1min:1h, mezery/null/izolované body, mouse/touch tooltip,
+kliknutá legenda/navigace/resume/fallback, explicitní DST, single/empty.
+Původní cooperative CSV browser také prošel, žádný pageerror/socket.
+
+9 před/po profilů viditelného grafu (1k–250k pravidelně/hustě, CPU×4/100k),
+plné SHA řádků/statistik/reportu/původních měření shodné. Formát grafu a jeho
+celý hash se záměrně mění. Hustých100k UI258,3→98,0ms, CPU×4 936,7→378,7ms;
+pravidelných100k UI20,3→21,5ms a load728,6→778,1ms. Žádný obecný claim
+16ms/INP/úspory RAM ani rychlejšího loadu. [Reprodukce, raw JSON, výpočty,
+testy a omezení](performance/CASOVA_OSA_24H.md).
+
+Celé036 dále Rozpracováno (ostatní category grafy). Průzkumník033 zůstává
+hotový; další checkpoint je rozšíření min/max vizualizace033 na24h T/RH/Td
+s původními časy, extrémy, null/gap a tooltipy, bez změny podkladů statistik.
+Neopakovat hotovou036/24h, parser, výběr ani IO. Explicitní zóna048, streaming
+a004 cache samostatně. Pouze codex-dev; main/konfigurace/archiv/workflow
+beze změny. Stav publikování bude doložen samostatně.

@@ -131,3 +131,8 @@ ne nová timezone interpretace. Pak lze bezpečně navázat omezeným vykreslen�
 min/max T/RH/rosného bodu podle METEO-033. Samotné kreslení hustých dat dál
 blokuje hlavní vlákno; parser/viditelnost ani hotový výběr znovu neanalyzovat.
 METEO-008 Rozpracováno, obecná cache004, cizí parsery a streaming snapshot dále.
+
+
+Checkpoint036 pro24h dokončen ve v0.18.13: [skutečná časová osa](CASOVA_OSA_24H.md).
+Líné vykreslení z této etapy zůstává; dále033 omezené min/max vykreslení
+hustého24h grafu, bez redukce podkladů statistik.

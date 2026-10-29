@@ -32,7 +32,7 @@ test('offscreen refreshes coalesce without a graph build, new timers, observers 
   assert.equal(a.run('observers[0].targets.length'),1);
   assert.equal(a.requests.length,0);assert.equal(a.timers.size,timers);
   a.run('rect={top:400,bottom:600,left:0,right:390};notify();notify()');
-  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data)'),'[99]');
+  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data.filter(p=>!p.gap).map(p=>p.y))'),'[99]');
   assert.equal(a.run('chart24.updates'),1);
   assert.equal(a.run('tabDirtyState.now'),false);
   assert.equal(a.nodes.get('chart24h').style.visibility,'');
@@ -54,7 +54,7 @@ test('station reset hides old graph and a queued old notification reads only cur
   assert.equal(a.run('chart24.updates'),1);
   assert.equal(a.nodes.get('chart24h').style.visibility,'hidden');
   a.run('store.rows=makeRows(-12);invalidateDerivedData();notify()');
-  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data)'),'[-12]');
+  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data.filter(p=>!p.gap).map(p=>p.y))'),'[-12]');
   assert.equal(a.run('store.rows===oldRows'),false);
   assert.equal(a.run('chart24.updates'),2);
 });
@@ -73,7 +73,7 @@ test('main/modern return consumes dirty state only for a visible current tab',()
   assert.equal(a.run('chart24.updates'),0);
   a.run('rect={top:400,bottom:600,left:0,right:390};notify();showAppPage("main");notify()');
   assert.equal(a.run('chart24.updates'),1);
-  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data)'),'[17]');
+  assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data.filter(p=>!p.gap).map(p=>p.y))'),'[17]');
 });
 
 test('unavailable, failed constructor and failed observe fall back to the synchronous chart path',()=>{
