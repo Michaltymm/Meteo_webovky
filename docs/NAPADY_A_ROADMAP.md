@@ -2401,3 +2401,19 @@ s původními časy, extrémy, null/gap a tooltipy, bez změny podkladů statist
 Neopakovat hotovou036/24h, parser, výběr ani IO. Explicitní zóna048, streaming
 a004 cache samostatně. Pouze codex-dev; main/konfigurace/archiv/workflow
 beze změny. Stav publikování bude doložen samostatně.
+
+
+Publikování v0.18.13 ověřeno 2026-10-29: [Actions #47](https://github.com/Michaltymm/Meteo_webovky/actions/runs/40833390781)
+pro [715d96b](https://github.com/Michaltymm/Meteo_webovky/commit/715d96b755502bec78cbbe0abc1bed165922ab04)
+**Success**, build40s/deploy9s/celkem58s, 1 artefakt.407/407 lokálních Node,
+rozšířený skutečný IO/Chart.js browser a původní cooperative CSV browser
+se3konfiguracemi prošly; všech9profilových trojic SHA původních řádků,
+statistik/reportu a měření je přesně shodných. Implementováno, lokálně
+otestováno a vývojové nasazení potvrzeno workflow. Přímý Pages host není
+v povolené síťové politice; živé služby/broker ani fyzický Safari/iOS nejsou
+ověřeny. Jen codex-dev; main stále
+`2405c5d7326909a24c41e7066bfdc4a9d1622208`. Workflow se neměnilo, přetrvávají
+dřívější upozornění na runtime použitých Actions/ubuntu-latest. Následující
+commit ukládá jen evidenci. Dále033: min/max vizualizace24h T/RH/Td,
+zachovat extrémy/čas/null/gap/původní tooltip a plné statistiky.
+Neopakovat dokončenou036/24h, parser, výběr ani IO.
