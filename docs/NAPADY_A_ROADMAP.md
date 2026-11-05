@@ -2417,3 +2417,33 @@ dřívější upozornění na runtime použitých Actions/ubuntu-latest. Násled
 commit ukládá jen evidenci. Dále033: min/max vizualizace24h T/RH/Td,
 zachovat extrémy/čas/null/gap/původní tooltip a plné statistiky.
 Neopakovat dokončenou036/24h, parser, výběr ani IO.
+
+
+## METEO-084 — Vzdálené nastavení jednotlivých ESP (2026-11-05)
+
+**Stav: Rozpracováno. Priorita P1, obtížnost střední/vysoká.**
+Samostatná funkce oproti071 (historie umístění/kalibrace),049 (schéma měření)
+a083 (původ dat). Nové ID není duplikace analytické roadmapy.
+
+- Hotová první etapa v0.19.0: dialog v nabídce ⚙, výběr skutečných stanic,
+  veřejný klíč webové stanice a poslední měření, oddělené validované lokální
+  koncepty intervalu60–86400s, export návrhu JSON. Není to živá konfigurace.
+- Nedostupné údaje o ESP nepředstírat; čas měření není poslední kontakt.
+  Interval obnovování webu není interval zařízení. CFG/config soubory neměnit.
+- Přínos cíle: nastavit každé ESP z webu, vidět čekající/použitou verzi/chybu.
+  Současná data dostačují pouze pro popis webové stanice a koncept.
+- **BLOCKED pro živé řízení:** chybí aktuální firmware ESP32_Code, mapování
+  deviceId a zápisová služba s autentizací. Pages změny neukládá.
+- Návrh: serverová desiredVersion/appliedVersion, změna odvozeně1/0.
+  Kontrola při běžném spojení, plný config pouze po změně; NVS a ACK až
+  po ověření/použití. Starší ACK nesmí vynulovat novější změnu. Podrobně
+  [kontrakt a checkpoint](NASTAVENI_ESP.md). Nezveřejňovat ovládací tajemství.
+- Výkon: uzavřený dialog nic nestahuje ani nepočítá; otevřený čte poslední
+  řádek a tři názvy. Žádný nový polling/dependency/Chart.
+- Ověření první etapy:412/412 Node,5nových regresí; Chromium154/3stanice,
+  export/reload/klávesnice,10kombinací šířka/téma bez přetečení či pageerror,
+  žádný zápisový požadavek. Pozorování po ustálení responsive resize350ms.
+  Živé ESP/API/fyzický iOS nejsou otestované.
+- Další etapa: propojit kontrakt s firmwarem/API, nejprve jedna testovací
+  stanice. Poté automatizovat souběžné zápisy/opožděné ACK/timeout/NVS chybu
+  a oddělení oprávnění stanic. Tuto backendovou část zatím neoznačovat DONE.

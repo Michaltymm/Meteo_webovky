@@ -2210,11 +2210,47 @@
     <a href="../">Otevřít hlavní web</a>
   </aside>
 
+  <style>
+    #deviceSettings { background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:12px;width:min(560px,calc(100% - 24px));max-height:85dvh;overflow:auto;padding:1rem;box-sizing:border-box; }
+    #deviceSettings::backdrop { background:#0009; }
+    #deviceSettings .device-heading { display:flex;justify-content:space-between;align-items:center;gap:1rem; }
+    #deviceSettings h2 { font-size:1.1rem;margin:0; }
+    #deviceSettings label { display:block;margin:1rem 0 .35rem; }
+    #deviceSettings select,#deviceSettings input { width:100%;box-sizing:border-box;min-height:44px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.5rem; }
+    #deviceSettings dl { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:.6rem;font-size:.85rem; }
+    #deviceSettings dt { color:var(--muted); } #deviceSettings dd { margin:0;overflow-wrap:anywhere; }
+    #deviceSettings p { font-size:.85rem;line-height:1.5;overflow-wrap:anywhere; }
+    #deviceSettings .device-actions { display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem; }
+    #deviceSettings summary { min-height:44px;padding:.6rem 0;box-sizing:border-box;cursor:pointer; }
+  </style>
+  <dialog id="deviceSettings" aria-labelledby="deviceSettingsTitle">
+    <div class="device-heading"><h2 id="deviceSettingsTitle">Nastavení meteostanice</h2>
+      <button type="button" class="ana-button" onclick="el('deviceSettings').close()" aria-label="Zavřít nastavení meteostanice">×</button></div>
+    <label for="deviceStation">Meteostanice</label><select id="deviceStation" onchange="chooseDeviceStation()"></select>
+    <dl>
+      <dt>Stanice webu</dt><dd id="deviceStationKey">–</dd>
+      <dt>Poslední měření</dt><dd id="deviceLastMeasurement">–</dd>
+      <dt>Firmware / deska</dt><dd>Neposkytuje se v současných datech</dd>
+      <dt>Poslední kontakt ESP</dt><dd>Nedostupný — čas měření není potvrzením spojení ESP</dd>
+      <dt>Použitý interval ESP</dt><dd>Nepotvrzeno zařízením</dd>
+      <dt>Vzdálená konfigurace</dt><dd>Řídicí API zatím není připojeno</dd>
+    </dl>
+    <form onsubmit="event.preventDefault();saveDeviceDraft()">
+      <label for="deviceInterval">Interval měření ESP (sekundy)</label>
+      <input id="deviceInterval" type="number" inputmode="numeric" min="60" max="86400" step="1" required placeholder="Např. 300">
+      <p>Koncept pro zařízení. Nemění interval obnovování webu ani nastavení ESP. Rozsah konceptu: 60–86 400 s; podporu musí potvrdit firmware.</p>
+      <div class="device-actions"><button class="ana-button" type="submit">Uložit koncept v tomto prohlížeči</button>
+        <button class="ana-button" type="button" onclick="exportDeviceDraft()">Stáhnout návrh JSON</button></div>
+    </form>
+    <p id="deviceDraftStatus" role="status" aria-live="polite"></p>
+    <details><summary>Jak bude změna fungovat</summary><p>Po připojení API se změna uloží jako nová verze. ESP při běžném připojení zkontroluje příznak změny, stáhne novou konfiguraci, ověří a použije ji. Teprve poté potvrdí konkrétní verzi. Příznak se vynuluje jen tehdy, pokud už nečeká novější změna.</p></details>
+  </dialog>
+
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v01813"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.18.13</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0190"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.19.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2256,6 +2292,7 @@
             </div>
           </div>
           <hr class="dd-sep">
+          <button class="cfg-full-btn" style="min-height:44px" onclick="openDeviceSettings()">🔧 Nastavení meteostanice</button>
           <button class="cfg-full-btn" onclick="toggleFullCfg()">📋 Zdroj dat &amp; nastavení…</button>
         </div>
       </div>
@@ -3444,6 +3481,7 @@
     function resetStationStore() {
       analyticsStop(true);
       store.rows = [];
+      renderDeviceSettings();
       dataStatus = emptyDataStatus();
       setGsStatus(null, "Google Sheets: čekám na konfiguraci…");
       setMqttStatus(false, "čekám na konfiguraci…");
@@ -3512,6 +3550,63 @@
 
     function saveStations() { preferences.setItem("meteoStations", JSON.stringify(stations)); }
 
+    // Device drafts are separate from website refresh settings and never sent
+    // to public measurement endpoints. The future server assigns revisions.
+    let deviceDialogStation = null;
+    function deviceStationKey(index = activeIdx) { return STATION_DEFAULTS[index].cfgFile.replace(/\.json$/, ""); }
+    function deviceDraftKey() { return "deviceDraft:" + deviceStationKey(); }
+    function validateDeviceDraft(input) {
+      if (!input || typeof input !== "object" || Array.isArray(input) || input.schemaVersion !== 1 || !Number.isInteger(input.measurementIntervalSeconds) ||
+          input.measurementIntervalSeconds < 60 || input.measurementIntervalSeconds > 86400)
+        throw new Error("Interval musí být celé číslo od 60 do 86 400 sekund.");
+      return { schemaVersion: 1, measurementIntervalSeconds: input.measurementIntervalSeconds };
+    }
+    function readDeviceDraft() {
+      try { return validateDeviceDraft(readPreferenceJSON(deviceDraftKey())); } catch { return null; }
+    }
+    function renderDeviceSettings(reset = false) {
+      const dialog = el("deviceSettings");
+      if (!dialog.open) return;
+      const select = el("deviceStation");
+      const options = stations.map((s, i) => `<option value="${i}">${escapeHTML(s.name)}</option>`).join("");
+      if (select.innerHTML !== options) select.innerHTML = options;
+      select.value = String(activeIdx);
+      setNodeText(el("deviceStationKey"), deviceStationKey());
+      const ts = store.rows[0]?.ts;
+      setNodeText(el("deviceLastMeasurement"), ts && Number.isFinite(ts.getTime()) ? intervalTimestamp(ts) : "Zatím bez měření");
+      if (reset || deviceDialogStation !== activeIdx) {
+        deviceDialogStation = activeIdx;
+        const draft = readDeviceDraft();
+        el("deviceInterval").value = draft ? String(draft.measurementIntervalSeconds) : "";
+        setNodeText(el("deviceDraftStatus"), draft ? "Koncept v tomto prohlížeči — neodesláno do ESP." : "Bez konceptu — do ESP nebylo nic odesláno.");
+      }
+    }
+    function openDeviceSettings() {
+      closeAllDD();closeInfoPopover();
+      el("deviceSettings").showModal();renderDeviceSettings(true);
+    }
+    function chooseDeviceStation() {
+      const value = el("deviceStation").value;
+      if (!/^[0-2]$/.test(value)) return;
+      switchStation(Number(value));renderDeviceSettings();
+    }
+    function saveDeviceDraft() {
+      try {
+        const draft = validateDeviceDraft({ schemaVersion: 1, measurementIntervalSeconds: Number(el("deviceInterval").value) });
+        preferences.setItem(deviceDraftKey(), JSON.stringify(draft));
+        setNodeText(el("deviceDraftStatus"), preferences.persistent ? "Koncept uložen v tomto prohlížeči — neodesláno do ESP." : "Koncept je pouze v paměti této stránky; trvalé uložení není dostupné. Neodesláno do ESP.");
+        return draft;
+      } catch (error) { setNodeText(el("deviceDraftStatus"), error.message);return null; }
+    }
+    function exportDeviceDraft() {
+      const draft = saveDeviceDraft();
+      if (!draft) return;
+      const request = { schemaVersion: 1, stationKey: deviceStationKey(), settings: { measurementIntervalSeconds: draft.measurementIntervalSeconds } };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(request, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");link.href = url;link.download = "device-draft-" + deviceStationKey() + ".json";
+      link.click();setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     /* ── Přepnutí stanice ── */
     function switchStation(idx) {
       if (!Number.isInteger(idx) || idx < 0 || idx >= stations.length) return;
@@ -3528,6 +3623,7 @@
     }
 
     function updateStationUI() {
+      renderDeviceSettings();
       syncModernStation();
       renderDataStatus();
       for (let i = 0; i < 3; i++) {
@@ -4815,6 +4911,7 @@
     }
 
     function refreshUI() {
+      renderDeviceSettings();
       renderDataStatus();
       syncModernStation();
       if (!store.rows.length) return;

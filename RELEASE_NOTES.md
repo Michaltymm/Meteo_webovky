@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.19.0
+
+- V nabídce ⚙ je nové Nastavení meteostanice pro každou ze tří stanic.
+- Interval měření lze připravit jako samostatný lokální koncept a stáhnout JSON. Koncept zatím neovládá ESP; vzdálené API a firmware čekají na propojení.
+- Nedostupné údaje o zařízení jsou označeny jako nepotvrzené, interval obnovování webu zůstává zachovaný.
+
 ## v0.18.13
 
 - Graf posledních 24 hodin nyní zobrazuje skutečné časové rozestupy měření v hlavním i moderním přehledu.
