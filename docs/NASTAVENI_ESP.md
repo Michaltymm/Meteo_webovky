@@ -82,3 +82,13 @@ prohlašovat za otestované nad současným statickým webem.
 Ověření první etapy: tests/device-settings.test.js a
 scripts/check-device-settings-browser.py. Živé ESP/API ani fyzický iOS se
 netestují; browser používá řízené CSV a skutečný Chart.js.
+
+
+Ověření/publikování první etapy 2026-11-05:412/412 Node,5nových regresí,
+Chromium154/3konfigurace/export/reload/10rozložení bez pageerror nebo zápisu.
+[a8a7938](https://github.com/Michaltymm/Meteo_webovky/commit/a8a79386d5d483276c90af48f95cadda4ea4c42e),
+[Actions #48](https://github.com/Michaltymm/Meteo_webovky/actions/runs/42057761809)
+Success, build31s/deploy12s/celkem53s,1artefakt. Jen codex-dev; main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Nasazení potvrzuje workflow,
+živé ESP/API ani fyzický Safari nejsou otestované. První obrazovka/koncepty
+hotové; skutečná komunikace BLOCKED do dodání FW/API, neoznačovat celé084 DONE.

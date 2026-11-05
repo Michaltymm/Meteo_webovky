@@ -2447,3 +2447,13 @@ a083 (původ dat). Nové ID není duplikace analytické roadmapy.
 - Další etapa: propojit kontrakt s firmwarem/API, nejprve jedna testovací
   stanice. Poté automatizovat souběžné zápisy/opožděné ACK/timeout/NVS chybu
   a oddělení oprávnění stanic. Tuto backendovou část zatím neoznačovat DONE.
+
+
+Ověření/publikování první etapy 2026-11-05:412/412 Node,5nových regresí,
+Chromium154/3konfigurace/export/reload/10rozložení bez pageerror nebo zápisu.
+[a8a7938](https://github.com/Michaltymm/Meteo_webovky/commit/a8a79386d5d483276c90af48f95cadda4ea4c42e),
+[Actions #48](https://github.com/Michaltymm/Meteo_webovky/actions/runs/42057761809)
+Success, build31s/deploy12s/celkem53s,1artefakt. Jen codex-dev; main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Nasazení potvrzuje workflow,
+živé ESP/API ani fyzický Safari nejsou otestované. První obrazovka/koncepty
+hotové; skutečná komunikace BLOCKED do dodání FW/API, neoznačovat celé084 DONE.
