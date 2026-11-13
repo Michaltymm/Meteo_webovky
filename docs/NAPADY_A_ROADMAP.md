@@ -2492,3 +2492,17 @@ na CPU×4 je měřitelná. Neopakovat hotové033/036, parser ani IO. Ostatní
 category grafy036, cache004 a širší worker/persistence samostatně.
 METEO-084 pro živé ESP stále BLOCKED do dodání firmware/API. Jen codex-dev,
 main/konfigurace/archiv/workflow neměněny. Publikování bude doloženo níže.
+
+
+Publikování v0.19.1: [95cadd4](https://github.com/Michaltymm/Meteo_webovky/commit/95cadd45340d7398e950db5d36340aa342afa392),
+[Actions #49](https://github.com/Michaltymm/Meteo_webovky/actions/runs/43426309964)
+**Success**, build40s/deploy9s/celkem58s,1artefakt.419/419 Node, rozšířený
+skutečný IO/Chart.js browser a původní CSV browser prošly;9 čerstvých profilů
+má shodné podpisy úplných řádků/statistik/reportu/původních měření výřezu.
+Implementováno, lokálně otestováno, vývojové nasazení potvrzeno workflow;
+přímý živý Pages/ESP/API ani fyzický Safari nebyly ověřeny. Jen codex-dev,
+main stále2405c5d7326909a24c41e7066bfdc4a9d1622208. Workflow se neměnilo,
+dřívější upozornění runtime Actions/ubuntu-latest přetrvávají. Další checkpoint
+008: kooperativní příprava velkého24h výřezu s dirty/visibility/generačními
+guardy; nevracet se k hotové redukci033/ose036/parseru/IO.084 pro živé ESP
+dál BLOCKED bez FW/API. Následující commit ukládá jen tuto evidenci.

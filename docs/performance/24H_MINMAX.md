@@ -131,3 +131,17 @@ Neopakovat hotovou redukci, časovou osu, parser nebo IO. Navazující METEO-008
 naměřeného dopadu; případné dávkování musí zachovat dirty stav a guard aktuální
 stanice/dat. Změna na asynchronní cestu ani worker zde implementované nejsou.
 METEO-084 zůstává nezávisle BLOCKED pro živé řízení ESP bez firmware/API.
+
+
+Publikování v0.19.1: [95cadd4](https://github.com/Michaltymm/Meteo_webovky/commit/95cadd45340d7398e950db5d36340aa342afa392),
+[Actions #49](https://github.com/Michaltymm/Meteo_webovky/actions/runs/43426309964)
+**Success**, build40s/deploy9s/celkem58s,1artefakt.419/419 Node, rozšířený
+skutečný IO/Chart.js browser a původní CSV browser prošly;9 čerstvých profilů
+má shodné podpisy úplných řádků/statistik/reportu/původních měření výřezu.
+Implementováno, lokálně otestováno, vývojové nasazení potvrzeno workflow;
+přímý živý Pages/ESP/API ani fyzický Safari nebyly ověřeny. Jen codex-dev,
+main stále2405c5d7326909a24c41e7066bfdc4a9d1622208. Workflow se neměnilo,
+dřívější upozornění runtime Actions/ubuntu-latest přetrvávají. Další checkpoint
+008: kooperativní příprava velkého24h výřezu s dirty/visibility/generačními
+guardy; nevracet se k hotové redukci033/ose036/parseru/IO.084 pro živé ESP
+dál BLOCKED bez FW/API. Následující commit ukládá jen tuto evidenci.
