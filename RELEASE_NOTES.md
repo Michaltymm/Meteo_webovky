@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.20.0
+
+- Nová samostatná karta Moderní přehled 2: velká teplota, vlhkost, tlak a napětí baterie bez tabulek a grafů.
+- Výběr stanice, čas záznamu a důležitá upozornění zůstávají přímo v přehledu. Podrobnosti jsou dostupné v původních kartách.
+- Mobilní navigace zobrazuje čtyři přehledy ve dvou řadách.
+
 ## v0.19.1
 
 - Hustý 24hodinový graf vykresluje nejvýše 800 původních vzorků se zachováním minim a maxim teploty, vlhkosti a rosného bodu. Statistiky nadále používají všechna měření.

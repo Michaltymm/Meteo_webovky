@@ -71,7 +71,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-009 Stav a stáří: rozlišit poslední měření, poslední sync, chybu zdroje a neúplnou historii | Timestampy / stav transportu | S / P1 | v0.15.0 O(1) panel; v0.18.9 podrobnosti pod šipkou, stáří a problémy viditelné i při zavření, nepoužívané zdroje skryté; bez dalších fetchů | Stávající časový kontrakt; explicitní zóna dále METEO-048, rozsah v STAV_DAT.md | Dokončeno |
 | METEO-010 Klávesnice a mobil: ARIA taby, fokus dialogů, dotykové cíle, kontrast v obou tématech | Současná UI | S / P1 | v0.4.0 omezení pohybu; v0.13.0 společné ⓘ; v0.18.9 nativní details stavu dat, Enter/mezerník/dotyk a ovládací cíle ≥44px; ostatní taby/fokus dále | IMP-006 | Rozpracováno |
-| METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.14.0 výběr 7 senzorových karet pro každou stanici, uložení/obnova a responzivní rozložení; bez dalších fetch/grafů | METEO-054; rozsah a důkazy v MODERNI_PREHLED.md | Dokončeno |
+| METEO-011 Kompaktní dashboard a výběr karet, per-station preference | Současné metriky / localStorage | S / P2 | v0.14.0 výběr 7 karet/per-station preference; v0.20.0 navíc samostatný minimalistický Moderní přehled 2 T/RH/P/V, sdílená data bez dalších fetch/grafů | METEO-054; rozsah a důkazy v MODERNI_PREHLED.md | Dokončeno |
 | METEO-012 Jednotné formátování, jednotky a zdroj odvozených hodnot | Současná data / metadata | N / P1 | v0.4.0 AH/VPD s jednotkami/vzorci/oborem hotové; sjednocení ostatních veličin dále | METEO-048 | Rozpracováno |
 
 ## 3. Meteorologické metriky
@@ -2506,3 +2506,33 @@ dřívější upozornění runtime Actions/ubuntu-latest přetrvávají. Další
 008: kooperativní příprava velkého24h výřezu s dirty/visibility/generačními
 guardy; nevracet se k hotové redukci033/ose036/parseru/IO.084 pro živé ESP
 dál BLOCKED bez FW/API. Následující commit ukládá jen tuto evidenci.
+
+
+## Moderní přehled 2 — v0.20.0 (METEO-010/011)
+
+Nová čtvrtá karta #moderni2 podle výslovného zadání: samostatný úsporný panel
+T/RH/P/V, velká teplota, nativní přepínač stanice, čas a jediný stručný stav.
+Bez grafů/tabulek/astronomie a duplicitní diagnostiky. Chyba přenosu, budoucí
+nebo neplatný čas zůstávají viditelné i barevně. V0/null rozlišeny, neznámé
+hodnoty „–“. Podrobný přehled je dostupný nativním odkazem. Čtyři mobilní
+navigační odkazy mají2řady/2sloupce a44px cíle, select16px bez běžného iOS zoomu.
+
+Sdílený store/config/formatter/status; žádný druhý parser, fetch při navigaci,
+nový polling nebo Chart. O(1) projekce čte jen poslední řádek i250k historie.
+Běžné společné výpočty refreshUI zůstávají. Dirty/Chart guard se týká i
+no-IO fallbacku a opožděných callbacků; návrat do původních karet zachová tab,
+data i preference. Reset okamžitě vymaže stará čísla/datetime. Router podporuje
+přímý odkaz/reload/Zpět/Vpřed. Původní karty a všechna měření zůstávají.
+
+426/426 Node,7nových regresí. Skutečný Chromium154/Chart.js se3původními
+konfiguracemi prošel změnou stanice s pozastavenou odpovědí,0/chybějícím V,
+shodnými daty bez requestu při přepnutí karty, chybami/časem,27kombinacemi
+320–1440px/portrait/landscape/3tématy a vizuálním ověřením snímků. Bez pageerror
+a socketů. Původní mobile-layout harness pro hlavní/moderní/analytiku prošel
+také po změně společné navigace. Živé služby a fyzický iOS nejsou ověřené.
+[Účel, omezení, ověření](MODERNI_PREHLED_2.md).
+
+Obecné010 zůstává Rozpracováno,011 zůstává Dokončeno a získává tuto další
+kompaktní variantu. Bez nového ID. Nepřidávat další prvky bez zpětné vazby
+uživatele. Obecný výkonový checkpoint008 a blokované řízení ESP084 se nemění.
+Pouze codex-dev; main/konfigurace/archiv/workflow beze změny.

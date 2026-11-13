@@ -2171,8 +2171,8 @@
       .dd-menu { position:fixed; top:60px; right:12px; left:auto; width:min(360px,calc(100vw - 24px)); min-width:0!important; max-height:calc(100dvh - 136px); overflow-y:auto; overscroll-behavior:contain; border-radius:12px; }
       .dd-item, .theme-btn, .cfg-full-btn, #gearSource { min-height:44px; }
       .dd-item { white-space:normal; }
-      .page-navigation { top:56px; height:56px; }
-      .page-navigation-inner { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:5px .65rem; gap:.35rem; }
+      .page-navigation { top:56px; height:104px; }
+      .page-navigation-inner { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); padding:5px .65rem; gap:.35rem; }
       .page-link { min-width:0; padding:.3rem; font-size:.78rem; line-height:1.25; text-align:center; border-radius:10px; }
       .sticky-bars { position:relative; top:auto; }
       #dashboardBars>summary { display:list-item; min-height:44px; padding:.8rem 1rem; cursor:pointer; color:var(--text); font-size:.8rem; }
@@ -2222,6 +2222,35 @@
     #deviceSettings p { font-size:.85rem;line-height:1.5;overflow-wrap:anywhere; }
     #deviceSettings .device-actions { display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem; }
     #deviceSettings summary { min-height:44px;padding:.6rem 0;box-sizing:border-box;cursor:pointer; }
+    .simple-view { max-width:880px;margin:0 auto;padding:.25rem 0 1.5rem; }
+    .simple-heading { display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:.4rem 0 1rem; }
+    .simple-heading h1 { font-size:1.3rem;font-weight:600;margin:0; }
+    .simple-heading select { min-width:0;max-width:65%;min-height:44px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:.55rem;font:inherit;font-size:1rem; }
+    .simple-temperature { background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:18px;padding:1.4rem 1.5rem; }
+    .simple-label { color:var(--muted);font-size:.85rem; }
+    .simple-temperature-value { display:flex;align-items:baseline;gap:.5rem;margin:.4rem 0; }
+    #simpleTemp { font-size:clamp(4rem,14vw,7rem);line-height:1.1;font-weight:500;letter-spacing:-.05em;overflow-wrap:anywhere;min-width:0; }
+    .simple-temperature-value .simple-unit { font-size:1.7rem;color:var(--muted); }
+    .simple-time { color:var(--muted);font-size:.78rem;line-height:1.6;margin:.7rem 0 0;overflow-wrap:anywhere; }
+    .simple-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin:.75rem 0; }
+    .simple-metric { background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1rem;min-width:0;margin:0; }
+    .simple-metric dt { color:var(--muted);font-size:.78rem;min-height:2.6em; }
+    .simple-metric dd { margin:.35rem 0 0;font-variant-numeric:tabular-nums; }
+    .simple-number { font-size:clamp(1.15rem,5vw,1.8rem);font-weight:600;overflow-wrap:anywhere; }
+    .simple-metric .simple-unit { display:block;color:var(--muted);font-size:.75rem;margin-top:.2rem; }
+    .simple-status { color:var(--muted);font-size:.85rem;line-height:1.5;margin:1rem 0 .5rem;overflow-wrap:anywhere; }
+    .simple-status.data-state-error { color:var(--red); }
+    .simple-status.data-state-warning { color:var(--yellow); }
+    .simple-more { display:inline-flex;align-items:center;min-height:44px;color:var(--text);font-size:.85rem;text-underline-offset:4px; }
+    body[data-view="modern2"] #headerStationPicker,body[data-view="modern2"] #headerStationName { display:none; }
+    body[data-view="modern2"] .status-bar,body[data-view="modern2"] #dataStatusDetails { display:none; }
+    body[data-view="modern2"] .nav-pills { justify-content:flex-end; }
+    @media(max-width:480px) {
+      .simple-heading { align-items:flex-start;flex-direction:column;gap:.6rem; }
+      .simple-heading select { width:100%;max-width:100%; }
+      .simple-temperature { padding:1.15rem; }
+      .simple-metric { padding:.8rem .65rem; }
+    }
   </style>
   <dialog id="deviceSettings" aria-labelledby="deviceSettingsTitle">
     <div class="device-heading"><h2 id="deviceSettingsTitle">Nastavení meteostanice</h2>
@@ -2249,15 +2278,15 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0191"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.19.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0200"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
     <div class="nav-pills">
 
       <!-- ▸ Přepínač stanic -->
-      <div class="dd-wrap">
+      <div class="dd-wrap" id="headerStationPicker">
         <div class="pill" onclick="toggleDD('ddStation')"><span id="pillStationName">–</span> ▾</div>
         <div class="dd-menu" id="ddStation">
           <div class="dd-label">Stanice</div>
@@ -2305,6 +2334,7 @@
     <div class="page-navigation-inner">
       <a class="page-link" href="#prehled" data-page="main" aria-current="page" aria-controls="page-main">Hlavní přehled</a>
       <a class="page-link" href="#moderni" data-page="modern" aria-controls="page-main">Moderní přehled</a>
+      <a class="page-link" href="#moderni2" data-page="modern2" aria-controls="page-modern2">Moderní přehled 2</a>
       <a class="page-link" href="#analytika" data-page="analytics" aria-controls="tab-analytics">📊 Analytické grafy</a>
     </div>
   </nav>
@@ -3369,6 +3399,24 @@
         </article>
       </div>
       <details class="comparison-data" data-info><summary>Ovládání a výpočty analytických grafů</summary><p class="ana-note">Časy jsou v zóně prohlížeče; CSV neobsahuje jednoznačnou zónu stanice. Grafické body se pro velké rozsahy redukují se zachováním extrémů; statistiky se počítají z úplných původních měření. Přetažení vodorovně posouvá čas, svislý pohyb nechává posun stránky. +/− a šipky ovládají graf s fokusem. Regrese ani napětí neurčují kapacitu baterie nebo příčinu změn.</p></details>
+    </main>
+    <main id="page-modern2" class="app-page simple-view" aria-label="Moderní přehled 2" hidden>
+      <div class="simple-heading">
+        <h1>Počasí právě teď</h1>
+        <select id="simpleStation" aria-label="Meteostanice" onchange="switchStation(Number(this.value))"></select>
+      </div>
+      <section class="simple-temperature" aria-label="Aktuální teplota">
+        <div class="simple-label">Teplota</div>
+        <div class="simple-temperature-value"><span id="simpleTemp">–</span><span class="simple-unit">°C</span></div>
+        <p class="simple-time"><span id="simpleTimeLabel">Poslední záznam</span>: <time id="simpleTime">Zatím bez dat</time></p>
+      </section>
+      <div class="simple-grid">
+        <dl class="simple-metric"><dt>Vlhkost</dt><dd><span class="simple-number" id="simpleHum">–</span><span class="simple-unit">%</span></dd></dl>
+        <dl class="simple-metric"><dt>Tlak</dt><dd><span class="simple-number" id="simplePressure">–</span><span class="simple-unit">hPa</span></dd></dl>
+        <dl class="simple-metric"><dt>Napětí baterie</dt><dd><span class="simple-number" id="simpleVoltage">–</span><span class="simple-unit">V</span></dd></dl>
+      </div>
+      <p id="simpleStatus" class="simple-status" role="status" aria-atomic="true">Zatím bez dat</p>
+      <a class="simple-more" href="#moderni">Podrobný přehled →</a>
     </main>
   </div><!-- /page-wrapper -->
 
@@ -4856,7 +4904,7 @@
     const tabDirtyState = {};
     let currentChartObserver = null;
     function currentChartCanRender() {
-      if (document.hidden || !store.rows.length) return false;
+      if (document.hidden || currentPage === "modern2" || !store.rows.length) return false;
       // Keep the original synchronous path without a working observer.
       if (!currentChartObserver) return true;
       if (analyticsActive() || document.querySelector(".tab-btn.active")?.dataset.tab !== "now") return false;
@@ -4893,7 +4941,7 @@
     }
 
     function refreshTab(tab) {
-      if (analyticsActive() || !tabDirtyState[tab]) return;
+      if (analyticsActive() || currentPage === "modern2" || !tabDirtyState[tab]) return;
       if (tab === "now" && !currentChartCanRender()) { hideCurrentChart(); return; }
       if (tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain") {
         buildCharts(tab);
@@ -6570,6 +6618,29 @@
       if (el("dataStatusSummary").className !== summaryClass) el("dataStatusSummary").className = summaryClass;
       el("sheetsTransport").hidden = !sheets;
       el("mqttTransport").hidden = !mqtt;
+      renderSimpleOverview();
+    }
+
+    // A compact projection of the same latest row/status, without a second
+    // store, data fetch, aggregation or chart. Missing values stay missing.
+    function renderSimpleOverview() {
+      if (currentPage !== "modern2") return;
+      const select = el("simpleStation");
+      const options = stations.map((station, i) => `<option value="${i}">${escapeHTML(station.name)}</option>`).join("");
+      if (select.innerHTML !== options) select.innerHTML = options;
+      if (select.value !== String(activeIdx)) select.value = String(activeIdx);
+      const row = store.rows[0];
+      for (const [id, key, decimals] of [["simpleTemp", "temp", 1], ["simpleHum", "hum", 1], ["simplePressure", "pressure", 1], ["simpleVoltage", "voltage", 2]])
+        setNodeText(el(id), Number.isFinite(row?.[key]) ? fmt(row[key], decimals) : "–");
+      const ts = row?.ts?.getTime?.(), date = Number.isFinite(ts) ? new Date(ts) : null;
+      const time = el("simpleTime");
+      setNodeText(time, date ? fmtDT(date) : row ? "Čas není dostupný" : "Zatím bez dat");
+      time.title = date ? intervalTimestamp(date) : "";
+      if (date) time.setAttribute?.("datetime", date.toISOString());
+      else time.removeAttribute?.("datetime");
+      setNodeText(el("simpleTimeLabel"), el("dataRecordLabel").textContent);
+      setNodeText(el("simpleStatus"), el("dataStatusSummary").textContent);
+      el("simpleStatus").className = "simple-status " + (el("dataStatusSummary").className || "");
     }
 
     function updateVisibleDataStatus() {
@@ -6610,7 +6681,7 @@
     ══════════════════════════════════════════════ */
     let currentPage = "main";
     function appPageFromHash() {
-      return location.hash === "#analytika" ? "analytics" : location.hash === "#moderni" ? "modern" : "main";
+      return location.hash === "#analytika" ? "analytics" : location.hash === "#moderni2" ? "modern2" : location.hash === "#moderni" ? "modern" : "main";
     }
     const MODERN_CARD_KEYS = ["pressure", "rainInc", "rain", "tank", "voltage", "absHum", "vpd"];
     function normalizeModernCards(input) {
@@ -6694,12 +6765,12 @@
       select.value = String(activeIdx);
     }
     function showAppPage(page, { updateHistory = true, scroll = true } = {}) {
-      if (!["main", "modern", "analytics"].includes(page)) return;
+      if (!["main", "modern", "modern2", "analytics"].includes(page)) return;
       const changed = currentPage !== page;
       if (changed) closeInfoPopover();
       if (changed && currentPage === "analytics") analyticsStop();
       currentPage = page;
-      const dashboard = page !== "analytics";
+      const dashboard = page === "main" || page === "modern";
       document.body.setAttribute?.("data-view", page);
       el("page-main").hidden = !dashboard;
       el("page-main").setAttribute?.("aria-label", page === "modern" ? "Moderní přehled" : "Hlavní přehled");
@@ -6707,16 +6778,18 @@
       el("modernIntro").hidden = page !== "modern";
       syncModernStation();
       el("tab-analytics").hidden = page !== "analytics";
+      el("page-modern2").hidden = page !== "modern2";
+      if (page === "modern2") renderDataStatus();
       document.querySelectorAll(".page-link").forEach(link => {
         if (link.dataset.page === page) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
-      const hash = page === "analytics" ? "#analytika" : page === "modern" ? "#moderni" : "#prehled";
+      const hash = page === "analytics" ? "#analytika" : page === "modern2" ? "#moderni2" : page === "modern" ? "#moderni" : "#prehled";
       if (updateHistory && location.hash !== hash) window.history?.pushState(null, "", hash);
       if (changed && scroll) window.scrollTo?.({ top: 0, behavior: "auto" });
       if (!changed) return;
       if (page === "analytics") buildAnalytics();
-      else if (store.rows.length) {
+      else if (dashboard && store.rows.length) {
         const tab = document.querySelector(".tab-btn.active")?.dataset.tab;
         if (tab) { refreshTab(tab); setTimeout(() => resizeChartsInTab(tab), 50); }
       }

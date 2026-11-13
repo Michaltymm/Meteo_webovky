@@ -57,3 +57,9 @@ hotový parser/výběr neopakovat.
 Navazující checkpoint líného24h vykreslení splněn vev0.18.12:
 [rozsah, měření a další krok](performance/LAZY_24H.md). Mobilní layout této
 etapy zůstal zachovaný; další práce podle centrální roadmapy.
+
+
+Aktualizace v0.20.0: kvůli nové čtvrté kartě Moderní přehled 2 má mobilní
+navigace2sloupce/2řady (výška104px). Původní zpráva o třech odkazech je
+historický stav v0.18.11. Nová jednoduchá stránka má nativní44px select,
+16px font a nemá duplicitní lištu stavu. Viz [rozsah a ověření](MODERNI_PREHLED_2.md).
