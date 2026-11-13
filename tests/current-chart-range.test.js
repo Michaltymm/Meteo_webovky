@@ -8,11 +8,16 @@ const oracle = `globalThis.checkOriginalChart=()=>{
   const before=JSON.stringify(store.rows), source=store.rows;
   const latest=source.length?source[0].ts.getTime():Date.now();
   const expected=[...source].filter(r=>r.ts.getTime()>=latest-86400000).sort((a,b)=>a.ts-b.ts);
-  buildCharts('now');
+  const real=currentChartData;let selected;
+  currentChartData=(rows,...args)=>{selected=rows;return real(rows,...args)};
+  try{buildCharts('now')}finally{currentChartData=real}
   return store.rows===source && JSON.stringify(source)===before &&
-    JSON.stringify(chart24.data.labels)===JSON.stringify(expected.map(r=>r.ts.getTime())) &&
+    selected.length===expected.length && selected.every((r,i)=>r===expected[i]) &&
+    chart24.data.labels.length<=800 &&
     [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>
-      JSON.stringify(chart24.data.datasets[i].data.filter(p=>!p.gap))===JSON.stringify(expected.map(r=>({x:r.ts.getTime(),y:get(r)}))));
+      chart24.data.datasets[i].data.filter(p=>!p.gap).every((p,j)=>{
+        const r=expected[p.sourceIndex??j];return p.x===r.ts.getTime()&&p.y===get(r);
+      }));
 }`;
 
 test('24h selection includes the exact boundary, uses latest measurement and retains equal-time order, zeros and nulls', () => {
@@ -26,12 +31,13 @@ test('24h selection includes the exact boundary, uses latest measurement and ret
   assert.equal(a.run('chart24.updates'),1);
 });
 
-test('empty, single and all equal-time charts preserve every original measurement', () => {
+test('empty, single and equal-time selection retains every source row while rendering is bounded', () => {
   const a=app();a.run(oracle);
   for(const size of [0,1,4000]){
     a.run(`store.rows=Array.from({length:${size}},(_,i)=>({ts:new Date(0),temp:i,hum:0}))`);
     assert.equal(a.run('checkOriginalChart()'),true);
-    assert.equal(a.run('chart24.data.labels.length'),size);
+    assert.ok(a.run('chart24.data.labels.length')<=Math.min(size,800));
+    assert.equal(a.run('store.rows.length'),size);
   }
 });
 

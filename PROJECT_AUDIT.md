@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.19.1: METEO-033/24h hotové (hlavní i moderní), nejvýše794 původních řádků v rozpočtu800 ze společného min/max/null T/RH/Td výběru; malá cesta celá. Per-metric breakBefore zachovává i vynechané null/>3h mezery, veřejné segment styling + izolované markery, původní tooltip. Store/časový výběr/0/null/duplicity/stats/konfigurace/IO nezměněné.419/419 Node (7nových, nezávislý oracle/100historií/250kProxy), actual IO/Chart.js/3konfigurace/12k/320–1440px/obě témata a původní CSV browser prošly.9čerstvých profilů (obě varianty po přerušení), plné SHA řádků/statistik/reportu/původních měření shodné, grafový hash se záměrně mění.100kdense601 místo86401 vzorků, Chart44,5→10,6ms, UI86,2→61,6ms; CPU×4 UI377→223,2ms. Příprava100k30,8→38,6ms, malé dense1kUI9,6→13,1ms: bez obecného claimu16ms/INP/RAM. Viz docs/performance/24H_MINMAX.md. Dále008 kooperativní příprava velkého24h výřezu s dirty/visibility/aktuální relací; neopakovat hotový sampler/časovou osu/parser/IO.084 stále BLOCKED firmware/API. Jen codex-dev; publikování na konci etapy.
 - v0.19.0 (2026-11-05), nové zadání METEO-084: ⚙ → Nastavení meteostanice, nativní dialog, tři samostatné lokální koncepty intervalu měření a export návrhu JSON. CFG.interval/zdroje/firmware se nemění. Uložení neznamená odeslání do ESP; chybějící identita/deska/firmware/kontakt/aplikovaný interval nejsou domýšlené. Web je pouze čtecí statický Pages, aktuální FW ani zápisové API zde nejsou. Skutečné vzdálené ovládání BLOCKED do dodání zdrojů/kontraktu, otázka odeslána uživateli. Viz docs/NASTAVENI_ESP.md: desired/applied verze, změna=1 do potvrzení použití, pozdní ACK nesmí ztratit novější verzi, autentizace serveru a oddělení zařízení. Nejprve navázat kontraktem s ESP32_Code a testovací stanicí; nepokládat koncept za hotovou komunikaci. 412/412 Node + skutečný browser prošly; a8a7938/Actions #48/42057761809 Success. Výkonový checkpoint033 zůstává odložený novým zadáním.
 - v0.18.13 (2026-10-29): checkpoint036/24h dokončen. Hlavní/moderní graf na skutečné lineární epochové ose, původní tooltip datum/sekundy/UTC offset, přímé segmenty, null a >3h mezery přerušené; osamocené body marker z cached segmentů. Všechny původní body/pořadí/0/null a plné statistiky zachované, žádná nová interpretace legacy CSV zóny ani request/dependency.407/407 Node (7nových), skutečný IO/Chart.js/3konfigurace/12k/320–1440px/obě témata včetně pixelů, mouse/touch/legendy/DST/single/empty a původní CSV browser prošly.9 před/po profilů, všechna SHA řádků/statistik/reportu/původních měření shodná; nový formát grafu mění jeho hash. Hustých100k UI258,3→98ms, CPU×4 936,7→378,7ms; pravidelných100k UI20,3→21,5ms, load728,6→778,1ms. Bez claimu16ms/INP/RAM/obecného zrychlení. Viz docs/performance/CASOVA_OSA_24H.md.036 proostatní category grafy a008 Rozpracováno,033 průzkumník stále hotový. Dále033 bounded min/max24h všechT/RH/Td s původními extrémy/null/gap/tooltipy; neopakovat hotovou osu/parser/výběr/IO. Jen codex-dev;715d96b/Actions #47/40833390781 Success (build40s/deploy9s/celkem58s), main stále2405c5d; evidence na konci etapy.
 - v0.18.12 (2026-10-28): splněn checkpoint METEO-008/líné24h. Jeden IO na stávající canvas, geometry/page/tab/hidden/store guard, žádný zachycený starý snapshot nebo další timer. Dirty zůstává do viditelnosti; invalidace zastaví animaci/skryje starý graf bez změny plochy, po úspěchu se ukáže. Resume používá existující handler, motion/ruční resize nepočítají skrytý graf. Fallback bez/selhaného IO synchronní; přímý buildCharts zůstává explicitní API.400/400 Node (8nových), nový skutečný IO/3konfigurace/12k/320–1440px/obě témata a CSV/data-status browser prošly.13před/po scénářů, všechna plná SHA řádků/statistik/reportů/grafu přesně shodná. Offscreen dense250k UI245,7→21,6ms, CPU×4/dense100k978,8→44,1ms; offscreen0Chartupdate, visible1. Viditelný dense100k UI267,1ms, jednotlivý pozdější draw250k231ms: cena kreslení se přesouvá, není vyřešená16ms/INP ani obecná RAM úspora. Viz docs/performance/LAZY_24H.md. Celé008 Rozpracováno. Dále036 skutečná časová osa24h/původní tooltip, potom033 min/max redukce pro24h; hotový parser/výběr/viditelnost neopakovat. Jen codex-dev; Actions #46/40778961209 Success prof5603cd (build27s/deploy25s/celkem60s), main stále2405c5d; evidence na konci etapy.
@@ -1315,3 +1316,38 @@ Success, build31s/deploy12s/celkem53s,1artefakt. Jen codex-dev; main stále
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Nasazení potvrzuje workflow,
 živé ESP/API ani fyzický Safari nejsou otestované. První obrazovka/koncepty
 hotové; skutečná komunikace BLOCKED do dodání FW/API, neoznačovat celé084 DONE.
+
+
+## METEO-033 — min/max vizualizace24h, v0.19.1
+
+Dokončený checkpoint z v0.18.13, odložený nastavením ESP v0.19.0. Bez nových
+ID. Původní průzkumník a nyní také hlavní/moderní24h mají hotovou redukci.
+Velký výřez vybírá existující sampler: oba kraje + první min/max/null T/RH/Td
+v88koších, nejvýše794 původních řádků v rozpočtu800. Malý výřez zůstává celý.
+Doplňkový průchod chrání mezery i přes vynechaný null, každou veličinu zvlášť.
+Veřejný segment.borderColor skryje nejistá propojení; izolované body marker,
+společný původní řádek/čas tooltipu a pořadí duplicit zůstávají. Podrobnosti
+počtu/redukce pod existující ikonou, vzhled mimo graf se neměnil.
+
+Zdrojový store, časový výběr, parser, plné statistiky, tři konfigurace, IO/dirty
+a původní animační nastavení zachované. Žádné nové requesty/timery/závislosti.
+Sampler má jen volitelný indexový režim, výchozí API/generátor beze změny.
+419/419 Node,7nových regresí s nezávislým oraclem/100historiemi/250kProxy;
+rozšířený skutečný Chromium154/Chart.js/IO se3konfiguracemi/12k/320–1440px,
+obě témata, reálné segmenty/null/gap/touch a původní cooperative CSV browser
+prošly bez pageerror/socketů. Nejde o živé ESP/API nebo fyzický iOS.
+
+9 čerstvých před/po scénářů (1k–250k regular/dense +CPU×4/100k), stejné
+SHA úplných řádků/statistik/reportu a původních měření24h. Nový hash grafu
+se záměrně liší; každý zobrazený bod, extrémy i mezery se ověřují zvlášť.
+Hustých100k má601 místo86 401 vzorků, Chart44,5→10,6ms, UI86,2→61,6ms.
+CPU×4 UI377→223,2ms; ale příprava100k30,8→38,6ms a malé husté1k
+UI9,6→13,1ms. Žádný claim obecného zrychlení/16ms/INP/RAM.
+[Metoda, raw JSON, přesné limity a rizika](docs/performance/24H_MINMAX.md).
+
+Další checkpoint METEO-008: dávkovaná příprava velkého24h výřezu s dirty,
+viditelností a guardem aktuální stanice/dat; stále synchronní O(n) práce
+na CPU×4 je měřitelná. Neopakovat hotové033/036, parser ani IO. Ostatní
+category grafy036, cache004 a širší worker/persistence samostatně.
+METEO-084 pro živé ESP stále BLOCKED do dodání firmware/API. Jen codex-dev,
+main/konfigurace/archiv/workflow neměněny. Publikování bude doloženo níže.

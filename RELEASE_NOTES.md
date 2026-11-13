@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.19.1
+
+- Hustý 24hodinový graf vykresluje nejvýše 800 původních vzorků se zachováním minim a maxim teploty, vlhkosti a rosného bodu. Statistiky nadále používají všechna měření.
+- Redukce nepřemosťuje chybějící hodnoty ani dlouhé mezery; detail bodu zůstává navázaný na původní společné měření. Rozsah redukce je uvedený v podrobnostech grafu.
+
 ## v0.19.0
 
 - V nabídce ⚙ je nové Nastavení meteostanice pro každou ze tří stanic.

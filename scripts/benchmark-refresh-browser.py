@@ -160,10 +160,29 @@ with sync_playwright() as p:
                 .map((p,i)=>typeof p==='object'&&p!==null?p:{x:selected[i].ts.getTime(),y:p}));
               const expected=[r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)]
                 .map(get=>selected.map(r=>({x:r.ts.getTime(),y:get(r)})));
-              if(JSON.stringify(measurements)!==JSON.stringify(expected))throw Error('original chart measurements differ');
+              const bounds=points=>{let min=Infinity,max=-Infinity;for(const p of points)if(Number.isFinite(p.y)){min=Math.min(min,p.y);max=Math.max(max,p.y)}return [min,max]};
+              for(let j=0;j<3;j++){
+                const data=chart24.data.datasets[j].data.filter(p=>!p?.gap);
+                if(data.some(p=>p?.sourceIndex!==undefined)){
+                  if(data.length>800)throw Error('visual budget exceeded');
+                  let previous=-1;
+                  for(const point of data){
+                    const original=expected[j][point.sourceIndex];
+                    if(point.x!==original.x||point.y!==original.y)throw Error('fabricated chart point');
+                    let broken=false;
+                    for(let i=Math.max(0,previous);i<=point.sourceIndex;i++){
+                      if(!Number.isFinite(expected[j][i].y))broken=true;
+                      if(i>previous&&i>0&&expected[j][i].x-expected[j][i-1].x>10800000)broken=true;
+                    }
+                    if(previous>=0&&point.breakBefore!==broken)throw Error('missing span lost');
+                    previous=point.sourceIndex;
+                  }
+                  if(JSON.stringify(bounds(data))!==JSON.stringify(bounds(expected[j])))throw Error('extremum lost');
+                }else if(JSON.stringify(measurements[j])!==JSON.stringify(expected[j]))throw Error('original chart measurements differ');
+              }
               return {verificationDrawMs,rows:JSON.stringify(store.rows),
                 stats:JSON.stringify({summary,validation,dom}),chart:JSON.stringify(chart24.data),
-                measurements:JSON.stringify(measurements)};
+                measurements:JSON.stringify(expected)};
             }''')
             hashes = {key: hashlib.sha256(signature[key].encode()).hexdigest() for key in ['rows','stats','chart','measurements']}
             assert not errors and not sockets, (errors, sockets)

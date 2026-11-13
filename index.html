@@ -2249,8 +2249,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0190"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.19.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0191"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.19.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2798,6 +2798,7 @@
         <details class="ana-info" data-info>
           <summary>Podrobnosti grafu</summary>
           <p class="ana-note">Rozestupy odpovídají času měření v zóně prohlížeče. Detail bodu ukazuje datum, sekundy a UTC posun. Rosný bod je vypočtený z teploty a vlhkosti stejného záznamu. Chybějící hodnoty a mezery delší než 3 hodiny se nespojují; tato hranice není vyhodnocením dostupnosti stanice.</p>
+          <p class="ana-note" id="currentChartSampling"></p>
         </details>
       </div>
     </div>
@@ -5046,6 +5047,18 @@
         if (ds.pointRadius !== 0 || !chart.isDatasetVisible(i)) return;
         const meta = chart.getDatasetMeta(i);
         ctx.fillStyle = ds.borderColor;
+        if (ds.segment) {
+          // Reduced series hide uncertain connections through public segment
+          // styling. Their isolated real samples still need visible markers.
+          for (let k = 0; k < meta.data.length; k++) {
+            const point = meta.data[k];
+            if (point.skip) continue;
+            const left = k === 0 || meta.data[k - 1].skip || ds.data[k].breakBefore;
+            const right = k === meta.data.length - 1 || meta.data[k + 1].skip || ds.data[k + 1].breakBefore;
+            if (left && right) { ctx.beginPath();ctx.arc(point.x, point.y, 2, 0, Math.PI * 2);ctx.fill(); }
+          }
+          return;
+        }
         // Reuse Chart.js's cached segments; no per-sample styling callback.
         for (const segment of meta.dataset.segments) {
           const point = meta.data[segment.start];
@@ -5077,7 +5090,31 @@
     } };
     chart24.data.datasets.forEach(ds => { ds.tension = 0; ds.spanGaps = false; });
 
-    function currentChartData(rows) {
+    function currentChartData(rows, limit = Infinity) {
+      if (rows.length > limit) {
+        const getters = [r => r.temp, r => r.hum, r => dewPoint(r.temp, r.hum)];
+        const indices = sampleExtrema(rows, getters, limit, true);
+        const labels = [], series = [[], [], []], broken = [false, false, false];
+        let next = 0, previous = null;
+        // One pass records missing values even when their row was not selected.
+        // No prefix array, row mutation or full collection of derived points.
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i], x = row.ts.getTime();
+          const values = [row.temp, row.hum, dewPoint(row.temp, row.hum)];
+          if (previous !== null && x - previous > 10800000) broken.fill(true);
+          for (let j = 0; j < 3; j++) if (!Number.isFinite(values[j])) broken[j] = true;
+          if (i === indices[next]) {
+            labels.push(x);
+            for (let j = 0; j < 3; j++) {
+              series[j].push({ x, y: Number.isFinite(values[j]) ? values[j] : null, sourceIndex: i, breakBefore: broken[j] });
+              broken[j] = !Number.isFinite(values[j]);
+            }
+            next++;
+          }
+          previous = x;
+        }
+        return { labels, series };
+      }
       const labels = [], series = [[], [], []];
       let previous = null;
       for (const row of rows) {
@@ -5163,11 +5200,18 @@
           // Keep the previous full predicate for MQTT/combined sources.
           h24 = rows.filter(r => r.ts.getTime() >= cut);
         }
-        // Retain every point and source order for equal timestamps.
+        // Keep the complete selection and stable tie order; only chart data may be reduced.
         h24.sort((a, b) => a.ts.getTime() - b.ts.getTime());
-        const { labels, series } = currentChartData(h24);
+        const { labels, series } = currentChartData(h24, 800);
         chart24.data.labels = labels;
-        chart24.data.datasets.forEach((ds, i) => { ds.data = series[i]; });
+        chart24.data.datasets.forEach((ds, i) => {
+          ds.data = series[i];
+          ds.segment = h24.length > 800 ? { borderColor: context =>
+            ds.data[context.p1DataIndex]?.breakBefore ? "transparent" : ds.borderColor } : undefined;
+        });
+        setNodeText(el("currentChartSampling"), h24.length > 800
+          ? `Zobrazeno ${labels.length} z ${h24.length} původních měření. Minima/maxima T, RH a rosného bodu zachována; statistiky používají všechna měření. Čára se přeruší i přes chybějící vynechaný vzorek. Podrobnější výřez najdete v Průzkumníku.`
+          : `Zobrazeno všech ${h24.length} původních měření ve výřezu.`);
         const first = labels[0], last = labels.at(-1);
         chart24.data.datasets.forEach(ds => { ds.pointRadius = first === last ? 2 : 0; });
         if (labels.length) {
@@ -5582,9 +5626,9 @@
       let step; do { step = steps.next(); } while (!step.done);
       return step.value;
     }
-    function sampleExtrema(rows, getters, limit = 800) { return finishSteps(sampleExtremaSteps(rows, getters, limit)); }
-    function* sampleExtremaSteps(rows, getters, limit = 800) {
-      if (rows.length <= limit) return rows;
+    function sampleExtrema(rows, getters, limit = 800, indicesOnly = false) { return finishSteps(sampleExtremaSteps(rows, getters, limit, indicesOnly)); }
+    function* sampleExtremaSteps(rows, getters, limit = 800, indicesOnly = false) {
+      if (rows.length <= limit) return indicesOnly ? Array.from({ length: rows.length }, (_, i) => i) : rows;
       const buckets = Math.max(1, Math.floor((limit - 2) / (3 * getters.length)));
       const indices = new Set([0, rows.length - 1]);
       let work = 0;
@@ -5603,7 +5647,8 @@
           for (const index of [minIndex, maxIndex, gap]) if (index >= 0) indices.add(index);
         }
       }
-      return [...indices].sort((a, b) => a - b).map(i => rows[i]);
+      const selected = [...indices].sort((a, b) => a - b);
+      return indicesOnly ? selected : selected.map(i => rows[i]);
     }
 
     function numericSummary(values) {

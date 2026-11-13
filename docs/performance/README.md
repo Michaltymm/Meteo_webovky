@@ -1,5 +1,8 @@
 # Reprodukce měření výkonu
 
+[Min/max vykreslení 24h](24H_MINMAX.md): METEO-033, nejvýše800 původních
+vzorků, společné T/RH/Td extrémy, per-metric mezery a přesné plné statistiky.
+
 [Skutečná časová osa 24h](CASOVA_OSA_24H.md): METEO-036, epochové souřadnice,
 přesný původní čas a přerušení dlouhých mezer; porovnání režie proti category
 grafu na1k–250k při zachování všech měření a úplných statistik.

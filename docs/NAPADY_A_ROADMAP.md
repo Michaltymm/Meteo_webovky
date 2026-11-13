@@ -63,7 +63,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
-| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 24h výběr; v0.18.12 24h podle viditelnosti, aktuální dirty stav/stanice/resume a fallback. Všechny body zachovány, viditelné husté kreslení dále | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/LAZY_24H.md a předchozí profily. 036/24h hotová ve v0.18.13; dále033 redukce24h, worker/persistence/004 samostatně | Rozpracováno |
+| METEO-008 Dávkování/worker pro parsing/agregace, případně IndexedDB | Současná historie | V / P2 | v0.18.1–0.18.8 model/porovnání/grafové výpočty a CSV; v0.18.10 24h výběr; v0.18.12 24h podle viditelnosti, aktuální dirty stav/stanice/resume a fallback. Všechny body zachovány, viditelné husté kreslení dále | Přesná data/čítače/stabilita/rušení a před/po. Viz performance/LAZY_24H.md a předchozí profily. 036/24h a033/24h hotové; dále dávkování přípravy24h podle profilu, worker/persistence/004 samostatně | Rozpracováno |
 
 ## 2. Uživatelské rozhraní a responzivita
 
@@ -118,7 +118,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-033 Min/max redukce pro průzkumník, plné statistiky a zoom | Současná historie | S / P0 | Max 800 pozorovaných bodů; bez animace; zachová extrémy každé veličiny | AUD-013 / Opus P07 | Dokončeno |
+| METEO-033 Min/max redukce pro průzkumník (zoom) a24h, plné statistiky | Současná historie | S / P0 | Průzkumník hotový; v0.19.1 také24h max800 původních vzorků T/RH/Td, zachované extrémy a per-metric mezery, plné statistiky | AUD-013 / Opus P07 | Dokončeno |
 | METEO-034 Kalendářní a hodinová heatmapa T/RH/srážek/pokrytí | Současné denní/hodinové agregace | S / P2 | v0.10.0 vlastní canvas T/RH,14dnů×24hodin na stránku, plné průměry a detail; srážky/pokrytí dále | METEO-038/048, srážky METEO-017 | Rozpracováno |
 | METEO-035 Histogram a teplotní profil hodiny/dne/měsíce | Současná historie | S / P2 | O(n) agregace, desítky sloupců | METEO-038; volba časového vážení | Nápad |
 | METEO-036 Skutečná časová osa, mezery a tooltip původního vzorku | Současné timestampy | S / P1 | v0.10.0 analytika, v0.18.13 také hlavní/moderní24h: lineární epochová osa, přesné tooltipy/UTC offsety, null a mezery>3h. Ostatní starší category grafy dále | METEO-033/048; nyní category osa | Rozpracováno |
@@ -2457,3 +2457,38 @@ Success, build31s/deploy12s/celkem53s,1artefakt. Jen codex-dev; main stále
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Nasazení potvrzuje workflow,
 živé ESP/API ani fyzický Safari nejsou otestované. První obrazovka/koncepty
 hotové; skutečná komunikace BLOCKED do dodání FW/API, neoznačovat celé084 DONE.
+
+
+## METEO-033 — min/max vizualizace24h, v0.19.1
+
+Dokončený checkpoint z v0.18.13, odložený nastavením ESP v0.19.0. Bez nových
+ID. Původní průzkumník a nyní také hlavní/moderní24h mají hotovou redukci.
+Velký výřez vybírá existující sampler: oba kraje + první min/max/null T/RH/Td
+v88koších, nejvýše794 původních řádků v rozpočtu800. Malý výřez zůstává celý.
+Doplňkový průchod chrání mezery i přes vynechaný null, každou veličinu zvlášť.
+Veřejný segment.borderColor skryje nejistá propojení; izolované body marker,
+společný původní řádek/čas tooltipu a pořadí duplicit zůstávají. Podrobnosti
+počtu/redukce pod existující ikonou, vzhled mimo graf se neměnil.
+
+Zdrojový store, časový výběr, parser, plné statistiky, tři konfigurace, IO/dirty
+a původní animační nastavení zachované. Žádné nové requesty/timery/závislosti.
+Sampler má jen volitelný indexový režim, výchozí API/generátor beze změny.
+419/419 Node,7nových regresí s nezávislým oraclem/100historiemi/250kProxy;
+rozšířený skutečný Chromium154/Chart.js/IO se3konfiguracemi/12k/320–1440px,
+obě témata, reálné segmenty/null/gap/touch a původní cooperative CSV browser
+prošly bez pageerror/socketů. Nejde o živé ESP/API nebo fyzický iOS.
+
+9 čerstvých před/po scénářů (1k–250k regular/dense +CPU×4/100k), stejné
+SHA úplných řádků/statistik/reportu a původních měření24h. Nový hash grafu
+se záměrně liší; každý zobrazený bod, extrémy i mezery se ověřují zvlášť.
+Hustých100k má601 místo86 401 vzorků, Chart44,5→10,6ms, UI86,2→61,6ms.
+CPU×4 UI377→223,2ms; ale příprava100k30,8→38,6ms a malé husté1k
+UI9,6→13,1ms. Žádný claim obecného zrychlení/16ms/INP/RAM.
+[Metoda, raw JSON, přesné limity a rizika](performance/24H_MINMAX.md).
+
+Další checkpoint METEO-008: dávkovaná příprava velkého24h výřezu s dirty,
+viditelností a guardem aktuální stanice/dat; stále synchronní O(n) práce
+na CPU×4 je měřitelná. Neopakovat hotové033/036, parser ani IO. Ostatní
+category grafy036, cache004 a širší worker/persistence samostatně.
+METEO-084 pro živé ESP stále BLOCKED do dodání firmware/API. Jen codex-dev,
+main/konfigurace/archiv/workflow neměněny. Publikování bude doloženo níže.

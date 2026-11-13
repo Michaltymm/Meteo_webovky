@@ -146,3 +146,7 @@ původních validních řádků. Průzkumník pod033 zůstává hotový; tohle j
 renderer, ne nové ID. Neopakovat hotovou036/24h, parser, výběr a IO.
 Ostatní category grafy036, explicitní zóna048, streaming snapshot a004 cache
 stanic zůstávají samostatné budoucí etapy.
+
+
+Navazující redukce24h v METEO-033 dokončena ve v0.19.1; viz
+[nové měření a omezení](24H_MINMAX.md). Původní časový kontrakt zůstává.

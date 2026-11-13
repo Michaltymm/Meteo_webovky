@@ -48,8 +48,13 @@ async def main():
         async def exact_chart():
             assert await page.evaluate('''()=>{
               const rows=store.rows.filter(r=>r.ts>=store.rows[0].ts.getTime()-86400000).sort((a,b)=>a.ts-b.ts);
-              return JSON.stringify(chart24.data.labels)===JSON.stringify(rows.map(r=>r.ts.getTime()))&&
-                [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>JSON.stringify(chart24.data.datasets[i].data.filter(p=>!p.gap))===JSON.stringify(rows.map(r=>({x:r.ts.getTime(),y:get(r)}))));
+              return chart24.data.labels.length<=800 &&
+                [r=>r.temp,r=>r.hum,r=>dewPoint(r.temp,r.hum)].every((get,i)=>{
+                  const data=chart24.data.datasets[i].data.filter(p=>!p.gap);
+                  const original=rows.map(get).filter(Number.isFinite),shown=data.map(p=>p.y).filter(Number.isFinite);
+                  return data.every((p,j)=>{const r=rows[p.sourceIndex??j];return p.x===+r.ts&&p.y===get(r)})&&
+                    Math.min(...shown)===Math.min(...original)&&Math.max(...shown)===Math.max(...original);
+                });
             }''')
         for index in [0,1,2]:
             if index:
@@ -102,6 +107,34 @@ async def main():
                 await exact_chart()
                 assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
         checks.append('320/767/1440px and both themes preserve all plotted values without horizontal overflow')
+        await page.evaluate('''()=>{
+          const start=Date.parse('2026-11-05T00:00:00Z');
+          const rows=Array.from({length:12000},(_,i)=>({ts:new Date(start+i*1000+(i>=4000?10800001:0)),temp:i%17,hum:50}));
+          rows[2].temp=null;rows[120].temp=null;rows[100].temp=50;
+          store.rows=rows.reverse();invalidateDerivedData();refreshUI();
+        }''')
+        await page.locator('#chart24h').scroll_into_view_if_needed();await page.wait_for_function('!tabDirtyState.now')
+        await exact_chart()
+        assert await page.evaluate('''()=>{
+          const ds=chart24.data.datasets[0],data=ds.data;
+          const index=data.findIndex((p,i)=>i>0&&p.sourceIndex>120&&data[i-1].sourceIndex<120);
+          const red=chart24.getDatasetMeta(0).dataset.segments;
+          const blue=chart24.getDatasetMeta(1).dataset.segments;
+          return !data.some(p=>p.sourceIndex===120)&&data[index-1].y!==null&&data[index].breakBefore&&
+            !chart24.data.datasets[1].data[index].breakBefore&&
+            red.some(s=>s.start<=index-1&&s.end>=index&&s.style?.borderColor==='transparent')&&
+            blue.some(s=>s.start<=index-1&&s.end>=index&&s.style?.borderColor==='#2980b9')&&
+            data.some((p,i)=>i>0&&p.x-data[i-1].x>10800000&&p.breakBefore)&&
+            el('currentChartSampling').textContent.includes('z 12000 původních');
+        }''')
+        point=await page.evaluate('''()=>{
+          const r=el('chart24h').getBoundingClientRect();
+          const k=chart24.data.datasets[0].data.findIndex(p=>p.y===50),p=chart24.getDatasetMeta(0).data[k];
+          return {x:r.left+p.x,y:r.top+p.y,source:chart24.data.datasets[0].data[k].sourceIndex};
+        }''')
+        await page.touchscreen.tap(point['x'],point['y']);await page.wait_for_timeout(100)
+        assert await page.evaluate('(source)=>chart24.tooltip.dataPoints.length>0&&chart24.tooltip.dataPoints.every(p=>p.raw.sourceIndex===source)',point['source'])
+        checks.append('12k bounded min/max graph: all original extrema/pairs; omitted null hides only affected metric via real segment color, >3h gap remains, touch tooltip uses one original source row')
         # Actual pixel spacing, line segments and user tooltip on the epoch axis.
         await page.set_viewport_size({'width':390,'height':844})
         await page.evaluate('''()=>{
