@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0200"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0201"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4903,6 +4903,42 @@
     ══════════════════════════════════════════════ */
     const tabDirtyState = {};
     let currentChartObserver = null;
+    let currentChartJob = null;
+    function cancelCurrentChartJob() {
+      if (!currentChartJob) return;
+      clearTimeout(currentChartJob.timer);
+      currentChartJob.steps.return();
+      currentChartJob = null;
+    }
+    function runCurrentChartJob(job) {
+      const current = () => currentChartJob === job && isCurrentStation(job.context) &&
+        store.rows === job.source && store.rows.length === job.length &&
+        !analyticsActive() && document.querySelector(".tab-btn.active")?.dataset.tab === "now" && currentChartCanRender();
+      if (!current()) { if (currentChartJob === job) cancelCurrentChartJob(); return; }
+      try {
+        const result = analyticsWorkSlice(job.steps);
+        if (!current()) { if (currentChartJob === job) cancelCurrentChartJob(); return; }
+        if (result) {
+          applyCurrentChartData(job.count, result.value);
+          currentChartJob = null;
+          tabDirtyState.now = false;
+          return;
+        }
+        job.timer = setTimeout(() => runCurrentChartJob(job), 0);
+      } catch {
+        cancelCurrentChartJob();
+        setNodeText(el("currentChartSampling"), "Graf se nepodařilo připravit. Obnovte data nebo znovu otevřete přehled.");
+      }
+    }
+    function prepareCurrentChart() {
+      if (currentChartJob) return;
+      const rows = selectCurrentChartRows(store.rows);
+      const job = { context: stationContext(), source: store.rows, length: store.rows.length,
+        count: rows.length, steps: currentChartDataSteps(rows, 800), timer: null };
+      currentChartJob = job;
+      el("chart24h").style.visibility = "hidden";
+      job.timer = setTimeout(() => runCurrentChartJob(job), 0);
+    }
     function currentChartCanRender() {
       if (document.hidden || currentPage === "modern2" || !store.rows.length) return false;
       // Keep the original synchronous path without a working observer.
@@ -4914,6 +4950,7 @@
       return r.bottom > 0 && r.right > 0 && r.top < window.innerHeight && r.left < window.innerWidth;
     }
     function hideCurrentChart() {
+      cancelCurrentChartJob();
       tabDirtyState.now = true;
       chart24.stop?.();
       el("chart24h").style.visibility = "hidden";
@@ -4943,6 +4980,10 @@
     function refreshTab(tab) {
       if (analyticsActive() || currentPage === "modern2" || !tabDirtyState[tab]) return;
       if (tab === "now" && !currentChartCanRender()) { hideCurrentChart(); return; }
+      // Small histories and explicit buildCharts calls retain their synchronous API.
+      if (tab === "now" && currentChartObserver && store.rows.length > 10000) {
+        prepareCurrentChart(); return;
+      }
       if (tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain") {
         buildCharts(tab);
       }
@@ -5138,15 +5179,17 @@
     } };
     chart24.data.datasets.forEach(ds => { ds.tension = 0; ds.spanGaps = false; });
 
-    function currentChartData(rows, limit = Infinity) {
+    function currentChartData(rows, limit = Infinity) { return finishSteps(currentChartDataSteps(rows, limit)); }
+    function* currentChartDataSteps(rows, limit = Infinity) {
       if (rows.length > limit) {
         const getters = [r => r.temp, r => r.hum, r => dewPoint(r.temp, r.hum)];
-        const indices = sampleExtrema(rows, getters, limit, true);
+        const indices = yield* sampleExtremaSteps(rows, getters, limit, true);
         const labels = [], series = [[], [], []], broken = [false, false, false];
         let next = 0, previous = null;
         // One pass records missing values even when their row was not selected.
         // No prefix array, row mutation or full collection of derived points.
         for (let i = 0; i < rows.length; i++) {
+          if (i && (i & 255) === 0) yield;
           const row = rows[i], x = row.ts.getTime();
           const values = [row.temp, row.hum, dewPoint(row.temp, row.hum)];
           if (previous !== null && x - previous > 10800000) broken.fill(true);
@@ -5231,10 +5274,7 @@
       };
     }
 
-    function buildCharts(tab) {
-      const rows = store.rows;
-
-      if (!tab || tab === "now") {
+    function selectCurrentChartRows(rows) {
         // 24h – seřazeno od nejstaršího (vázáno na nejnovější záznam, pole je řazeno sestupně)
         const lastTs = rows.length ? rows[0].ts.getTime() : Date.now();
         const cut = lastTs - 24 * 3600 * 1000;
@@ -5250,16 +5290,18 @@
         }
         // Keep the complete selection and stable tie order; only chart data may be reduced.
         h24.sort((a, b) => a.ts.getTime() - b.ts.getTime());
-        const { labels, series } = currentChartData(h24, 800);
+        return h24;
+    }
+    function applyCurrentChartData(count, { labels, series }) {
         chart24.data.labels = labels;
         chart24.data.datasets.forEach((ds, i) => {
           ds.data = series[i];
-          ds.segment = h24.length > 800 ? { borderColor: context =>
+          ds.segment = count > 800 ? { borderColor: context =>
             ds.data[context.p1DataIndex]?.breakBefore ? "transparent" : ds.borderColor } : undefined;
         });
-        setNodeText(el("currentChartSampling"), h24.length > 800
-          ? `Zobrazeno ${labels.length} z ${h24.length} původních měření. Minima/maxima T, RH a rosného bodu zachována; statistiky používají všechna měření. Čára se přeruší i přes chybějící vynechaný vzorek. Podrobnější výřez najdete v Průzkumníku.`
-          : `Zobrazeno všech ${h24.length} původních měření ve výřezu.`);
+        setNodeText(el("currentChartSampling"), count > 800
+          ? `Zobrazeno ${labels.length} z ${count} původních měření. Minima/maxima T, RH a rosného bodu zachována; statistiky používají všechna měření. Čára se přeruší i přes chybějící vynechaný vzorek. Podrobnější výřez najdete v Průzkumníku.`
+          : `Zobrazeno všech ${count} původních měření ve výřezu.`);
         const first = labels[0], last = labels.at(-1);
         chart24.data.datasets.forEach(ds => { ds.pointRadius = first === last ? 2 : 0; });
         if (labels.length) {
@@ -5271,6 +5313,15 @@
         }
         chart24.update();
         el("chart24h").style.visibility = "";
+    }
+
+    function buildCharts(tab) {
+      const rows = store.rows;
+
+      if (!tab || tab === "now") {
+        const h24 = selectCurrentChartRows(rows);
+        const { labels, series } = currentChartData(h24, 800);
+        applyCurrentChartData(h24.length, { labels, series });
       }
 
       if (!tab || tab === "rain") {

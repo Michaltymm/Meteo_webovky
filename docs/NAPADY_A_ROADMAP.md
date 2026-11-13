@@ -2549,3 +2549,16 @@ Přetrvávají dřívější runtime Actions/ubuntu-latest upozornění, workflo
 se neměnilo. Další úpravy minimalistické stránky až podle zpětné vazby;
 obecný checkpoint008 a blokované živé ESP084 zůstávají. Následující commit
 ukládá jen tuto evidenci.
+
+## METEO-008 — v0.20.1, dávkovaná příprava 24h
+
+Dokončen dílčí checkpoint: společný generátor a existující scheduler pro velký
+viditelný 24h graf, atomický commit, rušení při invalidaci a guard relace/dat/
+stránky/tabu/background/viewportu. Malá a no-IO cesta synchronní. Beze změny
+statistik, min/max výběru, konfigurací či síťových požadavků. 430/430 Node,
+nový skutečný Chromium harness se třemi konfiguracemi a přesná shoda bodů.
+Před/po 1k/10k/100k/250k: u250k nejdelší část103,7→6,3ms, celkem103,7→197,6ms.
+Viz [metodika a omezení](performance/KOOPERATIVNI_24H.md).
+Celé008 zůstává Rozpracováno. Dále profilovat synchronní výběr/sort, agregace
+a závěrečný Chart.update včetně asynchronního dokončení; neopakovat hotový sampler.
+ESP084 stále blokované firmware/API. Jen codex-dev, main beze změny.

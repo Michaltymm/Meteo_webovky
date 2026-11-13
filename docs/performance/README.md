@@ -143,3 +143,5 @@ cyklus skutečných Google Sheets/MQTT služeb vyžadují samostatné měření.
 Výkonnostní testy Node mají funkční assertions (extrémy, celé statistiky,
 hranice rozsahu, invalidace, cache, 250k bez RangeError), nikoli křehké časové
 limity na sdíleném CI stroji.
+
+- [Dávkovaná příprava24h v0.20.1](KOOPERATIVNI_24H.md): přesná shoda bodů, délka dávek a celková režie.

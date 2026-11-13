@@ -42,8 +42,8 @@ async def main():
         await page.wait_for_load_state('networkidle')
         assert await page.evaluate('currentChartObserver!==null && tabDirtyState.now && chart24.data.labels.length===0')
         await page.evaluate('''()=>{
-          globalThis.draws=[];globalThis.originalBuild=buildCharts;
-          buildCharts=function(tab){if(!tab||tab==='now')draws.push({station:activeIdx,count:store.rows.length});return originalBuild(tab)};
+          globalThis.draws=[];globalThis.originalApply=applyCurrentChartData;
+          applyCurrentChartData=function(...args){const result=originalApply(...args);draws.push({station:activeIdx,count:store.rows.length});return result};
         }''')
         async def exact_chart():
             assert await page.evaluate('''()=>{

@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.20.1
+
+- Velké 24hodinové grafy se připravují po dávkách, aby prohlížeč mohl mezi nimi reagovat na ovládání.
+- Rozpracovaný graf se při změně stanice nebo dat zahodí; původní hodnoty, extrémy a mezery zůstávají zachované.
+
 ## v0.20.0
 
 - Nová samostatná karta Moderní přehled 2: velká teplota, vlhkost, tlak a napětí baterie bez tabulek a grafů.
