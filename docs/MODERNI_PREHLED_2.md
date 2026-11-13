@@ -67,3 +67,16 @@ mobilní/desktopové snímky a skutečné barvy chybových upozornění.
 Další návrhy případně vycházet z uživatelské zpětné vazby k této jednoduché
 obrazovce; nepřidávat další metriky a diagnostiku bez konkrétního přínosu.
 Výkonový checkpoint METEO-008 a blokované živé nastavení ESP084 se nemění.
+
+
+Publikování v0.20.0: [013cea6](https://github.com/Michaltymm/Meteo_webovky/commit/013cea62b0725535ecfea0772df4a245257d7a3c),
+[Actions #50](https://github.com/Michaltymm/Meteo_webovky/actions/runs/43432871400)
+**Success**, build39s/deploy10s/celkem59s,1artefakt.426/426 Node, nový skutečný
+Chromium/3stanice/27layoutů a původní mobile-layout/66layoutů prošly.
+Implementováno, lokálně otestováno a vývojové nasazení potvrzeno workflow.
+Živé služby/Pages widgety ani fyzický Safari/iOS nebyly ověřeny.
+Pouze codex-dev; main stále2405c5d7326909a24c41e7066bfdc4a9d1622208.
+Přetrvávají dřívější runtime Actions/ubuntu-latest upozornění, workflow
+se neměnilo. Další úpravy minimalistické stránky až podle zpětné vazby;
+obecný checkpoint008 a blokované živé ESP084 zůstávají. Následující commit
+ukládá jen tuto evidenci.
