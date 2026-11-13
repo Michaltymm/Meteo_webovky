@@ -1423,3 +1423,11 @@ Viz [metodika a omezení](docs/performance/KOOPERATIVNI_24H.md).
 Celé008 zůstává Rozpracováno. Dále profilovat synchronní výběr/sort, agregace
 a závěrečný Chart.update včetně asynchronního dokončení; neopakovat hotový sampler.
 ESP084 stále blokované firmware/API. Jen codex-dev, main beze změny.
+
+Nasazení v0.20.1 ověřeno: [d35663f](https://github.com/Michaltymm/Meteo_webovky/commit/d35663f73d26b18f763e5385a1918f5d7fd6c518),
+[Actions #51](https://github.com/Michaltymm/Meteo_webovky/actions/runs/43514749728)
+Success (build31s/deploy11s/celkem51s),1artefakt. Lokálně430/430Node a oba
+Chromium harnessy prošly; workflow ověřilo testy a publikování. Živé externí
+integrace/Pages widgety ani fyzický Safari/iOS se netestovaly. Main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Existující upozornění runtimeActions/
+ubuntu-latest trvají, workflow se neměnilo. Další commit ukládá pouze evidenci.
