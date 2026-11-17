@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0202"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.2</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0203"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.3</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4704,11 +4704,19 @@
         setGsStatus(false, "Google Sheets: žádná platná data – zkontrolujte sloupce (A=Datum, B=Čas, C=Teplota…)");
         return false;
       }
+      let prepared = null;
+      if (timing && context.config.source === "sheets" && parsed.length > 10000) {
+        prepared = await aggregateSnapshotAsync(parsed, context, timing);
+        if (!prepared || !isCurrentStation(context)) return false;
+      }
       measureSheetsWork(timing, "ui", () => {
         store.rows = parsed;
         dataStatus.latestRow = parsed[0];
         dataStatus.latestKind = "sheets";
         invalidateDerivedData();
+        // The source and snapshot become visible together. Crossing local midnight
+        // intentionally leaves a cache miss, preserving today's original contract.
+        if (prepared && prepared.dayKey === localDateKey()) aggregateCache = prepared;
         publishCSVValidation(validation, context);
         refreshUI();
       });
@@ -5371,6 +5379,12 @@
       const dayKey = localDateKey(), bounds = localDayBounds(dayKey);
       if (rows === store.rows && aggregateCache?.source === rows && aggregateCache.length === rows.length &&
         aggregateCache.dayKey === dayKey && aggregateCache.from === bounds.from && aggregateCache.to === bounds.to) return aggregateCache;
+      const result = finishSteps(dataAggregateSteps(rows, dayKey));
+      if (rows === store.rows) aggregateCache = result;
+      return result;
+    }
+    function* dataAggregateSteps(rows, dayKey = localDateKey()) {
+      const bounds = localDayBounds(dayKey);
       const accumulator = () => ({ min: null, max: null, avg: null, count: 0, sum: 0 });
       const add = (stat, value) => {
         if (!Number.isFinite(value)) return;
@@ -5388,6 +5402,7 @@
       };
       let year, month, day, d, m, yr, index = 0;
       for (const row of rows) {
+        if (index && (index & 255) === 0) yield;
         const time = row.ts.getTime();
         const y = row.ts.getFullYear(), mo = row.ts.getMonth(), da = row.ts.getDate();
         // Most adjacent samples share a day: avoid rebuilding keys/Map lookups.
@@ -5420,13 +5435,46 @@
         const stat = today[key]; stat.avg = stat.count ? stat.sum / stat.count : null;
       }
       let rainMax = null;
+      let dayWork = 0;
       for (const [day, d] of days) {
+        if ((++dayWork & 255) === 0) yield;
         if (d.rain !== null && (!rainMax || d.rain > rainMax.value)) rainMax = { day, value: d.rain };
       }
       const result = { source: rows, length: rows.length, dayKey, ...bounds, days, months, years, today, temperature, rainMax,
         hourly: new Map(), annual: new Map() };
-      if (rows === store.rows) aggregateCache = result;
       return result;
+    }
+
+    function aggregateSnapshotAsync(rows, context, timing) {
+      const steps = dataAggregateSteps(rows);
+      const phase = timing.aggregate ??= { runs: 0, ms: 0 };
+      phase.runs++;
+      return new Promise((resolve, reject) => {
+        let timer = null, finished = false;
+        const settle = (result, error) => {
+          if (finished) return;
+          finished = true; clearTimeout(timer); steps.return();
+          context.signal.removeEventListener("abort", abort);
+          if (error) reject(error); else resolve(result);
+        };
+        const abort = () => settle(null);
+        const run = () => {
+          timer = null;
+          if (!isCurrentStation(context)) { abort(); return; }
+          const started = sheetsNow(); let result, error;
+          try { result = analyticsWorkSlice(steps); } catch (e) { error = e; }
+          finally {
+            const elapsed = sheetsElapsed(started);
+            phase.ms = phase.ms === null || elapsed === null || !Number.isFinite(phase.ms + elapsed) ? null : phase.ms + elapsed;
+          }
+          if (error) { settle(null, error); return; }
+          if (!isCurrentStation(context)) { abort(); return; }
+          if (result) { settle(result.value); return; }
+          timer = setTimeout(run, 0);
+        };
+        context.signal.addEventListener("abort", abort, { once: true });
+        if (!isCurrentStation(context)) abort(); else timer = setTimeout(run, 0);
+      });
     }
 
     let temperatureRecordView = null;
@@ -6562,6 +6610,7 @@
         '<dl class="sheets-timing"><div><dt>Celá obnova</dt><dd id="sheetsTimeTotal">' + duration(timing.totalMs) + '</dd></div>' +
         '<div><dt>Přenos CSV · pokusy: ' + count(timing.transfer.runs) + '</dt><dd id="sheetsTimeTransfer">' + step("transfer") + '</dd></div>' +
         '<div><dt>Rozbor CSV · běhy: ' + count(timing.parse.runs) + '</dt><dd id="sheetsTimeParse">' + step("parse") + '</dd></div>' +
+        (timing.aggregate ? '<div><dt>Příprava statistik · běhy: ' + count(timing.aggregate.runs) + '</dt><dd id="sheetsTimeAggregate">' + step("aggregate") + '</dd></div>' : '') +
         '<div><dt>Data a přehled · běhy: ' + count(timing.ui.runs) + '</dt><dd id="sheetsTimeUi">' + step("ui") + '</dd></div></dl>' +
         (timing.unchanged ? '<p>Poslední odpověď: beze změny. Dříve přijatý export se znovu neparsuje; jeho datový přehled se nepřepočítává.</p>' : '') +
         '<details><summary>Co časy zahrnují</summary><p>Přenos zahrnuje čekání na odpověď i přečtení obsahu. Složky sčítají všechny pokusy této obnovy; celek zahrnuje také čekání mezi kroky a další obsluhu. Data a přehled měří synchronní práci aplikace, nikoli hotový snímek, pozdější líné grafy nebo rychlost samotného serveru. Přesnost závisí na časovači prohlížeče.</p></details></section>';

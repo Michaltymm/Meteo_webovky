@@ -1,5 +1,11 @@
 # Přehled změn
 
+## v0.20.3
+
+- Statistiky velkých CSV historií se připravují po dávkách, aby mohla stránka během výpočtu reagovat.
+- Nová historie a přesné statistiky se zobrazí společně až po dokončení; změna stanice rozpracovanou přípravu zruší.
+- Diagnostika obnovy samostatně ukazuje dobu přípravy statistik.
+
 ## v0.20.2
 
 - Rychlejší příprava časového výřezu grafu z velké historie, zejména při opakovaných časových značkách.

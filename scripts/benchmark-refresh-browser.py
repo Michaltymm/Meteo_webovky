@@ -139,7 +139,7 @@ with sync_playwright() as p:
                   }
                   const completedMs=performance.now()-started;profile.tracking=false;
                   const timing=dataStatus.sheets.timing;
-                  return {...profile,completedMs,ui:timing.ui,parse:timing.parse,totalMs:timing.totalMs,
+                  return {...profile,completedMs,ui:timing.ui,aggregate:timing.aggregate,parse:timing.parse,totalMs:timing.totalMs,
                     outcome:timing.outcome,rows:store.rows.length,chartPoints:chart24.data.labels.length,
                     chartsBefore:seedCharts,chartsAfter:Object.keys(Chart.instances).length};
                 }''')

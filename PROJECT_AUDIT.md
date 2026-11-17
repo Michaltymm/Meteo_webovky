@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.3: METEO-008 přesné agregace velkého Sheets CSV před commitem po dávkách; soukromý snapshot/atomická cache, abort a midnight guard, malá/MQTT/both sync.440/440Node,8nových; Chromium3konfigurace/12k/mobil/touch prošel.4páry plných SHA všech dat/statistik/grafu shodné. UI250k29,4→3,7ms, celá obnova1730→1971,7ms; izolované části6,8→1,9ms za cenu celku86,6ms. Viz docs/performance/AGREGACE_PO_DAVKACH.md.008zůstáváRozpracováno, dále nativní CSVsort/přímé cache miss/hourly/annual/Chart dle profilu;084blokované.
 - v0.20.2: METEO-008 výběr24h Sheets bez opakovaného sortu, tie skupiny stabilní, MQTT/both fallback beze změny.432/432Node;24 izolovaných profilů a16profilů celé obnovy,8párů všech plných SHA shodné. Dense250k výběr5,10→1,25ms, ties250k26,95→0,40ms; celá obnova není obecně rychlejší. Viz docs/performance/RAZENI_VYREZU_24H.md. Dále přesné agregace/kooperativní atomická cache, celé008Rozpracováno;084stále blokováno.
 - v0.20.1: METEO-008 dílčí checkpoint kooperativní přípravy24h hotový; 430/430 Node, Chromium/3konfigurace/shoda bodů, profil1k–250k. U250k nejdelší část103,7→6,3ms za cenu delšího celku103,7→197,6ms. Synchronní výběr/sort/agregace/Chart dále, celé008 Rozpracováno. Viz docs/performance/KOOPERATIVNI_24H.md. ESP084 stále blokováno.
 - v0.20.0: na zadání nová samostatná čtvrtá karta Moderní přehled 2 (#moderni2), minimalistický T/RH/P/V panel, stanice/time/status bez grafů/tabulek/astronomie/duplicitní diagnostiky. Existující store/CFG/formatter/status, O(1), nuly vs null zachované, chyby/future/invalid a MQTT receipt čas zůstávají viditelné. Žádný nový fetch/poll/Chart. Reset maže staré hodnoty/datetime; router/back/reload, návrat původních tabů/preferencí, no-IO i late refresh guard. Mobilní společná navigace4odkazy ve2řadách/2sloupcích,44px cíle a16px select.426/426 Node (7nových); skutečný Chromium/3konfigurace,27rozložení/témat, vizuální snímky, chyby/barvy/navigace/reset a původní mobile-layout harness prošly. Viz docs/MODERNI_PREHLED_2.md.010 obecně Rozpracováno,011 stále hotové; nepřidávat nové prvky bez zpětné vazby. Výkonový checkpoint008 a blokované ESP084 beze změny. Jen codex-dev;013cea6/Actions #50/43432871400 Success (build39s/deploy10s/celkem59s), main stále2405c5d; evidence na konci etapy.
@@ -1456,3 +1457,19 @@ Všechny8páry celých SHA shodné. Publikování potvrzeno workflow; fyzický S
 živé integrace a přímé widgety Pages neověřeny. Main stále2405c5d7326909a24c41e7066bfdc4a9d1622208.
 Existující runtimeActions/ubuntu-latest upozornění přetrvávají, workflow se neměnilo.
 Další pokračování: přesné agregace v METEO-008; tato etapa výběru dokončená.
+
+## METEO-008 — v0.20.3, přesné agregace před commitem po dávkách
+
+Dílčí checkpoint dokončen. Nad soukromými validními CSV řádky Sheets>10k se
+původní přesný akumulátor dokončí po dávkách; data a hotová cache se zveřejní
+společně. Žádné statistiky z redukce. Guard/abort stanice včetně hotového výsledku,
+chyba zachová původní data, local-midnight cache miss zachován. Malá/přímá/MQTT/
+both cesta synchronní; žádné fetch/poll/dependency navíc. Diagnostika odděluje
+CPU přípravy statistik od parseru a synchronního UI.440/440Node,8nových regresí,
+původní Chromium/3konfigurace/12k/mobil/témy/touch prošly.4páry SHA všech
+řádků/statistik/reportu/DOM/grafu/měření přesně shodné. UI250k29,4→3,7ms,
+celá obnova1730,0→1971,7ms (bez obecného claimu zrychlení). Izolovaná nejdelší
+část250k6,8→1,9ms, celkem6,8→86,6ms. Viz docs/performance/AGREGACE_PO_DAVKACH.md.
+Celé008 stále Rozpracováno; dále podle profilu zbývající nativní CSV sort a přímé
+cache miss/hourly/annual/Chart. Neopakovat hotový parser, výběr24h nebo tyto
+agregace. ESP084 nadále blokované firmware/API. Jen codex-dev, main beze změny.

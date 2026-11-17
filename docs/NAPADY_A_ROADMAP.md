@@ -2594,3 +2594,19 @@ Všechny8páry celých SHA shodné. Publikování potvrzeno workflow; fyzický S
 živé integrace a přímé widgety Pages neověřeny. Main stále2405c5d7326909a24c41e7066bfdc4a9d1622208.
 Existující runtimeActions/ubuntu-latest upozornění přetrvávají, workflow se neměnilo.
 Další pokračování: přesné agregace v METEO-008; tato etapa výběru dokončená.
+
+## METEO-008 — v0.20.3, přesné agregace před commitem po dávkách
+
+Dílčí checkpoint dokončen. Nad soukromými validními CSV řádky Sheets>10k se
+původní přesný akumulátor dokončí po dávkách; data a hotová cache se zveřejní
+společně. Žádné statistiky z redukce. Guard/abort stanice včetně hotového výsledku,
+chyba zachová původní data, local-midnight cache miss zachován. Malá/přímá/MQTT/
+both cesta synchronní; žádné fetch/poll/dependency navíc. Diagnostika odděluje
+CPU přípravy statistik od parseru a synchronního UI.440/440Node,8nových regresí,
+původní Chromium/3konfigurace/12k/mobil/témy/touch prošly.4páry SHA všech
+řádků/statistik/reportu/DOM/grafu/měření přesně shodné. UI250k29,4→3,7ms,
+celá obnova1730,0→1971,7ms (bez obecného claimu zrychlení). Izolovaná nejdelší
+část250k6,8→1,9ms, celkem6,8→86,6ms. Viz docs/performance/AGREGACE_PO_DAVKACH.md.
+Celé008 stále Rozpracováno; dále podle profilu zbývající nativní CSV sort a přímé
+cache miss/hourly/annual/Chart. Neopakovat hotový parser, výběr24h nebo tyto
+agregace. ESP084 nadále blokované firmware/API. Jen codex-dev, main beze změny.

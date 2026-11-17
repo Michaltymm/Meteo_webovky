@@ -147,3 +147,5 @@ limity na sdíleném CI stroji.
 - [Dávkovaná příprava24h v0.20.1](KOOPERATIVNI_24H.md): přesná shoda bodů, délka dávek a celková režie.
 
 - [Stabilní výběr24h v0.20.2](RAZENI_VYREZU_24H.md): odstranění opakovaného řazení Sheets výřezu, přesný oracle a profil celé obnovy.
+
+- [Přesné agregace po dávkách v0.20.3](AGREGACE_PO_DAVKACH.md): soukromý snapshot před CSV commitem, atomická cache a časování.
