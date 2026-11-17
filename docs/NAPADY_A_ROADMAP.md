@@ -2610,3 +2610,14 @@ celá obnova1730,0→1971,7ms (bez obecného claimu zrychlení). Izolovaná nejd
 Celé008 stále Rozpracováno; dále podle profilu zbývající nativní CSV sort a přímé
 cache miss/hourly/annual/Chart. Neopakovat hotový parser, výběr24h nebo tyto
 agregace. ESP084 nadále blokované firmware/API. Jen codex-dev, main beze změny.
+
+Nasazení v0.20.3 potvrzeno: [ef91c6a](https://github.com/Michaltymm/Meteo_webovky/commit/ef91c6a),
+[Actions #53](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44199461973)
+Success (build30s/deploy11s/celkem50s),1artefakt.440/440Node a skutečný prohlížeč
+všech3konfigurací/12k/témata/mobil/touch prošly; všechny4páry plných SHA shodné.
+Implementováno/otestováno a vývojové publikování ověřeno workflow. Přímé Pages
+widgety, živé integrace a fyzický Safari/iOS neověřeny. Main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Existující runtimeActions/ubuntu-latest
+upozornění přetrvávají, workflow se neměnilo. Další krok METEO-008: nativní CSV
+sort u nepravidelně seřazených velkých exportů podle dřívějších měření, případně
+přímé cache miss/hourly/annual; tuto dokončenou agregační etapu neopakovat.
