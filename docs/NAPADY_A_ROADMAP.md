@@ -2647,3 +2647,18 @@ plných podpisů shodné. Vývojové publikování ověřeno workflow, přímé 
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
 upozornění trvají, workflow se neměnilo. Další checkpoint: profil konkrétních
 cache miss ročních/hodinových statistik a přehledu teplot; hotové řazení neopakovat.
+
+## METEO-008 — v0.20.5, profil statistik a roční aritmetika
+
+Dílčí checkpoint dokončen. Skutečný Chromium cold/warm profil hourly/annual/
+overview1k/10k/100k/250k regular/dense odhalil Date coercion v annualStats.
+Původní stable sort +24h okno používají getTime bez změny algoritmu/cache/
+statistik/Date vítěze.448/448Node,2nové regrese100irregular historií a přesné
+24h/+1ms hranice;3konfigurace v actualbrowser ročního tabu prošly. Všech8párů
+plných hourly/annual/overview SHA shodné. Annual dense250k208,5→36,6ms,
+regular250k39,7→5,4ms. Žádný claim16ms/INP/celé obnovy/RAM. Viz
+ docs/performance/ROCNI_CASOVE_PREVODY.md.
+Celé008Rozpracováno. Další změřený cíl buildTempOverview regular250k~90ms:
+plný průchod+vals pole, využít rozsahy/přesné streamované sumy a zachovat
+okrajový den/pořadí/filtr/tlak/null/0. Hotovou roční optimalizaci neopakovat.
+Čtyři pohledy/3stanice zachované,084stále blokované firmware/API.

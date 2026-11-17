@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0204"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.4</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0205"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.5</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7312,9 +7312,10 @@
       // Preserve the legacy counter-difference algorithm and stable timestamp
       // ties. This is not a verified rainfall total (unknown counter resets).
       let maxCounterDelta24h = 0, maxCounterDeltaDate = null, start = 0;
-      rains.sort((a, b) => a.ts - b.ts);
+      rains.sort((a, b) => a.ts.getTime() - b.ts.getTime());
       for (let end = 1; end < rains.length; end++) {
-        while (rains[end].ts - rains[start].ts > 86400000) start++;
+        const endTime = rains[end].ts.getTime();
+        while (endTime - rains[start].ts.getTime() > 86400000) start++;
         const diff = rains[end].rain - rains[start].rain;
         if (diff > maxCounterDelta24h) { maxCounterDelta24h = diff; maxCounterDeltaDate = rains[end].ts; }
       }

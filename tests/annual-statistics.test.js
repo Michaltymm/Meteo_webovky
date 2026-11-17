@@ -184,3 +184,23 @@ test('local year boundaries use the same timezone as the daily and monthly snaps
     assert.equal(out.trim(), '1');
   }
 });
+
+test('numeric counter time arithmetic matches the legacy algorithm on 100 irregular histories with ties and resets',()=>{
+ const a=app();let seed=137;
+ const random=()=>seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+ for(let trial=0;trial<100;trial++){
+  const base=Date.parse('2026-10-28T12:00:00+01:00');
+  const rows=Array.from({length:200},(_,i)=>({ts:new Date(base-(random()%300000)*1000),temp:i%9?i%31:null,
+    hum:i%13?i%101:null,rain:i%7?random()%31:null,rainInc:i%11?random()%11:null})).sort((a,b)=>b.ts-a.ts);
+  a.run(`store.rows=${JSON.stringify(rows)}.map(r=>({...r,ts:new Date(r.ts)}));aggregateCache=null`);
+  assert.deepEqual(JSON.parse(a.run('JSON.stringify(annualStats(2026))')),plain(reference(rows,2026)));
+ }
+});
+test('counter window retains exact 24h boundaries, milliseconds and the original winning Date',()=>{
+ const a=app();a.run(`globalThis.start=Date.parse('2026-10-28T00:00:00Z');
+ store.rows=[{dt:86400001,rain:100},{dt:86400000,rain:5},{dt:86400000,rain:90},{dt:1,rain:1},{dt:0,rain:0}]
+ .map(r=>({ts:new Date(start+r.dt),rain:r.rain,temp:0,hum:0,rainInc:0}));`);
+ assert.equal(a.run('annualStats(2026).maxCounterDelta24h'),99);
+ assert.equal(a.run('annualStats(2026).maxCounterDeltaDate===store.rows[0].ts'),true);
+ assert.equal(a.run('annualStats(2026)===annualStats(2026)'),true);
+});

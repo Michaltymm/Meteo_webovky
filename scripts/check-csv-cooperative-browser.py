@@ -106,6 +106,21 @@ async def main():
                     Math.min(...shown)===Math.min(...original)&&Math.max(...shown)===Math.max(...original);
                 });
             }''')
+            await page.locator('.tab-btn[data-tab="yearstats"]').click()
+            assert await page.evaluate('''()=>{
+              const year=store.rows[0].ts.getFullYear(),rows=store.rows.filter(r=>r.ts.getFullYear()===year&&Number.isFinite(r.rain)).sort((a,b)=>a.ts-b.ts);
+              let left=0,maximum=0,winner=null;
+              for(let right=1;right<rows.length;right++){
+                while(rows[right].ts-rows[left].ts>86400000)left++;
+                const difference=rows[right].rain-rows[left].rain;
+                if(difference>maximum){maximum=difference;winner=rows[right].ts;}
+              }
+              const actual=annualStats(year);
+              return actual.maxCounterDelta24h===maximum&&actual.maxCounterDeltaDate===winner&&
+                el('yearStatsContent').textContent.includes(String(year));
+            }''')
+            await page.locator('.tab-btn[data-tab="now"]').click()
+        checks.append('annual statistics render for all three configs and exactly match legacy counter arithmetic and winning Date')
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')
         checks.append('unordered timestamp pairs from each station sort descending with stable original note order')
         checks.append('all 24h chart labels and three original-value datasets exactly match old full scan for each station')

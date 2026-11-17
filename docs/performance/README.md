@@ -151,3 +151,5 @@ limity na sdíleném CI stroji.
 - [Přesné agregace po dávkách v0.20.3](AGREGACE_PO_DAVKACH.md): soukromý snapshot před CSV commitem, atomická cache a časování.
 
 - [Stabilní řazení CSV po dávkách v0.20.4](CSV_MERGE_PO_DAVKACH.md): ohraničené kroky, shodné řádky/reporty a režie.
+
+- [Profil statistik a roční převody času v0.20.5](ROCNI_CASOVE_PREVODY.md): osm před/po scénářů, identické modely a další cíl overview.

@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.5: METEO-008 profil hourly/annual/overview cold/warm; levnější getTime aritmetika ročního čítače, bez změny algoritmu/stability/Date vítěze.448/448Node,3stanice actual roční UI,8párů všech modelů SHA shodné. Annual dense250k208,5→36,6ms, regular250k39,7→5,4ms; synchronní stále. Viz docs/performance/ROCNI_CASOVE_PREVODY.md. Dále buildTempOverview regular250k~90ms s původními sumami/okrajovým dnem/filtry, celé008Rozpracováno;084blokované.
 - v0.20.4: METEO-008 velký aktivní Sheets sort po dávkách, descending/equal fastpath; přímé/malé/cizí/MQTT/both native.446/446Node, Chromium3konfigurace/12k/abortsort/mobil prošel.12párů pořadí +4páry plných řádků/reportu SHA shodné.250kunordered část92,8→6,4ms za cenu celkusortu507,6ms; VM blok140,39→13,01ms, pipeline2416,52→2745,86ms. Viz docs/performance/CSV_MERGE_PO_DAVKACH.md. Dále měřit cache miss ročních/hodinových statistik a přehledu teplot; celé008Rozpracováno,084blokované.
 - v0.20.3: METEO-008 přesné agregace velkého Sheets CSV před commitem po dávkách; soukromý snapshot/atomická cache, abort a midnight guard, malá/MQTT/both sync.440/440Node,8nových; Chromium3konfigurace/12k/mobil/touch prošel.4páry plných SHA všech dat/statistik/grafu shodné. UI250k29,4→3,7ms, celá obnova1730→1971,7ms; izolované části6,8→1,9ms za cenu celku86,6ms. Viz docs/performance/AGREGACE_PO_DAVKACH.md.008zůstáváRozpracováno, dále nativní CSVsort/přímé cache miss/hourly/annual/Chart dle profilu;084blokované.
 - v0.20.2: METEO-008 výběr24h Sheets bez opakovaného sortu, tie skupiny stabilní, MQTT/both fallback beze změny.432/432Node;24 izolovaných profilů a16profilů celé obnovy,8párů všech plných SHA shodné. Dense250k výběr5,10→1,25ms, ties250k26,95→0,40ms; celá obnova není obecně rychlejší. Viz docs/performance/RAZENI_VYREZU_24H.md. Dále přesné agregace/kooperativní atomická cache, celé008Rozpracováno;084stále blokováno.
@@ -1511,3 +1512,18 @@ plných podpisů shodné. Vývojové publikování ověřeno workflow, přímé 
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
 upozornění trvají, workflow se neměnilo. Další checkpoint: profil konkrétních
 cache miss ročních/hodinových statistik a přehledu teplot; hotové řazení neopakovat.
+
+## METEO-008 — v0.20.5, profil statistik a roční aritmetika
+
+Dílčí checkpoint dokončen. Skutečný Chromium cold/warm profil hourly/annual/
+overview1k/10k/100k/250k regular/dense odhalil Date coercion v annualStats.
+Původní stable sort +24h okno používají getTime bez změny algoritmu/cache/
+statistik/Date vítěze.448/448Node,2nové regrese100irregular historií a přesné
+24h/+1ms hranice;3konfigurace v actualbrowser ročního tabu prošly. Všech8párů
+plných hourly/annual/overview SHA shodné. Annual dense250k208,5→36,6ms,
+regular250k39,7→5,4ms. Žádný claim16ms/INP/celé obnovy/RAM. Viz
+ docs/performance/ROCNI_CASOVE_PREVODY.md.
+Celé008Rozpracováno. Další změřený cíl buildTempOverview regular250k~90ms:
+plný průchod+vals pole, využít rozsahy/přesné streamované sumy a zachovat
+okrajový den/pořadí/filtr/tlak/null/0. Hotovou roční optimalizaci neopakovat.
+Čtyři pohledy/3stanice zachované,084stále blokované firmware/API.

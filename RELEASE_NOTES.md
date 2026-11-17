@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.20.5
+
+- Rychlejší první výpočet ročních statistik u rozsáhlé historie.
+- Zachované přesné výsledky a původní hranice časového okna srážkového čítače.
+
 ## v0.20.4
 
 - Velké neuspořádané CSV historie se řadí po dávkách, aby stránka mohla mezi nimi reagovat na ovládání.
