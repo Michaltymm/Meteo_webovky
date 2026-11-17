@@ -1527,3 +1527,13 @@ Celé008Rozpracováno. Další změřený cíl buildTempOverview regular250k~90m
 plný průchod+vals pole, využít rozsahy/přesné streamované sumy a zachovat
 okrajový den/pořadí/filtr/tlak/null/0. Hotovou roční optimalizaci neopakovat.
 Čtyři pohledy/3stanice zachované,084stále blokované firmware/API.
+
+Nasazení v0.20.5: [4866dd5](https://github.com/Michaltymm/Meteo_webovky/commit/4866dd5),
+[Actions #55](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44201462776)
+Success (build34s/deploy10s/celkem53s),1artefakt.448/448Node a actual Chromium
+ročního tabu3konfigurací/12k/mobil prošly;8párů modelových SHA shodné. Implementace
+lokálně otestovaná a vývojové publikování potvrzené workflow. Přímé widgety Pages,
+živé služby a fyzický Safari/iOS neověřeny. Main stále2405c5d7326909a24c41e7066bfdc4a9d1622208.
+Dřívější runtimeActions/ubuntu-latest upozornění trvají, workflow nezměněné.
+Další konkrétní etapa: buildTempOverview ~90ms při regular250k, přesné streamované
+sumy a časový filtr místo plných vals polí; aktuální roční etapu neopakovat.
