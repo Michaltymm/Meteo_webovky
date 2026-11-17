@@ -1501,3 +1501,13 @@ Metodika/vzorky: docs/performance/CSV_MERGE_PO_DAVKACH.md.
 Celé008Rozpracováno. Dále profilovat cache miss ročních/hodinových statistik
 a přehledu teplot, pak úprava dle dopadu; hotový sort/parser/agregace neopakovat.
 ESP084 zůstává blokované firmware/API;4přehledy a3konfigurace zachované.
+
+Nasazení v0.20.4 potvrzeno: [35c2b15](https://github.com/Michaltymm/Meteo_webovky/commit/35c2b15),
+[Actions #54](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44200570832)
+Success (build35s/deploy10s/celkem55s),1artefakt.446/446Node a skutečný Chromium
+3konfigurace/12k unordered/mobil/abort v sortu prošly; všechny12Chromium/4VM páry
+plných podpisů shodné. Vývojové publikování ověřeno workflow, přímé widgety Pages,
+živé integrace a fyzický Safari/iOS neověřeny. Main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
+upozornění trvají, workflow se neměnilo. Další checkpoint: profil konkrétních
+cache miss ročních/hodinových statistik a přehledu teplot; hotové řazení neopakovat.
