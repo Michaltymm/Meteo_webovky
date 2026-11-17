@@ -2585,3 +2585,12 @@ Metodika/omezení/raw: docs/performance/RAZENI_VYREZU_24H.md.
 Celé008 zůstává Rozpracováno. Dále izolovat průchody přesných agregací, poté
 zvážit kooperativní přípravu s atomickou cache a guardy; hotový výběr neopakovat.
 ESP084 stále blokované firmware/API. Zachovány4přehledy, všechny3konfigurace.
+
+Nasazení v0.20.2: [5e2b870](https://github.com/Michaltymm/Meteo_webovky/commit/5e2b870),
+[Actions #52](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44198148793)
+Success, build35s/deploy11s/celkem55s/1artefakt.432/432Node, původní skutečný
+IO/Chart.js browser harness všech3stanic/12k/320–1440px/témata/touch prošel.
+Všechny8páry celých SHA shodné. Publikování potvrzeno workflow; fyzický Safari,
+živé integrace a přímé widgety Pages neověřeny. Main stále2405c5d7326909a24c41e7066bfdc4a9d1622208.
+Existující runtimeActions/ubuntu-latest upozornění přetrvávají, workflow se neměnilo.
+Další pokračování: přesné agregace v METEO-008; tato etapa výběru dokončená.
