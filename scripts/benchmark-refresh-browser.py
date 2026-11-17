@@ -1,7 +1,9 @@
 """Offline profile of actual Sheets commit, aggregates, DOM and Chart.js.
 
 Real CSV fetch/parser/commit and original station configuration; no startup polling.
-Function times overlap (e.g. buildCharts includes Chart.update). Not Web Vitals,
+Function times overlap (e.g. runCurrentChartJob includes the final Chart.update).
+completedMs includes deferred current-chart completion; ui remains the synchronous
+commit and mutation counts cover only that commit. Not Web Vitals,
 network performance, physical mobile measurements or a memory/long-task profile.
 """
 import argparse
@@ -83,10 +85,11 @@ with sync_playwright() as p:
               if(typeof initCurrentChartVisibility==='function')initCurrentChartVisibility();
               globalThis.profile=null;
               for(const name of ['invalidateDerivedData','refreshUI','dataAggregates','buildCharts','renderDataStatus',
-                                  'syncModernStation','updateOvBar','buildHistoryRows','syncTemperatureRecord']){
+                                  'syncModernStation','updateOvBar','buildHistoryRows','syncTemperatureRecord',
+                                  'selectCurrentChartRows','applyCurrentChartData','runCurrentChartJob']){
                 const original=window[name];
                 window[name]=function(...args){
-                  if(!profile?.active)return original.apply(this,args);
+                  if(!profile?.active&&!profile?.tracking)return original.apply(this,args);
                   const start=performance.now();try{return original.apply(this,args)}finally{
                     const entry=profile.functions[name]??={ms:0,calls:0};entry.ms+=performance.now()-start;entry.calls++;
                   }
@@ -94,7 +97,7 @@ with sync_playwright() as p:
               }
               const update=Chart.prototype.update;
               Chart.prototype.update=function(...args){
-                if(!profile?.active)return update.apply(this,args);
+                if(!profile?.active&&!profile?.tracking)return update.apply(this,args);
                 const start=performance.now();try{return update.apply(this,args)}finally{
                   profile.chartUpdates++;profile.chartMs+=performance.now()-start;
                 }
@@ -128,9 +131,15 @@ with sync_playwright() as p:
                 assert visible == (args.view == 'visible'), (args.view, visible)
                 client.send('HeapProfiler.collectGarbage')
                 sample = page.evaluate('''async()=>{
+                  profile.tracking=true;const started=performance.now();
                   await fetchSheets(true);
+                  // Include actual deferred preparation/draw, not a replacement draw.
+                  if(typeof currentChartJob!=='undefined'){
+                    while(currentChartJob)await new Promise(resolve=>setTimeout(resolve,0));
+                  }
+                  const completedMs=performance.now()-started;profile.tracking=false;
                   const timing=dataStatus.sheets.timing;
-                  return {...profile,ui:timing.ui,parse:timing.parse,totalMs:timing.totalMs,
+                  return {...profile,completedMs,ui:timing.ui,parse:timing.parse,totalMs:timing.totalMs,
                     outcome:timing.outcome,rows:store.rows.length,chartPoints:chart24.data.labels.length,
                     chartsBefore:seedCharts,chartsAfter:Object.keys(Chart.instances).length};
                 }''')

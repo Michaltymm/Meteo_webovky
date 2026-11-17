@@ -2570,3 +2570,18 @@ Chromium harnessy prošly; workflow ověřilo testy a publikování. Živé exte
 integrace/Pages widgety ani fyzický Safari/iOS se netestovaly. Main stále
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Existující upozornění runtimeActions/
 ubuntu-latest trvají, workflow se neměnilo. Další commit ukládá pouze evidenci.
+
+## METEO-008 — v0.20.2, stabilní výběr 24h bez nového řazení
+
+Dílčí checkpoint dokončen: Sheets výřez z původních binárních mezí se obrátí a
+shodné časy si zachovají původní pořadí; stejné objekty a plné zdroje/statistiky.
+MQTT/both ponechávají původní predikát a stabilní sort. Žádné další požadavky,
+závislosti nebo grafy. 432/432 Node, nové regrese velkých shodných skupin a
+omezeného počtu čtení. V izolovaném Chromium profilu dense250k5,10→1,25ms,
+ties250k26,95→0,40ms. Celá obnova8scénářů/3běhy před/po zahrnuje asynchronní
+job; všechny úplné SHA řádků/statistik/grafu/měření shodné. Celkový čas není
+obecně rychlejší (regular250k1702,3→1989,1ms, dense100k984,8→866,0ms).
+Metodika/omezení/raw: docs/performance/RAZENI_VYREZU_24H.md.
+Celé008 zůstává Rozpracováno. Dále izolovat průchody přesných agregací, poté
+zvážit kooperativní přípravu s atomickou cache a guardy; hotový výběr neopakovat.
+ESP084 stále blokované firmware/API. Zachovány4přehledy, všechny3konfigurace.

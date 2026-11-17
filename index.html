@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0201"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0202"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.2</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5282,14 +5282,25 @@
         if (CFG.source === "sheets") {
           // CSV guarantees descending timestamps: copy only the visible range.
           const { start, end } = historyRangeBounds(rows, cut, lastTs);
-          h24 = rows.slice(start, end);
+          h24 = rows.slice(start, end).reverse();
+          // Reversing time order also reverses equal-time records. Restore
+          // each tie group to the original stable CSV order, without a sort.
+          for (let first = 0; first < h24.length;) {
+            let next = first + 1;
+            const time = h24[first].ts.getTime();
+            while (next < h24.length && h24[next].ts.getTime() === time) next++;
+            for (let left = first, right = next - 1; left < right; left++, right--) {
+              const row = h24[left]; h24[left] = h24[right]; h24[right] = row;
+            }
+            first = next;
+          }
         } else {
           // Live receipt clocks can go backwards or precede future CSV rows.
           // Keep the previous full predicate for MQTT/combined sources.
           h24 = rows.filter(r => r.ts.getTime() >= cut);
+          h24.sort((a, b) => a.ts.getTime() - b.ts.getTime());
         }
         // Keep the complete selection and stable tie order; only chart data may be reduced.
-        h24.sort((a, b) => a.ts.getTime() - b.ts.getTime());
         return h24;
     }
     function applyCurrentChartData(count, { labels, series }) {

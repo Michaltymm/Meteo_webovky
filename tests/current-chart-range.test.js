@@ -116,3 +116,29 @@ test('MQTT/both retain the old chart selection when received time precedes a CSV
     assert.equal(a.run('store.rows.length'),4);
   }
 });
+
+
+test('stable ascending selection preserves identities in large tie groups at both window boundaries',()=>{
+  const a=app();
+  assert.equal(a.run(`(()=>{
+    CFG.source='sheets';
+    const latest=1700000000000;
+    const rows=Object.freeze([0,0,0,1000,1000,2000,86400000,86400000,86400001].flatMap((offset,group)=>
+      Array.from({length:group===0?12000:3},(_,i)=>Object.freeze({ts:new Date(latest-offset),temp:i,group}))));
+    const expected=rows.filter(r=>+r.ts>=latest-86400000).sort((a,b)=>a.ts-b.ts);
+    const selected=selectCurrentChartRows(rows);
+    return selected!==rows&&selected.length===expected.length&&selected.every((r,i)=>r===expected[i]);
+  })()`),true);
+});
+
+test('Sheets ordering reads each selected timestamp at most twice beyond binary bounds',()=>{
+  const a=app();
+  a.run(`CFG.source='sheets';globalThis.reads=0;
+    globalThis.source=Array.from({length:100000},(_,i)=>({
+      ts:{getTime(){reads++;return 1700000000000-Math.floor(i/5)*100;}},temp:i}));
+    globalThis.selected=selectCurrentChartRows(source);`);
+  assert.equal(a.run('selected.length'),100000);
+  assert.ok(a.run('reads')<200100);
+  assert.equal(a.run('selected[0]===source[99995]'),true);
+  assert.equal(a.run('selected.at(-1)===source[4]'),true);
+});

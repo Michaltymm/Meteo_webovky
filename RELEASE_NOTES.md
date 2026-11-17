@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.20.2
+
+- Rychlejší příprava časového výřezu grafu z velké historie, zejména při opakovaných časových značkách.
+- Zachované původní pořadí měření, extrémy, chybějící hodnoty a přesné statistiky.
+
 ## v0.20.1
 
 - Velké 24hodinové grafy se připravují po dávkách, aby prohlížeč mohl mezi nimi reagovat na ovládání.

@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.2: METEO-008 výběr24h Sheets bez opakovaného sortu, tie skupiny stabilní, MQTT/both fallback beze změny.432/432Node;24 izolovaných profilů a16profilů celé obnovy,8párů všech plných SHA shodné. Dense250k výběr5,10→1,25ms, ties250k26,95→0,40ms; celá obnova není obecně rychlejší. Viz docs/performance/RAZENI_VYREZU_24H.md. Dále přesné agregace/kooperativní atomická cache, celé008Rozpracováno;084stále blokováno.
 - v0.20.1: METEO-008 dílčí checkpoint kooperativní přípravy24h hotový; 430/430 Node, Chromium/3konfigurace/shoda bodů, profil1k–250k. U250k nejdelší část103,7→6,3ms za cenu delšího celku103,7→197,6ms. Synchronní výběr/sort/agregace/Chart dále, celé008 Rozpracováno. Viz docs/performance/KOOPERATIVNI_24H.md. ESP084 stále blokováno.
 - v0.20.0: na zadání nová samostatná čtvrtá karta Moderní přehled 2 (#moderni2), minimalistický T/RH/P/V panel, stanice/time/status bez grafů/tabulek/astronomie/duplicitní diagnostiky. Existující store/CFG/formatter/status, O(1), nuly vs null zachované, chyby/future/invalid a MQTT receipt čas zůstávají viditelné. Žádný nový fetch/poll/Chart. Reset maže staré hodnoty/datetime; router/back/reload, návrat původních tabů/preferencí, no-IO i late refresh guard. Mobilní společná navigace4odkazy ve2řadách/2sloupcích,44px cíle a16px select.426/426 Node (7nových); skutečný Chromium/3konfigurace,27rozložení/témat, vizuální snímky, chyby/barvy/navigace/reset a původní mobile-layout harness prošly. Viz docs/MODERNI_PREHLED_2.md.010 obecně Rozpracováno,011 stále hotové; nepřidávat nové prvky bez zpětné vazby. Výkonový checkpoint008 a blokované ESP084 beze změny. Jen codex-dev;013cea6/Actions #50/43432871400 Success (build39s/deploy10s/celkem59s), main stále2405c5d; evidence na konci etapy.
 - v0.19.1: METEO-033/24h hotové (hlavní i moderní), nejvýše794 původních řádků v rozpočtu800 ze společného min/max/null T/RH/Td výběru; malá cesta celá. Per-metric breakBefore zachovává i vynechané null/>3h mezery, veřejné segment styling + izolované markery, původní tooltip. Store/časový výběr/0/null/duplicity/stats/konfigurace/IO nezměněné.419/419 Node (7nových, nezávislý oracle/100historií/250kProxy), actual IO/Chart.js/3konfigurace/12k/320–1440px/obě témata a původní CSV browser prošly.9čerstvých profilů (obě varianty po přerušení), plné SHA řádků/statistik/reportu/původních měření shodné, grafový hash se záměrně mění.100kdense601 místo86401 vzorků, Chart44,5→10,6ms, UI86,2→61,6ms; CPU×4 UI377→223,2ms. Příprava100k30,8→38,6ms, malé dense1kUI9,6→13,1ms: bez obecného claimu16ms/INP/RAM. Viz docs/performance/24H_MINMAX.md. Dále008 kooperativní příprava velkého24h výřezu s dirty/visibility/aktuální relací; neopakovat hotový sampler/časovou osu/parser/IO.084 stále BLOCKED firmware/API. Jen codex-dev;95cadd4/Actions #49/43426309964 Success (build40s/deploy9s/celkem58s), main stále2405c5d; evidence na konci etapy.
@@ -1431,3 +1432,18 @@ Chromium harnessy prošly; workflow ověřilo testy a publikování. Živé exte
 integrace/Pages widgety ani fyzický Safari/iOS se netestovaly. Main stále
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Existující upozornění runtimeActions/
 ubuntu-latest trvají, workflow se neměnilo. Další commit ukládá pouze evidenci.
+
+## METEO-008 — v0.20.2, stabilní výběr 24h bez nového řazení
+
+Dílčí checkpoint dokončen: Sheets výřez z původních binárních mezí se obrátí a
+shodné časy si zachovají původní pořadí; stejné objekty a plné zdroje/statistiky.
+MQTT/both ponechávají původní predikát a stabilní sort. Žádné další požadavky,
+závislosti nebo grafy. 432/432 Node, nové regrese velkých shodných skupin a
+omezeného počtu čtení. V izolovaném Chromium profilu dense250k5,10→1,25ms,
+ties250k26,95→0,40ms. Celá obnova8scénářů/3běhy před/po zahrnuje asynchronní
+job; všechny úplné SHA řádků/statistik/grafu/měření shodné. Celkový čas není
+obecně rychlejší (regular250k1702,3→1989,1ms, dense100k984,8→866,0ms).
+Metodika/omezení/raw: docs/performance/RAZENI_VYREZU_24H.md.
+Celé008 zůstává Rozpracováno. Dále izolovat průchody přesných agregací, poté
+zvážit kooperativní přípravu s atomickou cache a guardy; hotový výběr neopakovat.
+ESP084 stále blokované firmware/API. Zachovány4přehledy, všechny3konfigurace.
