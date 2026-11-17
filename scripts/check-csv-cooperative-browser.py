@@ -132,6 +132,9 @@ async def main():
                   return JSON.stringify(chartOverview.data.labels)===JSON.stringify(keys)&&
                     chartOverview.data.datasets.every((ds,i)=>JSON.stringify(ds.data)===JSON.stringify(stats.map(s=>+s[['max','min','avg'][i]].toFixed(1))));
                 }''',metric)
+            await page.evaluate('globalThis.overviewFirstRow=el("ovTableBody").firstElementChild')
+            await page.locator('.ov-range-btn[data-ovdays="0"]').click()
+            assert await page.evaluate('el("ovTableBody").firstElementChild===overviewFirstRow')
             await page.locator('.tab-btn[data-tab="now"]').click()
         checks.append('overview T/RH/P and all-data control render original daily extrema/means for all three configs')
         checks.append('annual statistics render for all three configs and exactly match legacy counter arithmetic and winning Date')

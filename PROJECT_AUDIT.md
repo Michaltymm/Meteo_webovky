@@ -1,11 +1,12 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.7: METEO-008 localeformatter reuse a přesná DOM gate tabulky overview, bez markupcache;459/459Node+11/11focus,actual3stanice/mobil/identityřádků prošel.16párů plných graf/tableSHA shodných, pevný30d čas. Repeat250k93,8→24,4ms, change100k22,2→31,8ms pomalejší, viz docs/performance/PREHLED_RENDER.md. Dále ověřit zbytečné stejné Chart.update vs units/data/legend/theme/resize, celé008Rozpracováno;084blokované.
 - v0.20.6: METEO-008 průběžné přesné denní souhrny overview bez vals polí, Sheets binární časové meze, MQTT/both plný predikát, datum jen při změně dne.455/455Node+8/8focusDST3zóny,3stanice actualUI/T/RH/P/mobil prošly;8párů modelovýchSHA shodné. Regular250k79,9→27,1ms, dense49,9→4,7ms. Viz docs/performance/PREHLED_DENNI_SOUHRNY.md. Dále rozdělit HTML/DOM dlouhé tabulkyVše vsChart čas, pak další úprava; celé008Rozpracováno,084blokované.
 - v0.20.5: METEO-008 profil hourly/annual/overview cold/warm; levnější getTime aritmetika ročního čítače, bez změny algoritmu/stability/Date vítěze.448/448Node,3stanice actual roční UI,8párů všech modelů SHA shodné. Annual dense250k208,5→36,6ms, regular250k39,7→5,4ms; synchronní stále. Viz docs/performance/ROCNI_CASOVE_PREVODY.md. Dále buildTempOverview regular250k~90ms s původními sumami/okrajovým dnem/filtry, celé008Rozpracováno;084blokované.
 - v0.20.4: METEO-008 velký aktivní Sheets sort po dávkách, descending/equal fastpath; přímé/malé/cizí/MQTT/both native.446/446Node, Chromium3konfigurace/12k/abortsort/mobil prošel.12párů pořadí +4páry plných řádků/reportu SHA shodné.250kunordered část92,8→6,4ms za cenu celkusortu507,6ms; VM blok140,39→13,01ms, pipeline2416,52→2745,86ms. Viz docs/performance/CSV_MERGE_PO_DAVKACH.md. Dále měřit cache miss ročních/hodinových statistik a přehledu teplot; celé008Rozpracováno,084blokované.
 - v0.20.3: METEO-008 přesné agregace velkého Sheets CSV před commitem po dávkách; soukromý snapshot/atomická cache, abort a midnight guard, malá/MQTT/both sync.440/440Node,8nových; Chromium3konfigurace/12k/mobil/touch prošel.4páry plných SHA všech dat/statistik/grafu shodné. UI250k29,4→3,7ms, celá obnova1730→1971,7ms; izolované části6,8→1,9ms za cenu celku86,6ms. Viz docs/performance/AGREGACE_PO_DAVKACH.md.008zůstáváRozpracováno, dále nativní CSVsort/přímé cache miss/hourly/annual/Chart dle profilu;084blokované.
-- v0.20.2: METEO-008 výběr24h Sheets bez opakovaného sortu, tie skupiny stabilní, MQTT/both fallback beze změny.432/432Node;24 izolovaných profilů a16profilů celé obnovy,8párů všech plných SHA shodné. Dense250k výběr5,10→1,25ms, ties250k26,95→0,40ms; celá obnova není obecně rychlejší. Viz docs/performance/RAZENI_VYREZU_24H.md. Dále přesné agregace/kooperativní atomická cache, celé008Rozpracováno;084stále blokováno.
+- v0.20.2: METEO-008 výběr24h Sheets bez opakovaného sortu, tie skupiny stabilní, MQTT/both fallback beze změny.432/432Node;24 izolovaných profilů a16profilů celé obnovy,8párů všech plných SHA shodné. Dense250k výběr5,10→1,25ms, ties250k24,45→0,40ms; celá obnova není obecně rychlejší. Viz docs/performance/RAZENI_VYREZU_24H.md. Dále přesné agregace/kooperativní atomická cache, celé008Rozpracováno;084stále blokováno.
 - v0.20.1: METEO-008 dílčí checkpoint kooperativní přípravy24h hotový; 430/430 Node, Chromium/3konfigurace/shoda bodů, profil1k–250k. U250k nejdelší část103,7→6,3ms za cenu delšího celku103,7→197,6ms. Synchronní výběr/sort/agregace/Chart dále, celé008 Rozpracováno. Viz docs/performance/KOOPERATIVNI_24H.md. ESP084 stále blokováno.
 - v0.20.0: na zadání nová samostatná čtvrtá karta Moderní přehled 2 (#moderni2), minimalistický T/RH/P/V panel, stanice/time/status bez grafů/tabulek/astronomie/duplicitní diagnostiky. Existující store/CFG/formatter/status, O(1), nuly vs null zachované, chyby/future/invalid a MQTT receipt čas zůstávají viditelné. Žádný nový fetch/poll/Chart. Reset maže staré hodnoty/datetime; router/back/reload, návrat původních tabů/preferencí, no-IO i late refresh guard. Mobilní společná navigace4odkazy ve2řadách/2sloupcích,44px cíle a16px select.426/426 Node (7nových); skutečný Chromium/3konfigurace,27rozložení/témat, vizuální snímky, chyby/barvy/navigace/reset a původní mobile-layout harness prošly. Viz docs/MODERNI_PREHLED_2.md.010 obecně Rozpracováno,011 stále hotové; nepřidávat nové prvky bez zpětné vazby. Výkonový checkpoint008 a blokované ESP084 beze změny. Jen codex-dev;013cea6/Actions #50/43432871400 Success (build39s/deploy10s/celkem59s), main stále2405c5d; evidence na konci etapy.
 - v0.19.1: METEO-033/24h hotové (hlavní i moderní), nejvýše794 původních řádků v rozpočtu800 ze společného min/max/null T/RH/Td výběru; malá cesta celá. Per-metric breakBefore zachovává i vynechané null/>3h mezery, veřejné segment styling + izolované markery, původní tooltip. Store/časový výběr/0/null/duplicity/stats/konfigurace/IO nezměněné.419/419 Node (7nových, nezávislý oracle/100historií/250kProxy), actual IO/Chart.js/3konfigurace/12k/320–1440px/obě témata a původní CSV browser prošly.9čerstvých profilů (obě varianty po přerušení), plné SHA řádků/statistik/reportu/původních měření shodné, grafový hash se záměrně mění.100kdense601 místo86401 vzorků, Chart44,5→10,6ms, UI86,2→61,6ms; CPU×4 UI377→223,2ms. Příprava100k30,8→38,6ms, malé dense1kUI9,6→13,1ms: bez obecného claimu16ms/INP/RAM. Viz docs/performance/24H_MINMAX.md. Dále008 kooperativní příprava velkého24h výřezu s dirty/visibility/aktuální relací; neopakovat hotový sampler/časovou osu/parser/IO.084 stále BLOCKED firmware/API. Jen codex-dev;95cadd4/Actions #49/43426309964 Success (build40s/deploy9s/celkem58s), main stále2405c5d; evidence na konci etapy.
@@ -1444,7 +1445,7 @@ shodné časy si zachovají původní pořadí; stejné objekty a plné zdroje/s
 MQTT/both ponechávají původní predikát a stabilní sort. Žádné další požadavky,
 závislosti nebo grafy. 432/432 Node, nové regrese velkých shodných skupin a
 omezeného počtu čtení. V izolovaném Chromium profilu dense250k5,10→1,25ms,
-ties250k26,95→0,40ms. Celá obnova8scénářů/3běhy před/po zahrnuje asynchronní
+ties250k24,45→0,40ms. Celá obnova8scénářů/3běhy před/po zahrnuje asynchronní
 job; všechny úplné SHA řádků/statistik/grafu/měření shodné. Celkový čas není
 obecně rychlejší (regular250k1702,3→1989,1ms, dense100k984,8→866,0ms).
 Metodika/omezení/raw: docs/performance/RAZENI_VYREZU_24H.md.
@@ -1563,3 +1564,17 @@ workflow; přímé widgety Pages/živé služby/fyzický Safari neověřeny. Mai
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
 upozornění trvají, workflow beze změny. Dále oddělit cenu dlouhé overview tabulky
 a Chart.update; hotové přesné souhrny neopakovat.
+
+## METEO-008 — v0.20.7, locale a DOM přehledu
+
+Dílčí checkpoint dokončen: jeden lazy český Intl.NumberFormat, zachované mezery
+v počtech; aktuální DOM tabulky se nepřepíše, když je obsah shodný. Žádná další
+markupcache nebo invalidace, hodnoty/metrika/počty/vnější změna DOM se opraví.
+459/459Node +11/11focus,3nové regrese; actualChromium3konfigurace/12k/mobil včetně
+identity nezměněných řádků s12 000počty prošel.32profilů reálného viditelného
+přehledu,16párů kompletních graf/tableSHA shodných. Pevný čas drží30d okraj.
+Repeat250k/Vše93,8→24,4ms, změna100k22,2→31,8ms pomalejší, change250k81,1→73,5ms;
+bez univerzálního claimu. Viz docs/performance/PREHLED_RENDER.md.
+Celé008Rozpracováno. Dále ověřit coalescing stejných Chart.update s daty/jednotkami/
+metrikou/legendou/tématem/resize; graf i změněná dlouhá tabulka dále nákladné.
+Hotové souhrny/locale/DOM gate neopakovat;4pohledy/3stanice a084blokování zachované.

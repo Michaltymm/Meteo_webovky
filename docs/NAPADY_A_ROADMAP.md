@@ -2578,7 +2578,7 @@ shodné časy si zachovají původní pořadí; stejné objekty a plné zdroje/s
 MQTT/both ponechávají původní predikát a stabilní sort. Žádné další požadavky,
 závislosti nebo grafy. 432/432 Node, nové regrese velkých shodných skupin a
 omezeného počtu čtení. V izolovaném Chromium profilu dense250k5,10→1,25ms,
-ties250k26,95→0,40ms. Celá obnova8scénářů/3běhy před/po zahrnuje asynchronní
+ties250k24,45→0,40ms. Celá obnova8scénářů/3běhy před/po zahrnuje asynchronní
 job; všechny úplné SHA řádků/statistik/grafu/měření shodné. Celkový čas není
 obecně rychlejší (regular250k1702,3→1989,1ms, dense100k984,8→866,0ms).
 Metodika/omezení/raw: docs/performance/RAZENI_VYREZU_24H.md.
@@ -2697,3 +2697,17 @@ workflow; přímé widgety Pages/živé služby/fyzický Safari neověřeny. Mai
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
 upozornění trvají, workflow beze změny. Dále oddělit cenu dlouhé overview tabulky
 a Chart.update; hotové přesné souhrny neopakovat.
+
+## METEO-008 — v0.20.7, locale a DOM přehledu
+
+Dílčí checkpoint dokončen: jeden lazy český Intl.NumberFormat, zachované mezery
+v počtech; aktuální DOM tabulky se nepřepíše, když je obsah shodný. Žádná další
+markupcache nebo invalidace, hodnoty/metrika/počty/vnější změna DOM se opraví.
+459/459Node +11/11focus,3nové regrese; actualChromium3konfigurace/12k/mobil včetně
+identity nezměněných řádků s12 000počty prošel.32profilů reálného viditelného
+přehledu,16párů kompletních graf/tableSHA shodných. Pevný čas drží30d okraj.
+Repeat250k/Vše93,8→24,4ms, změna100k22,2→31,8ms pomalejší, change250k81,1→73,5ms;
+bez univerzálního claimu. Viz docs/performance/PREHLED_RENDER.md.
+Celé008Rozpracováno. Dále ověřit coalescing stejných Chart.update s daty/jednotkami/
+metrikou/legendou/tématem/resize; graf i změněná dlouhá tabulka dále nákladné.
+Hotové souhrny/locale/DOM gate neopakovat;4pohledy/3stanice a084blokování zachované.

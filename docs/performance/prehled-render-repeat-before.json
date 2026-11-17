@@ -1,0 +1,311 @@
+{
+  "source": "/workspace/validation/overview-render/before.html",
+  "mode": "repeat",
+  "scope": "Actual visible overview: CPU summaries, locale formatting, HTML insertion, Chart.update.",
+  "results": [
+    {
+      "samples": [
+        {
+          "summaries": 0.19999999972060323,
+          "chart": 3.6000000000931323,
+          "locale": 0,
+          "localeCalls": 4,
+          "html": 0.19999999972060323,
+          "htmlSets": 1,
+          "total": 4.099999999627471
+        },
+        {
+          "summaries": 0.40000000037252903,
+          "chart": 4.699999999720603,
+          "locale": 0.10000000009313226,
+          "localeCalls": 4,
+          "html": 0.2999999998137355,
+          "htmlSets": 1,
+          "total": 5.7000000001862645
+        },
+        {
+          "summaries": 0,
+          "chart": 2.6000000000931323,
+          "locale": 0,
+          "localeCalls": 4,
+          "html": 0.19999999972060323,
+          "htmlSets": 1,
+          "total": 2.8999999999068677
+        }
+      ],
+      "days": 4,
+      "n": 1000,
+      "range": 30,
+      "sha256": {
+        "chart": "9540ae440f0a302f64856ef4a498a910b55d57ca69d2205703796b7fc11a7320",
+        "table": "5f01a77950c1500b995914e36887061d67bb56bbf365a45e6b5b399e9297da7b"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 0,
+          "chart": 4.2000000001862645,
+          "locale": 0,
+          "localeCalls": 4,
+          "html": 0.10000000009313226,
+          "htmlSets": 1,
+          "total": 4.5
+        },
+        {
+          "summaries": 0,
+          "chart": 6.100000000093132,
+          "locale": 0.10000000009313226,
+          "localeCalls": 4,
+          "html": 0.09999999962747097,
+          "htmlSets": 1,
+          "total": 6.599999999627471
+        },
+        {
+          "summaries": 0,
+          "chart": 2.8000000002793968,
+          "locale": 0.09999999962747097,
+          "localeCalls": 4,
+          "html": 0.10000000009313226,
+          "htmlSets": 1,
+          "total": 3.1000000000931323
+        }
+      ],
+      "days": 4,
+      "n": 1000,
+      "range": 0,
+      "sha256": {
+        "chart": "9540ae440f0a302f64856ef4a498a910b55d57ca69d2205703796b7fc11a7320",
+        "table": "5f01a77950c1500b995914e36887061d67bb56bbf365a45e6b5b399e9297da7b"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 6.399999999906868,
+          "chart": 9,
+          "locale": 0.5,
+          "localeCalls": 31,
+          "html": 0.6999999997206032,
+          "htmlSets": 1,
+          "total": 16.899999999906868
+        },
+        {
+          "summaries": 0.20000000018626451,
+          "chart": 6.199999999720603,
+          "locale": 0.39999999990686774,
+          "localeCalls": 31,
+          "html": 0.8000000002793968,
+          "htmlSets": 1,
+          "total": 7.800000000279397
+        },
+        {
+          "summaries": 0.19999999972060323,
+          "chart": 4.7000000001862645,
+          "locale": 0.5,
+          "localeCalls": 31,
+          "html": 0.7999999998137355,
+          "htmlSets": 1,
+          "total": 6.399999999906868
+        }
+      ],
+      "days": 31,
+      "n": 10000,
+      "range": 30,
+      "sha256": {
+        "chart": "42a5954734c67ecd6d552900457d45a605d0d3585703d70f992d46bcb102a402",
+        "table": "1b772f59a6e484e4be8074cd4c80fa8e2ccc31cff5330157e554575776fc31ca"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 0.19999999972060323,
+          "chart": 8.300000000279397,
+          "locale": 0.5,
+          "localeCalls": 36,
+          "html": 1.099999999627471,
+          "htmlSets": 1,
+          "total": 10.799999999813735
+        },
+        {
+          "summaries": 0.20000000018626451,
+          "chart": 4.5,
+          "locale": 0.5,
+          "localeCalls": 36,
+          "html": 1,
+          "htmlSets": 1,
+          "total": 6.300000000279397
+        },
+        {
+          "summaries": 0.10000000009313226,
+          "chart": 3.7999999998137355,
+          "locale": 0.5,
+          "localeCalls": 36,
+          "html": 1,
+          "htmlSets": 1,
+          "total": 5.7999999998137355
+        }
+      ],
+      "days": 36,
+      "n": 10000,
+      "range": 0,
+      "sha256": {
+        "chart": "810cbd3eea302a309f47c2d5e5817832d974c6cc842e1ae7088bb66b68485752",
+        "table": "fe36ceb99cece7f57dbc221b0c179853e77f5fb2cb71bf4947d562371e01b089"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 1.3999999999068677,
+          "chart": 5.7999999998137355,
+          "locale": 0.5,
+          "localeCalls": 31,
+          "html": 0.6000000000931323,
+          "htmlSets": 1,
+          "total": 8.800000000279397
+        },
+        {
+          "summaries": 0.19999999972060323,
+          "chart": 6.7999999998137355,
+          "locale": 0.5,
+          "localeCalls": 31,
+          "html": 0.5,
+          "htmlSets": 1,
+          "total": 8.199999999720603
+        },
+        {
+          "summaries": 0.20000000018626451,
+          "chart": 4.699999999720603,
+          "locale": 0.39999999990686774,
+          "localeCalls": 31,
+          "html": 0.5,
+          "htmlSets": 1,
+          "total": 6.100000000093132
+        }
+      ],
+      "days": 31,
+      "n": 100000,
+      "range": 30,
+      "sha256": {
+        "chart": "42a5954734c67ecd6d552900457d45a605d0d3585703d70f992d46bcb102a402",
+        "table": "1b772f59a6e484e4be8074cd4c80fa8e2ccc31cff5330157e554575776fc31ca"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 2,
+          "chart": 13.400000000372529,
+          "locale": 4.499999999534339,
+          "localeCalls": 348,
+          "html": 4.7999999998137355,
+          "htmlSets": 1,
+          "total": 25.699999999720603
+        },
+        {
+          "summaries": 2.1000000000931323,
+          "chart": 12.600000000093132,
+          "locale": 3.400000000372529,
+          "localeCalls": 348,
+          "html": 8,
+          "htmlSets": 1,
+          "total": 27.800000000279397
+        },
+        {
+          "summaries": 2.3999999999068677,
+          "chart": 19.59999999962747,
+          "locale": 3.8999999999068677,
+          "localeCalls": 348,
+          "html": 8.700000000186265,
+          "htmlSets": 1,
+          "total": 36.60000000009313
+        }
+      ],
+      "days": 348,
+      "n": 100000,
+      "range": 0,
+      "sha256": {
+        "chart": "a46c4a7c43fddeda90cc77b32ba62ab223a973b651e3d3494a20aad38a5bd2ef",
+        "table": "dc8b20bfe28280d0134ff9138f7c08b583d7ed20fee6de99b552f4958ed89997"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 1.599999999627471,
+          "chart": 4.100000000093132,
+          "locale": 0.5,
+          "localeCalls": 31,
+          "html": 0.5,
+          "htmlSets": 1,
+          "total": 6.899999999906868
+        },
+        {
+          "summaries": 0.5,
+          "chart": 4.2999999998137355,
+          "locale": 0.2999999998137355,
+          "localeCalls": 31,
+          "html": 0.6000000000931323,
+          "htmlSets": 1,
+          "total": 5.7999999998137355
+        },
+        {
+          "summaries": 0.20000000018626451,
+          "chart": 3.8999999999068677,
+          "locale": 0.2999999998137355,
+          "localeCalls": 31,
+          "html": 0.6999999997206032,
+          "htmlSets": 1,
+          "total": 5.399999999906868
+        }
+      ],
+      "days": 31,
+      "n": 250000,
+      "range": 30,
+      "sha256": {
+        "chart": "42a5954734c67ecd6d552900457d45a605d0d3585703d70f992d46bcb102a402",
+        "table": "1b772f59a6e484e4be8074cd4c80fa8e2ccc31cff5330157e554575776fc31ca"
+      }
+    },
+    {
+      "samples": [
+        {
+          "summaries": 6.899999999906868,
+          "chart": 42,
+          "locale": 9.300000000745058,
+          "localeCalls": 869,
+          "html": 30.299999999813735,
+          "htmlSets": 1,
+          "total": 93.79999999981374
+        },
+        {
+          "summaries": 6.100000000093132,
+          "chart": 41.10000000009313,
+          "locale": 8.899999998509884,
+          "localeCalls": 869,
+          "html": 19.299999999813735,
+          "htmlSets": 1,
+          "total": 80.5
+        },
+        {
+          "summaries": 5.800000000279397,
+          "chart": 39.89999999990687,
+          "locale": 9.399999999906868,
+          "localeCalls": 869,
+          "html": 35.10000000009313,
+          "htmlSets": 1,
+          "total": 94.90000000037253
+        }
+      ],
+      "days": 869,
+      "n": 250000,
+      "range": 0,
+      "sha256": {
+        "chart": "6d59e5428e071643e27f0c33a2b198618bc246f1d7c06221d1231360be9a1741",
+        "table": "9b4d3413d897c56c714a3a4fc55ab11544d58688d1a42d0fb89a6c06fb45726b"
+      }
+    }
+  ]
+}

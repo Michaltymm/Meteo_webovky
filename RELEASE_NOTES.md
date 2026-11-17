@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.20.7
+
+- Přehled znovu nevytváří tabulku, pokud se její obsah nezměnil.
+- Rychlejší formátování počtů měření při zachování českého zápisu čísel.
+
 ## v0.20.6
 
 - Rychlejší přepínání přehledu teploty, vlhkosti a tlaku u velké historie.

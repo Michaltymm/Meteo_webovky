@@ -155,3 +155,5 @@ limity na sdíleném CI stroji.
 - [Profil statistik a roční převody času v0.20.5](ROCNI_CASOVE_PREVODY.md): osm před/po scénářů, identické modely a další cíl overview.
 
 - [Denní souhrny přehledu v0.20.6](PREHLED_DENNI_SOUHRNY.md): přesné průběžné výpočty, omezený rozsah a profily1k–250k.
+
+- [DOM a formátování přehledu v0.20.7](PREHLED_RENDER.md): skutečný viditelný Chart, tabulka a opakované/změněné hodnoty.

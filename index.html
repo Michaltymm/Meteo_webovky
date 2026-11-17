@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0206"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.6</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0207"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.7</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -6497,6 +6497,7 @@
        PŘEHLED TEPLOT / VLHKOSTI / TLAKU
     ══════════════════════════════════════════════ */
     let ovDays = 30;
+    let overviewCountFormatter = null;
 
     function setOvDays(d) {
       ovDays = d;
@@ -6592,7 +6593,8 @@
 
       // Tabulka – nejnovější nahoře
       const todayStr = fmtDateShort(now);
-      el("ovTableBody").innerHTML = [...keys].reverse().map(k => {
+      const countFormatter = overviewCountFormatter ??= new Intl.NumberFormat("cs-CZ");
+      const tableMarkup = [...keys].reverse().map(k => {
         const summary = dayMap[k].summary;
         const mn = summary.min.toFixed(1);
         const mx = summary.max.toFixed(1);
@@ -6604,9 +6606,10 @@
       <td style="color:#2980b9">${mn}</td>
       <td>${av}</td>
       <td style="color:#e74c3c">${mx}</td>
-      <td style="color:var(--muted)">${cnt.toLocaleString("cs-CZ")}</td>
+      <td style="color:var(--muted)">${countFormatter.format(cnt).replace(/\u00a0/g, "&nbsp;")}</td>
     </tr>`;
       }).join("") || `<tr><td colspan="5" style="color:var(--muted);padding:1rem">Žádná data.</td></tr>`;
+      if (el("ovTableBody").innerHTML !== tableMarkup) el("ovTableBody").innerHTML = tableMarkup;
     }
 
     /* ══════════════════════════════════════════════
