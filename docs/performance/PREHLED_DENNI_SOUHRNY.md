@@ -69,3 +69,13 @@ stále synchronně tvoří dlouhou tabulku a pak Chart.update; samostatně změ�
 její HTML/DOM a Chart část před případným dávkováním či stránkováním. Hodinové
 cold dense~26ms a roční~40ms zůstávají dalšími kandidáty. Hotové přesné souhrny,
 parser/sort a24h výběr neopakovat. ESP084 stále blokuje firmware/API.
+
+Nasazení v0.20.6: [00a229e](https://github.com/Michaltymm/Meteo_webovky/commit/00a229e),
+[Actions #56](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44202499858)
+Success (build35s/deploy23s/celkem68s),1artefakt. CI celá456testová sada prošla;
+lokálně455/455 celé sady +8/8cílených včetně nového DST. ActualChromium3konfigurace/
+12k/mobil/T/RH/P/Vše a8párů plných SHA modelů prošly. Vývojové publikování ověřené
+workflow; přímé widgety Pages/živé služby/fyzický Safari neověřeny. Main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
+upozornění trvají, workflow beze změny. Dále oddělit cenu dlouhé overview tabulky
+a Chart.update; hotové přesné souhrny neopakovat.
