@@ -80,7 +80,7 @@ test('unexpected conversion failure preserves old data with one incomplete attem
   assert.equal([...a.timers.values()].some(t=>t.delay===0),false);
 });
 
-test('native sorting remains descending and stable for time duplicates after all validation batches',async()=>{
+test('sorting remains descending and stable for time duplicates after all validation batches',async()=>{
   const a=fixture();a.run(`csv=Array.from({length:12000},(_,i)=>'25.10.2026,'+(i%2?'11:00':'12:00')+','+i+',1010,50,0,0,,4').join('\\n')`);
   const {p}=await start(a);assert.equal(await drain(a,p),true);
   assert.equal(a.run('store.rows.every((r,i,rows)=>i===0||+rows[i-1].ts>=+r.ts)'),true);

@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.4: METEO-008 velký aktivní Sheets sort po dávkách, descending/equal fastpath; přímé/malé/cizí/MQTT/both native.446/446Node, Chromium3konfigurace/12k/abortsort/mobil prošel.12párů pořadí +4páry plných řádků/reportu SHA shodné.250kunordered část92,8→6,4ms za cenu celkusortu507,6ms; VM blok140,39→13,01ms, pipeline2416,52→2745,86ms. Viz docs/performance/CSV_MERGE_PO_DAVKACH.md. Dále měřit cache miss ročních/hodinových statistik a přehledu teplot; celé008Rozpracováno,084blokované.
 - v0.20.3: METEO-008 přesné agregace velkého Sheets CSV před commitem po dávkách; soukromý snapshot/atomická cache, abort a midnight guard, malá/MQTT/both sync.440/440Node,8nových; Chromium3konfigurace/12k/mobil/touch prošel.4páry plných SHA všech dat/statistik/grafu shodné. UI250k29,4→3,7ms, celá obnova1730→1971,7ms; izolované části6,8→1,9ms za cenu celku86,6ms. Viz docs/performance/AGREGACE_PO_DAVKACH.md.008zůstáváRozpracováno, dále nativní CSVsort/přímé cache miss/hourly/annual/Chart dle profilu;084blokované.
 - v0.20.2: METEO-008 výběr24h Sheets bez opakovaného sortu, tie skupiny stabilní, MQTT/both fallback beze změny.432/432Node;24 izolovaných profilů a16profilů celé obnovy,8párů všech plných SHA shodné. Dense250k výběr5,10→1,25ms, ties250k26,95→0,40ms; celá obnova není obecně rychlejší. Viz docs/performance/RAZENI_VYREZU_24H.md. Dále přesné agregace/kooperativní atomická cache, celé008Rozpracováno;084stále blokováno.
 - v0.20.1: METEO-008 dílčí checkpoint kooperativní přípravy24h hotový; 430/430 Node, Chromium/3konfigurace/shoda bodů, profil1k–250k. U250k nejdelší část103,7→6,3ms za cenu delšího celku103,7→197,6ms. Synchronní výběr/sort/agregace/Chart dále, celé008 Rozpracováno. Viz docs/performance/KOOPERATIVNI_24H.md. ESP084 stále blokováno.
@@ -1484,3 +1485,19 @@ widgety, živé integrace a fyzický Safari/iOS neověřeny. Main stále
 upozornění přetrvávají, workflow se neměnilo. Další krok METEO-008: nativní CSV
 sort u nepravidelně seřazených velkých exportů podle dřívějších měření, případně
 přímé cache miss/hourly/annual; tuto dokončenou agregační etapu neopakovat.
+
+## METEO-008 — v0.20.4, dávkované stabilní řazení CSV
+
+Dílčí checkpoint dokončen: aktivní velký Sheets parser použije po validaci
+stable merge s yield po1024výstupech a descending/equal fastpath. Shodné časy
+zachovávají původní pořadí, původní objekty/Date/senzory beze změny. Malý/přímý/
+cizí/MQTT/both parser ponechává native API. Jeden dočasný O(n) referenční buffer
+pro unordered; bez závislostí/sítě/workeru.446/446Node,6nových regresí; skutečný
+Chromium/3konfigurace/12k unordered/320–1440px a nově abort přímo v sortu prošel.
+12párů Chromium SHA pořadí a4páry VM plných řádků/reportu shodné. Izolovaný250k
+unordered nejdelšíčást92,8→6,4ms, ale celýsort92,8→507,6ms; VM sledovanévolání
+140,39→13,01ms, celýpipeline2416,52→2745,86ms. Netvrdit celkové zrychlení.
+Metodika/vzorky: docs/performance/CSV_MERGE_PO_DAVKACH.md.
+Celé008Rozpracováno. Dále profilovat cache miss ročních/hodinových statistik
+a přehledu teplot, pak úprava dle dopadu; hotový sort/parser/agregace neopakovat.
+ESP084 zůstává blokované firmware/API;4přehledy a3konfigurace zachované.

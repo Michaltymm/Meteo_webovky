@@ -109,6 +109,20 @@ async def main():
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')
         checks.append('unordered timestamp pairs from each station sort descending with stable original note order')
         checks.append('all 24h chart labels and three original-value datasets exactly match old full scan for each station')
+        # Hold the actual sort inside its generator, then abort via real UI.
+        await page.evaluate('''()=>{
+          globalThis.realHistorySort=stableHistorySortSteps;globalThis.pauseSort=true;
+          globalThis.sortReached=false;globalThis.sortRefreshDone=false;
+          stableHistorySortSteps=function*(rows){sortReached=true;while(pauseSort)yield;return yield* realHistorySort(rows)};
+          fetchSheets(true).then(()=>sortRefreshDone=true);
+        }''')
+        await page.wait_for_function('sortReached')
+        await page.select_option('#modernStation','1')
+        await page.wait_for_function('activeIdx===1 && store.rows.length===8 && dataStatus.sheets.phase==="ok" && sortRefreshDone')
+        await page.evaluate('globalThis.afterSortAbort=store.rows;pauseSort=false')
+        await page.wait_for_timeout(50)
+        assert await page.evaluate('store.rows===afterSortAbort && store.rows.every(r=>r.voltage===0) && dataStatus.sheets.validation.accepted===8')
+        checks.append('actual sorting pause: switching station aborts without publishing a partial order or stale report')
         for width in [320,1440]:
             await page.set_viewport_size({'width':width,'height':1000})
             await page.wait_for_timeout(300)  # Chart.js debounces responsive resizing.

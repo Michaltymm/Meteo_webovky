@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.20.4
+
+- Velké neuspořádané CSV historie se řadí po dávkách, aby stránka mohla mezi nimi reagovat na ovládání.
+- Zachované pořadí měření se shodným časem; přepnutí stanice přeruší rozpracované řazení.
+
 ## v0.20.3
 
 - Statistiky velkých CSV historií se připravují po dávkách, aby mohla stránka během výpočtu reagovat.
