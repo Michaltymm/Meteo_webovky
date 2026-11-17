@@ -153,3 +153,5 @@ limity na sdíleném CI stroji.
 - [Stabilní řazení CSV po dávkách v0.20.4](CSV_MERGE_PO_DAVKACH.md): ohraničené kroky, shodné řádky/reporty a režie.
 
 - [Profil statistik a roční převody času v0.20.5](ROCNI_CASOVE_PREVODY.md): osm před/po scénářů, identické modely a další cíl overview.
+
+- [Denní souhrny přehledu v0.20.6](PREHLED_DENNI_SOUHRNY.md): přesné průběžné výpočty, omezený rozsah a profily1k–250k.

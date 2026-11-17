@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.20.6
+
+- Rychlejší přepínání přehledu teploty, vlhkosti a tlaku u velké historie.
+- Přesné denní souhrny bez pomocných polí všech hodnot; zachované počty, extrémy i časové hranice.
+
 ## v0.20.5
 
 - Rychlejší první výpočet ročních statistik u rozsáhlé historie.

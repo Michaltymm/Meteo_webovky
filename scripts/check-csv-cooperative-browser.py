@@ -119,7 +119,21 @@ async def main():
               return actual.maxCounterDelta24h===maximum&&actual.maxCounterDeltaDate===winner&&
                 el('yearStatsContent').textContent.includes(String(year));
             }''')
+            await page.locator('.tab-btn[data-tab="overview"]').click()
+            await page.locator('.ov-range-btn[data-ovdays="0"]').click()
+            for metric in ['temp','hum','pressure']:
+                await page.select_option('#ovMetric',metric)
+                assert await page.evaluate('''metric=>{
+                  const groups={};
+                  for(const r of store.rows){if(r.ts<new Date(0)||r[metric]===null)continue;(groups[fmtDateShort(r.ts)]??=[]).push(r[metric]);}
+                  const parse=k=>{const p=k.split('.');return new Date(+p[2],+p[1]-1,+p[0])};
+                  const keys=Object.keys(groups).sort((a,b)=>parse(a)-parse(b));
+                  const stats=keys.map(k=>numericSummary(groups[k]));
+                  return JSON.stringify(chartOverview.data.labels)===JSON.stringify(keys)&&
+                    chartOverview.data.datasets.every((ds,i)=>JSON.stringify(ds.data)===JSON.stringify(stats.map(s=>+s[['max','min','avg'][i]].toFixed(1))));
+                }''',metric)
             await page.locator('.tab-btn[data-tab="now"]').click()
+        checks.append('overview T/RH/P and all-data control render original daily extrema/means for all three configs')
         checks.append('annual statistics render for all three configs and exactly match legacy counter arithmetic and winning Date')
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')
         checks.append('unordered timestamp pairs from each station sort descending with stable original note order')

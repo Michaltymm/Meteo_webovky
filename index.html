@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0205"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.5</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0206"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.6</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -6504,6 +6504,36 @@
       buildTempOverview();
     }
 
+    function overviewDaySummaries(rows, getValue, cutFrom) {
+      const dayMap = {};
+      // Only Sheets has the descending-time guarantee. Live receipt clocks can
+      // move backwards, so MQTT/both retain the complete original predicate.
+      const range = CFG.source === "sheets" ? historyRangeBounds(rows, cutFrom, Infinity)
+        : { start: 0, end: rows.length };
+      let year, month, day, key;
+      for (let i = range.start; i < range.end; i++) {
+        const row = rows[i];
+        if (row.ts.getTime() < cutFrom) continue;
+        const value = getValue(row);
+        if (value === null) continue;
+        const y = row.ts.getFullYear(), m = row.ts.getMonth(), d = row.ts.getDate();
+        if (year !== y || month !== m || day !== d) {
+          key = fmtDateShort(row.ts); year = y; month = m; day = d;
+        }
+        const entry = dayMap[key] ??= { summary: { min: Infinity, max: -Infinity, avg: null, count: 0 }, sum: 0 };
+        if (!Number.isFinite(value)) continue;
+        entry.summary.min = Math.min(entry.summary.min, value);
+        entry.summary.max = Math.max(entry.summary.max, value);
+        entry.sum += value; entry.summary.count++;
+      }
+      for (const entry of Object.values(dayMap)) {
+        const summary = entry.summary;
+        if (summary.count) summary.avg = entry.sum / summary.count;
+        else summary.min = summary.max = null;
+      }
+      return dayMap;
+    }
+
     function buildTempOverview() {
       if (!store.rows.length) return;
       const metric = el("ovMetric") ? el("ovMetric").value : "temp";
@@ -6515,23 +6545,14 @@
       const m = METRICS_OV[metric] || METRICS_OV.temp;
 
       // Agregace po dnech
-      const dayMap = {};
       const now = new Date();
-      const cutFrom = ovDays > 0 ? new Date(now.getTime() - ovDays * 86400000) : new Date(0);
-      store.rows.forEach(r => {
-        if (r.ts < cutFrom) return;
-        const v = m.fn(r);
-        if (v === null) return;
-        const k = fmtDateShort(r.ts);
-        if (!dayMap[k]) dayMap[k] = { vals: [] };
-        dayMap[k].vals.push(v);
-      });
+      const cutFrom = ovDays > 0 ? now.getTime() - ovDays * 86400000 : 0;
+      const dayMap = overviewDaySummaries(store.rows, m.fn, cutFrom);
 
       // Seřadit klíče od nejstaršího (pro graf)
       const parseKey = k => { const p = k.split('.'); return new Date(+p[2], +p[1] - 1, +p[0]); };
       const keys = Object.keys(dayMap).sort((a, b) => parseKey(a) - parseKey(b));
 
-      for (const k of keys) dayMap[k].summary = numericSummary(dayMap[k].vals);
       const mins = keys.map(k => +dayMap[k].summary.min.toFixed(1));
       const maxs = keys.map(k => +dayMap[k].summary.max.toFixed(1));
       const avgs = keys.map(k => +dayMap[k].summary.avg.toFixed(1));

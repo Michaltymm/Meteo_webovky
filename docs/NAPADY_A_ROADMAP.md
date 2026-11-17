@@ -2672,3 +2672,18 @@ lokálně otestovaná a vývojové publikování potvrzené workflow. Přímé w
 Dřívější runtimeActions/ubuntu-latest upozornění trvají, workflow nezměněné.
 Další konkrétní etapa: buildTempOverview ~90ms při regular250k, přesné streamované
 sumy a časový filtr místo plných vals polí; aktuální roční etapu neopakovat.
+
+## METEO-008 — v0.20.6, přesné denní souhrny přehledu
+
+Dílčí checkpoint dokončen. buildTempOverview používá průběžné min/max/sum/count
+místo vals polí; stejná posloupnost původních hodnot, null/0, tlak i zaokrouhlení.
+Sheets existující binární meze bez kopie, přesně oříznutý první den; MQTT/both
+plný predikát kvůli příjmovým hodinám. Datum se formátuje jen při změně dne.
+Lokálně455/455celá sada+8/8cílené včetně nového DST3zón.3stanice actualUI
+Přehled/Vše/T/RH/P,12k/mobil a původní načítací/roční/abort regrese prošly.
+Všech8párů hourly/annual/overview SHA shodné. Regular250k CPU79,9→27,1ms,
+dense250k49,9→4,7ms; bez claimu INP/RAM/16ms/hotového snímku.
+Metodika: docs/performance/PREHLED_DENNI_SOUHRNY.md.
+Celé008Rozpracováno. Dále oddělit HTML/DOM dlouhé tabulky PřehledVše od Chart
+části, teprve pak případné dávkování/stránkování. Hourly/annual cold dense dále.
+Hotové souhrny/parser/sort/24h neopakovat,084stále blokované firmware/API.
