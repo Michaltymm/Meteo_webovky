@@ -1578,3 +1578,14 @@ bez univerzálního claimu. Viz docs/performance/PREHLED_RENDER.md.
 Celé008Rozpracováno. Dále ověřit coalescing stejných Chart.update s daty/jednotkami/
 metrikou/legendou/tématem/resize; graf i změněná dlouhá tabulka dále nákladné.
 Hotové souhrny/locale/DOM gate neopakovat;4pohledy/3stanice a084blokování zachované.
+
+Nasazení v0.20.7: [1e29e92](https://github.com/Michaltymm/Meteo_webovky/commit/1e29e92),
+[Actions #57](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44204089921)
+Success (build49s/deploy11s/celkem70s),1artefakt. CI459testová sada prošla,
+lokálně459/459 celé sady +11/11cílených po normalizaci mezer. ActualChromium
+3konfigurace/12k/mobil/identita tabulky a16párů plných graf/tableSHA prošly.
+Implementováno/otestováno a vývojové publikování potvrzeno workflow; přímé widgety
+Pages, živé služby a fyzický Safari neověřeny. Main stále
+2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
+upozornění trvají, workflow beze změny. Dále ověřit zbytečné stejné Chart.update
+se všemi vazbami; hotové locale/DOM souhrny neopakovat.
