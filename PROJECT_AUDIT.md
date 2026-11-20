@@ -1606,3 +1606,8 @@ trval 45,2 ms před změnou a 50,9 ms po změně. [Měření a metodika](docs/pe
 METEO-008 zůstává rozpracované. Další měřený cíl je výpočet hodinové statistiky
 u neobvykle hustého dne, který v profilu v0.20.6 dosáhl přibližně 26 ms. ESP084
 čeká na firmware a zabezpečené API.
+
+Nasazení v0.20.8 potvrdily GitHub Actions. Běh trval 55 sekund, z toho 34 sekund
+sestavení a 12 sekund publikování. CI prošlo 463 testy. Vývojová změna je v
+commitu `f9741bf` na `codex-dev`. Produkční větev zůstala na `2405c5d`.
+[GitHub Actions #58](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44711811040)

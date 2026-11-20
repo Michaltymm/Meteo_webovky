@@ -37,3 +37,8 @@ hodnoty, datum a jednotku, obnovu po chybě a reset stanice. Chromium scénář
 měření a šířky 320 až 1440 px. Ověřil také skutečné ovládání legendy, změnu
 motivu a responzivní velikost grafu. Další měřený cíl je první výpočet hodinových
 statistik neobvykle hustého dne.
+
+Nasazení v0.20.8 potvrdily GitHub Actions. Běh trval 55 sekund, z toho 34 sekund
+sestavení a 12 sekund publikování. CI prošlo 463 testy. Vývojová změna je v
+commitu `f9741bf` na `codex-dev`. Produkční větev zůstala na `2405c5d`.
+[GitHub Actions #58](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44711811040)
