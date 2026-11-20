@@ -29,7 +29,7 @@ with sync_playwright() as pw:
   page.evaluate('''()=>{
    globalThis.measurement=null;
    const summary=overviewDaySummaries;overviewDaySummaries=(...args)=>{const t=performance.now();try{return summary(...args)}finally{if(measurement)measurement.summaries+=performance.now()-t;}};
-   const update=chartOverview.update;chartOverview.update=function(...args){const t=performance.now();try{return update.apply(this,args)}finally{if(measurement)measurement.chart+=performance.now()-t;}};
+   const update=chartOverview.update;chartOverview.update=function(...args){const t=performance.now();try{return update.apply(this,args)}finally{if(measurement){measurement.chart+=performance.now()-t;measurement.chartCalls++;}}};
    const number=Number.prototype.toLocaleString;Number.prototype.toLocaleString=function(...args){const t=performance.now();try{return number.apply(this,args)}finally{if(measurement){measurement.locale+=performance.now()-t;measurement.localeCalls++;}}};
    if(typeof overviewCountFormatter!=='undefined'){
     const formatter=new Intl.NumberFormat('cs-CZ');
@@ -43,7 +43,7 @@ with sync_playwright() as pw:
     ovDays=days;const samples=[];
     for(let k=0;k<4;k++){
      if(changing)el('ovMetric').value=k%2?'hum':'temp';
-     measurement={summaries:0,chart:0,locale:0,localeCalls:0,html:0,htmlSets:0};
+     measurement={summaries:0,chart:0,chartCalls:0,locale:0,localeCalls:0,html:0,htmlSets:0};
      const t=performance.now();buildTempOverview();measurement.total=performance.now()-t;
      if(k)samples.push(measurement);measurement=null;
     }

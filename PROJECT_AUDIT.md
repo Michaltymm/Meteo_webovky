@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.8: METEO-008 přeskočí opakované sestavení grafu přehledu podle popisků, všech tří řad, jednotky a barvy. Tabulka reflektuje změny počtů. 463 testů, Chromium tří stanic včetně legendy, motivu a změny velikosti. 16 shodných dvojic podpisů grafu a tabulky. Opakovaný přehled 250k 17,5 → 9,4 ms, změna veličiny 45,2 → 50,9 ms. Další měřený cíl jsou hodinové statistiky hustého dne. Viz docs/performance/PREHLED_GRAF_UPDATE.md.
 - v0.20.7: METEO-008 localeformatter reuse a přesná DOM gate tabulky overview, bez markupcache;459/459Node+11/11focus,actual3stanice/mobil/identityřádků prošel.16párů plných graf/tableSHA shodných, pevný30d čas. Repeat250k93,8→24,4ms, change100k22,2→31,8ms pomalejší, viz docs/performance/PREHLED_RENDER.md. Dále ověřit zbytečné stejné Chart.update vs units/data/legend/theme/resize, celé008Rozpracováno;084blokované.
 - v0.20.6: METEO-008 průběžné přesné denní souhrny overview bez vals polí, Sheets binární časové meze, MQTT/both plný predikát, datum jen při změně dne.455/455Node+8/8focusDST3zóny,3stanice actualUI/T/RH/P/mobil prošly;8párů modelovýchSHA shodné. Regular250k79,9→27,1ms, dense49,9→4,7ms. Viz docs/performance/PREHLED_DENNI_SOUHRNY.md. Dále rozdělit HTML/DOM dlouhé tabulkyVše vsChart čas, pak další úprava; celé008Rozpracováno,084blokované.
 - v0.20.5: METEO-008 profil hourly/annual/overview cold/warm; levnější getTime aritmetika ročního čítače, bez změny algoritmu/stability/Date vítěze.448/448Node,3stanice actual roční UI,8párů všech modelů SHA shodné. Annual dense250k208,5→36,6ms, regular250k39,7→5,4ms; synchronní stále. Viz docs/performance/ROCNI_CASOVE_PREVODY.md. Dále buildTempOverview regular250k~90ms s původními sumami/okrajovým dnem/filtry, celé008Rozpracováno;084blokované.
@@ -1589,3 +1590,19 @@ Pages, živé služby a fyzický Safari neověřeny. Main stále
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
 upozornění trvají, workflow beze změny. Dále ověřit zbytečné stejné Chart.update
 se všemi vazbami; hotové locale/DOM souhrny neopakovat.
+
+## METEO-008 — v0.20.8, aktualizace grafu přehledu
+
+Přehled porovnává popisky, vykreslené minimum, maximum a průměr, barvu a jednotku.
+Při shodě ponechá existující graf i stav legendy. Po resetu stanice nebo chybě
+vykreslení graf sestaví znovu. Přesné denní souhrny a tabulka se počítají dál,
+aby se změny počtů zobrazily i při stejných křivkách.
+
+Prošlo 463 testů a Chromium s kontrolovanými daty všech tří stanic. V 16 párech
+scénářů byly podpisy grafu i tabulky přesně shodné. U opakovaného přehledu všech
+250 000 měření klesl medián z 17,5 na 9,4 ms. Při změně veličiny tentýž scénář
+trval 45,2 ms před změnou a 50,9 ms po změně. [Měření a metodika](docs/performance/PREHLED_GRAF_UPDATE.md).
+
+METEO-008 zůstává rozpracované. Další měřený cíl je výpočet hodinové statistiky
+u neobvykle hustého dne, který v profilu v0.20.6 dosáhl přibližně 26 ms. ESP084
+čeká na firmware a zabezpečené API.

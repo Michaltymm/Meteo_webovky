@@ -132,10 +132,31 @@ async def main():
                   return JSON.stringify(chartOverview.data.labels)===JSON.stringify(keys)&&
                     chartOverview.data.datasets.every((ds,i)=>JSON.stringify(ds.data)===JSON.stringify(stats.map(s=>+s[['max','min','avg'][i]].toFixed(1))));
                 }''',metric)
-            await page.evaluate('globalThis.overviewFirstRow=el("ovTableBody").firstElementChild')
+            if index == 1:
+                canvas = page.locator('#chartOverview')
+                await canvas.scroll_into_view_if_needed()
+                await page.wait_for_function('chartOverview.width > 0 && chartOverview.legend.legendHitBoxes.length === 3')
+                hit = await page.evaluate('chartOverview.legend.legendHitBoxes[0]')
+                await canvas.click(position={'x': hit['left']+hit['width']/2, 'y': hit['top']+hit['height']/2})
+                await page.wait_for_function('!chartOverview.isDatasetVisible(0)')
+            await page.evaluate('''()=>{
+              globalThis.overviewFirstRow=el('ovTableBody').firstElementChild;
+              globalThis.savedOverviewDatasets=chartOverview.data.datasets;
+            }''')
             await page.locator('.ov-range-btn[data-ovdays="0"]').click()
-            assert await page.evaluate('el("ovTableBody").firstElementChild===overviewFirstRow')
+            assert await page.evaluate('el("ovTableBody").firstElementChild===overviewFirstRow && chartOverview.data.datasets===savedOverviewDatasets')
+            if index == 1:
+                await page.evaluate('globalThis.previousWidth=chartOverview.width;setTheme("light")')
+                await page.set_viewport_size({'width':430,'height':844})
+                await page.wait_for_function('chartOverview.width > 0 && chartOverview.width !== previousWidth')
+                assert await page.evaluate('!chartOverview.isDatasetVisible(0) && chartOverview.data.datasets===savedOverviewDatasets')
+                hit = await page.evaluate('chartOverview.legend.legendHitBoxes[0]')
+                await canvas.click(position={'x': hit['left']+hit['width']/2, 'y': hit['top']+hit['height']/2})
+                await page.wait_for_function('chartOverview.isDatasetVisible(0)')
+                await page.evaluate('setTheme("darkblue")')
+                await page.set_viewport_size({'width':390,'height':844})
             await page.locator('.tab-btn[data-tab="now"]').click()
+        checks.append('unchanged overview retains datasets and table nodes; legend controls survive a theme change and responsive resize')
         checks.append('overview T/RH/P and all-data control render original daily extrema/means for all three configs')
         checks.append('annual statistics render for all three configs and exactly match legacy counter arithmetic and winning Date')
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')

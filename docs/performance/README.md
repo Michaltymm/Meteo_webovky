@@ -157,3 +157,5 @@ limity na sdíleném CI stroji.
 - [Denní souhrny přehledu v0.20.6](PREHLED_DENNI_SOUHRNY.md): přesné průběžné výpočty, omezený rozsah a profily1k–250k.
 
 - [DOM a formátování přehledu v0.20.7](PREHLED_RENDER.md): skutečný viditelný Chart, tabulka a opakované/změněné hodnoty.
+
+- [Aktualizace grafu přehledu v0.20.8](PREHLED_GRAF_UPDATE.md) měří opakované zobrazení a změnu veličiny.

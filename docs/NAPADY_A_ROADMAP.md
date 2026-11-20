@@ -2722,3 +2722,19 @@ Pages, živé služby a fyzický Safari neověřeny. Main stále
 2405c5d7326909a24c41e7066bfdc4a9d1622208. Původní runtimeActions/ubuntu-latest
 upozornění trvají, workflow beze změny. Dále ověřit zbytečné stejné Chart.update
 se všemi vazbami; hotové locale/DOM souhrny neopakovat.
+
+## METEO-008 — v0.20.8, aktualizace grafu přehledu
+
+Přehled porovnává popisky, vykreslené minimum, maximum a průměr, barvu a jednotku.
+Při shodě ponechá existující graf i stav legendy. Po resetu stanice nebo chybě
+vykreslení graf sestaví znovu. Přesné denní souhrny a tabulka se počítají dál,
+aby se změny počtů zobrazily i při stejných křivkách.
+
+Prošlo 463 testů a Chromium s kontrolovanými daty všech tří stanic. V 16 párech
+scénářů byly podpisy grafu i tabulky přesně shodné. U opakovaného přehledu všech
+250 000 měření klesl medián z 17,5 na 9,4 ms. Při změně veličiny tentýž scénář
+trval 45,2 ms před změnou a 50,9 ms po změně. [Měření a metodika](performance/PREHLED_GRAF_UPDATE.md).
+
+METEO-008 zůstává rozpracované. Další měřený cíl je výpočet hodinové statistiky
+u neobvykle hustého dne, který v profilu v0.20.6 dosáhl přibližně 26 ms. ESP084
+čeká na firmware a zabezpečené API.

@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0207"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.7</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0208"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.8</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3528,6 +3528,7 @@
     }
 
     function resetStationStore() {
+      renderedOverviewUnit = null;
       analyticsStop(true);
       store.rows = [];
       renderDeviceSettings();
@@ -6498,6 +6499,7 @@
     ══════════════════════════════════════════════ */
     let ovDays = 30;
     let overviewCountFormatter = null;
+    let renderedOverviewUnit = null;
 
     function setOvDays(d) {
       ovDays = d;
@@ -6535,6 +6537,53 @@
       return dayMap;
     }
 
+    function renderOverviewChart(metric, labels, maxs, mins, avgs) {
+      const sameValues = (current, next) => current?.length === next.length &&
+        next.every((value, index) => Object.is(value, current[index]));
+      const { data, options } = chartOverview;
+      // Compare the plotted values, not the source pointer. Counts can change
+      // independently, and the table is refreshed even when the graph matches.
+      if (renderedOverviewUnit === metric.unit && options.scales.y.ticks.color === metric.color &&
+          sameValues(data.labels, labels) &&
+          sameValues(data.datasets[0]?.data, maxs) && sameValues(data.datasets[1]?.data, mins) &&
+          sameValues(data.datasets[2]?.data, avgs)) return;
+
+      // A failed update must be retried. Legend, responsive resizing and motion
+      // changes continue to call their own Chart.js update paths.
+      renderedOverviewUnit = null;
+      chartOverview.options.scales.y.ticks.color = metric.color;
+      chartOverview.options.scales.y.title = { display: false, text: metric.unit, color: metric.color };
+      chartOverview.data.labels = labels;
+      chartOverview.data.datasets = [
+        {
+          label: "Max",
+          data: maxs,
+          borderColor: metric.color + "99",
+          backgroundColor: metric.color + "35",
+          fill: "+1",
+          tension: .35, pointRadius: 0, borderWidth: 1.5
+        },
+        {
+          label: "Min",
+          data: mins,
+          borderColor: metric.color + "99",
+          backgroundColor: "transparent",
+          fill: false,
+          tension: .35, pointRadius: 0, borderWidth: 1.5
+        },
+        {
+          label: "Průměr",
+          data: avgs,
+          borderColor: metric.color,
+          backgroundColor: "transparent",
+          fill: false,
+          tension: .35, pointRadius: 0, borderWidth: 2.5
+        },
+      ];
+      chartOverview.update();
+      renderedOverviewUnit = metric.unit;
+    }
+
     function buildTempOverview() {
       if (!store.rows.length) return;
       const metric = el("ovMetric") ? el("ovMetric").value : "temp";
@@ -6560,36 +6609,7 @@
 
       // Graf – pás MIN-MAX + průměrová čára
       el("ovChartTitle").textContent = m.label + " za poslední dny (" + m.unit + ")";
-      chartOverview.options.scales.y.ticks.color = m.color;
-      chartOverview.options.scales.y.title = { display: false, text: m.unit, color: m.color };
-      chartOverview.data.labels = keys;
-      chartOverview.data.datasets = [
-        {
-          label: "Max",
-          data: maxs,
-          borderColor: m.color + "99",
-          backgroundColor: m.color + "35",
-          fill: "+1",
-          tension: .35, pointRadius: 0, borderWidth: 1.5
-        },
-        {
-          label: "Min",
-          data: mins,
-          borderColor: m.color + "99",
-          backgroundColor: "transparent",
-          fill: false,
-          tension: .35, pointRadius: 0, borderWidth: 1.5
-        },
-        {
-          label: "Průměr",
-          data: avgs,
-          borderColor: m.color,
-          backgroundColor: "transparent",
-          fill: false,
-          tension: .35, pointRadius: 0, borderWidth: 2.5
-        },
-      ];
-      chartOverview.update();
+      renderOverviewChart(m, keys, maxs, mins, avgs);
 
       // Tabulka – nejnovější nahoře
       const todayStr = fmtDateShort(now);

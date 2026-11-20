@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.20.8
+
+- Přehled teploty, vlhkosti a tlaku přeskočí překreslení grafu, když se vykreslené hodnoty nezměnily. Tabulka dál zobrazuje aktuální počty měření.
+
 ## v0.20.7
 
 - Přehled znovu nevytváří tabulku, pokud se její obsah nezměnil.
