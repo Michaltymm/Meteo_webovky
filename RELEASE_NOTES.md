@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.11
+
+- Průzkumník rychleji připraví denní hodnoty srážek z dlouhé historie. Graf i statistiky dál zahrnují všechny dny s měřením.
+
 ## v0.21.10
 
 - Grafy Porovnat dny a Přehled vznikají až při otevření záložky. Moderní přehled 2 při přímém otevření nevytváří žádný graf.

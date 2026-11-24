@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.11: METEO-008 zrychluje denní maxima srážek v Průzkumníku formátováním při změně místního dne. Při 250k minutových měřeních formátování 250 000 → 175, agregace 131 → 39 ms, první vykreslení v mobilní simulaci 254,5 → 158 ms. Denní hodnoty i statistiky jsou přesně shodné. Dále prověřit vykreslení tisíců denních sloupců. Viz [profil](docs/performance/DENNI_SRAZKY_PRUZKUMNIKU.md).
 - v0.21.10: METEO-007 má dokončený odložený vznik všech základních grafů. Porovnat dny a Přehled se vytvářejí při vykreslení, izolovaný start 2 → 0 instancí. Mobilní profil 100k ušetřil 36–41 ms při startu, první vykreslení bylo o 45–65 ms delší. Hodnoty a souhrny se shodovaly. Grafy dashboardu zatím zachovávají instance po otevření. Viz [profil](docs/performance/KONSTRUKCE_POROVNANI_A_PREHLEDU.md).
 - v0.21.10 z `1019cd5` nasadily [GitHub Actions #71](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45393643147). Prošlo 485/485 testů Node a pět kontrol v Chromium. `main` je na `2405c5d`. Další etapa METEO-008 může zrychlit denní agregaci srážek v Průzkumníku.
 - v0.21.9: METEO-007 odkládá konstrukci Průzkumníka, izolovaný start 3 → 2 grafy. Mobilní profil 100k ušetřil 10–15,5 ms v konstruktorech při startu. První vykreslení teploty a vlhkosti 97,5 → 126 ms, srážek 193 → 242,5 ms. Hodnoty i statistiky byly shodné. Doběh plné historie vykreslí jen aktivní Průzkumník. Viz [profil Průzkumníka](docs/performance/KONSTRUKCE_PRUZKUMNIKU.md).

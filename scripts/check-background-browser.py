@@ -127,6 +127,16 @@ async def main():
         await page.evaluate('expRange="all";el("expMetric").value="rain"')
         await page.locator('.tab-btn[data-tab="explorer"]').click()
         assert await page.evaluate('chartExplorer?.config.type==="bar" && chartExplorer.data.labels.length>0')
+        assert await page.evaluate('''()=>{
+          const peaks=new Map();
+          for(const row of store.rows){
+            if(row.rain===null || row.ts.getTime()>Date.now()+60000) continue;
+            const day=fmtDateShort(row.ts);
+            peaks.set(day,Math.max(peaks.get(day)??-Infinity,row.rain));
+          }
+          return chartExplorer.data.labels.length===peaks.size &&
+            chartExplorer.data.labels.every((day,i)=>chartExplorer.data.datasets[0].data[i]===peaks.get(day));
+        }''')
         await page.evaluate('window.firstExplorer=chartExplorer')
         await page.select_option('#expMetric','temp_hum')
         assert await page.evaluate('chartExplorer===firstExplorer && chartExplorer.config.type==="line" && chartExplorer.data.datasets.length===2')

@@ -117,6 +117,39 @@ test('explorer keeps its instance across an empty slice, daily rain and two line
   assert.equal(a.run('JSON.stringify(chartExplorer.data.datasets.map(ds=>ds.data))'), '[[0,20],[null,40]]');
 });
 
+test('explorer rain daily maxima match the original grouping across missing data, ties and repeated dates', () => {
+  const a = app();
+  a.run(`const rows=Object.freeze([
+    [2025,9,26,1,0],[2025,9,26,2,null],[2025,9,26,3,0],
+    [2026,9,25,1,3],[2026,9,25,2,12],[2026,9,25,2,12],
+    [2026,9,26,12,null],[2025,9,26,4,2],[2026,9,25,4,9],
+    [2026,8,25,12,-0],[2026,8,25,13,0]
+  ].map(([y,m,d,h,rain])=>Object.freeze({ts:new Date(y,m,d,h),rain})).concat([
+    Object.freeze({ts:new Date('2026-10-25T02:30:00+02:00'),rain:4}),
+    Object.freeze({ts:new Date('2026-10-25T02:30:00+01:00'),rain:8})
+  ]));
+  const reference={};
+  for(const r of rows){
+    if(r.rain===null)continue;
+    const key=fmtDateShort(r.ts);
+    if(!reference[key]||r.rain>reference[key].val)reference[key]={val:r.rain,ts:r.ts};
+  }
+  const expected=Object.keys(reference).sort((a,b)=>reference[a].ts-reference[b].ts);
+  const actual=explorerRainDays(rows);`);
+  assert.equal(a.run('JSON.stringify(actual.labels)'), a.run('JSON.stringify(expected)'));
+  assert.equal(a.run('expected.every((key,i)=>Object.is(actual.values[i],reference[key].val))'), true);
+});
+
+test('explorer rain formats the local date once per consecutive measured day', () => {
+  const a = app();
+  a.run(`let count=0;const originalFormat=fmtDateShort;
+    fmtDateShort=date=>{count++;return originalFormat(date)};
+    const rows=Array.from({length:100000},(_,i)=>({ts:new Date(2026,9,25,0,i),rain:i%10}));
+    const model=explorerRainDays(rows);`);
+  assert.equal(a.run('count===model.labels.length && count < 75'), true);
+  assert.equal(a.run('model.values.every(v=>v===9)'), true);
+});
+
 test('a full-history callback leaves the explorer dirty until its tab returns', () => {
   const a = app();
   a.run(`globalThis.finishLoad=null;ensureFullData=callback=>finishLoad=callback;

@@ -2295,8 +2295,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02110"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.10</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02111"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.11</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -6033,6 +6033,25 @@
       el("tab-explorer").scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
     }
 
+    function explorerRainDays(rows) {
+      const byDay = {};
+      let year, month, day, entry;
+      for (const row of rows) {
+        if (row.rain === null) continue;
+        const { ts, rain } = row;
+        const y = ts.getFullYear(), m = ts.getMonth(), d = ts.getDate();
+        if (y !== year || m !== month || d !== day) {
+          // Adjacent measurements usually share a day. Still merge a day
+          // reached again if a source supplies out-of-order timestamps.
+          entry = byDay[fmtDateShort(ts)] ??= { val: rain, ts };
+          year = y; month = m; day = d;
+        }
+        if (rain > entry.val) { entry.val = rain; entry.ts = ts; }
+      }
+      const labels = Object.keys(byDay).sort((a, b) => byDay[a].ts.getTime() - byDay[b].ts.getTime());
+      return { labels, values: labels.map(key => byDay[key].val) };
+    }
+
     function buildExplorer() {
       if (!store.rows.length) return;
       const metric = el("expMetric").value;
@@ -6067,26 +6086,20 @@
       // Pro srážky denní – agregace max na den
       if (metric === "rain") {
         renderIntervalComparison([]);
-        const rb = {};
-        rows.forEach(r => {
-          if (r.rain === null) return;
-          const k = fmtDateShort(r.ts);
-          if (!rb[k] || r.rain > rb[k].val) rb[k] = { val: r.rain, ts: r.ts };
-        });
-        const keys = Object.keys(rb).sort((a, b) => rb[a].ts - rb[b].ts);
+        const { labels, values } = explorerRainDays(rows);
         ensureExplorerChart();
         chartExplorer.config.type = "bar";
-        chartExplorer.data.labels = keys;
+        chartExplorer.data.labels = labels;
         chartExplorer.data.datasets = [{
           label: "Srážky [mm]", backgroundColor: "rgba(41,128,185,.75)",
-          data: keys.map(k => rb[k].val), yAxisID: "yMain"
+          data: values, yAxisID: "yMain"
         }];
         chartExplorer.options.scales.yMain.ticks.color = "#2980b9";
         chartExplorer.options.scales.yMain.title = { display: false, text: "mm", color: "#2980b9" };
         chartExplorer.options.scales.ySec.display = false;
-        el("expChartTitle").textContent = "Srážky – " + expLabelFor(expRange) + " (" + keys.length + " dní)";
+        el("expChartTitle").textContent = "Srážky – " + expLabelFor(expRange) + " (" + labels.length + " dní)";
         el("expInfo").textContent = rows.length + " záznamů v rozsahu";
-        buildExpStats([{ label: "☔ Srážky", unit: "mm", vals: keys.map(k => rb[k].val) }]);
+        buildExpStats([{ label: "☔ Srážky", unit: "mm", vals: values }]);
         expAllPts = [];
         el("expSliderWrap").style.display = "none";
         chartExplorer.update();
