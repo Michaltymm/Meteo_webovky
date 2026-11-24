@@ -30,7 +30,12 @@ mediány. Profil nezahrnuje přenos ani čas do vykreslení snímku.
 V izolovaném startu vznikly dvě instance místo tří. Při prvním vykreslení
 se práce přesunula do Průzkumníka. Typ grafu, strukturované hodnoty Chart.js,
 text obsluhy a HTML statistik zůstaly ve všech srovnáních shodné. Pro velký
-rozsah srážek má smysl změřit zvlášť denní agregaci a samotnou práci Chart.js.
+rozsah srážek proběhlo i samostatné měření s obalením `Chart.update` a
+počítáním formátování dat. Ve stejném zpomaleném scénáři s 100 000 řádky
+zabraly synchronní aktualizace grafu v mediánu 212 ms, práce mimo ně 105 ms.
+Formátování data proběhlo jednou na řádek. Jde o oddělený profil s přidanou
+instrumentací. Další optimalizace může omezit formátování po skupinách dnů
+a změřit také náklady na vykreslení dlouhé denní řady.
 
 ## Ověření
 
@@ -41,3 +46,9 @@ chybějících hodnot a doběh historie ve skryté záložce. Chromium na šíř
 prázdnému výřezu, absenci vodorovného přetékání a žádný dodatečný požadavek
 při již dostupné historii. Prošly i oba moderní přehledy a devět
 analytických karet se 100 000 záznamy.
+
+## Publikace
+
+[GitHub Actions #70](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45392555682)
+potvrdily sestavení a publikaci `5c22df4` z `codex-dev` za 64 s. Větev `main`
+při ověření zůstala na revizi `2405c5d`.
