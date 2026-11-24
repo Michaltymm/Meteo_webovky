@@ -49,3 +49,14 @@ vliv dřívějších měření na predikci, shodu 500 vykreslených bodů, přep
 záložek, první otevření na 320 px a nulový přírůstek požadavků po načtení
 historie. Samostatná kontrola Moderního přehledu 2 ověřila navigaci a údaje
 všech tří stanic.
+
+## Publikace a další krok
+
+[GitHub Actions #68](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45390502089)
+potvrdily sestavení a publikaci `58ca3df` z `codex-dev` za 50 s.
+Větev `main` při ověření zůstala na `2405c5d`.
+
+Další část METEO-007 je odložená konstrukce měsíčních a ročních grafů.
+Při izolovaném startu v tomto profilu (390 px, CPU ×4) oba konstruktory
+společně zabraly v mediánu 57 ms ve 24 vzorcích. Před změnou a po ní je
+potřeba samostatně měřit první otevření obou záložek při připravené historii.
