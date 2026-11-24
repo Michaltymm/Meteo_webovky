@@ -619,6 +619,21 @@
       border: 1px solid var(--border);
     }
 
+    .ov-pagination {
+      display: flex;
+      gap: .45rem;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: .8rem;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .ov-pagination[hidden] { display: none; }
+    .ov-pagination .exp-range-btn { min-height: 44px; }
+    .ov-pagination .exp-range-btn:disabled { opacity: .55; cursor: default; }
+
     .ov-table {
       width: 100%;
       border-collapse: collapse;
@@ -2278,8 +2293,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0209"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.9</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0210"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3101,7 +3116,7 @@
       <div class="exp-controls">
         <div class="exp-group">
           <label class="exp-label">Veličina</label>
-          <select id="ovMetric" onchange="buildTempOverview()"
+          <select id="ovMetric" onchange="buildTempOverview(true)"
             style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
             <option value="temp">🌡 Teplota [°C]</option>
             <option value="hum">💧 Vlhkost [%]</option>
@@ -3122,7 +3137,12 @@
         <div class="chart-title" id="ovChartTitle">Teploty za poslední dny (°C)</div>
         <div class="chart-canvas-wrap" style="height:300px"><canvas id="chartOverview"></canvas></div>
       </div>
-      <div class="ov-table-wrap">
+      <div class="ov-pagination" id="ovPagination" role="group" aria-label="Stránkování denních souhrnů" hidden>
+        <button class="exp-range-btn" type="button" id="ovTablePrev" aria-controls="ovTableBody" onclick="pageOverviewTable(-1)" disabled>Novější</button>
+        <span id="ovTableRange" role="status"></span>
+        <button class="exp-range-btn" type="button" id="ovTableNext" aria-controls="ovTableBody" onclick="pageOverviewTable(1)" disabled>Starší</button>
+      </div>
+      <div class="ov-table-wrap" id="ovTableWrap">
         <table class="ov-table">
           <thead>
             <tr>
@@ -3529,6 +3549,8 @@
 
     function resetStationStore() {
       renderedOverviewUnit = null;
+      overviewTablePage = 0;
+      el("ovTableWrap").scrollTop = 0;
       analyticsStop(true);
       store.rows = [];
       renderDeviceSettings();
@@ -5768,6 +5790,7 @@
       if (!keepDataDiagnostics || !activeInfo || activeInfo.trigger !== el("dataValidationTrigger")) closeInfoPopover();
       analyticsInvalidate();
       aggregateCache = null;
+      overviewTableModel = null;
       clearTemperatureRecord();
       el("tempRecord").open = false;
       el("tempRecord").hidden = true;
@@ -6507,14 +6530,18 @@
     /* ══════════════════════════════════════════════
        PŘEHLED TEPLOT / VLHKOSTI / TLAKU
     ══════════════════════════════════════════════ */
+    const OVERVIEW_TABLE_PAGE_SIZE = 50;
+    let overviewTableModel = null;
+    let overviewTablePage = 0;
     let ovDays = 30;
     let overviewCountFormatter = null;
     let renderedOverviewUnit = null;
 
     function setOvDays(d) {
+      const changed = ovDays !== d;
       ovDays = d;
       document.querySelectorAll(".ov-range-btn").forEach(b => b.classList.toggle("active", +b.dataset.ovdays === d));
-      buildTempOverview();
+      buildTempOverview(changed);
     }
 
     function overviewDaySummaries(rows, getValue, cutFrom) {
@@ -6594,8 +6621,12 @@
       renderedOverviewUnit = metric.unit;
     }
 
-    function buildTempOverview() {
+    function buildTempOverview(resetPage = false) {
       if (!store.rows.length) return;
+      if (resetPage) {
+        overviewTablePage = 0;
+        el("ovTableWrap").scrollTop = 0;
+      }
       const metric = el("ovMetric") ? el("ovMetric").value : "temp";
       const METRICS_OV = {
         temp: { fn: r => r.temp, label: "Teplota", unit: "°C", color: "#e74c3c" },
@@ -6621,10 +6652,26 @@
       el("ovChartTitle").textContent = m.label + " za poslední dny (" + m.unit + ")";
       renderOverviewChart(m, keys, maxs, mins, avgs);
 
-      // Tabulka – nejnovější nahoře
-      const todayStr = fmtDateShort(now);
+      overviewTableModel = { keys, dayMap, todayStr: fmtDateShort(now) };
+      renderOverviewTable(overviewTablePage);
+    }
+
+    function pageOverviewTable(direction) {
+      if (!overviewTableModel) return;
+      renderOverviewTable(overviewTablePage + direction);
+    }
+
+    function renderOverviewTable(page) {
+      const { keys, dayMap, todayStr } = overviewTableModel;
+      const pages = Math.ceil(keys.length / OVERVIEW_TABLE_PAGE_SIZE);
+      const nextPage = Math.min(Math.max(0, pages - 1), Math.max(0, page));
+      if (nextPage !== overviewTablePage) el("ovTableWrap").scrollTop = 0;
+      overviewTablePage = nextPage;
+      const offset = nextPage * OVERVIEW_TABLE_PAGE_SIZE;
+      const end = keys.length - offset;
+      const visibleDays = keys.slice(Math.max(0, end - OVERVIEW_TABLE_PAGE_SIZE), end).reverse();
       const countFormatter = overviewCountFormatter ??= new Intl.NumberFormat("cs-CZ");
-      const tableMarkup = [...keys].reverse().map(k => {
+      const tableMarkup = visibleDays.map(k => {
         const summary = dayMap[k].summary;
         const mn = summary.min.toFixed(1);
         const mx = summary.max.toFixed(1);
@@ -6640,6 +6687,11 @@
     </tr>`;
       }).join("") || `<tr><td colspan="5" style="color:var(--muted);padding:1rem">Žádná data.</td></tr>`;
       if (el("ovTableBody").innerHTML !== tableMarkup) el("ovTableBody").innerHTML = tableMarkup;
+      el("ovPagination").hidden = pages < 2;
+      el("ovTablePrev").disabled = nextPage === 0;
+      el("ovTableNext").disabled = nextPage + 1 >= pages;
+      setNodeText(el("ovTableRange"), pages > 1
+        ? `${offset + 1}–${offset + visibleDays.length} z ${countFormatter.format(keys.length)} dní` : "");
     }
 
     /* ══════════════════════════════════════════════

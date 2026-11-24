@@ -161,3 +161,5 @@ limity na sdíleném CI stroji.
 - [Aktualizace grafu přehledu v0.20.8](PREHLED_GRAF_UPDATE.md) měří opakované zobrazení a změnu veličiny.
 
 - [Hodinové statistiky v0.20.9](HODINOVE_SKUPINY.md) porovnávají běžná data a hustou historii s duplicitními i jedinečnými časy.
+
+- [Stránkování denních souhrnů v0.21.0](PREHLED_STRANKOVANI.md) měří změnu veličiny u velkých historií a porovnává všechny stránky s původní tabulkou.

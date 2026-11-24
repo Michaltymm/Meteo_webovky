@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.0: přehled zobrazuje 50 denních souhrnů na stránku. Listování nečte historii a nemění úplný graf. Při 250k a změně veličiny 47,7 → 17,7 ms, vložení tabulky 10,8 → 0,8 ms. 465 testů a 16 párů shodných úplných výsledků. Viz docs/performance/PREHLED_STRANKOVANI.md.
 - v0.20.9: METEO-008 zrychluje první výpočet hodinových statistik. Místní hodina a posun vůči UTC se sdílejí pro záznamy se shodným časem. 463 testů a 12 párů shodných modelů v Chromium. Medián u 250k hustých řádků s duplicitami 27,4 → 13,0 ms, u jedinečných časů 26,8 → 23,8 ms. Viz docs/performance/HODINOVE_SKUPINY.md.
 - v0.20.8: METEO-008 přeskočí opakované sestavení grafu přehledu podle popisků, všech tří řad, jednotky a barvy. Tabulka reflektuje změny počtů. 463 testů, Chromium tří stanic včetně legendy, motivu a změny velikosti. 16 shodných dvojic podpisů grafu a tabulky. Opakovaný přehled 250k 17,5 → 9,4 ms, změna veličiny 45,2 → 50,9 ms. Další měřený cíl jsou hodinové statistiky hustého dne. Viz docs/performance/PREHLED_GRAF_UPDATE.md.
 - v0.20.7: METEO-008 localeformatter reuse a přesná DOM gate tabulky overview, bez markupcache;459/459Node+11/11focus,actual3stanice/mobil/identityřádků prošel.16párů plných graf/tableSHA shodných, pevný30d čas. Repeat250k93,8→24,4ms, change100k22,2→31,8ms pomalejší, viz docs/performance/PREHLED_RENDER.md. Dále ověřit zbytečné stejné Chart.update vs units/data/legend/theme/resize, celé008Rozpracováno;084blokované.
@@ -1632,3 +1633,19 @@ ESP084 čeká na firmware a zabezpečené API.
 GitHub Actions potvrdily nasazení v0.20.9 z commitu `6b1499c` na `codex-dev`.
 Sestavení a publikování trvaly dohromady 61 sekund včetně čekání. Produkční
 větev zůstala na `2405c5d`. [GitHub Actions #59](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45341607939)
+
+## METEO-008 / METEO-010 — v0.21.0, stránkování denních souhrnů
+
+Přehled vykresluje nejvýše 50 dní na stránku. Ovládání Novější a Starší je
+přístupné klávesnicí a objeví se u více než 50 dní. Listování používá připravené
+souhrny a nemění úplný graf. Ve všech 16 párech Chromium byly shodné všechny
+řádky tabulky i grafová data. U změny veličiny a 250 000 měření klesl počet DOM
+řádků z 869 na 50 a medián z 47,7 na 17,7 ms. Vložení tabulky kleslo z 10,8 na
+0,8 ms. Prošlo 465 testů a Chromium s původními třemi konfiguracemi. Samostatné
+kontroly stránkování pokryly šířky 320, 390 a 1440 px.
+[Metodika a vzorky](docs/performance/PREHLED_STRANKOVANI.md)
+
+METEO-008 a širší METEO-010 zůstávají rozpracované. Benchmark teď ukazuje, že
+po zkrácení tabulky tvoří značnou část velké změny veličiny Chart.js a výpočet
+souhrnů. Další případný zásah do jejich vykreslení potřebuje vlastní měření.
+ESP084 čeká na firmware a zabezpečené API.

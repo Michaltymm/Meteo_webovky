@@ -66,3 +66,43 @@ test('a station reset rebuilds even a chart with the same plotted values', () =>
   a.run('buildTempOverview();globalThis.previous=store.rows;resetStationStore();store.rows=previous;buildTempOverview()');
   assert.equal(a.run('chartOverview.updates'), 2);
 });
+
+test('paging shows every daily summary newest first, without recomputing the graph or reading history', () => {
+  const a = ready();
+  a.run(`store.rows=Array.from({length:121},(_,i)=>({ts:new Date(2026,10,24-i,12),temp:i}));
+    buildTempOverview();
+    overviewDaySummaries=()=>{throw Error('paging must not recompute summaries')}`);
+  const visibleDays = () => Array.from(a.run('markup').matchAll(/<td>(\d\d\. \d\d\. \d{4})/g), match => match[1]);
+  const expected = JSON.parse(a.run('JSON.stringify(store.rows.map(row=>fmtDateShort(row.ts)))'));
+  assert.deepEqual(visibleDays(), expected.slice(0, 50));
+  assert.equal(a.nodes.get('ovTablePrev').disabled, true);
+  a.run('pageOverviewTable(1)');
+  assert.deepEqual(visibleDays(), expected.slice(50, 100));
+  assert.equal(a.nodes.get('ovTableRange').textContent, '51–100 z 121 dní');
+  a.run('pageOverviewTable(1);pageOverviewTable(1)');
+  assert.deepEqual(visibleDays(), expected.slice(100));
+  assert.equal(a.nodes.get('ovTableNext').disabled, true);
+  a.run('pageOverviewTable(-1)');
+  assert.deepEqual(visibleDays(), expected.slice(50, 100));
+  assert.equal(a.run('chartOverview.updates'), 1);
+  assert.equal(a.run('chartOverview.data.labels.length'), 121);
+  assert.equal(a.requests.length, 0);
+});
+
+test('filter and station changes reset paging, while a refresh retains or clamps the current page', () => {
+  const a = ready();
+  a.run(`store.rows=Array.from({length:121},(_,i)=>({ts:new Date(Date.now()-i*86400000),temp:i,hum:0}));
+    globalThis.original=store.rows;buildTempOverview();pageOverviewTable(1);invalidateDerivedData();`);
+  const writes = a.run('writes');
+  a.run('pageOverviewTable(1);buildTempOverview()');
+  assert.equal(a.run('writes'), writes);
+  assert.equal(a.nodes.get('ovTableRange').textContent, '51–100 z 121 dní');
+  a.run("el('ovMetric').value='hum';buildTempOverview(true)");
+  assert.equal(a.nodes.get('ovTableRange').textContent, '1–50 z 121 dní');
+  a.run('pageOverviewTable(1);setOvDays(30)');
+  assert.equal(a.nodes.get('ovPagination').hidden, true);
+  a.run('setOvDays(0);pageOverviewTable(1);pageOverviewTable(1);store.rows=original.slice(0,80);invalidateDerivedData();buildTempOverview()');
+  assert.equal(a.nodes.get('ovTableRange').textContent, '51–80 z 80 dní');
+  a.run('resetStationStore();store.rows=original;buildTempOverview()');
+  assert.equal(a.nodes.get('ovTableRange').textContent, '1–50 z 121 dní');
+});

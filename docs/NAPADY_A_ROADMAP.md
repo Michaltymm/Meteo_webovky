@@ -2763,3 +2763,19 @@ ESP084 čeká na firmware a zabezpečené API.
 GitHub Actions potvrdily nasazení v0.20.9 z commitu `6b1499c` na `codex-dev`.
 Sestavení a publikování trvaly dohromady 61 sekund včetně čekání. Produkční
 větev zůstala na `2405c5d`. [GitHub Actions #59](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45341607939)
+
+## METEO-008 / METEO-010 — v0.21.0, stránkování denních souhrnů
+
+Přehled vykresluje nejvýše 50 dní na stránku. Ovládání Novější a Starší je
+přístupné klávesnicí a objeví se u více než 50 dní. Listování používá připravené
+souhrny a nemění úplný graf. Ve všech 16 párech Chromium byly shodné všechny
+řádky tabulky i grafová data. U změny veličiny a 250 000 měření klesl počet DOM
+řádků z 869 na 50 a medián z 47,7 na 17,7 ms. Vložení tabulky kleslo z 10,8 na
+0,8 ms. Prošlo 465 testů a Chromium s původními třemi konfiguracemi. Samostatné
+kontroly stránkování pokryly šířky 320, 390 a 1440 px.
+[Metodika a vzorky](performance/PREHLED_STRANKOVANI.md)
+
+METEO-008 a širší METEO-010 zůstávají rozpracované. Benchmark teď ukazuje, že
+po zkrácení tabulky tvoří značnou část velké změny veličiny Chart.js a výpočet
+souhrnů. Další případný zásah do jejich vykreslení potřebuje vlastní měření.
+ESP084 čeká na firmware a zabezpečené API.

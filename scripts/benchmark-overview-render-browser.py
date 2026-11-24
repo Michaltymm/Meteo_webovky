@@ -1,9 +1,10 @@
 """Actual visible overview: CPU summaries, locale formatting, HTML insertion, Chart.update."""
 import argparse,json,statistics,hashlib
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--mode',choices=['repeat','change'],default='repeat');p.add_argument('--html',default='index.html');p.add_argument('--assets',required=True);p.add_argument('--output',required=True);a=p.parse_args()
 results=[]
+pagination_checks=[]
 with sync_playwright() as pw:
  b=pw.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
  for n in [1000,10000,100000,250000]:
@@ -47,10 +48,37 @@ with sync_playwright() as pw:
      const t=performance.now();buildTempOverview();measurement.total=performance.now()-t;
      if(k)samples.push(measurement);measurement=null;
     }
-    return {samples,chart:JSON.stringify(chartOverview.data),table:el('ovTableBody').innerHTML,days:chartOverview.data.labels.length};
+    const body=el('ovTableBody'), visibleRows=body.rows.length;
+    let table=body.innerHTML;
+    // Recover the full output outside the measured work to compare every day.
+    if(typeof pageOverviewTable==='function'&&!el('ovPagination').hidden){
+     const count=chartOverview.data.labels.length;
+     for(let i=visibleRows;i<count;i+=visibleRows){pageOverviewTable(1);table+=body.innerHTML;}
+     for(let i=visibleRows;i<count;i+=visibleRows)pageOverviewTable(-1);
+    }
+    return {samples,chart:JSON.stringify(chartOverview.data),table,visibleRows,days:chartOverview.data.labels.length};
    }''',{'days':days,'changing':a.mode=='change'})
    data.update(n=n,range=days,sha256={key:hashlib.sha256(data.pop(key).encode()).hexdigest() for key in ['chart','table']});results.append(data)
    print(n,days,{key:round(statistics.median(s[key] for s in data['samples']),2) for key in ['total','summaries','chart','locale','html']},flush=True)
+  if n==250000 and a.mode=='change' and page.locator('#ovPagination').count():
+   for width in [320,390,1440]:
+    page.set_viewport_size({'width':width,'height':844})
+    page.locator('#ovTableNext').press('Enter')
+    expect(page.locator('#ovTableRange')).to_have_text('51–100 z 869 dní')
+    expect(page.locator('#ovTableBody tr')).to_have_count(50)
+    expect(page.locator('#ovTablePrev')).to_be_enabled()
+    assert page.evaluate('chartOverview.data.labels.length===869 && document.documentElement.scrollWidth<=innerWidth+1')
+    assert page.locator('#ovTableNext').bounding_box()['height']>=44
+    page.locator('#ovTablePrev').click()
+    expect(page.locator('#ovTableRange')).to_have_text('1–50 z 869 dní')
+    expect(page.locator('#ovTablePrev')).to_be_disabled()
+    pagination_checks.append(width)
+   page.locator('#ovTableNext').click()
+   page.select_option('#ovMetric','pressure')
+   expect(page.locator('#ovTableRange')).to_have_text('1–50 z 869 dní')
+   page.locator('[data-ovdays="30"]').click()
+   expect(page.locator('#ovPagination')).to_be_hidden()
+   expect(page.locator('#ovTableBody tr')).to_have_count(31)
   assert not errors,errors;page.close()
  b.close()
-Path(a.output).write_text(json.dumps({'source':a.html,'mode':a.mode,'scope':__doc__,'results':results},indent=2))
+Path(a.output).write_text(json.dumps({'source':a.html,'mode':a.mode,'scope':__doc__,'results':results,'paginationWidths':pagination_checks},indent=2))

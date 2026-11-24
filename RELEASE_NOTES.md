@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.0
+
+- Dlouhá tabulka v přehledu teploty, vlhkosti a tlaku zobrazuje 50 dní na stránku. Starší i novější souhrny lze procházet tlačítky a graf dál zahrnuje celé období.
+
 ## v0.20.9
 
 - Rychlejší první výpočet hodinového porovnání u hustých dat. Každé měření včetně duplicit se dál započítává do statistik.
