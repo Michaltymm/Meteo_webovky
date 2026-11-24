@@ -102,7 +102,7 @@ git show 26af1c1:index.html > /tmp/meteo-stage11/before.html
 python scripts/profile-history.py --html /tmp/meteo-stage11/before.html --chartjs /tmp/meteo-pages-validation/chart.js --comparison --counts 1000,250000 --output /tmp/meteo-stage11/before.json
 python scripts/profile-history.py --html index.html --chartjs /tmp/meteo-pages-validation/chart.js --comparison --hour-records --counts 1000,250000 --output /tmp/meteo-stage11/after.json
 node --test tests/*.test.js
-python scripts/check-hourly-records-browser.py --chartjs /tmp/meteo-pages-validation/chart.js --output /tmp/meteo-stage11/browser.json
+python scripts/check-hourly-records-browser.py --chartjs /tmp/meteo-pages-validation/chart.js --paho /tmp/meteo-pages-validation/paho.js --output /tmp/meteo-stage11/browser.json
 ```
 
 Playwright/Chromium jsou volitelné vývojářské nástroje. Nová produkční

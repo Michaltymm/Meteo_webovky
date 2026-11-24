@@ -13,6 +13,7 @@ from playwright.async_api import async_playwright
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--chartjs', required=True)
+parser.add_argument('--paho', required=True)
 parser.add_argument('--output', required=True)
 args = parser.parse_args()
 
@@ -50,7 +51,11 @@ async def main():
             if url == 'http://meteo.test/dev/':
                 await r.fulfill(body=html, content_type='text/html')
             elif 'chart.js' in url:
-                await r.fulfill(body=chart, content_type='text/javascript')
+                await r.fulfill(body=chart, content_type='text/javascript',
+                                headers={'Access-Control-Allow-Origin': '*'})
+            elif 'paho-mqtt' in url:
+                await r.fulfill(body=Path(args.paho).read_bytes(), content_type='text/javascript',
+                                headers={'Access-Control-Allow-Origin': '*'})
             elif filename in files:
                 await r.fulfill(body=json.dumps(configs[files.index(filename)]), content_type='application/json')
             elif 'docs.google.com' in url:
@@ -70,10 +75,10 @@ async def main():
 
         async def open_native():
             if not await page.locator('#cmpEvidence').evaluate('(node)=>node.open'):
-                await page.locator('#cmpEvidence > summary').focus()
+                await page.locator('#cmpEvidence > summary').evaluate('(node)=>node.focus({preventScroll:true})')
                 await page.keyboard.press('Enter')
             if not await page.locator('#cmpRecords').evaluate('(node)=>node.open'):
-                await page.locator('#cmpRecords > summary').focus()
+                await page.locator('#cmpRecords > summary').evaluate('(node)=>node.focus({preventScroll:true})')
                 await page.keyboard.press('Enter')
             await page.wait_for_function('comparisonRecordView!==null')
             await page.wait_for_timeout(50)  # Drain native toggle before changing pages.
@@ -137,6 +142,8 @@ async def main():
             await page.select_option('#cmpRecordsHour', '12')
             assert await page.evaluate('comparisonRecordView.page') == 0
             assert await page.locator('#cmpRecordsBody tr').count() == 2
+            # The shared help panel can close when scrolling outside it.
+            await open_native()
             await page.select_option('#cmpRecordsDay', '2026-10-20')
             assert await page.locator('#cmpRecordsBody tr').count() == 0
             assert 'Žádné záznamy' in await page.locator('#cmpRecordsPage').inner_text()
@@ -166,6 +173,8 @@ async def main():
                     for theme in ['darkblue', 'light']:
                         await page.evaluate('(t)=>setTheme(t)', theme)
                         assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth'), await page.evaluate('''()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,12).map(e=>({id:e.id,tag:e.tagName,cls:e.className,right:e.getBoundingClientRect().right,width:e.getBoundingClientRect().width}))})''')
+                        # Resizing dismisses the shared help panel by design.
+                        await open_native()
                         scroll = page.locator('#cmpRecords .battery-record-scroll')
                         await scroll.evaluate('(node)=>node.scrollLeft=0')
                         await scroll.focus()

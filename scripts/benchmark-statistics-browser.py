@@ -2,7 +2,7 @@
 import argparse,json,statistics,hashlib
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--html',default='index.html');p.add_argument('--assets',required=True);p.add_argument('--output',required=True);a=p.parse_args()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--shapes',nargs='+',choices=['regular','dense','dense-unique'],default=['regular','dense']);p.add_argument('--html',default='index.html');p.add_argument('--assets',required=True);p.add_argument('--output',required=True);a=p.parse_args()
 results=[]
 with sync_playwright() as pw:
  b=pw.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
@@ -14,11 +14,11 @@ with sync_playwright() as pw:
   elif 'paho-mqtt' in r.request.url:r.fulfill(body=(Path(a.assets)/'paho.js').read_bytes(),content_type='application/javascript',headers={'Access-Control-Allow-Origin':'*'})
   else:raise AssertionError(r.request.url)
  page.route('**/*',route);page.goto('http://meteo.test/')
- for shape in ['regular','dense']:
+ for shape in a.shapes:
   for n in [1000,10000,100000,250000]:
    data=page.evaluate('''({n,shape})=>{
     const base=new Date(2026,10,17,12).getTime();
-    store.rows=Array.from({length:n},(_,i)=>({ts:new Date(base-(shape==='regular'?i*300000:Math.floor(i/3)*1000)),temp:i%101===0?null:i%67/3,hum:i%89===0?null:i%101,rain:i%43/10,rainInc:i%13/10,voltage:i%3===0?0:null,pressure:i%47===0?null:1010}));
+    store.rows=Array.from({length:n},(_,i)=>({ts:new Date(base-(shape==='regular'?i*300000:shape==='dense-unique'?i*333:Math.floor(i/3)*1000)),temp:i%101===0?null:i%67/3,hum:i%89===0?null:i%101,rain:i%43/10,rainInc:i%13/10,voltage:i%3===0?0:null,pressure:i%47===0?null:1010}));
     aggregateCache=null;const snapshot=dataAggregates(),key=localDateKey(store.rows[0].ts),year=store.rows[0].ts.getFullYear();
     // Exclude Chart layout from the overview CPU; preserve its generated data.
     chartOverview.update=()=>{};el('ovMetric').value='temp';ovDays=0;

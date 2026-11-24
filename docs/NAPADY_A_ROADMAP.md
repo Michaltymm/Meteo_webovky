@@ -2743,3 +2743,19 @@ Nasazení v0.20.8 potvrdily GitHub Actions. Běh trval 55 sekund, z toho 34 seku
 sestavení a 12 sekund publikování. CI prošlo 463 testy. Vývojová změna je v
 commitu `f9741bf` na `codex-dev`. Produkční větev zůstala na `2405c5d`.
 [GitHub Actions #58](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44711811040)
+
+## METEO-008 — v0.20.9, první výpočet hodinových statistik
+
+Místní hodina, posun vůči UTC a evidence zachyceného času se vyhodnotí jednou
+pro skupinu se stejnou časovou značkou. Každý řádek má stále vlastní příspěvek
+do součtu a počtu. Původní pořadí, vynechání nekonečných či chybějících hodnot,
+zaokrouhlení, mezery i dohledání zdrojových řádků se řídí dosavadními pravidly.
+
+Ve 12 porovnáních Chromium vyšly přesně stejné modely. Při 250 000 řádcích se
+shodnými časy ve trojicích klesl medián z 27,4 na 13,0 ms. Při jedinečných časech
+klesl z 26,8 na 23,8 ms. Prošlo 463 testů včetně duplicit při změně času a
+chybějících hodnot uvnitř skupiny. [Metodika a měření](performance/HODINOVE_SKUPINY.md)
+
+METEO-008 zůstává rozpracované. Pro další etapu má smysl prověřit dlouhou
+měněnou tabulku přehledu „Vše“, kde už existuje oddělené měření HTML a grafu.
+ESP084 čeká na firmware a zabezpečené API.

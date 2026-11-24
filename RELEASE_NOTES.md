@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.20.9
+
+- Rychlejší první výpočet hodinového porovnání u hustých dat. Každé měření včetně duplicit se dál započítává do statistik.
+
 ## v0.20.8
 
 - Přehled teploty, vlhkosti a tlaku přeskočí překreslení grafu, když se vykreslené hodnoty nezměnily. Tabulka dál zobrazuje aktuální počty měření.

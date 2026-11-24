@@ -2278,8 +2278,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0208"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.8</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0209"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.20.9</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5583,12 +5583,13 @@
       }
       const bounds = localDayBounds(key);
       const slots = new Set(), observed = new Set();
-      const values = Object.fromEntries(["temp", "hum", "pressure"].map(metric => [metric,
+      const metrics = ["temp", "hum", "pressure"];
+      const values = Object.fromEntries(metrics.map(metric => [metric,
         Array.from({ length: 24 }, () => ({ sum: 0, count: 0, unique: 0, lastTime: null, avg: null }))]));
       const metricSlots = { temp: new Set(), hum: new Set(), pressure: new Set() };
       const result = { key, values, records: Array.from({ length: 24 }, () => []), count: 0, unique: 0, first: null, last: null, maxGapMs: null,
         durationMs: bounds ? bounds.to + 1 - bounds.from : 0, slots: 0, observedSlots: 0, metricSlots: {} };
-      const slotKey = date => date.getHours() + ":" + date.getTimezoneOffset();
+      const slotKey = (date, hour = date.getHours()) => hour + ":" + date.getTimezoneOffset();
       if (bounds) {
         // Count existing civil hour/offset groups, including half-hour DST changes.
         for (let time = bounds.from; time <= bounds.to; time += 60000) slots.add(slotKey(new Date(time)));
@@ -5597,35 +5598,44 @@
         // Ascending timestamps, retaining original order inside equal-time groups:
         // this matches the old stable sort and preserves floating-point sums.
         for (let i = day ? day.end - 1 : -1; day && i >= day.start;) {
-          const time = rows[i].ts.getTime();
+          const date = rows[i].ts;
+          const time = date.getTime();
           let start = i;
           while (start > day.start && rows[start - 1].ts.getTime() === time) start--;
           // Retain numeric spans only, including invalid metric values. Civil
           // hours can recur across offset changes; do not infer one UTC interval.
-          const ranges = result.records[rows[i].ts.getHours()], last = ranges[ranges.length - 1];
+          const hour = date.getHours(), slot = slotKey(date, hour);
+          const ranges = result.records[hour], last = ranges[ranges.length - 1];
           if (last && last.start === i + 1) last.start = start;
           else ranges.push({ start, end: i + 1 });
+          // Rows sharing an instant also share its civil hour and UTC offset.
+          result.count += i - start + 1;
+          if (result.first === null) result.first = time;
+          if (time !== result.last) {
+            if (result.last !== null) result.maxGapMs = Math.max(result.maxGapMs ?? 0, time - result.last);
+            result.unique++;
+          }
+          result.last = time;
+          observed.add(slot);
           for (let j = start; j <= i; j++) {
-            const row = rows[j], hour = row.ts.getHours(), slot = slotKey(row.ts);
-            result.count++;
-            if (result.first === null) result.first = time;
-            if (time !== result.last) {
-              if (result.last !== null) result.maxGapMs = Math.max(result.maxGapMs ?? 0, time - result.last);
-              result.unique++;
-            }
-            result.last = time; observed.add(slot);
-            for (const metric of ["temp", "hum", "pressure"]) {
-              if (!Number.isFinite(row[metric])) continue;
+            const row = rows[j];
+            for (const metric of metrics) {
+              const value = row[metric];
+              if (!Number.isFinite(value)) continue;
               const stat = values[metric][hour];
-              stat.sum += row[metric]; stat.count++;
-              if (stat.lastTime !== time) stat.unique++;
-              stat.lastTime = time; metricSlots[metric].add(slot);
+              stat.sum += value;
+              stat.count++;
+              if (stat.lastTime !== time) {
+                stat.unique++;
+                stat.lastTime = time;
+                metricSlots[metric].add(slot);
+              }
             }
           }
           i = start - 1;
         }
       }
-      for (const metric of ["temp", "hum", "pressure"]) {
+      for (const metric of metrics) {
         for (const stat of values[metric]) stat.avg = stat.count ? +(stat.sum / stat.count).toFixed(1) : null;
         result.metricSlots[metric] = metricSlots[metric].size;
       }

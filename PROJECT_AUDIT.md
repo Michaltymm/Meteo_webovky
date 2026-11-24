@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.20.9: METEO-008 zrychluje první výpočet hodinových statistik. Místní hodina a posun vůči UTC se sdílejí pro záznamy se shodným časem. 463 testů a 12 párů shodných modelů v Chromium. Medián u 250k hustých řádků s duplicitami 27,4 → 13,0 ms, u jedinečných časů 26,8 → 23,8 ms. Viz docs/performance/HODINOVE_SKUPINY.md.
 - v0.20.8: METEO-008 přeskočí opakované sestavení grafu přehledu podle popisků, všech tří řad, jednotky a barvy. Tabulka reflektuje změny počtů. 463 testů, Chromium tří stanic včetně legendy, motivu a změny velikosti. 16 shodných dvojic podpisů grafu a tabulky. Opakovaný přehled 250k 17,5 → 9,4 ms, změna veličiny 45,2 → 50,9 ms. Další měřený cíl jsou hodinové statistiky hustého dne. Viz docs/performance/PREHLED_GRAF_UPDATE.md.
 - v0.20.7: METEO-008 localeformatter reuse a přesná DOM gate tabulky overview, bez markupcache;459/459Node+11/11focus,actual3stanice/mobil/identityřádků prošel.16párů plných graf/tableSHA shodných, pevný30d čas. Repeat250k93,8→24,4ms, change100k22,2→31,8ms pomalejší, viz docs/performance/PREHLED_RENDER.md. Dále ověřit zbytečné stejné Chart.update vs units/data/legend/theme/resize, celé008Rozpracováno;084blokované.
 - v0.20.6: METEO-008 průběžné přesné denní souhrny overview bez vals polí, Sheets binární časové meze, MQTT/both plný predikát, datum jen při změně dne.455/455Node+8/8focusDST3zóny,3stanice actualUI/T/RH/P/mobil prošly;8párů modelovýchSHA shodné. Regular250k79,9→27,1ms, dense49,9→4,7ms. Viz docs/performance/PREHLED_DENNI_SOUHRNY.md. Dále rozdělit HTML/DOM dlouhé tabulkyVše vsChart čas, pak další úprava; celé008Rozpracováno,084blokované.
@@ -1611,3 +1612,19 @@ Nasazení v0.20.8 potvrdily GitHub Actions. Běh trval 55 sekund, z toho 34 seku
 sestavení a 12 sekund publikování. CI prošlo 463 testy. Vývojová změna je v
 commitu `f9741bf` na `codex-dev`. Produkční větev zůstala na `2405c5d`.
 [GitHub Actions #58](https://github.com/Michaltymm/Meteo_webovky/actions/runs/44711811040)
+
+## METEO-008 — v0.20.9, první výpočet hodinových statistik
+
+Místní hodina, posun vůči UTC a evidence zachyceného času se vyhodnotí jednou
+pro skupinu se stejnou časovou značkou. Každý řádek má stále vlastní příspěvek
+do součtu a počtu. Původní pořadí, vynechání nekonečných či chybějících hodnot,
+zaokrouhlení, mezery i dohledání zdrojových řádků se řídí dosavadními pravidly.
+
+Ve 12 porovnáních Chromium vyšly přesně stejné modely. Při 250 000 řádcích se
+shodnými časy ve trojicích klesl medián z 27,4 na 13,0 ms. Při jedinečných časech
+klesl z 26,8 na 23,8 ms. Prošlo 463 testů včetně duplicit při změně času a
+chybějících hodnot uvnitř skupiny. [Metodika a měření](docs/performance/HODINOVE_SKUPINY.md)
+
+METEO-008 zůstává rozpracované. Pro další etapu má smysl prověřit dlouhou
+měněnou tabulku přehledu „Vše“, kde už existuje oddělené měření HTML a grafu.
+ESP084 čeká na firmware a zabezpečené API.

@@ -127,12 +127,21 @@ for (const [zone,cases] of [
   });
 }
 
-test('two autumn offsets count as two observed groups while sharing the comparison hour',()=>{
+test('duplicates contribute individually across both autumn offsets, including metrics first valid later in a group',()=>{
   execFileSync(process.execPath,['-e',`
     const assert=require('node:assert/strict');const {app}=require('./tests/helpers/app');const a=app();
-    a.run(\`store.rows=[{ts:new Date('2026-10-25T02:30:00+01:00'),temp:20},{ts:new Date('2026-10-25T02:30:00+02:00'),temp:10}];globalThis.day=hourlyDay('2026-10-25')\`);
-    assert.equal(a.run('day.observedSlots'),2);assert.equal(a.run('day.unique'),2);
-    assert.equal(a.run('day.values.temp[2].count'),2);assert.equal(a.run('day.values.temp[2].avg'),15);
-    assert.equal(a.run('day.maxGapMs'),3600000);
+    a.run(\`store.rows=[
+      {ts:new Date('2026-10-25T02:30:00+01:00'),temp:20,hum:null},
+      {ts:new Date('2026-10-25T02:30:00+01:00'),temp:10,hum:0,pressure:1010},
+      {ts:new Date('2026-10-25T02:30:00+02:00'),temp:null,hum:50},
+      {ts:new Date('2026-10-25T02:30:00+02:00'),temp:30,hum:75}
+    ];globalThis.day=hourlyDay('2026-10-25')\`);
+    assert.equal(a.run('day.count'),4);assert.equal(a.run('day.unique'),2);
+    assert.equal(a.run('day.observedSlots'),2);assert.equal(a.run('day.maxGapMs'),3600000);
+    assert.equal(a.run('day.values.temp[2].count'),3);assert.equal(a.run('day.values.temp[2].avg'),20);
+    assert.equal(a.run('day.values.hum[2].count'),3);assert.equal(a.run('day.values.hum[2].avg'),41.7);
+    assert.equal(a.run('day.values.temp[2].unique'),2);assert.equal(a.run('day.values.hum[2].unique'),2);
+    assert.equal(a.run('JSON.stringify(day.metricSlots)'),'{"temp":2,"hum":2,"pressure":1}');
+    assert.equal(a.run('JSON.stringify(day.records[2])'),'[{"start":0,"end":4}]');
   `],{cwd:path.join(__dirname,'..'),env:{...process.env,TZ:'Europe/Prague'},stdio:'pipe'});
 });
