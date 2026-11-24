@@ -83,3 +83,21 @@ test('cached civil-day grouping preserves DST and non-hour offsets in three time
  return true;})()\`),true);`;
  for(const zone of ['UTC','Europe/Prague','Asia/Kathmandu'])execFileSync(process.execPath,['-e',code],{cwd:process.cwd(),env:{...process.env,TZ:zone}});
 });
+
+test('overview orders unsorted local days across month and year boundaries and combines revisited days', () => {
+  const a = app();
+  a.run(`CFG.source='both';ovDays=0;el('ovMetric').value='temp';
+    store.rows=[
+      {ts:new Date(2026,0,3,12),temp:0},
+      {ts:new Date(2025,11,31,23),temp:2},
+      {ts:new Date(2026,10,1,12),temp:12},
+      {ts:new Date(2026,0,3,13),temp:10},
+      {ts:new Date(2026,0,1,0),temp:-1},
+      {ts:new Date(2025,11,31,12),temp:4},
+    ];buildTempOverview()`);
+  assert.deepEqual(JSON.parse(a.run('JSON.stringify(chartOverview.data.labels)')),
+    ['31. 12. 2025', '01. 01. 2026', '03. 01. 2026', '01. 11. 2026']);
+  assert.deepEqual(JSON.parse(a.run('JSON.stringify(chartOverview.data.datasets[2].data)')), [3, -1, 5, 12]);
+  const tableDays = Array.from(a.nodes.get('ovTableBody').innerHTML.matchAll(/<td>(\d\d\. \d\d\. \d{4})/g), match => match[1]);
+  assert.deepEqual(tableDays, ['01. 11. 2026', '03. 01. 2026', '01. 01. 2026', '31. 12. 2025']);
+});

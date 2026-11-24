@@ -1,5 +1,5 @@
 """Actual visible overview: CPU summaries, locale formatting, HTML insertion, Chart.update."""
-import argparse,json,statistics,hashlib
+import argparse,json,statistics,hashlib,re
 from pathlib import Path
 from playwright.sync_api import expect, sync_playwright
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--mode',choices=['repeat','change','range'],default='repeat');p.add_argument('--html',default='index.html');p.add_argument('--repeats',type=int,default=3);p.add_argument('--assets',required=True);p.add_argument('--output',required=True);a=p.parse_args()
@@ -15,6 +15,12 @@ with sync_playwright() as pw:
    globalThis.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[epoch]))}static now(){return epoch}};
   }''')
   html=Path(a.html).read_text().split('// Init: téma, stanice, config')[0]+'</script></body></html>'
+  # Time the real sorting expression in both revisions, excluding the chart.
+  def timed_sort(match):
+   return ("      const keyStart = performance.now();\n" + match[0] +
+           "\n      if (window.measurement) measurement.daySort = performance.now() - keyStart;")
+  html=re.sub(r'^      const keys = Object\.keys\(dayMap\)\.sort[^\n]+;$',timed_sort,html,flags=re.MULTILINE)
+
   def route(r):
    if r.request.url=='http://meteo.test/':r.fulfill(body=html,content_type='text/html')
    elif 'chart.js' in r.request.url:r.fulfill(body=(Path(a.assets)/'chart.js').read_bytes(),content_type='application/javascript',headers={'Access-Control-Allow-Origin':'*'})
@@ -45,7 +51,7 @@ with sync_playwright() as pw:
     for(let k=-2;k<repeats;k++){
      if(mode==='change')el('ovMetric').value=k%2?'hum':'temp';
      if(mode==='range')ovDays=k%2?days:7;
-     measurement={summaries:0,chart:0,chartCalls:0,locale:0,localeCalls:0,html:0,htmlSets:0};
+     measurement={summaries:0,daySort:0,chart:0,chartCalls:0,locale:0,localeCalls:0,html:0,htmlSets:0};
      const t=performance.now();buildTempOverview();measurement.total=performance.now()-t;
      if(k>=0)samples.push(measurement);measurement=null;
     }
@@ -60,7 +66,7 @@ with sync_playwright() as pw:
     return {samples,chart:JSON.stringify(chartOverview.data),table,visibleRows,days:chartOverview.data.labels.length};
    }''',{'days':days,'mode':a.mode,'repeats':a.repeats})
    data.update(n=n,range=days,sha256={key:hashlib.sha256(data.pop(key).encode()).hexdigest() for key in ['chart','table']});results.append(data)
-   print(n,days,{key:round(statistics.median(s[key] for s in data['samples']),2) for key in ['total','summaries','chart','locale','html']},flush=True)
+   print(n,days,{key:round(statistics.median(s[key] for s in data['samples']),2) for key in ['total','summaries','daySort','chart','locale','html']},flush=True)
   if n==250000 and a.mode=='change' and page.locator('#ovPagination').count():
    for width in [320,390,1440]:
     page.set_viewport_size({'width':width,'height':844})

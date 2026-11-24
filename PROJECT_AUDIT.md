@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.2: přehled řadí podle původního místního data a používá stejný souhrn v rámci dne. Osm shodných párů grafů a tabulek. U 250k řazení 1,1 → 0,1 ms, celý přehled 16,8 → 13,5 ms. Viz docs/performance/PREHLED_RAZENI_DNU.md.
 - v0.21.1: přehled zachovává datové řady a legendu při změně veličiny či období v rámci stanice. 466 testů, shodné výstupy a smíšené časy. Návrat ze 7 dní na Vše u 250k klesl ze 17,8 na 13,0 ms, změna veličiny ve Vše trvala 14,2 a 16,7 ms. Viz docs/performance/PREHLED_DATOVE_RADY.md.
 - v0.21.0: přehled zobrazuje 50 denních souhrnů na stránku. Listování nečte historii a nemění úplný graf. Při 250k a změně veličiny 47,7 → 17,7 ms, vložení tabulky 10,8 → 0,8 ms. 465 testů a 16 párů shodných úplných výsledků. Viz docs/performance/PREHLED_STRANKOVANI.md.
 - v0.20.9: METEO-008 zrychluje první výpočet hodinových statistik. Místní hodina a posun vůči UTC se sdílejí pro záznamy se shodným časem. 463 testů a 12 párů shodných modelů v Chromium. Medián u 250k hustých řádků s duplicitami 27,4 → 13,0 ms, u jedinečných časů 26,8 → 23,8 ms. Viz docs/performance/HODINOVE_SKUPINY.md.
@@ -1675,3 +1676,17 @@ a zabezpečené API.
 Nasazení v0.21.1 z commitu `9e8fa2b` potvrdily GitHub Actions na `codex-dev`.
 Běh trval 61 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
 [GitHub Actions #61](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342901719)
+
+## METEO-008 — v0.21.2, řazení dní v přehledu
+
+Přehled řadí podle původního místního data a při průchodu stejným dnem používá
+jeho souhrn přímo. V osmi porovnáních Chromium byly shodné celé grafy i
+všechny stránky tabulek. U rozsahu Vše a 250 000 měření klesl medián řazení
+z 1,1 na 0,1 ms a sestavení celého přehledu ze 16,8 na 13,5 ms. Prošlo 467 testů
+a kontrola tří původních konfigurací v Chromium.
+[Metodika a vzorky](docs/performance/PREHLED_RAZENI_DNU.md)
+
+METEO-008 zůstává rozpracované. Navazující etapa METEO-056 může automaticky
+ověřovat shodu výstupů mezi verzemi ze stávajících výkonnostních profilů a
+zaznamenat rozdíly v časech bez křehkého limitu závislého na stroji.
+ESP084 čeká na firmware a zabezpečené API.

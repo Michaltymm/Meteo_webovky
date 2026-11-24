@@ -2804,3 +2804,17 @@ a zabezpečené API.
 Nasazení v0.21.1 z commitu `9e8fa2b` potvrdily GitHub Actions na `codex-dev`.
 Běh trval 61 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
 [GitHub Actions #61](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342901719)
+
+## METEO-008 — v0.21.2, řazení dní v přehledu
+
+Přehled řadí podle původního místního data a při průchodu stejným dnem používá
+jeho souhrn přímo. V osmi porovnáních Chromium byly shodné celé grafy i
+všechny stránky tabulek. U rozsahu Vše a 250 000 měření klesl medián řazení
+z 1,1 na 0,1 ms a sestavení celého přehledu ze 16,8 na 13,5 ms. Prošlo 467 testů
+a kontrola tří původních konfigurací v Chromium.
+[Metodika a vzorky](performance/PREHLED_RAZENI_DNU.md)
+
+METEO-008 zůstává rozpracované. Navazující etapa METEO-056 může automaticky
+ověřovat shodu výstupů mezi verzemi ze stávajících výkonnostních profilů a
+zaznamenat rozdíly v časech bez křehkého limitu závislého na stroji.
+ESP084 čeká na firmware a zabezpečené API.

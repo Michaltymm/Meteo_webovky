@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.2
+
+- Rychlejší řazení dní při změně veličiny nebo období u dlouhé historie.
+
 ## v0.21.1
 
 - Přehled zachovává skryté a zobrazené křivky při změně veličiny nebo období v rámci jedné stanice.
