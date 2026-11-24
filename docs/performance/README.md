@@ -187,3 +187,5 @@ limity na sdíleném CI stroji.
 - [Odložená konstrukce Porovnání dnů a Přehledu v0.21.10](KONSTRUKCE_POROVNANI_A_PREHLEDU.md) uzavírá odklad konstrukce základních grafů.
 
 - [Denní srážky v Průzkumníku v0.21.11](DENNI_SRAZKY_PRUZKUMNIKU.md) měří zvlášť agregaci a první vykreslení.
+
+- [Vykreslení srážkových sloupců v0.21.12](VYKRESLENI_SRAZKOVYCH_SLOUPCU.md) ověřuje přeskočení shodné obnovy a cenu oprav.

@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.12
+
+- Průzkumník přeskočí překreslení srážek, když se denní maxima nezměnila. Počet měření se dál aktualizuje.
+
 ## v0.21.11
 
 - Průzkumník rychleji připraví denní hodnoty srážek z dlouhé historie. Graf i statistiky dál zahrnují všechny dny s měřením.

@@ -117,6 +117,26 @@ test('explorer keeps its instance across an empty slice, daily rain and two line
   assert.equal(a.run('JSON.stringify(chartExplorer.data.datasets.map(ds=>ds.data))'), '[[0,20],[null,40]]');
 });
 
+test('rain explorer redraws only when day values change and retries a failed draw', () => {
+  const a = app();
+  a.run(`const now=new Date(2026,10,24,12).getTime();Date.now=()=>now;
+    store.rows=[{ts:new Date(now),rain:5,temp:20}];
+    el("expMetric").value="rain";buildExplorer();const initial=chartExplorer.data.datasets[0];
+    store.rows.push({ts:new Date(now-60000),rain:3,temp:18});invalidateDerivedData();buildExplorer();`);
+  assert.equal(a.run('chartExplorer.updates===1 && chartExplorer.data.datasets[0]===initial'), true);
+  assert.equal(a.nodes.get('expInfo').textContent, '2 záznamů v rozsahu');
+  a.run(`store.rows[1].rain=9;invalidateDerivedData();
+    const update=chartExplorer.update;chartExplorer.update=()=>{throw Error("failed")};`);
+  assert.throws(()=>a.run('buildExplorer()'), /failed/);
+  a.run('chartExplorer.update=update;buildExplorer();buildExplorer()');
+  assert.equal(a.run('chartExplorer.updates'), 2);
+  assert.equal(a.run('chartExplorer.data.datasets[0].data[0]'), 9);
+  a.run('el("expMetric").value="temp";buildExplorer();el("expMetric").value="rain";buildExplorer()');
+  assert.equal(a.run('chartExplorer.updates===4 && chartExplorer.config.type==="bar"'), true);
+  a.run('const sameRows=store.rows;resetStationStore();store.rows=sameRows;buildExplorer()');
+  assert.equal(a.run('chartExplorer.updates'), 5);
+});
+
 test('explorer rain daily maxima match the original grouping across missing data, ties and repeated dates', () => {
   const a = app();
   a.run(`const rows=Object.freeze([

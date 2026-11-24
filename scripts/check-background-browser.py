@@ -26,11 +26,11 @@ async def main():
         rows = ['Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti']
         for i in range(1000):
             d = now-timedelta(minutes=5*i)
-            rows.append(f'{d:%d.%m.%Y},{d:%H:%M:%S},{85 if i==17 else 10+station},1010,60,0,0,,{4 if i<500 else 3.5}')
+            rows.append(f'{d:%d.%m.%Y},{d:%H:%M:%S},{85 if i==17 else 10+station},1010,60,0,{7 if i==17 else 0},,{4 if i<500 else 3.5}')
         bodies[station] = rows
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
-        page = await browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Prague')
+        page = await browser.new_page(viewport={'width':390,'height':844},timezone_id='Europe/Prague',has_touch=True)
         await page.clock.install(time=now)
         await page.add_init_script('''window.syntheticHidden=false;
           Object.defineProperty(document,'hidden',{configurable:true,get:()=>syntheticHidden});
@@ -114,7 +114,7 @@ async def main():
           if (!chartRain?.data.labels.length || !chartVoltage?.data.labels.length) return false;
           window.firstRainChart=chartRain;window.firstVoltageChart=chartVoltage;
           const actual=chartVoltage.data.datasets[0].data.filter(v=>v!==null);
-          return chartRain.data.datasets[0].data.every(v=>v===0) &&
+          return chartRain.data.datasets[0].data.includes(7) && chartRain.data.datasets[0].data.every(v=>v===0||v===7) &&
             actual.length===500 && actual.every(v=>v===4) &&
             chartVoltage.data.datasets[1].data[500]>4;
         }''')
@@ -134,9 +134,28 @@ async def main():
             const day=fmtDateShort(row.ts);
             peaks.set(day,Math.max(peaks.get(day)??-Infinity,row.rain));
           }
-          return chartExplorer.data.labels.length===peaks.size &&
-            chartExplorer.data.labels.every((day,i)=>chartExplorer.data.datasets[0].data[i]===peaks.get(day));
+          const chart=chartExplorer, controller=chart.getDatasetMeta(0).controller;
+          return chart.scales.x.type==='category' && chart.scales.yMain.type==='linear' &&
+            chart.data.labels.length===peaks.size && chart.data.labels.every((day,i)=>{
+              const {x,y}=controller.getParsed(i);
+              return x===i && y===peaks.get(day) && controller.getLabelAndValue(i).label===day;
+            });
         }''')
+        await page.evaluate('window.rainSeries=chartExplorer.data.datasets[0];buildExplorer()')
+        assert await page.evaluate('chartExplorer.data.datasets[0]===rainSeries')
+        await page.locator('#chartExplorer').scroll_into_view_if_needed()
+        point=await page.evaluate('''()=>{
+          const chart=chartExplorer,index=chart.data.datasets[0].data.indexOf(7);
+          const bar=chart.getDatasetMeta(0).data[index],rect=chart.canvas.getBoundingClientRect();
+          return {x:rect.left+bar.x,y:rect.top+(bar.y+bar.base)/2,day:chart.data.labels[index]};
+        }''')
+        has_tooltip='day=>chartExplorer.tooltip.title?.[0]===day && chartExplorer.tooltip.dataPoints?.[0]?.parsed.y===7'
+        await page.mouse.move(point['x'],point['y'])
+        await page.wait_for_function(has_tooltip,arg=point['day'])
+        await page.mouse.move(0,0)
+        await page.wait_for_function('!chartExplorer.tooltip.opacity')
+        await page.touchscreen.tap(point['x'],point['y'])
+        await page.wait_for_function(has_tooltip,arg=point['day'])
         await page.evaluate('window.firstExplorer=chartExplorer')
         await page.select_option('#expMetric','temp_hum')
         assert await page.evaluate('chartExplorer===firstExplorer && chartExplorer.config.type==="line" && chartExplorer.data.datasets.length===2')
