@@ -163,3 +163,5 @@ limity na sdíleném CI stroji.
 - [Hodinové statistiky v0.20.9](HODINOVE_SKUPINY.md) porovnávají běžná data a hustou historii s duplicitními i jedinečnými časy.
 
 - [Stránkování denních souhrnů v0.21.0](PREHLED_STRANKOVANI.md) měří změnu veličiny u velkých historií a porovnává všechny stránky s původní tabulkou.
+
+- [Stálé datové řady přehledu v0.21.1](PREHLED_DATOVE_RADY.md) měří aktualizaci grafu při změně veličiny a období.

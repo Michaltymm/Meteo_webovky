@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.1
+
+- Přehled zachovává skryté a zobrazené křivky při změně veličiny nebo období v rámci jedné stanice.
+
 ## v0.21.0
 
 - Dlouhá tabulka v přehledu teploty, vlhkosti a tlaku zobrazuje 50 dní na stránku. Starší i novější souhrny lze procházet tlačítky a graf dál zahrnuje celé období.

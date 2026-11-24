@@ -2,7 +2,7 @@
 import argparse,json,statistics,hashlib
 from pathlib import Path
 from playwright.sync_api import expect, sync_playwright
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--mode',choices=['repeat','change'],default='repeat');p.add_argument('--html',default='index.html');p.add_argument('--assets',required=True);p.add_argument('--output',required=True);a=p.parse_args()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--mode',choices=['repeat','change','range'],default='repeat');p.add_argument('--html',default='index.html');p.add_argument('--repeats',type=int,default=3);p.add_argument('--assets',required=True);p.add_argument('--output',required=True);a=p.parse_args()
 results=[]
 pagination_checks=[]
 with sync_playwright() as pw:
@@ -40,13 +40,14 @@ with sync_playwright() as pw:
    Object.defineProperty(Element.prototype,'innerHTML',{...descriptor,set(value){const t=performance.now();try{return descriptor.set.call(this,value)}finally{if(measurement&&this.id==='ovTableBody'){measurement.html+=performance.now()-t;measurement.htmlSets++;}}}});
   }''')
   for days in [30,0]:
-   data=page.evaluate('''({days,changing})=>{
+   data=page.evaluate('''({days,mode,repeats})=>{
     ovDays=days;const samples=[];
-    for(let k=0;k<4;k++){
-     if(changing)el('ovMetric').value=k%2?'hum':'temp';
+    for(let k=-2;k<repeats;k++){
+     if(mode==='change')el('ovMetric').value=k%2?'hum':'temp';
+     if(mode==='range')ovDays=k%2?days:7;
      measurement={summaries:0,chart:0,chartCalls:0,locale:0,localeCalls:0,html:0,htmlSets:0};
      const t=performance.now();buildTempOverview();measurement.total=performance.now()-t;
-     if(k)samples.push(measurement);measurement=null;
+     if(k>=0)samples.push(measurement);measurement=null;
     }
     const body=el('ovTableBody'), visibleRows=body.rows.length;
     let table=body.innerHTML;
@@ -57,7 +58,7 @@ with sync_playwright() as pw:
      for(let i=visibleRows;i<count;i+=visibleRows)pageOverviewTable(-1);
     }
     return {samples,chart:JSON.stringify(chartOverview.data),table,visibleRows,days:chartOverview.data.labels.length};
-   }''',{'days':days,'changing':a.mode=='change'})
+   }''',{'days':days,'mode':a.mode,'repeats':a.repeats})
    data.update(n=n,range=days,sha256={key:hashlib.sha256(data.pop(key).encode()).hexdigest() for key in ['chart','table']});results.append(data)
    print(n,days,{key:round(statistics.median(s[key] for s in data['samples']),2) for key in ['total','summaries','chart','locale','html']},flush=True)
   if n==250000 and a.mode=='change' and page.locator('#ovPagination').count():

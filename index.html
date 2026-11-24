@@ -2293,8 +2293,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0210"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0211"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -6587,36 +6587,26 @@
 
       // A failed update must be retried. Legend, responsive resizing and motion
       // changes continue to call their own Chart.js update paths.
+      const reuseSeries = renderedOverviewUnit !== null;
       renderedOverviewUnit = null;
-      chartOverview.options.scales.y.ticks.color = metric.color;
-      chartOverview.options.scales.y.title = { display: false, text: metric.unit, color: metric.color };
-      chartOverview.data.labels = labels;
-      chartOverview.data.datasets = [
-        {
-          label: "Max",
-          data: maxs,
-          borderColor: metric.color + "99",
-          backgroundColor: metric.color + "35",
-          fill: "+1",
-          tension: .35, pointRadius: 0, borderWidth: 1.5
-        },
-        {
-          label: "Min",
-          data: mins,
-          borderColor: metric.color + "99",
-          backgroundColor: "transparent",
-          fill: false,
-          tension: .35, pointRadius: 0, borderWidth: 1.5
-        },
-        {
-          label: "Průměr",
-          data: avgs,
-          borderColor: metric.color,
-          backgroundColor: "transparent",
-          fill: false,
-          tension: .35, pointRadius: 0, borderWidth: 2.5
-        },
-      ];
+      options.scales.y.ticks.color = metric.color;
+      options.scales.y.title = { display: false, text: metric.unit, color: metric.color };
+      data.labels = labels;
+      if (!reuseSeries) {
+        data.datasets = [
+          { label: "Max", data: [], borderColor: "", backgroundColor: "", fill: "+1",
+            tension: .35, pointRadius: 0, borderWidth: 1.5 },
+          { label: "Min", data: [], borderColor: "", backgroundColor: "transparent", fill: false,
+            tension: .35, pointRadius: 0, borderWidth: 1.5 },
+          { label: "Průměr", data: [], borderColor: "", backgroundColor: "transparent", fill: false,
+            tension: .35, pointRadius: 0, borderWidth: 2.5 },
+        ];
+      }
+      // Dataset identity lets Chart.js keep the controllers and legend settings.
+      const [max, min, avg] = data.datasets;
+      Object.assign(max, { data: maxs, borderColor: metric.color + "99", backgroundColor: metric.color + "35" });
+      Object.assign(min, { data: mins, borderColor: metric.color + "99" });
+      Object.assign(avg, { data: avgs, borderColor: metric.color });
       chartOverview.update();
       renderedOverviewUnit = metric.unit;
     }

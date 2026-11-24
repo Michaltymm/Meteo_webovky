@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.1: přehled zachovává datové řady a legendu při změně veličiny či období v rámci stanice. 466 testů, shodné výstupy a smíšené časy. Návrat ze 7 dní na Vše u 250k klesl ze 17,8 na 13,0 ms, změna veličiny ve Vše trvala 14,2 a 16,7 ms. Viz docs/performance/PREHLED_DATOVE_RADY.md.
 - v0.21.0: přehled zobrazuje 50 denních souhrnů na stránku. Listování nečte historii a nemění úplný graf. Při 250k a změně veličiny 47,7 → 17,7 ms, vložení tabulky 10,8 → 0,8 ms. 465 testů a 16 párů shodných úplných výsledků. Viz docs/performance/PREHLED_STRANKOVANI.md.
 - v0.20.9: METEO-008 zrychluje první výpočet hodinových statistik. Místní hodina a posun vůči UTC se sdílejí pro záznamy se shodným časem. 463 testů a 12 párů shodných modelů v Chromium. Medián u 250k hustých řádků s duplicitami 27,4 → 13,0 ms, u jedinečných časů 26,8 → 23,8 ms. Viz docs/performance/HODINOVE_SKUPINY.md.
 - v0.20.8: METEO-008 přeskočí opakované sestavení grafu přehledu podle popisků, všech tří řad, jednotky a barvy. Tabulka reflektuje změny počtů. 463 testů, Chromium tří stanic včetně legendy, motivu a změny velikosti. 16 shodných dvojic podpisů grafu a tabulky. Opakovaný přehled 250k 17,5 → 9,4 ms, změna veličiny 45,2 → 50,9 ms. Další měřený cíl jsou hodinové statistiky hustého dne. Viz docs/performance/PREHLED_GRAF_UPDATE.md.
@@ -1653,3 +1654,20 @@ ESP084 čeká na firmware a zabezpečené API.
 Nasazení v0.21.0 z commitu `86b684c` potvrdil běh GitHub Actions na `codex-dev`.
 Celý běh trval 53 sekund. Produkční větev zůstala na `2405c5d`.
 [GitHub Actions #60](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342265903)
+
+## METEO-008 / METEO-010 — v0.21.1, datové řady grafu přehledu
+
+Při změně veličiny nebo období v rámci stejné stanice si Chart.js ponechá tři
+datové řady a jejich stav v legendě. Hodnoty, popisky, barvy a jednotka se
+aktualizují. Po přepnutí stanice dostane graf nové řady.
+
+Prošlo 466 testů a prohlížečové kontroly všech tří stanic. V 16 hlavních
+párech měření Chromium vyšly shodné úplné grafy i tabulky. Při 250 000
+měřeních klesl návrat ze 7 dní na Vše ze 17,8 na 13,0 ms. Změna veličiny
+ve stejném rozsahu trvala 14,2 a 16,7 ms. Časy mají smíšené výsledky.
+[Metodika](docs/performance/PREHLED_DATOVE_RADY.md)
+
+METEO-008 a METEO-010 zůstávají rozpracované. Pro další práci dává smysl
+změřit samostatnou cenu přípravy časových klíčů přehledu nebo pokračovat
+reprodukovatelnými výkonnostními kontrolami METEO-056. ESP084 čeká na firmware
+a zabezpečené API.

@@ -106,3 +106,21 @@ test('filter and station changes reset paging, while a refresh retains or clamps
   a.run('resetStationStore();store.rows=original;buildTempOverview()');
   assert.equal(a.nodes.get('ovTableRange').textContent, '1–50 z 121 dní');
 });
+
+test('metric and range changes reuse series and refresh all values, units and styles', () => {
+  const a = ready();
+  a.run(`store.rows.push({ts:new Date(Date.now()-10*86400000),temp:-10,hum:40});
+    buildTempOverview();globalThis.series=chartOverview.data.datasets;
+    el('ovMetric').value='hum';buildTempOverview(true);
+    globalThis.humidityResults=chartOverview.data.datasets.map(ds=>ds.data.slice());`);
+  assert.equal(a.run('chartOverview.data.datasets===series'), true);
+  assert.equal(a.run('JSON.stringify(humidityResults)'), '[[40,0],[40,0],[40,0]]');
+  assert.equal(a.run('chartOverview.options.scales.y.title.text'), '%');
+  assert.equal(a.run('series[0].borderColor'), '#2980b999');
+  assert.equal(a.run('series[0].backgroundColor'), '#2980b935');
+  assert.equal(a.run('series[2].borderColor'), '#2980b9');
+  a.run('setOvDays(7)');
+  assert.equal(a.run('chartOverview.data.datasets===series'), true);
+  assert.equal(a.run('JSON.stringify(series.map(ds=>ds.data))'), '[[0],[0],[0]]');
+  assert.equal(a.run('chartOverview.updates'), 3);
+});

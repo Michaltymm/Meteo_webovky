@@ -142,10 +142,16 @@ async def main():
             await page.evaluate('''()=>{
               globalThis.overviewFirstRow=el('ovTableBody').firstElementChild;
               globalThis.savedOverviewDatasets=chartOverview.data.datasets;
+              globalThis.savedOverviewController=chartOverview.getDatasetMeta(0).controller;
             }''')
             await page.locator('.ov-range-btn[data-ovdays="0"]').click()
             assert await page.evaluate('el("ovTableBody").firstElementChild===overviewFirstRow && chartOverview.data.datasets===savedOverviewDatasets')
             if index == 1:
+                await page.select_option('#ovMetric','temp')
+                assert await page.evaluate('''!chartOverview.isDatasetVisible(0) &&
+                  chartOverview.getDatasetMeta(0).controller===savedOverviewController &&
+                  chartOverview.options.scales.y.title.text==='°C' &&
+                  chartOverview.data.datasets[0].borderColor==="#e74c3c99"''')
                 await page.evaluate('globalThis.previousWidth=chartOverview.width;setTheme("light")')
                 await page.set_viewport_size({'width':430,'height':844})
                 await page.wait_for_function('chartOverview.width > 0 && chartOverview.width !== previousWidth')
@@ -156,7 +162,7 @@ async def main():
                 await page.evaluate('setTheme("darkblue")')
                 await page.set_viewport_size({'width':390,'height':844})
             await page.locator('.tab-btn[data-tab="now"]').click()
-        checks.append('unchanged overview retains datasets and table nodes; legend controls survive a theme change and responsive resize')
+        checks.append('unchanged overview retains datasets and table nodes; legend controls and dataset controller survive a metric change, theme change and responsive resize')
         checks.append('overview T/RH/P and all-data control render original daily extrema/means for all three configs')
         checks.append('annual statistics render for all three configs and exactly match legacy counter arithmetic and winning Date')
         checks.append('all three original configs complete large exports and preserve finite/zero/missing voltage')
