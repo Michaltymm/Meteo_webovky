@@ -42,3 +42,14 @@ prázdný výřez i kontrola Moderního přehledu 2 se třemi stanicemi.
 
 Další krok METEO-008 je změřit náklady vykreslení tisíců sloupců a prověřit
 úpravu, která zachová denní maxima, statistiky a přístup ke každému dni.
+Pilot při 4 168 sloupcích a CPU ×4 porovnal devět opakovaných aktualizací.
+Body v interním formátu Chart.js s vypnutým parsováním zkrátily medián
+ze 170,5 na 96,6 ms. Menší vzorek pro rozměry popisků osy dal 138,4 ms.
+V pilotu se shodovaly souřadnice a text detailu všech bodů. Před zavedením
+první varianty ověřit osy, dotyk a přepínání mezi srážkami a čárovými grafy.
+
+## Publikace
+
+[GitHub Actions #72](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45394638946)
+potvrdily sestavení a publikaci `040ed05` z `codex-dev` za 55 s.
+Větev `main` při ověření zůstala na `2405c5d`.
