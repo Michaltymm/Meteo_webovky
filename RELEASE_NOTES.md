@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.13
+
+- Pohyb ukazatele po grafu nevyvolává dvojí překreslení zaměřovací čáry a detailu měření.
+
 ## v0.21.12
 
 - Průzkumník přeskočí překreslení srážek, když se denní maxima nezměnila. Počet měření se dál aktualizuje.

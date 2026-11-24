@@ -180,6 +180,24 @@ test('a full-history callback leaves the explorer dirty until its tab returns', 
   assert.equal(a.run('chartExplorer.data.datasets[0].data[0]'), 20);
 });
 
+test('crosshair requests a chart render only when its position changes', () => {
+  const a = app();
+  a.run(`const graph={chartArea:{left:20,right:300},draw(){throw Error("direct draw")}};
+    const moveCrosshair=(type,x,changed=false)=>{
+      const args={event:{type,x},changed};crosshairPlugin.afterEvent(graph,args);
+      return JSON.stringify([graph._crossX??null,args.changed]);
+    };`);
+  assert.equal(a.run('moveCrosshair("mousemove",10)'), '[null,false]');
+  assert.equal(a.run('moveCrosshair("mousemove",20)'), '[20,true]');
+  assert.equal(a.run('moveCrosshair("mousemove",20)'), '[20,false]');
+  assert.equal(a.run('moveCrosshair("mousedown",40,true)'), '[20,true]');
+  assert.equal(a.run('moveCrosshair("mousemove",300)'), '[300,true]');
+  assert.equal(a.run('moveCrosshair("mousemove",301)'), '[null,true]');
+  assert.equal(a.run('moveCrosshair("mouseout",0)'), '[null,false]');
+  assert.equal(a.run('moveCrosshair("mousemove",120)'), '[120,true]');
+  assert.equal(a.run('moveCrosshair("mouseleave",0)'), '[null,true]');
+});
+
 test('large histories and statistics do not exceed the function argument limit', () => {
   const a = app({ realRefresh: true }); fixture(a, 250000);
   a.run('refreshUI(); buildExplorer()');

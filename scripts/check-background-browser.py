@@ -152,8 +152,9 @@ async def main():
         has_tooltip='day=>chartExplorer.tooltip.title?.[0]===day && chartExplorer.tooltip.dataPoints?.[0]?.parsed.y===7'
         await page.mouse.move(point['x'],point['y'])
         await page.wait_for_function(has_tooltip,arg=point['day'])
+        assert await page.evaluate('Number.isFinite(chartExplorer._crossX)')
         await page.mouse.move(0,0)
-        await page.wait_for_function('!chartExplorer.tooltip.opacity')
+        await page.wait_for_function('!chartExplorer.tooltip.opacity && chartExplorer._crossX===null')
         await page.touchscreen.tap(point['x'],point['y'])
         await page.wait_for_function(has_tooltip,arg=point['day'])
         await page.evaluate('window.firstExplorer=chartExplorer')

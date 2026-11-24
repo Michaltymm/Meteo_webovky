@@ -2295,8 +2295,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02112"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.12</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02113"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.13</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5209,13 +5209,18 @@
       },
       afterEvent(chart, args) {
         const e = args.event;
+        const previous = chart._crossX ?? null;
+        let next = previous;
         if (e.type === "mousemove") {
           const { left, right } = chart.chartArea;
-          chart._crossX = (e.x >= left && e.x <= right) ? e.x : null;
+          next = e.x >= left && e.x <= right ? e.x : null;
         } else if (e.type === "mouseout" || e.type === "mouseleave") {
-          chart._crossX = null;
+          next = null;
         }
-        chart.draw();
+        if (next === previous) return;
+        chart._crossX = next;
+        // Let Chart.js render the crosshair and its tooltip in the same draw.
+        args.changed = true;
       }
     };
 

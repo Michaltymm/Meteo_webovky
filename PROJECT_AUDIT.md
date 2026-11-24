@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.13: METEO-008 předává změnu zaměřovací čáry Chart.js místo okamžitého `draw()`. Při 12 pohybech mají sloupce i čáry 24 → 12 vykreslení, srážky v mobilní simulaci 770 → 395 ms v součtu `draw()`. Poloha, data detailu a chování při opuštění plátna se shodovaly. Viz [profil](docs/performance/ZAMEROVACI_CARA_GRAFU.md).
 - v0.21.12: METEO-008 přeskočí obnovu srážkového grafu při přesně shodných dnech a maximech, počet původních měření dál přepočítá. Při 390 px, CPU ×4 a 100k hodinových záznamech shodná obnova 179 → 30 ms. První vykreslení a změny maxima dál vykreslují celý graf. Vypnutí parsování se v aplikačním profilu neosvědčilo. Viz [profil](docs/performance/VYKRESLENI_SRAZKOVYCH_SLOUPCU.md).
 - v0.21.12 z `f763a00` nasadily [GitHub Actions #73](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45395936305). Prošlo 488/488 testů Node a dvě kontroly v Chromium. Pilot pro další etapu METEO-008 snížil dvojité kreslení zaměřovací čáry z 24 na 12 volání při 12 pohybech ukazatele. `main` je na `2405c5d`.
 - v0.21.11: METEO-008 zrychluje denní maxima srážek v Průzkumníku formátováním při změně místního dne. Při 250k minutových měřeních formátování 250 000 → 175, agregace 131 → 39 ms, první vykreslení v mobilní simulaci 254,5 → 158 ms. Denní hodnoty i statistiky jsou přesně shodné. Dále prověřit vykreslení tisíců denních sloupců. Viz [profil](docs/performance/DENNI_SRAZKY_PRUZKUMNIKU.md).
