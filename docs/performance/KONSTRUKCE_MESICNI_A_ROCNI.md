@@ -46,3 +46,9 @@ V mobilním měření zabralo nejvíc času vytvoření grafu Průzkumníka
 (medián 30,5 ms). Další samostatná etapa METEO-007 má odložit
 její konstrukci a ponechat funkční prázdný výřez, graf srážek a přepínání
 metrik a typů grafu.
+
+## Publikace
+
+[GitHub Actions #69](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45391456858)
+potvrdily sestavení a publikaci `989511a` z `codex-dev` za 68 s.
+Větev `main` při kontrole zůstala na revizi `2405c5d`.
