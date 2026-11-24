@@ -1734,3 +1734,7 @@ Shodný CSV text po změně nevyžadoval rozbor. Ověřená data se shodovala.
 METEO-004 zůstává rozpracované pro plnou historii. ESP084 čeká na firmware a
 zabezpečené API. Dokončenou optimalizaci přípravy přehledu a porovnání výstupů
 výkonnostních profilů tento krok neopakuje.
+
+Nasazení v0.21.3 z commitu `ecd1d26` potvrdily GitHub Actions na `codex-dev`.
+Prošlo 478 testů a publikování. Produkční `main` zůstal na `2405c5d`.
+[GitHub Actions #64](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45344756394)

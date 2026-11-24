@@ -41,3 +41,7 @@ chybějící rok, chybu zdroje, ruční obnovu i kombinovaný zdroj.
 
 Prošlo 478 testů Node a stávající prohlížečový scénář Moderního přehledu 2
 s třemi konfiguracemi, mobilními šířkami, stavem přenosu a přepínáním pohledů.
+
+Nasazení v0.21.3 z commitu `ecd1d26` potvrdily GitHub Actions na `codex-dev`.
+Prošlo 478 testů a publikování. Produkční `main` zůstal na `2405c5d`.
+[GitHub Actions #64](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45344756394)
