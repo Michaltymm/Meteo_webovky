@@ -43,3 +43,19 @@ metriky a reset stanice. Chromium ověřil obě osy, den a hodnotu v detailu
 myší i dotykem při šířce 320 px, zachování instance při změně metriky,
 prázdný výřez a žádné další požadavky při načtené historii. Prošla také
 kontrola Moderního přehledu 2 se všemi třemi stanicemi.
+
+## Další krok
+
+Pilot s 4 168 sloupci při CPU ×4 přehrál 12 pohybů ukazatele ve čtyřech
+střídavých opakováních. Když se změna zaměřovací čáry předala Chart.js jako
+`args.changed`, počet volání `draw()` klesl z 24 na 12 a jejich celkový čas
+v mediánu z 822,5 na 372,5 ms. Souřadnice čáry, popisky a údaje v detailu
+se shodovaly. Jde o syntetické události a čas vykreslování v Chromium.
+Před změnou sdíleného pluginu je potřeba ověřit pohyb, opuštění plátna,
+dotyk a čárové grafy.
+
+## Publikace
+
+[GitHub Actions #73](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45395936305)
+potvrdily sestavení a publikaci `f763a00` z `codex-dev` za 56 s.
+Větev `main` při kontrole zůstala na revizi `2405c5d`.
