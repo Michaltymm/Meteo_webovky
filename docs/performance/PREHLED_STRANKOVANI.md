@@ -39,3 +39,7 @@ změny počtů stránek, reset filtrů a stanice i listování bez dalšího vý
 Chromium ověřil klávesnici, kliknutí, změnu veličiny a rozsahu a šířky 320,
 390 a 1440 px. Prošel také scénář načítání a přehledu pro všechny tři původní
 konfigurace s řízenými CSV daty.
+
+Nasazení v0.21.0 z commitu `86b684c` potvrdil běh GitHub Actions na `codex-dev`.
+Celý běh trval 53 sekund. Produkční větev zůstala na `2405c5d`.
+[GitHub Actions #60](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342265903)

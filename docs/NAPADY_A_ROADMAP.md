@@ -2779,3 +2779,7 @@ METEO-008 a širší METEO-010 zůstávají rozpracované. Benchmark teď ukazuj
 po zkrácení tabulky tvoří značnou část velké změny veličiny Chart.js a výpočet
 souhrnů. Další případný zásah do jejich vykreslení potřebuje vlastní měření.
 ESP084 čeká na firmware a zabezpečené API.
+
+Nasazení v0.21.0 z commitu `86b684c` potvrdil běh GitHub Actions na `codex-dev`.
+Celý běh trval 53 sekund. Produkční větev zůstala na `2405c5d`.
+[GitHub Actions #60](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342265903)
