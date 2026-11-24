@@ -162,12 +162,16 @@ test('reduced motion applies initially and live changes retain the always-unanim
   const a = app({reducedMotion:true});
   assert.equal(a.run('chart24'), null);
   assert.equal(a.run('chartExplorer'), null);
+  assert.equal(a.run('chartCompare'), null);
+  assert.equal(a.run('chartOverview'), null);
   a.run('buildCharts("now")');
   a.run('_drawExplorerPts([])');
+  a.run('buildCompare()');
   assert.equal(a.run('chart24.options.animation'), false);
   assert.equal(a.run('chartCompare.options.animation'), false);
   a.motion(false);
   assert.equal(a.run('chart24.options.animation.duration'), 300);
+  a.run('store.rows=[{ts:new Date(),temp:20,hum:50}];buildTempOverview()');
   assert.equal(a.run('chartOverview.options.animation.duration'), 300);
   assert.equal(a.run('chartExplorer.options.animation'), false);
   a.motion(true);

@@ -62,7 +62,7 @@ async def main():
         await page.go_forward();assert await page.locator('#modernIntro').is_visible()
         await page.locator('.tab-btn[data-tab="now"]').click()
         assert len(requests)==count
-        assert await page.evaluate('Object.keys(Chart.instances).length === 2 + Number(chart24 !== null)')
+        assert await page.evaluate('Object.keys(Chart.instances).length === Number(chart24 !== null)')
         # Preferences affect only visibility, never rows/statistics or classic view.
         picker=page.locator('#modernCardPicker')
         await picker.locator('summary').click()

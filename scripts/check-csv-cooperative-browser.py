@@ -119,6 +119,8 @@ async def main():
               return actual.maxCounterDelta24h===maximum&&actual.maxCounterDeltaDate===winner&&
                 el('yearStatsContent').textContent.includes(String(year));
             }''')
+            if index == 1:
+                assert await page.evaluate('chartOverview===null')
             await page.locator('.tab-btn[data-tab="overview"]').click()
             await page.locator('.ov-range-btn[data-ovdays="0"]').click()
             for metric in ['temp','hum','pressure']:

@@ -183,3 +183,5 @@ limity na sdíleném CI stroji.
 - [Odložená konstrukce měsíčního a ročního grafu v0.21.8](KONSTRUKCE_MESICNI_A_ROCNI.md) měří start a první vykreslení obou záložek.
 
 - [Odložená konstrukce Průzkumníka v0.21.9](KONSTRUKCE_PRUZKUMNIKU.md) ověřuje start a první vykreslení čárového i sloupcového grafu.
+
+- [Odložená konstrukce Porovnání dnů a Přehledu v0.21.10](KONSTRUKCE_POROVNANI_A_PREHLEDU.md) uzavírá odklad konstrukce základních grafů.

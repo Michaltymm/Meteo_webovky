@@ -79,7 +79,8 @@ test('visible tab updates only its charts; untouched tabs retain dirty state', (
   assert.equal(a.run('chartMonthly'), null);
   assert.equal(a.run('chartYearly'), null);
   assert.equal(a.run('chartExplorer'), null);
-  assert.equal(a.run('chartOverview.updates'), 0);
+  assert.equal(a.run('chartCompare'), null);
+  assert.equal(a.run('chartOverview'), null);
   assert.equal(a.run('tabDirtyState.monthly'), true);
   a.run('refreshTab("monthly"); refreshTab("monthly")');
   assert.equal(a.run('chartMonthly.updates'), 0);

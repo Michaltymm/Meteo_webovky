@@ -55,9 +55,9 @@ test('a changed day or unit redraws the chart even when the numeric values match
 
 test('the same overview retries a failed Chart.js update', () => {
   const a = ready();
-  a.run('globalThis.originalUpdate=chartOverview.update;chartOverview.update=()=>{throw Error("draw failed")}');
+  a.run('globalThis.originalUpdate=Chart.prototype.update;Chart.prototype.update=()=>{throw Error("draw failed")}');
   assert.throws(() => a.run('buildTempOverview()'), /draw failed/);
-  a.run('chartOverview.update=originalUpdate;buildTempOverview();buildTempOverview()');
+  a.run('Chart.prototype.update=originalUpdate;buildTempOverview();buildTempOverview()');
   assert.equal(a.run('chartOverview.updates'), 1);
 });
 

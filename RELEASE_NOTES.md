@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.10
+
+- Grafy Porovnat dny a Přehled vznikají až při otevření záložky. Moderní přehled 2 při přímém otevření nevytváří žádný graf.
+
 ## v0.21.9
 
 - Graf Průzkumníka se vytvoří až při prvním otevření. Po dokončení stahování historie se připraví pouze tehdy, když je Průzkumník vidět.

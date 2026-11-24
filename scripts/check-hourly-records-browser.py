@@ -121,6 +121,8 @@ async def main():
                 assert await page.evaluate('comparisonRecordView===null && !el("cmpRecords").open')
                 assert await page.locator('#cmpRecordsBody tr').count() == 0
             await page.wait_for_function('(i)=>activeIdx===i && store.rows.length===400', arg=station)
+            if station == 0:
+                assert await page.evaluate('chartCompare===null && chartOverview===null')
             before_load = len(requests)
             await page.locator('.tab-btn[data-tab="compare"]').click()
             await page.wait_for_function('store.fullLoaded && store.rows.length===1000')
