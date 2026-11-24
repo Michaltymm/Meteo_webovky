@@ -1628,3 +1628,7 @@ chybějících hodnot uvnitř skupiny. [Metodika a měření](docs/performance/H
 METEO-008 zůstává rozpracované. Pro další etapu má smysl prověřit dlouhou
 měněnou tabulku přehledu „Vše“, kde už existuje oddělené měření HTML a grafu.
 ESP084 čeká na firmware a zabezpečené API.
+
+GitHub Actions potvrdily nasazení v0.20.9 z commitu `6b1499c` na `codex-dev`.
+Sestavení a publikování trvaly dohromady 61 sekund včetně čekání. Produkční
+větev zůstala na `2405c5d`. [GitHub Actions #59](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45341607939)

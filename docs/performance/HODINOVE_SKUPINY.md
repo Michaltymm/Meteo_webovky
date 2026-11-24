@@ -35,3 +35,7 @@ původnímu výpočtu, stránkování, ovládání klávesnicí, otevření mě�
 opravu CSV. Mobilní kontrola proběhla při 320 a 390 px ve dvou motivech. Test
 otevírá panel nápovědy znovu po změně velikosti a používá místní kopie knihoven
 se zachovanou kontrolou integrity. Odezva na fyzickém zařízení zůstává neověřená.
+
+GitHub Actions potvrdily nasazení v0.20.9 z commitu `6b1499c` na `codex-dev`.
+Sestavení a publikování trvaly dohromady 61 sekund včetně čekání. Produkční
+větev zůstala na `2405c5d`. [GitHub Actions #59](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45341607939)
