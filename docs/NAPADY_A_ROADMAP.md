@@ -2818,3 +2818,7 @@ METEO-008 zůstává rozpracované. Navazující etapa METEO-056 může automati
 ověřovat shodu výstupů mezi verzemi ze stávajících výkonnostních profilů a
 zaznamenat rozdíly v časech bez křehkého limitu závislého na stroji.
 ESP084 čeká na firmware a zabezpečené API.
+
+Nasazení v0.21.2 z commitu `0a7826c` potvrdily GitHub Actions na `codex-dev`.
+Běh trval 46 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
+[GitHub Actions #62](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45343361835)

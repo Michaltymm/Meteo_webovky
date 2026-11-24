@@ -31,3 +31,7 @@ data s návratem do již zpracovaného dne přes hranici měsíce a roku.
 
 Prošlo 467 testů Node. Chromium ověřil načítání a přehled všech tří původních
 konfigurací i stránkování a ovládání při šířkách 320, 390 a 1440 px.
+
+Nasazení v0.21.2 z commitu `0a7826c` potvrdily GitHub Actions na `codex-dev`.
+Běh trval 46 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
+[GitHub Actions #62](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45343361835)
