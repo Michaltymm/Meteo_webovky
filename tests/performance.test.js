@@ -117,6 +117,43 @@ test('voltage regression uses all recent samples, independently of display sampl
   assert.equal(a.run('full.predicted[2000]'), a.run('reduced.predicted[reduced.actual.findIndex(v=>v===null)]'));
 });
 
+test('rain tab fits all valid recent voltages and keeps the 500 measured display samples', () => {
+  const a = app();
+  a.run(`const end=Date.parse('2026-11-24T10:00:00Z');Date.now=()=>end;
+    store.rows=Array.from({length:2000},(_,i)=>({ts:new Date(end-i*60000),rain:0,voltage:i<500?4:3.5}));
+    buildCharts('rain');`);
+  assert.equal(a.run('chartVoltage.data.datasets[0].data.filter(v=>v!==null).length'), 500);
+  assert.equal(a.run('chartVoltage.data.datasets[1].data[500]'), 4.003);
+  assert.equal(a.run('store.rows.length'), 2000);
+});
+
+test('bounded Sheets voltage series preserves boundary ties and full regression data', () => {
+  const a = app();
+  a.run(`const end=Date.parse('2026-11-24T10:00:00Z');Date.now=()=>end;
+    const cutoff=end-3*86400000;
+    const rows=Object.freeze(Array.from({length:10000},(_,i)=>Object.freeze({
+      ts:new Date(end-Math.floor(i/11)*60000),voltage:i%13===0?null:3+i/10000
+    })).concat([{ts:new Date(cutoff),voltage:0},{ts:new Date(cutoff),voltage:6},{ts:new Date(cutoff-1),voltage:900}]));
+    const expected=voltageSeries(rows,500,rows,cutoff);
+    const optimized=rainVoltageSeries(rows);
+    const withoutBoundary=voltageSeries(rows,500,rows,cutoff+1);`);
+  assert.equal(a.run('JSON.stringify(optimized) === JSON.stringify(expected)'), true);
+  assert.notEqual(a.run('JSON.stringify(optimized.predicted)'), a.run('JSON.stringify(withoutBoundary.predicted)'));
+});
+
+test('rain voltage uses full inputs for out-of-order MQTT and hybrid measurements', () => {
+  const a = app();
+  a.run(`const end=Date.parse('2026-11-24T10:00:00Z');Date.now=()=>end;
+    const rows=Array.from({length:1500},(_,i)=>({
+      ts:new Date(end-((i*31)%1500)*60000),voltage:i%7===0?null:3+i/10000
+    }));
+    const expected=JSON.stringify(voltageSeries(rows,500,rows));`);
+  for (const source of ['mqtt', 'both']) {
+    a.run(`CFG.source=${JSON.stringify(source)}`);
+    assert.equal(a.run('JSON.stringify(rainVoltageSeries(rows))'), a.run('expected'));
+  }
+});
+
 test('unchanged quick response skips parsing, while corrected data still commits', async () => {
   const a = app();
   const csv = value => 'Datum,Cas,Teplota,Tlak,Vlhkost\n20.10.2026,12:00,' + value + ',1010,60';

@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.7: METEO-008/046 odděluje 500 zobrazených měření od úplného nedávného vstupu trendu napětí. Sheets využívají sestupné pořadí a zachovávají shody na hranici. Mobilní Chromium při 250k: model napětí 144 → 4 ms, první vykreslení 251 → 138 ms. Graf naměřených hodnot a srážek je shodný, predikce odpovídá referenci nad úplným vstupem. MQTT a hybrid ponechávají obecný výběr. Dále METEO-007, odložit konstrukci měsíčních a ročních grafů. Viz [profil](docs/performance/HISTORIE_NAPETI.md).
 - v0.21.6: METEO-007 vytváří grafy srážek a napětí s připravenými řadami při prvním vykreslení. Izolovaný start 7 → 5 instancí, při 390 px a CPU ×4 v profilu se 100k řádky 108,5 → 78,0 ms v konstruktorech a první vykreslení záložky 134 → 155 ms. Řady se přesně shodovaly. Další krok je výběr historie napětí a regrese z úplného třídenního okna. Viz [profil](docs/performance/KONSTRUKCE_SRAZKY_A_NAPETI.md).
 - v0.21.6 z `3e4442c` nasadily [GitHub Actions #67](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45389604376). Prošlo 480/480 testů Node a čtyři kontroly v Chromium. `main` při kontrole zůstala na `2405c5d`.
 - v0.21.5: METEO-007 odkládá vytvoření grafu 24 h do prvního vykreslení. Start 8 → 7 instancí. Chromium při 390 px a CPU ×4 naměřil 124,9 → 101,5 ms v konstruktorech při startu a 28,9 → 60,6 ms při prvním vykreslení 400 řádků. Shodné hodnoty grafu, 480/480 Node, vyhrazené místo při 320 px. Dále odložit grafy skrytých záložek. Viz [profil](docs/performance/KONSTRUKCE_GRAFU_24H.md).

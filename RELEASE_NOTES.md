@@ -1,5 +1,10 @@
 # Přehled změn
 
+## v0.21.7
+
+- Predikce napětí v záložce Srážky & Baterie zohledňuje všechna platná měření od hranice posledních tří dnů. Graf nadále zobrazuje nejvýše 500 naměřených bodů.
+- Rychlejší příprava grafu napětí u dlouhé historie z Google Sheets.
+
 ## v0.21.6
 
 - Grafy srážek a napětí se vytvářejí při otevření záložky Srážky & Baterie. Web při startu připravuje méně grafů.

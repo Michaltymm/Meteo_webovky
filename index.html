@@ -2294,8 +2294,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0216"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.6</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0217"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.7</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5369,12 +5369,12 @@
       { label: "Prům. Vlhkost [%]", backgroundColor: "rgba(41,128,185,.7)", yAxisID: "yHum", data: [] }
     ]);
 
-    function voltageSeries(rows, limit = Infinity, regressionRows = null) {
+    function voltageSeries(rows, limit = Infinity, regressionRows = null, cutoff = Date.now() - 3 * 86400000) {
       const samples = rows.filter(r => Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()))
         .sort((a, b) => a.ts - b.ts).slice(-limit);
       const recent = (regressionRows || samples).filter(r =>
         Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()) &&
-        r.ts.getTime() >= Date.now() - 3 * 86400000);
+        r.ts.getTime() >= cutoff);
       let slope = null;
       if (recent.length >= 2) {
         const tMean = recent.reduce((sum, r) => sum + r.ts.getTime(), 0) / recent.length;
@@ -5385,7 +5385,7 @@
         }
       }
       // No made-up prediction from a missing sensor or a single timestamp.
-      const steps = slope === null ? 0 : Math.max(12, Math.round(samples.length / 4));
+      const steps = slope === null || !samples.length ? 0 : Math.max(12, Math.round(samples.length / 4));
       const last = samples.at(-1);
       const predictedTimes = Array.from({ length: steps }, (_, i) => new Date(last.ts.getTime() + (i + 1) * 600000));
       return {
@@ -5395,6 +5395,25 @@
           ? [...Array(samples.length - 1).fill(null), last.voltage, ...predictedTimes.map(t => +(last.voltage + slope * (t - last.ts)).toFixed(3))]
           : Array(samples.length).fill(null)
       };
+    }
+
+    function rainVoltageSeries(rows) {
+      const limit = 500, cutoff = Date.now() - 3 * 86400000;
+      if (CFG.source !== "sheets") return voltageSeries(rows, limit, rows, cutoff);
+
+      let count = 0, displayRows = rows;
+      for (const row of rows) {
+        if (!Number.isFinite(row.voltage) || ++count < limit) continue;
+        // Include the entire boundary timestamp. The existing stable sort and
+        // slice must still choose the same rows when the 500th time is tied.
+        const { end } = historyRangeBounds(rows, row.ts.getTime(), Infinity);
+        if (end < rows.length) displayRows = rows.slice(0, end);
+        break;
+      }
+      if (!count) return { labels: [], actual: [], predicted: [] };
+      const { end } = historyRangeBounds(rows, cutoff, Infinity);
+      const regressionRows = end < rows.length ? rows.slice(0, end) : rows;
+      return voltageSeries(displayRows, limit, regressionRows, cutoff);
     }
 
     function selectCurrentChartRows(rows) {
@@ -5471,7 +5490,7 @@
           chartRain.update();
         } else chartRain = createRainChart(rk, rain);
 
-        const voltage = voltageSeries(rows, 500);
+        const voltage = rainVoltageSeries(rows);
         if (chartVoltage) {
           chartVoltage.data.labels = voltage.labels;
           chartVoltage.data.datasets[0].data = voltage.actual;

@@ -177,3 +177,5 @@ limity na sdíleném CI stroji.
 - [Odložená konstrukce grafu 24 h v0.21.5](KONSTRUKCE_GRAFU_24H.md) odděluje práci při startu a při prvním zobrazení grafu.
 
 - [Odložená konstrukce grafů srážek a napětí v0.21.6](KONSTRUKCE_SRAZKY_A_NAPETI.md) měří start a první otevření záložky zvlášť.
+
+- [Výběr historie napětí v0.21.7](HISTORIE_NAPETI.md) měří omezení práce nad seřazenou historií a ověřuje regresi z úplných nedávných měření.

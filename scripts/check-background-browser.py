@@ -26,7 +26,7 @@ async def main():
         rows = ['Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti']
         for i in range(1000):
             d = now-timedelta(minutes=5*i)
-            rows.append(f'{d:%d.%m.%Y},{d:%H:%M:%S},{85 if i==17 else 10+station},1010,60,0,0,,4')
+            rows.append(f'{d:%d.%m.%Y},{d:%H:%M:%S},{85 if i==17 else 10+station},1010,60,0,0,,{4 if i<500 else 3.5}')
         bodies[station] = rows
     async with async_playwright() as p:
         browser = await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
@@ -105,7 +105,8 @@ async def main():
           window.firstRainChart=chartRain;window.firstVoltageChart=chartVoltage;
           const actual=chartVoltage.data.datasets[0].data.filter(v=>v!==null);
           return chartRain.data.datasets[0].data.every(v=>v===0) &&
-            actual.length===500 && actual.every(v=>v===4);
+            actual.length===500 && actual.every(v=>v===4) &&
+            chartVoltage.data.datasets[1].data[500]>4;
         }''')
         await page.locator('.tab-btn[data-tab="daily"]').click()
         await page.locator('.tab-btn[data-tab="rain"]').click()
@@ -116,7 +117,7 @@ async def main():
         results={'hidden10minRequests':0,'return10minRequests':3,'hidden24hRequests':0,'return24hRequests':4,
           'historicalCorrection':'85 → 99, all 1000 original rows retained','pageErrors':errors,
           'charts':await page.evaluate('Object.keys(Chart.instances).length'),
-          'rainVoltage':'created on first open, reused, zero additional requests after full history',
+          'rainVoltage':'created on first open, fits older eligible measurements, reused without extra requests',
           'transport':'offline fixtures; real browser timers, synthetic document.hidden + visibilitychange',
           'requests':requests}
         await browser.close()
