@@ -123,6 +123,18 @@ async def main():
         assert await page.evaluate('chartRain===firstRainChart && chartVoltage===firstVoltageChart')
         assert len(requests)==before_rain
         assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+        assert await page.evaluate('chartExplorer===null')
+        await page.evaluate('expRange="all";el("expMetric").value="rain"')
+        await page.locator('.tab-btn[data-tab="explorer"]').click()
+        assert await page.evaluate('chartExplorer?.config.type==="bar" && chartExplorer.data.labels.length>0')
+        await page.evaluate('window.firstExplorer=chartExplorer')
+        await page.select_option('#expMetric','temp_hum')
+        assert await page.evaluate('chartExplorer===firstExplorer && chartExplorer.config.type==="line" && chartExplorer.data.datasets.length===2')
+        await page.evaluate('expRange="oneday";el("expDateOne").value="2000-01-01";expApplyOneDay()')
+        assert await page.evaluate('chartExplorer===firstExplorer && chartExplorer.data.labels.length===0')
+        assert await page.locator('#expInfo').inner_text()=='Žádná data ve vybraném rozsahu.'
+        assert len(requests)==before_rain
+        assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
         assert not errors,errors
         results={'hidden10minRequests':0,'return10minRequests':3,'hidden24hRequests':0,'return24hRequests':4,
           'historicalCorrection':'85 → 99, all 1000 original rows retained','pageErrors':errors,

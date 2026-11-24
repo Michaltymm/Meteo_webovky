@@ -542,7 +542,7 @@
       position: relative;
       height: 260px;
     }
-    #chart24h, #chartRain, #chartVoltage, #chartMonthly, #chartYearly { display: block; width: 100%; height: 100%; }
+    #chart24h, #chartRain, #chartVoltage, #chartMonthly, #chartYearly, #chartExplorer { display: block; width: 100%; height: 100%; }
 
     /* stats grid */
     .stats-grid {
@@ -2294,8 +2294,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0218"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.8</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0219"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.9</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5970,20 +5970,23 @@
       return { min: count ? min : null, max: count ? max : null, avg: count ? sum / count : null, count };
     }
 
-    const chartExplorer = new Chart(el("chartExplorer").getContext("2d"), {
-      type: "line",
-      data: { labels: [], datasets: [] },
-      plugins: [crosshairPlugin],
-      options: {
-        responsive: true, maintainAspectRatio: false, animation: false,
-        plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
-        scales: {
-          x: { ticks: { color: "#95a5a6", maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: "#34495e" } },
-          yMain: { position: "left", ticks: { color: "#ecf0f1", font: { size: 10 } }, grid: { color: "#34495e" } },
-          ySec: { position: "right", display: false, min: 0, max: 100, ticks: { color: "#2980b9", font: { size: 10 } }, grid: { drawOnChartArea: false } },
+    let chartExplorer = null;
+    function ensureExplorerChart() {
+      chartExplorer ??= new Chart(el("chartExplorer").getContext("2d"), {
+        type: "line",
+        data: { labels: [], datasets: [] },
+        plugins: [crosshairPlugin],
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
+          scales: {
+            x: { ticks: { color: "#95a5a6", maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: "#34495e" } },
+            yMain: { position: "left", ticks: { color: "#ecf0f1", font: { size: 10 } }, grid: { color: "#34495e" } },
+            ySec: { position: "right", display: false, min: 0, max: 100, ticks: { color: "#2980b9", font: { size: 10 } }, grid: { drawOnChartArea: false } },
+          }
         }
-      }
-    });
+      });
+    }
 
     function setExpRange(r) {
       expRange = r;
@@ -5994,8 +5997,9 @@
       if (needsFull && !store.fullLoaded) {
         setGsStatus(null, "Google Sheets: načítám historii…");
         ensureFullData(() => {
-          if (r !== "custom" && r !== "oneday") buildExplorer();
-          if (r === "oneday" && el("expDateOne").value) buildExplorer();
+          if (r !== expRange || r === "custom") return;
+          tabDirtyState.explorer = true;
+          if (document.querySelector(".tab-btn.active")?.dataset.tab === "explorer") refreshTab("explorer");
         });
         return;
       }
@@ -6069,6 +6073,7 @@
           if (!rb[k] || r.rain > rb[k].val) rb[k] = { val: r.rain, ts: r.ts };
         });
         const keys = Object.keys(rb).sort((a, b) => rb[a].ts - rb[b].ts);
+        ensureExplorerChart();
         chartExplorer.config.type = "bar";
         chartExplorer.data.labels = keys;
         chartExplorer.data.datasets = [{
@@ -6099,6 +6104,7 @@
 
     function _drawExplorerPts(rows) {
       renderIntervalComparison(rows);
+      ensureExplorerChart();
       if (!rows.length) {
         chartExplorer.data.labels = [];
         chartExplorer.data.datasets = [];

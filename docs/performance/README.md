@@ -181,3 +181,5 @@ limity na sdíleném CI stroji.
 - [Výběr historie napětí v0.21.7](HISTORIE_NAPETI.md) měří omezení práce nad seřazenou historií a ověřuje regresi z úplných nedávných měření.
 
 - [Odložená konstrukce měsíčního a ročního grafu v0.21.8](KONSTRUKCE_MESICNI_A_ROCNI.md) měří start a první vykreslení obou záložek.
+
+- [Odložená konstrukce Průzkumníka v0.21.9](KONSTRUKCE_PRUZKUMNIKU.md) ověřuje start a první vykreslení čárového i sloupcového grafu.

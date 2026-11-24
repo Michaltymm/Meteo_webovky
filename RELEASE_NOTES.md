@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.9
+
+- Graf Průzkumníka se vytvoří až při prvním otevření. Po dokončení stahování historie se připraví pouze tehdy, když je Průzkumník vidět.
+
 ## v0.21.8
 
 - Měsíční a roční grafy vznikají při prvním otevření své záložky. Prohlížeč při startu připravuje méně grafů.

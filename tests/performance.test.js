@@ -78,6 +78,7 @@ test('visible tab updates only its charts; untouched tabs retain dirty state', (
   assert.equal(a.run('chartVoltage'), null);
   assert.equal(a.run('chartMonthly'), null);
   assert.equal(a.run('chartYearly'), null);
+  assert.equal(a.run('chartExplorer'), null);
   assert.equal(a.run('chartOverview.updates'), 0);
   assert.equal(a.run('tabDirtyState.monthly'), true);
   a.run('refreshTab("monthly"); refreshTab("monthly")');
@@ -99,6 +100,30 @@ test('visible tab updates only its charts; untouched tabs retain dirty state', (
   assert.equal(a.run('JSON.stringify(chartRain.data.datasets[0].data)'), '[0]');
   assert.equal(a.run('JSON.stringify(chartVoltage.data.datasets[0].data)'), '[0]');
   assert.equal(a.run('JSON.stringify(chartVoltage.data.datasets[1].data)'), '[null]');
+});
+
+test('explorer keeps its instance across an empty slice, daily rain and two line series', () => {
+  const a = app();
+  assert.equal(a.run('chartExplorer'), null);
+  a.run(`_drawExplorerPts([]);const firstExplorer=chartExplorer;
+    const now=new Date(2026,10,24,12).getTime();Date.now=()=>now;
+    store.rows=[{ts:new Date(now),rain:5,temp:20,hum:40},{ts:new Date(now-1000),rain:3,temp:0,hum:null}];
+    el("expMetric").value="rain";buildExplorer()`);
+  assert.equal(a.run('chartExplorer===firstExplorer && chartExplorer.config.type==="bar"'), true);
+  assert.equal(a.run('JSON.stringify(chartExplorer.data.datasets[0].data)'), '[5]');
+  a.run('el("expMetric").value="temp_hum";buildExplorer()');
+  assert.equal(a.run('chartExplorer===firstExplorer && chartExplorer.config.type==="line"'), true);
+  assert.equal(a.run('JSON.stringify(chartExplorer.data.datasets.map(ds=>ds.data))'), '[[0,20],[null,40]]');
+});
+
+test('a full-history callback leaves the explorer dirty until its tab returns', () => {
+  const a = app();
+  a.run(`globalThis.finishLoad=null;ensureFullData=callback=>finishLoad=callback;
+    store.rows=[{ts:new Date(),temp:20,hum:40}];el("expMetric").value="temp";
+    setExpRange("7d");finishLoad()`);
+  assert.equal(a.run('chartExplorer===null && tabDirtyState.explorer'), true);
+  a.run('refreshTab("explorer")');
+  assert.equal(a.run('chartExplorer.data.datasets[0].data[0]'), 20);
 });
 
 test('large histories and statistics do not exceed the function argument limit', () => {
