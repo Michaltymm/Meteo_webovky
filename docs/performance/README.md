@@ -167,3 +167,5 @@ limity na sdíleném CI stroji.
 - [Stálé datové řady přehledu v0.21.1](PREHLED_DATOVE_RADY.md) měří aktualizaci grafu při změně veličiny a období.
 
 - [Řazení dní v přehledu v0.21.2](PREHLED_RAZENI_DNU.md) odděluje řazení od výpočtu souhrnů a aktualizace grafu.
+
+- [Porovnání profilů](POROVNANI_PROFILU.md) ověřuje shodu úplných dat, grafů a tabulek mezi dvěma měřeními.

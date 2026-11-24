@@ -87,5 +87,6 @@ with sync_playwright() as pw:
    expect(page.locator('#ovPagination')).to_be_hidden()
    expect(page.locator('#ovTableBody tr')).to_have_count(31)
   assert not errors,errors;page.close()
+ browser_version=b.version
  b.close()
-Path(a.output).write_text(json.dumps({'source':a.html,'mode':a.mode,'scope':__doc__,'results':results,'paginationWidths':pagination_checks},indent=2))
+Path(a.output).write_text(json.dumps({'source':a.html,'browser':browser_version,'mode':a.mode,'scope':__doc__,'results':results,'paginationWidths':pagination_checks},indent=2))

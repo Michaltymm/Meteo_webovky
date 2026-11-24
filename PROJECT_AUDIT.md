@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- METEO-056: porovnání podpisů profilů přehledu a obnovy CSV, včetně čitelných mediánů bez limitu závislého na stroji. Ověřeny 2 archivní sady a záměrný rozdíl. 472 testů. Verze aplikace 0.21.2. Viz docs/performance/POROVNANI_PROFILU.md.
 - v0.21.2: přehled řadí podle původního místního data a používá stejný souhrn v rámci dne. Osm shodných párů grafů a tabulek. U 250k řazení 1,1 → 0,1 ms, celý přehled 16,8 → 13,5 ms. Viz docs/performance/PREHLED_RAZENI_DNU.md.
 - v0.21.1: přehled zachovává datové řady a legendu při změně veličiny či období v rámci stanice. 466 testů, shodné výstupy a smíšené časy. Návrat ze 7 dní na Vše u 250k klesl ze 17,8 na 13,0 ms, změna veličiny ve Vše trvala 14,2 a 16,7 ms. Viz docs/performance/PREHLED_DATOVE_RADY.md.
 - v0.21.0: přehled zobrazuje 50 denních souhrnů na stránku. Listování nečte historii a nemění úplný graf. Při 250k a změně veličiny 47,7 → 17,7 ms, vložení tabulky 10,8 → 0,8 ms. 465 testů a 16 párů shodných úplných výsledků. Viz docs/performance/PREHLED_STRANKOVANI.md.
@@ -1694,3 +1695,19 @@ ESP084 čeká na firmware a zabezpečené API.
 Nasazení v0.21.2 z commitu `0a7826c` potvrdily GitHub Actions na `codex-dev`.
 Běh trval 46 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
 [GitHub Actions #62](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45343361835)
+
+## METEO-056 — kontrola výstupů mezi dvěma výkonnostními profily
+
+`node scripts/compare-browser-profiles.cjs PRED.json PO.json` ověří profily
+přehledu a obnovy CSV bez dalších závislostí. Páruje velikost historie a rozsah
+nebo typ CSV, kontroluje nastavení a potřebné podpisy. Výstup odděluje věcné
+rozdíly od mediánů jednotlivých fází. Návratové kódy rozlišují shodu, rozdíl a
+nesrovnatelné vstupy. Profil přehledu nově ukládá verzi prohlížeče.
+
+Osm archivních scénářů přehledu a osm obnovy CSV prošlo. Záměrně změněný podpis
+v archivním souboru selhal podle očekávání. Prošlo 472 automatických testů.
+[Použití a omezení](docs/performance/POROVNANI_PROFILU.md)
+
+METEO-056 zůstává rozpracované pro další scénáře a reálnější anonymizované
+vstupy. Tento krok přidává vývojové nástroje k aplikaci v0.21.2. Pro vzdálenou
+konfiguraci ESP084 dál chybí firmware a zabezpečené API.

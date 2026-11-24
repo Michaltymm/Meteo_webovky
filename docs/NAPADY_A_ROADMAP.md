@@ -2822,3 +2822,19 @@ ESP084 čeká na firmware a zabezpečené API.
 Nasazení v0.21.2 z commitu `0a7826c` potvrdily GitHub Actions na `codex-dev`.
 Běh trval 46 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
 [GitHub Actions #62](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45343361835)
+
+## METEO-056 — kontrola výstupů mezi dvěma výkonnostními profily
+
+`node scripts/compare-browser-profiles.cjs PRED.json PO.json` ověří profily
+přehledu a obnovy CSV bez dalších závislostí. Páruje velikost historie a rozsah
+nebo typ CSV, kontroluje nastavení a potřebné podpisy. Výstup odděluje věcné
+rozdíly od mediánů jednotlivých fází. Návratové kódy rozlišují shodu, rozdíl a
+nesrovnatelné vstupy. Profil přehledu nově ukládá verzi prohlížeče.
+
+Osm archivních scénářů přehledu a osm obnovy CSV prošlo. Záměrně změněný podpis
+v archivním souboru selhal podle očekávání. Prošlo 472 automatických testů.
+[Použití a omezení](performance/POROVNANI_PROFILU.md)
+
+METEO-056 zůstává rozpracované pro další scénáře a reálnější anonymizované
+vstupy. Tento krok přidává vývojové nástroje k aplikaci v0.21.2. Pro vzdálenou
+konfiguraci ESP084 dál chybí firmware a zabezpečené API.
