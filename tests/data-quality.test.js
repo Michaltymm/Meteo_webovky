@@ -178,9 +178,59 @@ test('overview can read complete logical CSV records without scanning the rest',
 test('overview skips an invalid calendar row and reads the next valid measurement', async () => {
   const a = app();
   const load = a.run('fetchOvStation(1)');
-  a.respond(0, headers + '"31.02.2026","12:00",999,1010,60,0,0,0,4.2\n"20.10.2026","11:55",20,1010,60,0,0,0,4.2');
+  const query = new URL(a.requests[0].url).searchParams;
+  assert.equal(query.get('tq'), 'SELECT * LIMIT 6');
+  assert.equal(query.get('sheet'), a.run('stations[1].sheetName'));
+  a.respond(0, headers + '"31.02.2026","12:00",999,1010,60,0,0,0,4.2\n"20.10.2026","11:55",20,1010,60,0,0,0,0\n"21.10.2026","12:00",21,1010,60');
   await load;
   assert.equal(a.run('ovStores[1]?.temp'), 20);
+  assert.equal(a.run('ovStores[1]?.voltage'), 0);
+  assert.equal(a.requests.length, 1);
+});
+
+test('overview uses the original endpoint when the limited response cannot be used', async () => {
+  for (const [status, invalid] of [[400, ''], [200, headers], [200, '"unclosed'], [200, 'x'.repeat(65537)]]) {
+    const a = app();
+    const load = a.run('fetchOvStation(1)');
+    a.respond(0, invalid, status);
+    await settle();
+    assert.equal(a.requests.length, 2);
+    const limited = new URL(a.requests[0].url), original = new URL(a.requests[1].url);
+    limited.searchParams.delete('tq');
+    limited.searchParams.delete('_');
+    original.searchParams.delete('_');
+    assert.equal(limited.href, original.href);
+    a.respond(1, headers + '"20.10.2026","12:00",0,1010,60,0,0,,');
+    await load;
+    assert.equal(a.requests.length, 2);
+    assert.equal(a.run('ovStores[1]?.temp'), 0);
+    assert.equal(a.run('ovStores[1]?.voltage'), null);
+  }
+});
+
+test('overview keeps original proxies for local-file and direct fallbacks', async () => {
+  for (const protocol of ['file:', 'https:']) {
+    const a = app();
+    a.run(`location.protocol = ${JSON.stringify(protocol)}`);
+    const load = a.run('fetchOvStation(2)');
+    const file = protocol === 'file:';
+    const request = index => new URL(a.requests[index].url);
+    const target = index => new URL(request(index).searchParams.get('url') || request(index).href);
+    assert.equal(request(0).hostname, file ? 'corsproxy.io' : 'docs.google.com');
+    assert.equal(target(0).searchParams.get('tq'), 'SELECT * LIMIT 6');
+    a.respond(0, '', 503);
+    await settle();
+    assert.equal(request(1).hostname, request(0).hostname);
+    assert.equal(target(1).searchParams.has('tq'), false);
+    a.respond(1, '', 503);
+    await settle();
+    assert.equal(request(2).hostname, file ? 'api.allorigins.win' : 'corsproxy.io');
+    assert.equal(target(2).searchParams.has('tq'), false);
+    a.respond(2, '', 503);
+    await load;
+    assert.equal(a.requests.length, 3);
+    assert.equal(a.run('ovStores[2]'), null);
+  }
 });
 
 test('date/time parsing rejects impossible values and suffix injection', () => {

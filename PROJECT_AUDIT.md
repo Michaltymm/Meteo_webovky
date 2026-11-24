@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.4: METEO-006 omezuje export pro horní lištu vedlejších stanic na šest řádků. U tří živých zdrojů se shodovalo prvních šest CSV záznamů a velikost těla klesla z 1,50–5,21 MB na 481–546 B na stanici. Bez použitelné odpovědi se zkouší původní export. Inkrementální historie dál potřebuje kontrakt revizí a mazání. Viz [profil přenosu](docs/performance/PRENOS_LISTY_STANIC.md).
 - v0.21.3: METEO-004 uchovává ověřený rychlý export Sheets na dvě minuty. Při návratu zobrazí označené uložené hodnoty a síť zdroj znovu ověří. Řízený Chromium test se 300ms prodlevou 333 → 11 ms, jeden požadavek a stejné bajty v obou verzích. Viz docs/performance/RYCHLY_NAVRAT_NA_STANICI.md.
 - METEO-056: porovnání podpisů profilů přehledu a obnovy CSV, včetně čitelných mediánů bez limitu závislého na stroji. Ověřeny 2 archivní sady a záměrný rozdíl. 472 testů. Verze aplikace 0.21.2. Viz docs/performance/POROVNANI_PROFILU.md.
 - v0.21.2: přehled řadí podle původního místního data a používá stejný souhrn v rámci dne. Osm shodných párů grafů a tabulek. U 250k řazení 1,1 → 0,1 ms, celý přehled 16,8 → 13,5 ms. Viz docs/performance/PREHLED_RAZENI_DNU.md.

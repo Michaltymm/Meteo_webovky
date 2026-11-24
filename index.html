@@ -2293,8 +2293,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0213"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.3</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0214"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.4</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7752,25 +7752,29 @@
        ALL-STATIONS OVERVIEW BAR
     ══════════════════════════════════════════════ */
     const ovStores = [null, null, null];
+    const OV_CSV_ROWS = 6;
+    const OV_CSV_MAX_BYTES = 64 * 1024;
 
     async function fetchOvStation(idx) {
       const context = stationContext();
       const s = { ...stations[idx] };
       if (!s.sheetId) { ovStores[idx] = null; updateOvBar(); return; }
-      const url = `https://docs.google.com/spreadsheets/d/${s.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(s.sheetName || "List1")}`;
+      const url = sheetsURL(s.sheetId, s.sheetName || "List1");
+      // Preserve the export order. The first usable record still comes from the
+      // same six logical CSV records, including any headings.
+      const limited = url + "&tq=" + encodeURIComponent(`SELECT * LIMIT ${OV_CSV_ROWS}`);
+      const proxy = url => "https://corsproxy.io/?url=" + encodeURIComponent(url);
       const isFile = location.protocol === "file:";
       const urls = isFile
-        ? ["https://corsproxy.io/?url=" + encodeURIComponent(url), "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)]
-        : [url, "https://corsproxy.io/?url=" + encodeURIComponent(url)];
-      for (const u of urls) {
+        ? [proxy(limited), proxy(url), "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)]
+        : [limited, url, proxy(url)];
+      for (const [attempt, u] of urls.entries()) {
         try {
-          const text = await stationText(u + (u.includes("?") ? "&" : "?") + "_=" + Date.now(), context, 10000);
+          const text = await stationText(u + "&_=" + Date.now(), context, 10000, null, attempt === 0 ? OV_CSV_MAX_BYTES : DATA_MAX_BYTES);
           if (!isCurrentStation(context)) return;
-          const lines = parseCSV(text, 6);
-          for (let i = 0; i < Math.min(lines.length, 6); i++) {
-            const c0 = stripQ(lines[i][0]).replace(/\s+/g, "");
+          for (const c of parseCSV(text, OV_CSV_ROWS)) {
+            const c0 = stripQ(c[0]).replace(/\s+/g, "");
             if (/^\d{1,2}\.\d/.test(c0)) {
-              const c = lines[i];
               const ts = parseCSDateTime(stripQ(c[0]), stripQ(c[1]));
               if (ts && !isNaN(ts.getTime())) {
                 const rawV = stripQ(c[8] || "").replace(/[Vv]/g, "").trim();

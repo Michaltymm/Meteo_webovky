@@ -171,3 +171,5 @@ limity na sdíleném CI stroji.
 - [Porovnání profilů](POROVNANI_PROFILU.md) ověřuje shodu úplných dat, grafů a tabulek mezi dvěma měřeními.
 
 - [Rychlý návrat na stanici v0.21.3](RYCHLY_NAVRAT_NA_STANICI.md) měří první zobrazení hodnot, síťové bajty a rozbor CSV.
+
+- [Přenos horní lišty stanic v0.21.4](PRENOS_LISTY_STANIC.md) porovnává velikost CSV a shodu řádků na třech veřejných zdrojích.

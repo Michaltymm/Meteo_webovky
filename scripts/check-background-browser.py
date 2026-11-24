@@ -45,12 +45,15 @@ async def main():
             elif name in files:await r.fulfill(body=json.dumps(configs[files.index(name)]),content_type='application/json')
             elif 'docs.google.com' in url:
                 station=next(i for i,c in enumerate(configs) if c['sheetId'] in url)
-                quick='LIMIT 400' in parse_qs(urlparse(url).query).get('tq',[''])[0]
+                query=parse_qs(urlparse(url).query).get('tq',[''])[0]
+                quick='LIMIT 400' in query
+                overview=query=='SELECT * LIMIT 6'
                 rows=bodies[station].copy()
                 if corrected and station==0:rows[901]=rows[901].replace(',10,1010,',',99,1010,')
-                requests.append({'kind':'sheets','station':station,'quick':quick})
+                body='\n'.join(rows[:7] if overview else rows[:401] if quick else rows)
+                requests.append({'kind':'sheets','station':station,'quick':quick,'overview':overview,'bytes':len(body.encode())})
                 await asyncio.sleep(.15)
-                await r.fulfill(body='\n'.join(rows[:401] if quick else rows),content_type='text/csv')
+                await r.fulfill(body=body,content_type='text/csv')
             elif 'api.open-meteo.com' in url:
                 requests.append({'kind':'uv'})
                 await asyncio.sleep(.15)
@@ -59,6 +62,10 @@ async def main():
         await page.route('**/*',route)
         await page.goto('http://meteo.test/dev/')
         await page.wait_for_function('store.rows.length===400 && !sheetsLoad && !uvLoad && !overviewLoad')
+        assert sorted(r['station'] for r in requests if r.get('overview'))==[1,2]
+        assert len(requests)==4
+        overview_temperatures=await page.locator('#ovTemp1, #ovTemp2').all_text_contents()
+        assert overview_temperatures==['11.0 °C','12.0 °C'], (overview_temperatures,errors)
         await page.evaluate('fetchSheets(true)')
         assert await page.evaluate('store.rows.length')==1000
         assert '85.0' in await page.locator('#statTempMax').inner_text()

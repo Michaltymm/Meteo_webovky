@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.4
+
+- Horní lišta stahuje pro ostatní meteostanice krátký výřez z Google Sheets. Při chybě může použít původní export.
+
 ## v0.21.3
 
 - Při rychlém návratu na stanici se zdrojem Google Sheets se mohou hned zobrazit poslední uložená měření. Přehled je označí, dokud znovu neověří zdroj.
