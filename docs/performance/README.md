@@ -179,3 +179,5 @@ limity na sdíleném CI stroji.
 - [Odložená konstrukce grafů srážek a napětí v0.21.6](KONSTRUKCE_SRAZKY_A_NAPETI.md) měří start a první otevření záložky zvlášť.
 
 - [Výběr historie napětí v0.21.7](HISTORIE_NAPETI.md) měří omezení práce nad seřazenou historií a ověřuje regresi z úplných nedávných měření.
+
+- [Odložená konstrukce měsíčního a ročního grafu v0.21.8](KONSTRUKCE_MESICNI_A_ROCNI.md) měří start a první vykreslení obou záložek.

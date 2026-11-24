@@ -36,7 +36,7 @@ test('all consumers reuse a snapshot without scanning 250k raw rows again', () =
     ts:new Date(Date.now()-i*300000),temp:i===17?85:0,hum:60,pressure:1010,rain:0,voltage:0
   })),{get(target,key,receiver){if(/^\\d+$/.test(String(key))) visits++;return Reflect.get(target,key,receiver)}});
     globalThis.first=dataAggregates();globalThis.initialVisits=visits;
-    buildDailyGrid();buildAgg(chartMonthly,store.rows,'day',30);buildAgg(chartYearly,store.rows,'month',12)`);
+    buildDailyGrid();buildCharts('monthly');buildCharts('yearly')`);
   assert.equal(a.run('dataAggregates()===first'),true);
   assert.equal(a.run('visits===initialVisits'),true);
   assert.equal(a.run('first.temperature.max'),85);
@@ -93,7 +93,7 @@ test('CSV replacement and an MQTT overlay both invalidate the actual cache lifec
 
 test('external aggregate input does not evict the current station snapshot', () => {
   const a=app();
-  a.run('store.rows=[{ts:new Date(),temp:10,hum:50}];globalThis.current=dataAggregates();buildAgg(chartMonthly,[{ts:new Date(),temp:0,hum:null}],"day",30)');
+  a.run('store.rows=[{ts:new Date(),temp:10,hum:50}];globalThis.current=dataAggregates();chartMonthly=buildAgg("chartMonthly",chartMonthly,[{ts:new Date(),temp:0,hum:null}],"day",30)');
   assert.equal(a.run('dataAggregates()===current'),true);
   assert.equal(a.run('chartMonthly.data.datasets[0].data[0]'),0);
   assert.equal(a.run('chartMonthly.data.datasets[1].data[0]'),null);

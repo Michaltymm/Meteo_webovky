@@ -51,7 +51,7 @@ test('charts survive a missing voltage sensor and continue rendering other aggre
   assert.equal(a.run('chartVoltage.data.labels.length'), 0);
   assert.equal(a.run('chartVoltage.data.datasets.every(s => s.data.length === 0)'), true);
   assert.equal(a.run('chartMonthly.data.datasets[0].data[0]'), 20);
-  assert.equal(a.run('chartYearly.updates'), 1);
+  assert.equal(a.run('chartYearly.data.datasets[0].data[0]'), 20);
 });
 
 test('zero volts is valid, but a single sample does not invent a forecast', () => {
@@ -276,7 +276,7 @@ test('nonfinite measurements and invalid relative humidity never produce NaN/Inf
 
 test('daily aggregation keeps the same day in different years separate', () => {
   const a = app();
-  a.run(`buildAgg(chartMonthly, [
+  a.run(`chartMonthly=buildAgg("chartMonthly", chartMonthly, [
     {ts:new Date(2026,9,20,12),temp:20,hum:60},
     {ts:new Date(2025,9,20,12),temp:0,hum:50},
     {ts:new Date(2025,9,20,11),temp:2,hum:null}

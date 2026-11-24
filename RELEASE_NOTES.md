@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.8
+
+- Měsíční a roční grafy vznikají při prvním otevření své záložky. Prohlížeč při startu připravuje méně grafů.
+
 ## v0.21.7
 
 - Predikce napětí v záložce Srážky & Baterie zohledňuje všechna platná měření od hranice posledních tří dnů. Graf nadále zobrazuje nejvýše 500 naměřených bodů.

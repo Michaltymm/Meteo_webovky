@@ -86,8 +86,8 @@ with sync_playwright() as p:
               const refresh=measure(()=>refreshUI());
               if (flags.aggregates) {
                 extra.daily=measure(()=>buildDailyGrid());
-                extra.monthly=measure(()=>buildAgg(chartMonthly,store.rows,'day',30));
-                extra.yearly=measure(()=>buildAgg(chartYearly,store.rows,'month',12));
+                extra.monthly=measure(()=>buildCharts('monthly'));
+                extra.yearly=measure(()=>buildCharts('yearly'));
               }
               if (flags.comparison) {
                 showTab('compare');el('cmpMetric').value='temp_hum';

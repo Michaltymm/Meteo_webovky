@@ -19,6 +19,7 @@ test('current chart uses original epoch pairs and its own linear scale/options w
   assert.equal(a.run('chart24.data.datasets.every(ds=>ds.spanGaps===false&&ds.tension===0)'),true);
   assert.equal(a.run('baseScales.x.type'),undefined);
   assert.equal(a.run('baseOpts.plugins.tooltip.callbacks'),undefined);
+  a.run('buildCharts("monthly");buildCharts("yearly")');
   assert.equal(a.run('chartMonthly.options.scales.x.type'),undefined);
   assert.equal(a.run('chartYearly.options.plugins.tooltip.callbacks'),undefined);
 });
@@ -93,7 +94,7 @@ test('isolated original samples get markers using cached segments; hidden, skipp
   assert.equal(a.run('arcs.length'),1);
   assert.equal(a.run('JSON.stringify(arcs[0].slice(0,3))'),'[10,20,2]');
   assert.equal(a.run('fills'),1);assert.equal(a.run('clips'),1);
-  a.run('buildCharts("now")');
+  a.run('buildCharts("now");buildCharts("monthly")');
   assert.equal(a.run('chart24.plugins.some(p=>p.id==="currentIsolated")'),true);
   assert.equal(a.run('chartMonthly.plugins.some(p=>p.id==="currentIsolated")'),false);
 });

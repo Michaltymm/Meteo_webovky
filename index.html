@@ -542,7 +542,7 @@
       position: relative;
       height: 260px;
     }
-    #chart24h, #chartRain, #chartVoltage { display: block; width: 100%; height: 100%; }
+    #chart24h, #chartRain, #chartVoltage, #chartMonthly, #chartYearly { display: block; width: 100%; height: 100%; }
 
     /* stats grid */
     .stats-grid {
@@ -2294,8 +2294,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0217"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.7</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0218"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.8</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5360,14 +5360,7 @@
       }, { labels });
     }
 
-    const chartMonthly = mkChart("chartMonthly", "bar", [
-      { label: "Prům. Teplota [°C]", backgroundColor: "rgba(231,76,60,.7)", yAxisID: "yTemp", data: [] },
-      { label: "Prům. Vlhkost [%]", backgroundColor: "rgba(41,128,185,.7)", yAxisID: "yHum", data: [] }
-    ]);
-    const chartYearly = mkChart("chartYearly", "bar", [
-      { label: "Prům. Teplota [°C]", backgroundColor: "rgba(231,76,60,.7)", yAxisID: "yTemp", data: [] },
-      { label: "Prům. Vlhkost [%]", backgroundColor: "rgba(41,128,185,.7)", yAxisID: "yHum", data: [] }
-    ]);
+    let chartMonthly = null, chartYearly = null;
 
     function voltageSeries(rows, limit = Infinity, regressionRows = null, cutoff = Date.now() - 3 * 86400000) {
       const samples = rows.filter(r => Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()))
@@ -5499,18 +5492,25 @@
         } else chartVoltage = createVoltageChart(voltage);
       }
 
-      if (!tab || tab === "monthly") buildAgg(chartMonthly, rows, "day", 30);
-      if (!tab || tab === "yearly") buildAgg(chartYearly, rows, "month", 12);
+      if (!tab || tab === "monthly") chartMonthly = buildAgg("chartMonthly", chartMonthly, rows, "day", 30);
+      if (!tab || tab === "yearly") chartYearly = buildAgg("chartYearly", chartYearly, rows, "month", 12);
     }
 
-    function buildAgg(chart, rows, unit, count) {
+    function buildAgg(id, chart, rows, unit, count) {
       const aggregates = dataAggregates(rows);
       const b = unit === "day" ? aggregates.days : aggregates.months;
       const keys = [...b.keys()].sort((x, y) => b.get(x).time - b.get(y).time).slice(-count);
+      const temperature = keys.map(k => b.get(k).tn ? +(b.get(k).ts / b.get(k).tn).toFixed(2) : null);
+      const humidity = keys.map(k => b.get(k).hn ? +(b.get(k).hs / b.get(k).hn).toFixed(2) : null);
+      if (!chart) return mkChart(id, "bar", [
+        { label: "Prům. Teplota [°C]", backgroundColor: "rgba(231,76,60,.7)", yAxisID: "yTemp", data: temperature },
+        { label: "Prům. Vlhkost [%]", backgroundColor: "rgba(41,128,185,.7)", yAxisID: "yHum", data: humidity }
+      ], undefined, { labels: keys });
       chart.data.labels = keys;
-      chart.data.datasets[0].data = keys.map(k => b.get(k).tn ? +(b.get(k).ts / b.get(k).tn).toFixed(2) : null);
-      chart.data.datasets[1].data = keys.map(k => b.get(k).hn ? +(b.get(k).hs / b.get(k).hn).toFixed(2) : null);
+      chart.data.datasets[0].data = temperature;
+      chart.data.datasets[1].data = humidity;
       chart.update();
+      return chart;
     }
 
     // One current-station snapshot. No copies of raw rows or per-station history.
