@@ -34,8 +34,8 @@ async def main():
   assert not await page.locator('.status-bar').is_visible();assert not await page.locator('#dataStatusDetails').is_visible()
   assert not await page.locator('#headerStationPicker').is_visible()
   assert await page.locator('.page-link[aria-current="page"]').get_attribute('data-page')=='modern2'
-  assert await page.evaluate('Object.keys(Chart.instances).length===7&&chart24===null')
-  checks.append('direct hash opens isolated simple view; header station picker/bars/dashboard hidden; 24 h chart deferred')
+  assert await page.evaluate('Object.keys(Chart.instances).length===5&&chart24===null&&chartRain===null&&chartVoltage===null')
+  checks.append('direct hash opens isolated simple view; header station picker/bars/dashboard hidden; 24 h, rain and voltage charts deferred')
   pause_station=1;gate.clear();await page.select_option('#simpleStation','1')
   await page.wait_for_function('activeIdx===1&&store.rows.length===0')
   assert await page.locator('#simpleTemp').inner_text()=='–'

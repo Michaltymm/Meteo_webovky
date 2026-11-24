@@ -74,14 +74,27 @@ test('visible tab updates only its charts; untouched tabs retain dirty state', (
   const a = app(); fixture(a, 1000);
   a.run('tabDirtyState.now=true; tabDirtyState.monthly=true; refreshTab("now")');
   assert.equal(a.run('chart24.updates'), 1);
-  for (const chart of ['chartRain', 'chartVoltage', 'chartMonthly', 'chartYearly', 'chartOverview'])
+  assert.equal(a.run('chartRain'), null);
+  assert.equal(a.run('chartVoltage'), null);
+  for (const chart of ['chartMonthly', 'chartYearly', 'chartOverview'])
     assert.equal(a.run(chart + '.updates'), 0, chart);
   assert.equal(a.run('tabDirtyState.monthly'), true);
   a.run('refreshTab("monthly"); refreshTab("monthly")');
   assert.equal(a.run('chartMonthly.updates'), 1);
   a.run('tabDirtyState.rain=true; refreshTab("rain")');
+  assert.equal(a.run('chartRain.updates'), 0);
+  assert.equal(a.run('chartVoltage.updates'), 0);
+  assert.equal(a.run('chartRain.data.labels.length > 0 && chartRain.data.datasets[0].data.every(v=>v===0)'), true);
+  assert.equal(a.run('chartVoltage.data.labels.length === chartVoltage.data.datasets[0].data.length && chartVoltage.data.datasets[0].data[499]===4'), true);
+  a.run(`globalThis.rainChart=chartRain;globalThis.voltageChart=chartVoltage;
+    store.rows=[{ts:new Date(),rain:0,voltage:0}];invalidateDerivedData();
+    tabDirtyState.rain=true;refreshTab("rain");refreshTab("rain")`);
+  assert.equal(a.run('chartRain===rainChart&&chartVoltage===voltageChart'), true);
   assert.equal(a.run('chartRain.updates'), 1);
   assert.equal(a.run('chartVoltage.updates'), 1);
+  assert.equal(a.run('JSON.stringify(chartRain.data.datasets[0].data)'), '[0]');
+  assert.equal(a.run('JSON.stringify(chartVoltage.data.datasets[0].data)'), '[0]');
+  assert.equal(a.run('JSON.stringify(chartVoltage.data.datasets[1].data)'), '[null]');
 });
 
 test('large histories and statistics do not exceed the function argument limit', () => {

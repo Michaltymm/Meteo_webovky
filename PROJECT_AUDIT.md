@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.6: METEO-007 vytváří grafy srážek a napětí s připravenými řadami při prvním vykreslení. Izolovaný start 7 → 5 instancí, při 390 px a CPU ×4 v profilu se 100k řádky 108,5 → 78,0 ms v konstruktorech a první vykreslení záložky 134 → 155 ms. Řady se přesně shodovaly. Další krok je výběr historie napětí a regrese z úplného třídenního okna. Viz [profil](docs/performance/KONSTRUKCE_SRAZKY_A_NAPETI.md).
 - v0.21.5: METEO-007 odkládá vytvoření grafu 24 h do prvního vykreslení. Start 8 → 7 instancí. Chromium při 390 px a CPU ×4 naměřil 124,9 → 101,5 ms v konstruktorech při startu a 28,9 → 60,6 ms při prvním vykreslení 400 řádků. Shodné hodnoty grafu, 480/480 Node, vyhrazené místo při 320 px. Dále odložit grafy skrytých záložek. Viz [profil](docs/performance/KONSTRUKCE_GRAFU_24H.md).
 - v0.21.5 z `87cf47a` nasadily [GitHub Actions #66](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45347027168). Prošly čtyři cílené kontroly v Chromium včetně devíti analytických karet se 100 000 řádky. Dvě starší kontroly mají známé odchylky od aktuálního UI už ve výchozí verzi, viz profil a METEO-056.
 - v0.21.4: METEO-006 omezuje export pro horní lištu vedlejších stanic na šest řádků. U tří živých zdrojů se shodovalo prvních šest CSV záznamů a velikost těla klesla z 1,50–5,21 MB na 481–546 B na stanici. Bez použitelné odpovědi se zkouší původní export. Inkrementální historie dál potřebuje kontrakt revizí a mazání. Viz [profil přenosu](docs/performance/PRENOS_LISTY_STANIC.md).

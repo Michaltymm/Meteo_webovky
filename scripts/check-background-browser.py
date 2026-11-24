@@ -96,11 +96,27 @@ async def main():
         assert len(requests)-midnight_before==4
         assert await page.locator('#dayTempMax').inner_text()=='–'
         assert 'Žádná data' in await page.locator('#dailyGrid').inner_text()
+        assert await page.evaluate('chartRain===null && chartVoltage===null')
+        before_rain=len(requests)
+        await page.set_viewport_size({'width':320,'height':568})
+        await page.locator('.tab-btn[data-tab="rain"]').click()
+        assert await page.evaluate('''()=>{
+          if (!chartRain?.data.labels.length || !chartVoltage?.data.labels.length) return false;
+          window.firstRainChart=chartRain;window.firstVoltageChart=chartVoltage;
+          const actual=chartVoltage.data.datasets[0].data.filter(v=>v!==null);
+          return chartRain.data.datasets[0].data.every(v=>v===0) &&
+            actual.length===500 && actual.every(v=>v===4);
+        }''')
+        await page.locator('.tab-btn[data-tab="daily"]').click()
+        await page.locator('.tab-btn[data-tab="rain"]').click()
+        assert await page.evaluate('chartRain===firstRainChart && chartVoltage===firstVoltageChart')
+        assert len(requests)==before_rain
         assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
         assert not errors,errors
         results={'hidden10minRequests':0,'return10minRequests':3,'hidden24hRequests':0,'return24hRequests':4,
           'historicalCorrection':'85 → 99, all 1000 original rows retained','pageErrors':errors,
           'charts':await page.evaluate('Object.keys(Chart.instances).length'),
+          'rainVoltage':'created on first open, reused, zero additional requests after full history',
           'transport':'offline fixtures; real browser timers, synthetic document.hidden + visibilitychange',
           'requests':requests}
         await browser.close()

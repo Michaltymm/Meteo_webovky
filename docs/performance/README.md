@@ -175,3 +175,5 @@ limity na sdíleném CI stroji.
 - [Přenos horní lišty stanic v0.21.4](PRENOS_LISTY_STANIC.md) porovnává velikost CSV a shodu řádků na třech veřejných zdrojích.
 
 - [Odložená konstrukce grafu 24 h v0.21.5](KONSTRUKCE_GRAFU_24H.md) odděluje práci při startu a při prvním zobrazení grafu.
+
+- [Odložená konstrukce grafů srážek a napětí v0.21.6](KONSTRUKCE_SRAZKY_A_NAPETI.md) měří start a první otevření záložky zvlášť.

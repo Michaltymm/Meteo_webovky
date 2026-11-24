@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.6
+
+- Grafy srážek a napětí se vytvářejí při otevření záložky Srážky & Baterie. Web při startu připravuje méně grafů.
+
 ## v0.21.5
 
 - Graf posledních 24 hodin se vytvoří až při prvním zobrazení. Na menších displejích má vyhrazenou plochu už před načtením grafu.

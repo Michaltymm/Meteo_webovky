@@ -66,7 +66,7 @@ async def main():
         await page.wait_for_function('dataStatus.sheets.phase==="ok" && store.rows.length===8')
         await page.wait_for_load_state('networkidle')
         baseline_charts = await page.evaluate('Object.keys(Chart.instances).length')
-        assert baseline_charts == 8
+        assert baseline_charts == 5 + await page.evaluate('Number(chart24 !== null)')
         await page.evaluate('''()=>{
           globalThis.realModelRun=analyticsRunModelJob;
           globalThis.pauseModel=true;globalThis.heldModel=null;
