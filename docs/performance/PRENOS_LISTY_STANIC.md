@@ -50,3 +50,19 @@ Po změně typu hodnot nebo struktury listu je vhodné shodu zopakovat.
 - `scripts/check-simple-overview-browser.py` ověřil Moderní přehled 2 a přepínání
   všech čtyř pohledů se třemi konfiguracemi. Obě prohlížečové kontroly prošly
   bez chyb stránky.
+
+## Publikace
+
+[GitHub Actions #65](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45345747406)
+potvrdily build a publikaci `9ac7a7a` z `codex-dev` za 60 s. Větev `main` měla
+při kontrole revizi `2405c5d`. Přímý požadavek na Pages zastavila síťová brána
+tohoto prostředí (HTTP 403 při CONNECT).
+
+## Další etapa METEO-007
+
+V izolovaném startu Chromium bez síťové inicializace aplikace se měřil čas
+přímo v konstruktorech Chart.js (sedm opakování, omezené animace). Osm grafů
+zabralo celkem v mediánu 38,9 ms při 1440 px a 121,3 ms při 390 px a CPU ×4.
+Graf 24 h byl nejdražší (16,3 a 52,3 ms). Měření zahrnuje konstrukci a její
+synchronní vedlejší efekty. Dává výchozí stav pro odložení konstrukce do
+prvního zobrazení grafu. Skutečná doba startu stránky se měří samostatně.
