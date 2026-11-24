@@ -30,3 +30,7 @@ pohybem. Odezvu fyzického telefonu ani dokončení animace neměří.
 párech. Prošlo 466 testů Node. Chromium s daty tří původních konfigurací
 ověřil denní hodnoty všech veličin, práci legendy včetně zachování řadiče při
 změně veličiny, správnou jednotku a barvy i motiv a změnu šířky okna.
+
+Nasazení v0.21.1 z commitu `9e8fa2b` potvrdily GitHub Actions na `codex-dev`.
+Běh trval 61 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
+[GitHub Actions #61](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342901719)

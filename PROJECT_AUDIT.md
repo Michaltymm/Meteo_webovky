@@ -1671,3 +1671,7 @@ METEO-008 a METEO-010 zůstávají rozpracované. Pro další práci dává smys
 změřit samostatnou cenu přípravy časových klíčů přehledu nebo pokračovat
 reprodukovatelnými výkonnostními kontrolami METEO-056. ESP084 čeká na firmware
 a zabezpečené API.
+
+Nasazení v0.21.1 z commitu `9e8fa2b` potvrdily GitHub Actions na `codex-dev`.
+Běh trval 61 sekund včetně čekání. Produkční `main` zůstal na `2405c5d`.
+[GitHub Actions #61](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45342901719)
