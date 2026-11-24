@@ -33,3 +33,19 @@ ověřuje hranice osy, opakovaný pohyb, zachování požadavku jiného pluginu
 a opuštění plátna. Prohlížeč ověřil detail srážek myší i dotykem při 320 px,
 tooltip čárového grafu 24 h, rozkliknutí původních hodinových měření a
 Moderní přehled 2 se třemi stanicemi.
+
+## Další krok
+
+Všechny základní grafy už vznikají odloženě. Samotná knihovna Chart.js se
+stále načítá před zpracováním stránky. Kontrolovaný pilot s prodlevou
+300 ms na souboru Chart.js zkrátil zobrazení teploty v Moderním přehledu 2
+z 589 na 347 ms při neblokujícím načtení. Jde o medián čtyř offline
+opakování s řízeným CSV a prodlevou, nikoli o měření produkční sítě.
+Navazující METEO-007/055 má ověřit připravenost knihovny při rychlém vstupu
+do grafů, při chybě CDN a při přepnutí stanice.
+
+## Publikace
+
+[GitHub Actions #74](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45396803270)
+potvrdily sestavení a publikaci `dc62d35` z `codex-dev` za 60 s.
+Větev `main` při ověření zůstala na revizi `2405c5d`.
