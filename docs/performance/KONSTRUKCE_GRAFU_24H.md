@@ -46,3 +46,18 @@ Starší `check-analytics-browser.py` a `check-analytics-grid-browser.py` mají
 neaktuální předpoklady o ovládání podpůrných panelů. Problémy se zobrazením
 vnořených záznamů baterie a očekávaným textem nápovědy byly reprodukovány na
 výchozí revizi. Aktualizace těchto scénářů patří do METEO-056.
+
+## Publikace
+
+[GitHub Actions #66](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45347027168)
+potvrdily build a publikaci `87cf47a` z `codex-dev` za 55 s. `main` při kontrole
+zůstala na `2405c5d`. Přímý přístup z tohoto prostředí na GitHub Pages blokovala
+síťová brána při ověřování v0.21.4.
+
+## Další krok
+
+Při startu ještě vznikají grafy pro další záložky. Ve stejném mobilním
+profilu zabraly konstruktory srážek a napětí v mediánu 33,4 a 16,4 ms.
+Oba grafy plní stejná podzáložka, takže je lze odložit společně. Další
+měření má zohlednit i první otevření podzáložky a cenu případné konstrukce
+rovnou s připravenými daty.

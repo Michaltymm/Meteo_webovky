@@ -166,7 +166,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-054 Validace konfigurace a odolný storage wrapper; lokální zámek jasně popsat | Config/localStorage | S / P1 | v0.11.2 schema/rozsahy/allowlist, atomické odmítnutí importu, odolné storage a vysvětlený lokální zámek | IMP-004/005; náhled diffu, schema verze a migrace dále; viz SECURITY_ROADMAP | Rozpracováno |
 | METEO-055 Závislosti a testovatelné moduly: CDN integrita, malé čisté funkce, Pages allowlist | Zdrojový kód | S / P2 | v0.11.4 SRI obou CDN a pevné SHA Actions; Pages allowlist již ověřen | IMP-007/008; moduly, pravidelné CDN advisories a file: ověření dále | Rozpracováno |
-| METEO-056 Reprodukovatelné výkonnostní scénáře a regresní brány | Syntetické 1k/10k/100k, reálné anonymní CSV později | S / P0 | Vývojový nástroj, žádná produkční režie | FUT-003; metodika níže | Rozpracováno |
+| METEO-056 Reprodukovatelné výkonnostní scénáře a regresní brány | Syntetické 1k/10k/100k, reálné anonymní CSV později | S / P0 | Vývojový nástroj, žádná produkční režie. Starší kontroly analytiky potřebují aktualizovat ovládání podkladů a nápovědy podle [ověření](performance/KONSTRUKCE_GRAFU_24H.md#regrese) | FUT-003; metodika níže | Rozpracováno |
 | METEO-060 Verze webu a release notes: rozeznat načtený obsah a změny vydání | Verze v HTML, RELEASE_NOTES.md | N / P1 | Bez fetchů a závislostí, statický odkaz | Pravidla vydávání v AGENTS.md | Dokončeno |
 
 ## 13. Nové senzory a budoucí rozšíření
