@@ -40,3 +40,16 @@ vykreslení je dražší. Profil neudává dobu načtení stránky ani Web Vital
   podmínku. Navazující etapa má oddělit úplné regresní okno od limitu grafu,
   vyhodnotit využití sestupného řazení Sheets a ověřit duplicitní časy i
   odlišné pořadí u MQTT. Patří k METEO-008 a METEO-046.
+
+Rozdíl predikce se projevil i na kontrolním příkladu s 2 000 platnými
+minutovými záznamy v třídenním okně. Posledních 500 mělo 4 V a dřívější
+vzorky 3,5 V. Desetiminutová extrapolace dává 4,000 V při použití jen
+vykreslených bodů a 4,003 V při použití všech vstupů. Zobrazená výchozí řada
+se shodovala. Jde o cílený příklad vlivu výběru dat, bez hodnocení přesnosti
+predikce na skutečném zařízení.
+
+## Publikace
+
+[GitHub Actions #67](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45389604376)
+potvrdily build a publikaci `3e4442c` z `codex-dev` za 52 s. `main` při kontrole
+zůstala na revizi `2405c5d`.
