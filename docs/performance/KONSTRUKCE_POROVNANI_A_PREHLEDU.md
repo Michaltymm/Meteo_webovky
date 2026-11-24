@@ -47,3 +47,9 @@ začíná bez instance grafu.
 Další výkonnostní etapa METEO-008 má zrychlit dlouhé srážkové rozsahy
 Průzkumníka. Samostatný profil našel jedno formátování data na měření
 a vysoké náklady aktualizace Chart.js. Viz [profil Průzkumníka](KONSTRUKCE_PRUZKUMNIKU.md).
+
+## Publikace
+
+[GitHub Actions #71](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45393643147)
+potvrdily sestavení a publikaci `1019cd5` z `codex-dev` za 58 s. Větev `main`
+při ověření zůstala na revizi `2405c5d`.
