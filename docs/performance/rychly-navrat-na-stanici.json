@@ -1,0 +1,16 @@
+{
+  "before": {
+    "visibleMs": 333,
+    "cached": false,
+    "parseRuns": 1,
+    "quickRequests": 1,
+    "responseBytes": 18757
+  },
+  "after": {
+    "visibleMs": 11,
+    "cached": true,
+    "parseRuns": 0,
+    "quickRequests": 1,
+    "responseBytes": 18757
+  }
+}

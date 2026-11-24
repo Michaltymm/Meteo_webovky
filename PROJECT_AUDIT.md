@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.3: METEO-004 uchovává ověřený rychlý export Sheets na dvě minuty. Při návratu zobrazí označené uložené hodnoty a síť zdroj znovu ověří. Řízený Chromium test se 300ms prodlevou 333 → 11 ms, jeden požadavek a stejné bajty v obou verzích. Viz docs/performance/RYCHLY_NAVRAT_NA_STANICI.md.
 - METEO-056: porovnání podpisů profilů přehledu a obnovy CSV, včetně čitelných mediánů bez limitu závislého na stroji. Ověřeny 2 archivní sady a záměrný rozdíl. 472 testů. Verze aplikace 0.21.2. Viz docs/performance/POROVNANI_PROFILU.md.
 - v0.21.2: přehled řadí podle původního místního data a používá stejný souhrn v rámci dne. Osm shodných párů grafů a tabulek. U 250k řazení 1,1 → 0,1 ms, celý přehled 16,8 → 13,5 ms. Viz docs/performance/PREHLED_RAZENI_DNU.md.
 - v0.21.1: přehled zachovává datové řady a legendu při změně veličiny či období v rámci stanice. 466 testů, shodné výstupy a smíšené časy. Návrat ze 7 dní na Vše u 250k klesl ze 17,8 na 13,0 ms, změna veličiny ve Vše trvala 14,2 a 16,7 ms. Viz docs/performance/PREHLED_DATOVE_RADY.md.
@@ -1715,3 +1716,21 @@ konfiguraci ESP084 dál chybí firmware a zabezpečené API.
 GitHub Actions ověřily commit `a1f2e94` na `codex-dev` včetně 472 testů a
 publikování. Verze webu zůstala 0.21.2 a produkční `main` je na `2405c5d`.
 [GitHub Actions #63](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45343902899)
+
+## METEO-004 — v0.21.3, rychlý návrat na stanici
+
+Částečná historie Sheets se uchovává na dvě minuty. Po ověření stejné
+konfigurace se zobrazí jako uložená data a zároveň se znovu ověří zdroj.
+Mezipaměť je v paměti, nejvýše jedna položka na stanici, 400 řádků a 65 536
+znaků CSV na položku. Změnu zdroje, listu, časové zóny a ruční úpravu hlídá
+invalidace. Ruční obnova dál ověřuje celý export. MQTT, kombinované zdroje,
+odvozené roky a velké či neúplně ověřené exporty mají původní cestu.
+
+Návrat v Chromium s 300ms řízenou prodlevou zobrazil hodnotu za 333 ms před a
+11 ms po změně. V obou verzích proběhl jeden rychlý požadavek s 18 757 bajty.
+Shodný CSV text po změně nevyžadoval rozbor. Ověřená data se shodovala.
+[Metodika a vzorky](docs/performance/RYCHLY_NAVRAT_NA_STANICI.md)
+
+METEO-004 zůstává rozpracované pro plnou historii. ESP084 čeká na firmware a
+zabezpečené API. Dokončenou optimalizaci přípravy přehledu a porovnání výstupů
+výkonnostních profilů tento krok neopakuje.

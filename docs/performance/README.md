@@ -169,3 +169,5 @@ limity na sdíleném CI stroji.
 - [Řazení dní v přehledu v0.21.2](PREHLED_RAZENI_DNU.md) odděluje řazení od výpočtu souhrnů a aktualizace grafu.
 
 - [Porovnání profilů](POROVNANI_PROFILU.md) ověřuje shodu úplných dat, grafů a tabulek mezi dvěma měřeními.
+
+- [Rychlý návrat na stanici v0.21.3](RYCHLY_NAVRAT_NA_STANICI.md) měří první zobrazení hodnot, síťové bajty a rozbor CSV.

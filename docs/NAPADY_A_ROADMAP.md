@@ -59,7 +59,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | METEO-001 Aktivní grafy: při obnově aktualizovat pouze viditelnou záložku | Současná | N / P0 | 6 → 1 chart update na přehledu | IMP-003 | Dokončeno |
 | METEO-002 Cache rozsahu: jedno pole referencí a binární vyhledání v seřazené historii; rychlá změna veličiny | Současná historie | S / P0 | Bez opakovaného sort/filter celé historie; O(log n + k) | AUD-002/004 hotové | Dokončeno |
 | METEO-003 Stejný rychlý export: opakované CSV do 400 řádků neparsovat a nepřekreslovat | Současné CSV | N / P0 | Méně CPU; přenos zatím stejný | AUD-008 | Dokončeno |
-| METEO-004 Cache historie podle stanice/zdroje: omezená LRU + TTL, čerstvost viditelná, návrat bez čekání | Současné CSV, čas validace | S / P0 | Kompaktní T cache pro porovnání v0.10.0: 8 MiB/stanice, 16 MiB celkem, ruční obnova a stáří; obecný návrat na dashboard/TTL dále | METEO-002, kontrakt invalidace níže | Rozpracováno |
+| METEO-004 Cache historie podle stanice/zdroje: omezená LRU + TTL, čerstvost viditelná, návrat bez čekání | Současné CSV, čas validace | S / P0 | Kompaktní T cache pro porovnání v0.10.0: 8 MiB/stanice, 16 MiB celkem, ruční obnova a stáří; rychlý návrat s částečnou historií a dvouminutovou platností v0.21.3; plná historie dále | METEO-002, kontrakt invalidace níže | Rozpracováno |
 | METEO-005 Pozastavení periodických refreshů v neaktivní kartě, po návratu jedna obnova dle stáří | Současná data / visibility | N / P0 | Ve skrytí bez periodických Sheets/UV/overview; návrat dle stáří bez nového MQTT klienta | Ověřeno v0.2.2, detaily etapa4 | Dokončeno |
 | METEO-006 Spolehlivá inkrementální historie a menší overview odpověď | Backend revize, změny/smazání a ověřené typy GViz | V / P0 | Zásadně menší CSV; zachovat opravy historie | FUT-005/010, METEO-049 | K posouzení |
 | METEO-007 Lazy konstrukce grafů a uvolnění dlouho nepoužívaných instancí | Současná UI | S / P1 | v0.10.0 analytika lazy dle viewportu, max8 nových Chart + canvas; po odchodu destroy. Původních8 startovních grafů dále | METEO-001, měření startu | Rozpracováno |
@@ -2842,3 +2842,21 @@ konfiguraci ESP084 dál chybí firmware a zabezpečené API.
 GitHub Actions ověřily commit `a1f2e94` na `codex-dev` včetně 472 testů a
 publikování. Verze webu zůstala 0.21.2 a produkční `main` je na `2405c5d`.
 [GitHub Actions #63](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45343902899)
+
+## METEO-004 — v0.21.3, rychlý návrat na stanici
+
+Částečná historie Sheets se uchovává na dvě minuty. Po ověření stejné
+konfigurace se zobrazí jako uložená data a zároveň se znovu ověří zdroj.
+Mezipaměť je v paměti, nejvýše jedna položka na stanici, 400 řádků a 65 536
+znaků CSV na položku. Změnu zdroje, listu, časové zóny a ruční úpravu hlídá
+invalidace. Ruční obnova dál ověřuje celý export. MQTT, kombinované zdroje,
+odvozené roky a velké či neúplně ověřené exporty mají původní cestu.
+
+Návrat v Chromium s 300ms řízenou prodlevou zobrazil hodnotu za 333 ms před a
+11 ms po změně. V obou verzích proběhl jeden rychlý požadavek s 18 757 bajty.
+Shodný CSV text po změně nevyžadoval rozbor. Ověřená data se shodovala.
+[Metodika a vzorky](performance/RYCHLY_NAVRAT_NA_STANICI.md)
+
+METEO-004 zůstává rozpracované pro plnou historii. ESP084 čeká na firmware a
+zabezpečené API. Dokončenou optimalizaci přípravy přehledu a porovnání výstupů
+výkonnostních profilů tento krok neopakuje.

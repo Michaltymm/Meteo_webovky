@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.3
+
+- Při rychlém návratu na stanici se zdrojem Google Sheets se mohou hned zobrazit poslední uložená měření. Přehled je označí, dokud znovu neověří zdroj.
+
 ## v0.21.2
 
 - Rychlejší řazení dní při změně veličiny nebo období u dlouhé historie.

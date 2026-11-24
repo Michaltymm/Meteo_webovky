@@ -2293,8 +2293,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0212"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.2</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0213"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.3</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3790,8 +3790,8 @@
 
     async function loadStationConfig() {
       const context = stationContext();
-      await tryLoadConfigJson(context.index, context);
-      if (isCurrentStation(context)) startAll();
+      const configLoaded = await tryLoadConfigJson(context.index, context);
+      if (isCurrentStation(context)) startAll(configLoaded);
     }
 
     async function tryLoadConfigJson(idx, context = stationContext()) {
@@ -3853,6 +3853,8 @@
     function _applyCfgObject(obj, source, runStartAll, context) {
       if (context && !isCurrentStation(context)) return;
       const validated = normalizeStationConfig(obj, activeIdx, stations[activeIdx]);
+      const savedHistory = quickStationHistory.get(activeIdx);
+      if (!context || (savedHistory && !quickHistoryMatches(savedHistory, validated))) quickStationHistory.delete(activeIdx);
       if (!context) {
         cancelStationWork();
         resetStationStore();
@@ -4367,7 +4369,7 @@
           SIZE_LIMIT: 0, RATE_LIMIT: 0, HISTORY_LIMIT: 0, PROCESSING_ERROR: 0 } };
     }
     function emptyDataStatus() {
-      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null, timing: null }, mqtt: { phase: "idle", receivedAt: null, diagnostics: emptyMQTTDiagnostics() }, latestRow: null, latestKind: null };
+      return { sheets: { phase: "idle", successAt: null, validation: null, acceptedValidation: null, timing: null, cached: false }, mqtt: { phase: "idle", receivedAt: null, diagnostics: emptyMQTTDiagnostics() }, latestRow: null, latestKind: null };
     }
     let dataStatus = emptyDataStatus();
 
@@ -4550,6 +4552,55 @@
       finally { finishSheetsStep(timing, "transfer", start); }
     }
 
+    const QUICK_HISTORY_TTL_MS = 120000;
+    const QUICK_HISTORY_MAX_ROWS = 400;
+    const QUICK_HISTORY_MAX_TEXT_LENGTH = 65536;
+    const quickStationHistory = new Map();
+
+    function quickHistoryMatches(entry, config) {
+      return config.source === "sheets" && config.sheetId === entry.sheetId && config.sheetName === entry.sheetName;
+    }
+
+    function quickHistoryTimeZone() {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+
+    function saveQuickStationHistory(context, text) {
+      const { index, config } = context;
+      if (!isCurrentStation(context) || config.source !== "sheets") return;
+      const { acceptedValidation, successAt } = dataStatus.sheets;
+      if (store.fullLoaded || !acceptedValidation?.complete || acceptedValidation.scope !== "partial" ||
+          store.rows.length < 1 || store.rows.length > QUICK_HISTORY_MAX_ROWS || text.length > QUICK_HISTORY_MAX_TEXT_LENGTH ||
+          // A quick export with inferred years needs parsing against the current clock.
+          acceptedValidation.rejected || store.rows.some(row => !/^\d{1,2}\.\d{1,2}\.\d{2}(?:\d{2})?\.?$/.test(row.date.replace(/[\s\u200B]/g, "")))) {
+        quickStationHistory.delete(index);
+        return;
+      }
+      quickStationHistory.set(index, {
+        sheetId: config.sheetId, sheetName: config.sheetName, rows: store.rows,
+        text, validation: acceptedValidation, successAt, timeZone: quickHistoryTimeZone(),
+      });
+    }
+
+    function restoreQuickStationHistory(context) {
+      const entry = quickStationHistory.get(context.index);
+      if (!entry || !isCurrentStation(context) || store.rows.length) return false;
+      const age = Date.now() - entry.successAt;
+      if (!quickHistoryMatches(entry, context.config) || age < 0 || age >= QUICK_HISTORY_TTL_MS ||
+          entry.timeZone !== quickHistoryTimeZone()) {
+        quickStationHistory.delete(context.index);
+        return false;
+      }
+      store.rows = entry.rows;
+      store._lastQuickCsv = entry.text;
+      Object.assign(dataStatus.sheets, {
+        cached: true, successAt: entry.successAt, validation: entry.validation, acceptedValidation: entry.validation,
+      });
+      dataStatus.latestRow = entry.rows[0];
+      dataStatus.latestKind = "sheets";
+      return true;
+    }
+
     async function fetchSheets(forceFullLoad = false) {
       const context = stationContext();
       // Reuse an in-flight load. A full-history request waits for a quick load,
@@ -4575,6 +4626,7 @@
           dataStatus.sheets.timing = timing;
           renderDataStatus();
           if (activeInfo?.trigger === el("dataValidationTrigger")) renderCSVValidation();
+          if (analyticsActive()) analyticsUpdateStatus();
         }
       });
       return request.promise;
@@ -4606,6 +4658,8 @@
             if (store.rows.length && store._lastQuickCsv === text) {
               timing.unchanged = true;
               recordSheetsSuccess(context);
+              const saved = quickStationHistory.get(context.index);
+              if (saved?.rows === store.rows) saved.successAt = dataStatus.sheets.successAt;
               setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
               return;
             }
@@ -4617,6 +4671,7 @@
             store._lastQuickCsv = text;
             updatePartialBadge();
             recordSheetsSuccess(context);
+            saveQuickStationHistory(context, text);
             setGsStatus(true, "Google Sheets: OK – poslední záznamy (" + fmtTime(new Date()) + ")");
             ok = true;
             break;
@@ -4655,6 +4710,7 @@
           }
           if (!isCurrentStation(context)) return;
           store.fullLoaded = true;
+          quickStationHistory.delete(context.index);
           store._lastFullCsv = text;
           store._fullLoadPending = false;
           updatePartialBadge();
@@ -6711,6 +6767,7 @@
     function recordSheetsSuccess(context) {
       if (!isCurrentStation(context)) return;
       dataStatus.sheets.phase = "ok";
+      dataStatus.sheets.cached = false;
       dataStatus.sheets.successAt = Date.now();
       // Recovery can validate a previously accepted, unchanged CSV without
       // parsing again. Restore its own report instead of showing a failed one.
@@ -6844,14 +6901,15 @@
       const scope = !store.rows.length ? "Bez načtených dat" : store.fullLoaded
         ? "Celý export zdroje" + (mqttRow ? " + živé zprávy" : "")
         : !sheets && mqttRow ? "Živé zprávy této relace" : "Částečná historie";
-      setNodeText(el("dataHistoryScope"), scope);
+      const cached = sheets && dataStatus.sheets.cached;
+      setNodeText(el("dataHistoryScope"), scope + (cached ? " · z mezipaměti" : ""));
       setNodeText(el("dataHistoryCount"), "Počet záznamů: " + store.rows.length.toLocaleString("cs-CZ"));
       // Keep actionable problems visible even when technical details are closed.
       const invalidTime = row && !Number.isFinite(timestamp), futureTime = Number.isFinite(timestamp) && timestamp > now;
       const recordSummary = futureTime ? "Čas záznamu je v budoucnosti" : invalidTime ? "Čas záznamu není dostupný"
         : row ? (mqttRow ? "Příjem: " : "Měření: ") + dataAge(timestamp, now) : "Zatím bez dat";
       const loading = sheets && dataStatus.sheets.phase === "loading" || mqtt && ["idle", "connecting"].includes(dataStatus.mqtt.phase);
-      setNodeText(el("dataStatusSummary"), (error ? "Chyba přenosu dat · " : loading ? "Načítání dat… · " : "") + recordSummary);
+      setNodeText(el("dataStatusSummary"), (error ? "Chyba přenosu dat · " : loading ? "Načítání dat… · " : "") + (cached ? "Uložená data · " : "") + recordSummary);
       const summaryClass = error ? "data-state-error" : invalidTime || futureTime ? "data-state-warning" : "";
       if (el("dataStatusSummary").className !== summaryClass) el("dataStatusSummary").className = summaryClass;
       el("sheetsTransport").hidden = !sheets;
@@ -7667,12 +7725,17 @@
     /* ══════════════════════════════════════════════
        START
     ══════════════════════════════════════════════ */
-    function startAll() {
+    function startAll(restoreQuick = false) {
       cancelStationWork();
       const context = stationContext();
       pollingContext = context;
       if (CFG.source === "sheets" || CFG.source === "both") {
+        const restored = restoreQuick && restoreQuickStationHistory(context);
         fetchSheets();
+        if (restored) {
+          updatePartialBadge();
+          refreshUI();
+        }
         fetchTimer = setInterval(() => periodicRefresh("sheets", CFG.interval * 1000, fetchSheets, context), CFG.interval * 1000);
       }
       if (CFG.source === "mqtt") setGsStatus(null, "Google Sheets: nepoužívá se");
@@ -8410,6 +8473,7 @@
       setNodeText(el('anaStatus'),`${stations[activeIdx]?.name||'Stanice'}${analyticsState.all?' — společná karta porovnává všechny stanice; ostatní karty používají tuto aktivní stanici':''}\n`+
         `${store.fullLoaded?'Celá dostupná':'Částečná'} načtená historie: ${store.rows.length.toLocaleString('cs-CZ')} záznamů. Poslední měření: ${last?intervalTimestamp(last.ts):'–'}.\n`+
         (d?`Výřez: ${intervalTimestamp(new Date(d.from))} až ${intervalTimestamp(new Date(d.to))}.`:store.rows.length?'Neplatné vlastní období: zadejte platné datum od–do.':'Data vybrané stanice zatím nejsou k dispozici.')+
+        (dataStatus.sheets.cached?` Uložená data · kontrola ${intervalTimestamp(new Date(dataStatus.sheets.successAt))}.${dataStatus.sheets.phase==='error'?' Obnova selhala.':''}`:'')+
         (analyticsState.loading?' Načítám teplotní historii ostatních stanic…':'')+
         (analyticsState.job?' Připravuji grafy pro vybrané období…':analyticsState.modelError?' Příprava grafů selhala. Změňte období nebo obnovte data.':'')+
         (analyticsState.comparisonJob?' Připravuji porovnání stanic…':analyticsState.model?.comparisonFailed?' Příprava porovnání selhala; obnovte data nebo změňte období.':''));
