@@ -173,3 +173,5 @@ limity na sdíleném CI stroji.
 - [Rychlý návrat na stanici v0.21.3](RYCHLY_NAVRAT_NA_STANICI.md) měří první zobrazení hodnot, síťové bajty a rozbor CSV.
 
 - [Přenos horní lišty stanic v0.21.4](PRENOS_LISTY_STANIC.md) porovnává velikost CSV a shodu řádků na třech veřejných zdrojích.
+
+- [Odložená konstrukce grafu 24 h v0.21.5](KONSTRUKCE_GRAFU_24H.md) odděluje práci při startu a při prvním zobrazení grafu.

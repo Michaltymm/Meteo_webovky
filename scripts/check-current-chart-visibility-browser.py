@@ -40,7 +40,14 @@ async def main():
         await page.route('**/*',route);await page.goto('http://meteo.test/dev/')
         await page.wait_for_function('store.rows.length===400 && dataStatus.sheets.phase==="ok"')
         await page.wait_for_load_state('networkidle')
-        assert await page.evaluate('currentChartObserver!==null && tabDirtyState.now && chart24.data.labels.length===0')
+        assert await page.evaluate('currentChartObserver!==null && tabDirtyState.now && chart24===null && !Chart.getChart("chart24h")')
+        await page.set_viewport_size({'width':320,'height':568})
+        assert await page.evaluate('''()=>{
+          const canvas=el('chart24h'), wrap=canvas.parentElement;
+          return !Chart.getChart(canvas) && canvas.clientWidth===wrap.clientWidth &&
+            canvas.clientHeight===wrap.clientHeight && document.documentElement.scrollWidth<=innerWidth+1;
+        }''')
+        await page.set_viewport_size({'width':390,'height':844})
         await page.evaluate('''()=>{
           globalThis.draws=[];globalThis.originalApply=applyCurrentChartData;
           applyCurrentChartData=function(...args){const result=originalApply(...args);draws.push({station:activeIdx,count:store.rows.length});return result};
@@ -66,6 +73,8 @@ async def main():
             await page.wait_for_function('store.fullLoaded&&store.rows.length===12000&&dataStatus.sheets.phase==="ok"')
             await page.evaluate('fetchSheets(true)')  # Same export, another real commit.
             assert await page.evaluate('(n)=>draws.length===n && tabDirtyState.now && el("chart24h").style.visibility==="hidden"',before)
+            if index==0:
+                assert await page.evaluate('chart24===null && !Chart.getChart("chart24h")')
             assert await page.locator('#statCount').inner_text() == '12\u00a0000'
             traffic=len(requests);await page.locator('#chart24h').scroll_into_view_if_needed()
             await page.wait_for_function('!tabDirtyState.now && el("chart24h").style.visibility!=="hidden"')

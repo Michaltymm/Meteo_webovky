@@ -93,6 +93,7 @@ test('isolated original samples get markers using cached segments; hidden, skipp
   assert.equal(a.run('arcs.length'),1);
   assert.equal(a.run('JSON.stringify(arcs[0].slice(0,3))'),'[10,20,2]');
   assert.equal(a.run('fills'),1);assert.equal(a.run('clips'),1);
+  a.run('buildCharts("now")');
   assert.equal(a.run('chart24.plugins.some(p=>p.id==="currentIsolated")'),true);
   assert.equal(a.run('chartMonthly.plugins.some(p=>p.id==="currentIsolated")'),false);
 });

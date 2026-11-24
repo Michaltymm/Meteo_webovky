@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.5
+
+- Graf posledních 24 hodin se vytvoří až při prvním zobrazení. Na menších displejích má vyhrazenou plochu už před načtením grafu.
+
 ## v0.21.4
 
 - Horní lišta stahuje pro ostatní meteostanice krátký výřez z Google Sheets. Při chybě může použít původní export.

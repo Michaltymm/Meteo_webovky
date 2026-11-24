@@ -15,8 +15,8 @@ function ready(){
 function drain(a){for(let n=0;a.run('currentChartJob!==null');n++){assert.ok(n<1000);a.tick(0);}}
 test('large visible graph is atomic, coalesces and exactly matches synchronous data',()=>{
  const a=ready();a.run(`refreshTab('now');refreshTab('now')`);
- assert.equal(a.run('chart24.updates'),0);assert.equal(a.timers.size,1);
- a.tick(0);assert.equal(a.run('chart24.updates'),0);assert.equal(a.run('tabDirtyState.now'),true);
+ assert.equal(a.run('chart24'),null);assert.equal(a.timers.size,1);
+ a.tick(0);assert.equal(a.run('chart24'),null);assert.equal(a.run('tabDirtyState.now'),true);
  drain(a);assert.equal(a.run('chart24.updates'),1);assert.equal(a.run('tabDirtyState.now'),false);
  assert.equal(a.run('JSON.stringify({labels:chart24.data.labels,series:chart24.data.datasets.map(d=>d.data)})'),a.run('expected'));
  assert.equal(a.requests.length,0);
@@ -30,7 +30,7 @@ test('in-place invalidation cancels old work and redraws new values only',()=>{
 test('page, tab, background, station and row replacement discard queued work',()=>{
  for(const change of ["currentPage='modern2'","currentPage='analytics'","selected.dataset.tab='daily'","document.hidden=true","switchStation(1)","store.rows=store.rows.slice()"]){
   const a=ready();a.run('refreshTab("now")');a.tick(0);a.run(change);a.tick(0);
-  assert.equal(a.run('currentChartJob'),null,change);assert.equal(a.run('chart24.updates'),0,change);
+  assert.equal(a.run('currentChartJob'),null,change);assert.equal(a.run('chart24'),null,change);
   assert.equal(a.run('tabDirtyState.now'),true,change);
  }
 });

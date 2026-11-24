@@ -160,6 +160,8 @@ test('battery plots construct lazily and are reused while summary counts describ
 
 test('reduced motion applies initially and live changes retain the always-unanimated plots', () => {
   const a = app({reducedMotion:true});
+  assert.equal(a.run('chart24'), null);
+  a.run('buildCharts("now")');
   assert.equal(a.run('chart24.options.animation'), false);
   assert.equal(a.run('chartCompare.options.animation'), false);
   a.motion(false);

@@ -25,7 +25,7 @@ function ready(){
 test('offscreen refreshes coalesce without a graph build, new timers, observers or requests',()=>{
   const a=ready();const timers=a.timers.size;
   a.run(`for(let i=0;i<100;i++){store.rows=makeRows(i);invalidateDerivedData();refreshTab('now');notify();initCurrentChartVisibility()}`);
-  assert.equal(a.run('chart24.updates'),0);
+  assert.equal(a.run('chart24'),null);
   assert.equal(a.run('tabDirtyState.now'),true);
   assert.equal(a.nodes.get('chart24h').style.visibility,'hidden');
   assert.equal(a.run('observers.length'),1);
@@ -44,7 +44,7 @@ test('notifications recheck page, subtab, geometry and attached canvas before re
     selectedTab.dataset.tab='now';currentPage='analytics';notify();currentPage='main';
     attached=false;notify();attached=true;rect={top:400,bottom:600,left:500,right:890};notify();
     rect={top:-250,bottom:-1,left:0,right:390};notify()`);
-  assert.equal(a.run('chart24.updates'),0);
+  assert.equal(a.run('chart24'),null);
   a.run('rect={top:843,bottom:1043,left:0,right:390};notify()');
   assert.equal(a.run('chart24.updates'),1);
 });
@@ -62,7 +62,7 @@ test('station reset hides old graph and a queued old notification reads only cur
 test('background data waits for resume even when IntersectionObserver sends no new entry',()=>{
   const a=ready();a.run('rect={top:400,bottom:600,left:0,right:390}');
   a.visibility(true);a.run('refreshTab("now");notify()');
-  assert.equal(a.run('chart24.updates'),0);
+  assert.equal(a.run('chart24'),null);
   a.visibility(false);
   assert.equal(a.run('chart24.updates'),1);
   assert.equal(a.run('tabDirtyState.now'),false);
@@ -70,7 +70,7 @@ test('background data waits for resume even when IntersectionObserver sends no n
 
 test('main/modern return consumes dirty state only for a visible current tab',()=>{
   const a=ready();a.run('showAppPage("analytics");store.rows=makeRows(17);invalidateDerivedData();showAppPage("modern");notify()');
-  assert.equal(a.run('chart24.updates'),0);
+  assert.equal(a.run('chart24'),null);
   a.run('rect={top:400,bottom:600,left:0,right:390};notify();showAppPage("main");notify()');
   assert.equal(a.run('chart24.updates'),1);
   assert.equal(a.run('JSON.stringify(chart24.data.datasets[0].data.filter(p=>!p.gap).map(p=>p.y))'),'[17]');
@@ -87,13 +87,19 @@ test('unavailable, failed constructor and failed observe fall back to the synchr
 });
 
 test('motion changes and delayed manual resizes avoid updating the offscreen current graph',()=>{
-  const a=ready();a.run(`globalThis.resizes=0;chart24.canvas=el('chart24h');chart24.resize=()=>resizes++;
+  const a=ready();a.motion(true);
+  assert.equal(a.run('chart24'),null);
+  a.run(`rect={top:400,bottom:600,left:0,right:390};notify();globalThis.firstChart=chart24;
+    rect={top:1200,bottom:1400,left:0,right:390};hideCurrentChart();
+    globalThis.resizes=0;chart24.canvas=el('chart24h');chart24.resize=()=>resizes++;
     el('tab-now').contains=canvas=>canvas===el('chart24h');resizeChartsInTab('now')`);
-  a.motion(true);
-  assert.equal(a.run('chart24.updates'),0);assert.equal(a.run('resizes'),0);
   assert.equal(a.run('chart24.options.animation'),false);
+  a.motion(false);
+  assert.equal(a.run('chart24.updates'),1);assert.equal(a.run('resizes'),0);
+  assert.equal(a.run('chart24.options.animation.duration'),300);
   a.run('rect={top:400,bottom:600,left:0,right:390};notify();resizeChartsInTab("now")');
-  assert.equal(a.run('resizes'),1);assert.equal(a.run('chart24.updates'),1);
+  assert.equal(a.run('chart24===firstChart'),true);
+  assert.equal(a.run('resizes'),1);assert.equal(a.run('chart24.updates'),2);
 });
 
 test('failed draw stays dirty/hidden and a later attempt can recover',()=>{

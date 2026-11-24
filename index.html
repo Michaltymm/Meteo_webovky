@@ -542,6 +542,7 @@
       position: relative;
       height: 260px;
     }
+    #chart24h { display: block; width: 100%; height: 100%; }
 
     /* stats grid */
     .stats-grid {
@@ -2293,8 +2294,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0214"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.4</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0215"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.5</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5066,7 +5067,7 @@
     function hideCurrentChart() {
       cancelCurrentChartJob();
       tabDirtyState.now = true;
-      chart24.stop?.();
+      chart24?.stop?.();
       el("chart24h").style.visibility = "hidden";
     }
     function refreshVisibleCurrentChart() {
@@ -5232,13 +5233,13 @@
     const motionPreference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     function chartAnimation() { return motionPreference?.matches ? false : { duration: 300 }; }
     const baseOpts = {
-      responsive: true, maintainAspectRatio: false, animation: chartAnimation(),
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { labels: { color: "#ecf0f1", boxWidth: 14, font: { size: 11 } } }, tooltip: { mode: "index", intersect: false } },
       scales: baseScales
     };
 
     function mkChart(id, type, datasets, scales, plugins = []) {
-      return new Chart(el(id).getContext("2d"), { type, data: { labels: [], datasets }, plugins: [crosshairPlugin, ...plugins], options: { ...baseOpts, scales: scales || baseScales } });
+      return new Chart(el(id).getContext("2d"), { type, data: { labels: [], datasets }, plugins: [crosshairPlugin, ...plugins], options: { ...baseOpts, animation: chartAnimation(), scales: scales || baseScales } });
     }
 
     function drawCurrentChartIsolated(chart) {
@@ -5272,26 +5273,29 @@
       ctx.restore();
     }
 
-    const chart24 = mkChart("chart24h", "line", [
-      { label: "Teplota [°C]", borderColor: "#e74c3c", backgroundColor: "rgba(231,76,60,.1)", tension: .35, pointRadius: 0, borderWidth: 2, yAxisID: "yTemp", data: [] },
-      { label: "Vlhkost [%]", borderColor: "#2980b9", backgroundColor: "rgba(41,128,185,.1)", tension: .35, pointRadius: 0, borderWidth: 2, yAxisID: "yHum", data: [] },
-      { label: "Rosný bod [°C]", borderColor: "#16a085", backgroundColor: "transparent", tension: .35, pointRadius: 0, borderWidth: 1.5, borderDash: [4, 3], yAxisID: "yTemp", data: [] }
-    ], { ...baseScales, x: { ...baseScales.x, type: "linear",
-      ticks: { ...baseScales.x.ticks, maxTicksLimit: 6, callback: value => fmtTime(new Date(value)) },
-      title: { display: true, text: "Čas (zóna prohlížeče)", color: "#95a5a6", font: { size: 10 } }
-    } }, [{ id: "currentIsolated", afterDatasetsDraw: drawCurrentChartIsolated }]);
-    // Aligned original samples, including duplicate timestamps. No date adapter
-    // or category spacing; do not connect missing values or long unobserved spans.
-    chart24.options.parsing = false;
-    chart24.options.normalized = false;
-    chart24.options.interaction = { mode: "index", axis: "x", intersect: false };
-    chart24.options.plugins = { ...baseOpts.plugins, tooltip: {
-      mode: "index", axis: "x", intersect: false, callbacks: {
-        title: items => items.length ? intervalTimestamp(new Date(items[0].raw.x)) : "",
-        label: ctx => ctx.dataset.label + ": " + (Number.isFinite(ctx.raw.y) ? String(ctx.raw.y) : "–")
-      }
-    } };
-    chart24.data.datasets.forEach(ds => { ds.tension = 0; ds.spanGaps = false; });
+    let chart24 = null;
+    function createCurrentChart() {
+      const chart = mkChart("chart24h", "line", [
+        { label: "Teplota [°C]", borderColor: "#e74c3c", backgroundColor: "rgba(231,76,60,.1)", tension: 0, spanGaps: false, pointRadius: 0, borderWidth: 2, yAxisID: "yTemp", data: [] },
+        { label: "Vlhkost [%]", borderColor: "#2980b9", backgroundColor: "rgba(41,128,185,.1)", tension: 0, spanGaps: false, pointRadius: 0, borderWidth: 2, yAxisID: "yHum", data: [] },
+        { label: "Rosný bod [°C]", borderColor: "#16a085", backgroundColor: "transparent", tension: 0, spanGaps: false, pointRadius: 0, borderWidth: 1.5, borderDash: [4, 3], yAxisID: "yTemp", data: [] }
+      ], { ...baseScales, x: { ...baseScales.x, type: "linear",
+        ticks: { ...baseScales.x.ticks, maxTicksLimit: 6, callback: value => fmtTime(new Date(value)) },
+        title: { display: true, text: "Čas (zóna prohlížeče)", color: "#95a5a6", font: { size: 10 } }
+      } }, [{ id: "currentIsolated", afterDatasetsDraw: drawCurrentChartIsolated }]);
+      // Aligned original samples, including duplicate timestamps. No date adapter
+      // or category spacing; do not connect missing values or long unobserved spans.
+      chart.options.parsing = false;
+      chart.options.normalized = false;
+      chart.options.interaction = { mode: "index", axis: "x", intersect: false };
+      chart.options.plugins = { ...baseOpts.plugins, tooltip: {
+        mode: "index", axis: "x", intersect: false, callbacks: {
+          title: items => items.length ? intervalTimestamp(new Date(items[0].raw.x)) : "",
+          label: ctx => ctx.dataset.label + ": " + (Number.isFinite(ctx.raw.y) ? String(ctx.raw.y) : "–")
+        }
+      } };
+      return chart;
+    }
 
     function currentChartData(rows, limit = Infinity) { return finishSteps(currentChartDataSteps(rows, limit)); }
     function* currentChartDataSteps(rows, limit = Infinity) {
@@ -5418,6 +5422,7 @@
         return h24;
     }
     function applyCurrentChartData(count, { labels, series }) {
+        chart24 ??= createCurrentChart();
         chart24.data.labels = labels;
         chart24.data.datasets.forEach((ds, i) => {
           ds.data = series[i];
@@ -7867,6 +7872,7 @@
 
     function applyMotionPreference() {
       for (const chart of [chart24, chartRain, chartVoltage, chartMonthly, chartYearly, chartCompare, chartOverview]) {
+        if (!chart) continue;
         chart.stop?.();
         chart.options.animation = chartAnimation();
         if (chart === chart24 && currentChartObserver && !currentChartCanRender()) { hideCurrentChart(); continue; }
