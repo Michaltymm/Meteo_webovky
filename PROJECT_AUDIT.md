@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.18 v METEO-008 sdílí výběr bodů a statistiky Průzkumníku pro každou veličinu stejný průchod. U 250k měření (390 px, CPU ×4) synchronní obsluha teploty a vlhkosti 95,5 → 69,5 ms, absolutní vlhkosti 94 → 60 ms. Graf a souhrny shodné v osmi profilech. [Měření](docs/performance/VYBER_A_STATISTIKY_PRUZKUMNIKU.md)
 - v0.21.17 z `7ad1b86` nasadily [GitHub Actions #78](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45977524767). Prošlo 495/495 testů Node a prohlížečové zkoušky myši, klávesnice i dotyku. `main` je na `2405c5d`. Dále METEO-008, pilot sdíleného průchodu výběrem vzorků a statistikami po uvolnění posuvníku.
 - v0.21.17 v METEO-008 zobrazuje okamžité hranice výřezu nad 10k a přepočítá jej po uvolnění. Chromium při 250k (390 px, CPU ×4) naměřil deset obsluh `input` 876,5 → 9 ms a kreslení 10 → 1. Konečný výsledek a statistiky shodné v osmi scénářích. [Profil](docs/performance/POSUVNIK_PRUZKUMNIKU.md)
 - v0.21.16 z `879d55d` nasadily [GitHub Actions #77](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45962107921). Prošlo 494/494 testů Node a tři kontroly v Chromium. `main` je na `2405c5d`. Dále METEO-008, oddělit cenu výběru bodů a vykreslení při posunu výřezu Průzkumníku.

@@ -2297,8 +2297,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02117"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.17</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02118"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.18</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5912,6 +5912,7 @@
     let expAllPts = [];   // plný filtrovaný soubor bodů pro posuvník
     let expSliderPreview = false;
     let explorerRangeCache = null;
+    const EXPLORER_POINT_LIMIT = 800;
 
     function invalidateDerivedData({ keepDataDiagnostics = false } = {}) {
       hideCurrentChart();
@@ -6008,6 +6009,32 @@
         sum += value; count++;
       }
       return { min: count ? min : null, max: count ? max : null, avg: count ? sum / count : null, count };
+    }
+
+    function explorerSeries(rows, metrics) {
+      if (rows.length <= EXPLORER_POINT_LIMIT) {
+        return { points: rows, summaries: metrics.map(({ fn }) => numericSummary(rows, fn)) };
+      }
+      const summaries = metrics.map(() => ({ min: Infinity, max: -Infinity, sum: 0, count: 0 }));
+      const getters = metrics.map(({ fn }, i) => {
+        const summary = summaries[i];
+        return row => {
+          const value = fn(row);
+          if (Number.isFinite(value)) {
+            summary.min = Math.min(summary.min, value);
+            summary.max = Math.max(summary.max, value);
+            summary.sum += value;
+            summary.count++;
+          }
+          return value;
+        };
+      });
+      // Each metric visits every original point in order, even when the
+      // sampler only retains a few of those points for the chart.
+      const points = sampleExtrema(rows, getters, EXPLORER_POINT_LIMIT);
+      return { points, summaries: summaries.map(({ min, max, sum, count }) => ({
+        min: count ? min : null, max: count ? max : null, avg: count ? sum / count : null, count
+      })) };
     }
 
     let chartExplorer = null;
@@ -6150,7 +6177,7 @@
         const { labels, values } = explorerRainDays(rows);
         el("expChartTitle").textContent = "Srážky – " + expLabelFor(expRange) + " (" + labels.length + " dní)";
         el("expInfo").textContent = rows.length + " záznamů v rozsahu";
-        buildExpStats(values, [{ label: "☔ Srážky", unit: "mm" }]);
+        buildExpStats([{ label: "☔ Srážky", unit: "mm" }], [numericSummary(values)]);
         expAllPts = [];
         el("expSliderWrap").style.display = "none";
         renderExplorerRainChart(labels, values);
@@ -6196,9 +6223,10 @@
         voltage: { label: "Napětí", color: "#8e44ad", fn: r => r.voltage, unit: "V" },
       };
 
-      const getters = metric === "temp_hum"
-        ? [METRICS.temp.fn, METRICS.hum.fn] : [METRICS[metric].fn];
-      const pts = sampleExtrema(rows, getters);
+      const groups = metric === "temp_hum"
+        ? [{ ...METRICS.temp, label: "🌡 Teplota" }, { ...METRICS.hum, label: "💧 Vlhkost" }]
+        : [METRICS[metric]];
+      const { points: pts, summaries } = explorerSeries(rows, groups);
       const labels = pts.map(r => expRange === "24h" ? fmtTime(r.ts) : fmtDT(r.ts));
 
       if (metric === "temp_hum") {
@@ -6243,14 +6271,7 @@
         (pts.length < rows.length ? " • zjednodušený graf, statistiky ze všech měření" : "");
 
       // ── Stats bar ──
-      if (metric === "temp_hum") {
-        buildExpStats(rows, [
-          { ...METRICS.temp, label: "🌡 Teplota" },
-          { ...METRICS.hum, label: "💧 Vlhkost" },
-        ]);
-      } else {
-        buildExpStats(rows, [METRICS[metric]]);
-      }
+      buildExpStats(groups, summaries);
 
       chartExplorer.update("none");
     }
@@ -6357,12 +6378,12 @@
       return { "24h": "posledních 24 h", "3d": "poslední 3 dny", "7d": "posledních 7 dní", "30d": "posledních 30 dní", "90d": "posledních 90 dní", "all": "celé období", "custom": "vlastní rozsah", "oneday": (el("expDateOne").value || "jeden den") }[r] || r;
     }
 
-    function buildExpStats(items, groups) {
+    function buildExpStats(groups, summaries) {
       const box = el("expStats");
       if (!box) return;
       const hm = (n, d = 1) => n === null ? "\u2013" : Number(n).toFixed(d);
-      box.innerHTML = groups.map(({ label, unit, fn }) => {
-        const { min: mn, max: mx, avg: av, count } = numericSummary(items, fn);
+      box.innerHTML = groups.map(({ label, unit }, i) => {
+        const { min: mn, max: mx, avg: av, count } = summaries[i];
         if (!count) return "";
         return `<div class="ds-block">
       <div class="ds-title">${label}</div>

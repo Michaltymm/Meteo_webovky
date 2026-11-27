@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Výběr bodů a statistiky Průzkumníku](VYBER_A_STATISTIKY_PRUZKUMNIKU.md)
+měří sdílený průchod při potvrzení výřezu s 1k–250k měřeními (METEO-008).
+
 [Posuvník Průzkumníku](POSUVNIK_PRUZKUMNIKU.md) rozlišuje výběr vzorků,
 souhrny a Chart.js při tažení výřezů s 1k–250k měřeními (METEO-008).
 

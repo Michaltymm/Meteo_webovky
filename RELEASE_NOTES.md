@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.18
+
+- Průzkumník zpracuje dlouhý výřez rychleji. Výběr bodů grafu a statistiky sdílejí jeden průchod původními měřeními.
+
 ## v0.21.17
 
 - Posuvník Průzkumníku u dlouhých výřezů reaguje okamžitě. Po uvolnění vykreslí graf a spočítá statistiky ze všech platných měření ve výřezu.

@@ -34,6 +34,28 @@ test('explorer summaries use independent finite measurements and preserve zeroes
   assert.match(humidity, /Min:&nbsp;<span>0\.0&nbsp;%.*Prům:&nbsp;<span>16\.7&nbsp;%.*Max:&nbsp;<span>25\.0&nbsp;%.*3&nbsp;měření/s);
 });
 
+test('explorer sampling shares metric evaluations with exact full-range summaries', () => {
+  const a = app();
+  assert.equal(a.run(`[800, 801, 15000].every(length => {
+    const rows = Array.from({length}, (_, i) => ({
+      t: [1e16, 1, -1e16, null, -0, 0, Infinity, NaN, 3][i % 9],
+      h: [0, -0, null, NaN][i % 4]
+    }));
+    const getters = [row => row.t, row => row.h, () => null];
+    const expected = getters.map(get => numericSummary(rows, get));
+    const points = sampleExtrema(rows, getters);
+    const calls = getters.map(() => 0);
+    const actual = explorerSeries(rows, getters.map((get, i) => ({
+      fn: row => { calls[i]++; return get(row); }
+    })));
+    return actual.points.length === points.length &&
+      actual.points.every((row, i) => row === points[i]) &&
+      calls.every(count => count === length) &&
+      actual.summaries.every((summary, i) => Object.keys(summary).every(
+        key => Object.is(summary[key], expected[i][key])));
+  })`), true);
+});
+
 test('slider statistics and endpoints use the complete selected interval', () => {
   const a = app(); fixture(a, 10000);
   a.run('buildExplorer(); el("expSliderL").value="20"; el("expSliderR").value="80"; expSliderUpdate()');
