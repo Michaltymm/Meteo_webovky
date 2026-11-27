@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Regrese napětí Průzkumníku](REGRESE_NAPETI_PRUZKUMNIKU.md) měří
+zrychlené sestavení stejných řad a predikce na 1k–250k řádcích (METEO-008/046).
+
 [Dávky při otevření rozsahu Průzkumníku](DAVKY_ROZSAHU_PRUZKUMNIKU.md)
 měří odezvu při změně období a celé dokončení pro 1k–250k řádků (METEO-008).
 

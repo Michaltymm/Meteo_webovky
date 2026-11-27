@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.21
+
+- Graf napětí v Průzkumníku rychleji připravuje predikci z dlouhé historie. Výpočet používá všechna platná měření napětí z posledních tří dnů, která spadají do zvoleného rozsahu.
+
 ## v0.21.20
 
 - Při otevření dlouhého období v Průzkumníku se graf a statistiky připravují v dávkách. Stav přípravy je vidět u grafu a mezitím lze změnit období nebo veličinu.

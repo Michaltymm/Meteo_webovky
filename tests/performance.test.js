@@ -380,6 +380,52 @@ test('voltage regression uses all recent samples, independently of display sampl
   assert.equal(a.run('full.predicted[2000]'), a.run('reduced.predicted[reduced.actual.findIndex(v=>v===null)]'));
 });
 
+test('two-pass voltage regression preserves the old floating-point result in input order', () => {
+  const a = app();
+  assert.equal(a.run(`(() => {
+    const cutoff = Date.parse("2026-11-24T10:00:00Z");
+    const row = (time, voltage) => ({ ts: new Date(time), voltage });
+    const reference = (rows, from) => {
+      const recent = rows.filter(r => Number.isFinite(r.voltage) && Number.isFinite(+r.ts) && +r.ts >= from);
+      if (recent.length < 2) return null;
+      const tMean = recent.reduce((sum, r) => sum + r.ts.getTime(), 0) / recent.length;
+      const vMean = recent.reduce((sum, r) => sum + r.voltage, 0) / recent.length;
+      const divisor = recent.reduce((sum, r) => sum + (r.ts.getTime() - tMean) ** 2, 0);
+      return divisor > 0
+        ? recent.reduce((sum, r) => sum + (r.ts.getTime() - tMean) * (r.voltage - vMean), 0) / divisor
+        : null;
+    };
+    const readings = [0, -0, 3.7, null, NaN, 3.87, Infinity, 1e16, -1e16, 1];
+    const dense = Array.from({ length: 9001 }, (_, i) =>
+      row(i % 19 === 0 ? NaN : cutoff + ((i * 761) % 81 - 17) * 1000, readings[i % readings.length]));
+    const ties = [row(cutoff, 3), row(cutoff, 0), row(cutoff - 1, 1)];
+    return [[], dense, ties, [row(cutoff, 0)]].every(rows =>
+      [NaN, -Infinity, cutoff, cutoff + 1, Infinity].every(from =>
+        Object.is(voltageSlope(rows, from), reference(rows, from))));
+  })()`), true);
+});
+
+test('explorer voltage keeps cutoff ties and the complete interval for unsorted sources', () => {
+  const a = app();
+  assert.equal(a.run(`(() => {
+    const cutoff = Date.parse("2026-11-24T10:00:00Z");
+    const readings = [-60000, -1, 0, 0, 0, 60000, 90000, 120000].map((offset, i) => ({
+      ts: new Date(cutoff + offset), voltage: [100, 400, 0, null, 3.2, 4, 3.9, 3.8][i]
+    }));
+    const points = [readings[0], readings.at(-1)];
+    const same = (rows, from) => JSON.stringify(explorerVoltageSeries(points, rows, from)) ===
+      JSON.stringify(voltageSeries(points, Infinity, rows, from));
+    CFG.source = "sheets";
+    if (![cutoff, cutoff + 1, cutoff + 120001].every(from => same(readings, from))) return false;
+    const unsorted = [readings[7], readings[2], { ts: new Date(NaN), voltage: 80 },
+      readings[4], readings[0], readings[5], readings[1], readings[6], readings[3]];
+    return ["mqtt", "both"].every(source => {
+      CFG.source = source;
+      return same(unsorted, cutoff);
+    });
+  })()`), true);
+});
+
 test('rain tab fits all valid recent voltages and keeps the 500 measured display samples', () => {
   const a = app();
   a.run(`const end=Date.parse('2026-11-24T10:00:00Z');Date.now=()=>end;
