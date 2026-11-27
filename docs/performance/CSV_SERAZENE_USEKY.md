@@ -58,3 +58,20 @@ Prošlo 505/505 testů Node.js. Pokryly mimo jiné lichý počet sestupných
 úseků, hranici 32 úseků, stabilní pořadí duplicit a rušení načítání.
 Offline Chromium prošel kontrolami CSV a Moderního přehledu 2 se třemi
 původními konfiguracemi. V žádné integraci se neobjevila chyba stránky.
+
+## Další měření parseru
+
+Izolovaný pilot znovu použil rozpoznané části stejného data v
+sousedních CSV řádcích a normalizoval text napětí jednou na řádek.
+Při 100 000 pětiminutových záznamech klesl medián převodu a validace
+z 852 na 811 ms s využitím data a na 755 ms s oběma změnami. Při
+250 000 sekundových záznamech trval 2 300 → 2 155 → 1 951 ms. Porovnání
+použilo připravená CSV pole a tři střídavé běhy po zahřátí při CPU ×4.
+Všechny převedené řádky i validační zprávy se shodovaly. Před zavedením
+je potřeba ověřit odvození roku, přechody letního času a běžný příjem CSV.
+
+## Publikace
+
+Sestavení a nasazení `f915631` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #84](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46071261944)
