@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Statistiky Průzkumníku](STATISTIKY_PRUZKUMNIKU.md) ověřují shodu souhrnů
+a grafů a odstranění dočasných řad pro 1k–250k měření (METEO-008).
+
 [Paměť uložených grafů](PAMET_GRAFU.md) měří METEO-007 po přechodu z hlavního
 přehledu na Moderní přehled 2. Porovnává uvolněnou JS paměť a cenu nové
 konstrukce se stávajícím rychlým návratem.

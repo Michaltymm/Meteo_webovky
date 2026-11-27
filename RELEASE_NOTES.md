@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.16
+
+- Průzkumník při výpočtu statistik dlouhé historie potřebuje méně dočasné paměti. Minima, maxima a průměry dál vycházejí ze všech platných měření ve vybraném úseku.
+
 ## v0.21.15
 
 - Stanice se zdrojem Google Sheets zobrazují data bez stahování knihovny MQTT. U živého zdroje se knihovna načte při prvním připojení.

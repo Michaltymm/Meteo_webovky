@@ -2297,8 +2297,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02115"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.15</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02116"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.16</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5995,9 +5995,10 @@
       return indicesOnly ? selected : selected.map(i => rows[i]);
     }
 
-    function numericSummary(values) {
+    function numericSummary(items, getValue = item => item) {
       let min = Infinity, max = -Infinity, sum = 0, count = 0;
-      for (const value of values) {
+      for (const item of items) {
+        const value = getValue(item);
         if (!Number.isFinite(value)) continue;
         min = Math.min(min, value); max = Math.max(max, value);
         sum += value; count++;
@@ -6144,7 +6145,7 @@
         const { labels, values } = explorerRainDays(rows);
         el("expChartTitle").textContent = "Srážky – " + expLabelFor(expRange) + " (" + labels.length + " dní)";
         el("expInfo").textContent = rows.length + " záznamů v rozsahu";
-        buildExpStats([{ label: "☔ Srážky", unit: "mm", vals: values }]);
+        buildExpStats(values, [{ label: "☔ Srážky", unit: "mm" }]);
         expAllPts = [];
         el("expSliderWrap").style.display = "none";
         renderExplorerRainChart(labels, values);
@@ -6238,15 +6239,12 @@
 
       // ── Stats bar ──
       if (metric === "temp_hum") {
-        buildExpStats([
-          { label: "🌡 Teplota", unit: "°C", vals: rows.map(r => r.temp) },
-          { label: "💧 Vlhkost", unit: "%", vals: rows.map(r => r.hum) },
+        buildExpStats(rows, [
+          { ...METRICS.temp, label: "🌡 Teplota" },
+          { ...METRICS.hum, label: "💧 Vlhkost" },
         ]);
       } else {
-        const m = METRICS[metric];
-        buildExpStats([
-          { label: m.label, unit: m.unit, vals: rows.map(r => m.fn(r)) }
-        ]);
+        buildExpStats(rows, [METRICS[metric]]);
       }
 
       chartExplorer.update("none");
@@ -6354,12 +6352,12 @@
       return { "24h": "posledních 24 h", "3d": "poslední 3 dny", "7d": "posledních 7 dní", "30d": "posledních 30 dní", "90d": "posledních 90 dní", "all": "celé období", "custom": "vlastní rozsah", "oneday": (el("expDateOne").value || "jeden den") }[r] || r;
     }
 
-    function buildExpStats(groups) {
+    function buildExpStats(items, groups) {
       const box = el("expStats");
       if (!box) return;
       const hm = (n, d = 1) => n === null ? "\u2013" : Number(n).toFixed(d);
-      box.innerHTML = groups.map(({ label, unit, vals }) => {
-        const {min: mn, max: mx, avg: av, count} = numericSummary(vals);
+      box.innerHTML = groups.map(({ label, unit, fn }) => {
+        const { min: mn, max: mx, avg: av, count } = numericSummary(items, fn);
         if (!count) return "";
         return `<div class="ds-block">
       <div class="ds-title">${label}</div>

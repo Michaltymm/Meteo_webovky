@@ -56,7 +56,8 @@ test('derived explorer statistics use full original measurements, not the reduce
 test('full-pair Pearson and slope match independent two-pass statistics with nulls and timestamps', () => {
   const a = app();
   assert.equal(a.run(`(() => {
-    store.rows=Array.from({length:30000},(_,i)=>({ts:new Date(Date.now()-Math.floor(i/2)*300000),
+    const end=Date.UTC(2026,10,27,11);
+    store.rows=Array.from({length:30000},(_,i)=>({ts:new Date(end-Math.floor(i/2)*300000),
       temp:i%11===0?null:10+Math.sin(i/20)*8,voltage:i%7===0?null:4+Math.sin(i/20)*.02+Math.cos(i/70)*.01}));
     const pairs=store.rows.filter(r=>Number.isFinite(r.temp)&&Number.isFinite(r.voltage));
     const mt=pairs.reduce((s,r)=>s+r.temp,0)/pairs.length,mv=pairs.reduce((s,r)=>s+r.voltage,0)/pairs.length;

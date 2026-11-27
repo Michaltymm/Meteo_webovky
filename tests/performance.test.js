@@ -22,6 +22,18 @@ test('explorer preserves both metric extrema and computes statistics from all me
   assert.equal(a.run('store.rows[0].ts > store.rows.at(-1).ts'), true);
 });
 
+test('explorer summaries use independent finite measurements and preserve zeroes', () => {
+  const a = app(); fixture(a, 4);
+  a.run(`Object.assign(store.rows[0], {temp:null, hum:25});
+    Object.assign(store.rows[1], {temp:-8, hum:25});
+    Object.assign(store.rows[2], {temp:0, hum:0});
+    Object.assign(store.rows[3], {temp:20, hum:null});
+    buildExplorer()`);
+  const [temperature, humidity] = a.nodes.get('expStats').innerHTML.split('💧 Vlhkost');
+  assert.match(temperature, /Min:&nbsp;<span>-8\.0&nbsp;°C.*Prům:&nbsp;<span>4\.0&nbsp;°C.*Max:&nbsp;<span>20\.0&nbsp;°C.*3&nbsp;měření/s);
+  assert.match(humidity, /Min:&nbsp;<span>0\.0&nbsp;%.*Prům:&nbsp;<span>16\.7&nbsp;%.*Max:&nbsp;<span>25\.0&nbsp;%.*3&nbsp;měření/s);
+});
+
 test('slider statistics and endpoints use the complete selected interval', () => {
   const a = app(); fixture(a, 10000);
   a.run('buildExplorer(); el("expSliderL").value="20"; el("expSliderR").value="80"; expSliderUpdate()');
