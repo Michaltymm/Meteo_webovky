@@ -38,3 +38,17 @@ Průzkumníka nebo analytické karty. Po uvolnění se použila aktuální data.
 Při chybě CDN zůstaly dostupné tabulka Přehledu, historie, analytická
 heatmapa a Moderní přehled 2. Samostatně byly ověřeny graf 24 h, běžná
 analytika a načtení obou knihoven s původní kontrolou integrity SRI.
+
+## Další krok
+
+Pilot pro Paho MQTT se stejně řízeným zpožděním 300 ms v konfiguraci
+Google Sheets zkrátil medián zobrazení teploty z 518 na 294 ms při
+neblokujícím načtení ve stejném offline scénáři. Před zavedením je potřeba
+ověřit první připojení MQTT, chování při chybě knihovny a výměnu stanice
+během čekání. Připravenost Paho by měla být nezávislá na Chart.js.
+
+## Publikace
+
+[GitHub Actions #75](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45959295681)
+potvrdily sestavení a publikaci `a556622` z `codex-dev` za 63 s.
+Větev `main` při kontrole zůstala na revizi `2405c5d`.
