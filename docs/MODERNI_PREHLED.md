@@ -25,6 +25,20 @@ volbu nesmaže. Nikde nevznikají duplicitní ID ani druhá sada grafů.
 - URL podporuje přímé otevření, nový panel prohlížeče a Zpět/Vpřed.
 - Chybějící senzory zůstávají „–“, platná nula se zachovává; neodvozují se nové meteorologické hodnoty.
 
+## Klávesnice a dotyk v záložkách grafů a statistik od v0.23.0
+
+V hlavním i moderním přehledu vstoupí Tab na vybranou záložku. Šipky doleva
+a doprava procházejí seznam, Home a End přeskočí na první nebo poslední
+položku. Enter a mezerník otevřou záložku pod fokusem. Další Tab přejde na
+otevřený panel. Čtečka obrazovky dostává název záložky, stav výběru a vztah
+k panelu. Při otevření Průzkumníku ze senzorové karty se fokus přesune přímo
+do grafového panelu. Mobilní dotykové cíle mají nejméně 44 px na výšku.
+
+V řízeném srovnání v Chromiu se počet samostatných zastávek v seznamu
+zmenšil z 12 na jednu. V obou verzích se při samotném pohybu fokusu
+neodeslal žádný požadavek. Po potvrzení Denních statistik Enterem před
+načtením plné historie následoval právě jeden plný požadavek Sheets.
+
 ## Výběr karet podle stanice
 
 Od v0.14.0 otevřete „Upravit karty“ vedle výběru stanice. Zaškrtnutím vybíráte

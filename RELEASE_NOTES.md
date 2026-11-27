@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.23.0
+
+- V hlavním i moderním přehledu lze mezi záložkami grafů a statistik přecházet šipkami. Záložku otevře Enter nebo mezerník. Na telefonu mají záložky větší dotykovou plochu.
+
 ## v0.22.0
 
 - Rozbalený **Stav dat** ukazuje u stanic se Sheets typický odstup mezi nedávnými záznamy a nejdelší mezeru v zobrazeném výřezu.

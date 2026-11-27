@@ -480,6 +480,16 @@
       border-bottom-color: var(--accent);
     }
 
+    #dashboardTabList .tab-btn:focus-visible,
+    .tab-pane:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: -3px;
+    }
+
+    #dashboardTabList, .tab-pane {
+      scroll-margin-block-start: 112px;
+    }
+
     .tab-pane {
       display: none;
     }
@@ -2196,6 +2206,8 @@
       .dd-item, .theme-btn, .cfg-full-btn, #gearSource { min-height:44px; }
       .dd-item { white-space:normal; }
       .page-navigation { top:56px; height:104px; }
+      #dashboardTabList .tab-btn { min-height:44px; }
+      #dashboardTabList, .tab-pane { scroll-margin-block-start:168px; }
       .page-navigation-inner { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); padding:5px .65rem; gap:.35rem; }
       .page-link { min-width:0; padding:.3rem; font-size:.78rem; line-height:1.25; text-align:center; border-radius:10px; }
       .sticky-bars { position:relative; top:auto; }
@@ -2222,6 +2234,7 @@
       .modern-intro { flex-direction:column; align-items:stretch; gap:.75rem; }
       @media(orientation:landscape) and (max-height:500px) {
         body>header, .page-navigation { position:relative; top:auto; }
+        #dashboardTabList, .tab-pane { scroll-margin-block-start:8px; }
       }
     }
   </style>
@@ -2302,8 +2315,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0220"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.22.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0230"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.23.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2804,23 +2817,23 @@
     </details>
 
     <!-- ══ TABS ══ -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="now">Aktuálně</button>
-      <button class="tab-btn" data-tab="daily">Denní statistiky</button>
-      <button class="tab-btn" data-tab="rain">Srážky &amp; Baterie</button>
-      <button class="tab-btn" data-tab="battery">🔬 Teplota × napětí</button>
-      <button class="tab-btn" data-tab="explorer">📈 Graf</button>
-      <button class="tab-btn" data-tab="compare">📅 Porovnání</button>
-      <button class="tab-btn" data-tab="overview">📊 Přehled teplot</button>
-      <button class="tab-btn" data-tab="monthly">Měsíční</button>
-      <button class="tab-btn" data-tab="yearly">Roční</button>
-      <button class="tab-btn" data-tab="hist">Historie</button>
-      <button class="tab-btn" data-tab="yearstats">📅 Roční statistiky</button>
-      <button class="tab-btn" data-tab="notes">📝 Poznámky</button>
+    <div class="tabs" id="dashboardTabList" role="tablist" aria-label="Grafy a statistiky stanice">
+      <button type="button" class="tab-btn active" id="dashboardTab-now" data-tab="now" role="tab" aria-controls="tab-now" aria-selected="true">Aktuálně</button>
+      <button type="button" class="tab-btn" id="dashboardTab-daily" data-tab="daily" role="tab" aria-controls="tab-daily" aria-selected="false" tabindex="-1">Denní statistiky</button>
+      <button type="button" class="tab-btn" id="dashboardTab-rain" data-tab="rain" role="tab" aria-controls="tab-rain" aria-selected="false" tabindex="-1">Srážky &amp; Baterie</button>
+      <button type="button" class="tab-btn" id="dashboardTab-battery" data-tab="battery" role="tab" aria-controls="tab-battery" aria-selected="false" tabindex="-1">🔬 Teplota × napětí</button>
+      <button type="button" class="tab-btn" id="dashboardTab-explorer" data-tab="explorer" role="tab" aria-controls="tab-explorer" aria-selected="false" tabindex="-1">📈 Graf</button>
+      <button type="button" class="tab-btn" id="dashboardTab-compare" data-tab="compare" role="tab" aria-controls="tab-compare" aria-selected="false" tabindex="-1">📅 Porovnání</button>
+      <button type="button" class="tab-btn" id="dashboardTab-overview" data-tab="overview" role="tab" aria-controls="tab-overview" aria-selected="false" tabindex="-1">📊 Přehled teplot</button>
+      <button type="button" class="tab-btn" id="dashboardTab-monthly" data-tab="monthly" role="tab" aria-controls="tab-monthly" aria-selected="false" tabindex="-1">Měsíční</button>
+      <button type="button" class="tab-btn" id="dashboardTab-yearly" data-tab="yearly" role="tab" aria-controls="tab-yearly" aria-selected="false" tabindex="-1">Roční</button>
+      <button type="button" class="tab-btn" id="dashboardTab-hist" data-tab="hist" role="tab" aria-controls="tab-hist" aria-selected="false" tabindex="-1">Historie</button>
+      <button type="button" class="tab-btn" id="dashboardTab-yearstats" data-tab="yearstats" role="tab" aria-controls="tab-yearstats" aria-selected="false" tabindex="-1">📅 Roční statistiky</button>
+      <button type="button" class="tab-btn" id="dashboardTab-notes" data-tab="notes" role="tab" aria-controls="tab-notes" aria-selected="false" tabindex="-1">📝 Poznámky</button>
     </div>
 
     <!-- ══ Aktuálně ══ -->
-    <div class="tab-pane active" id="tab-now">
+    <div class="tab-pane active" id="tab-now" role="tabpanel" aria-labelledby="dashboardTab-now" tabindex="0">
       <div class="day-summary">
         <div class="ds-block">
           <div class="ds-title">🗓 DNES</div>
@@ -2861,7 +2874,7 @@
 
 
 
-    <div class="tab-pane" id="tab-battery">
+    <div class="tab-pane" id="tab-battery" role="tabpanel" aria-labelledby="dashboardTab-battery" tabindex="0">
       <label for="batteryRange">Analyzovat:
         <select id="batteryRange" onchange="buildBatteryAnalysis()">
           <option value="7">Posledních 7 × 24 h</option>
@@ -2937,14 +2950,14 @@
     </div>
 
     <!-- ════ Denní statistiky ════ -->
-    <div class="tab-pane" id="tab-daily">
+    <div class="tab-pane" id="tab-daily" role="tabpanel" aria-labelledby="dashboardTab-daily" tabindex="0">
       <div class="stats-grid" id="dailyGrid">
         <p style="color:var(--muted);padding:1rem">Načítám data…</p>
       </div>
     </div>
 
     <!-- ════ Srážky & Baterie ════ -->
-    <div class="tab-pane" id="tab-rain">
+    <div class="tab-pane" id="tab-rain" role="tabpanel" aria-labelledby="dashboardTab-rain" tabindex="0">
       <div class="chart-wrapper">
         <div class="chart-title">Denní srážky – posledních 30 dní</div>
         <div class="chart-canvas-wrap"><canvas id="chartRain"></canvas></div>
@@ -2956,7 +2969,7 @@
     </div>
 
     <!-- ════ Graf – průzkumník dat ════ -->
-    <div class="tab-pane" id="tab-explorer">
+    <div class="tab-pane" id="tab-explorer" role="tabpanel" aria-labelledby="dashboardTab-explorer" tabindex="0">
 
       <div class="exp-controls">
         <!-- Veličina -->
@@ -3056,7 +3069,7 @@
     </div>
 
     <!-- ════ Porovnání dnů ════ -->
-    <div class="tab-pane" id="tab-compare">
+    <div class="tab-pane" id="tab-compare" role="tabpanel" aria-labelledby="dashboardTab-compare" tabindex="0">
       <div class="exp-controls">
         <!-- Veličina -->
         <div class="exp-group">
@@ -3125,7 +3138,7 @@
     </div>
 
     <!-- ════ Přehled teplot ════ -->
-    <div class="tab-pane" id="tab-overview">
+    <div class="tab-pane" id="tab-overview" role="tabpanel" aria-labelledby="dashboardTab-overview" tabindex="0">
       <div class="exp-controls">
         <div class="exp-group">
           <label class="exp-label">Veličina</label>
@@ -3176,7 +3189,7 @@
     </div>
 
     <!-- ════ Měsíční ══ -->
-    <div class="tab-pane" id="tab-monthly">
+    <div class="tab-pane" id="tab-monthly" role="tabpanel" aria-labelledby="dashboardTab-monthly" tabindex="0">
       <div class="chart-wrapper">
         <div class="chart-title">Průměrné hodnoty – posledních 30 dní</div>
         <div class="chart-canvas-wrap"><canvas id="chartMonthly"></canvas></div>
@@ -3184,7 +3197,7 @@
     </div>
 
     <!-- ════ Roční ══ -->
-    <div class="tab-pane" id="tab-yearly">
+    <div class="tab-pane" id="tab-yearly" role="tabpanel" aria-labelledby="dashboardTab-yearly" tabindex="0">
       <div class="chart-wrapper">
         <div class="chart-title">Průměrné hodnoty – posledních 12 měsíců</div>
         <div class="chart-canvas-wrap"><canvas id="chartYearly"></canvas></div>
@@ -3192,7 +3205,7 @@
     </div>
 
     <!-- ════ Historie ══ -->
-    <div class="tab-pane" id="tab-hist">
+    <div class="tab-pane" id="tab-hist" role="tabpanel" aria-labelledby="dashboardTab-hist" tabindex="0">
       <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
         <span>Zobrazit:</span>
         <select id="histLimit"
@@ -3228,7 +3241,7 @@
     </div>
 
     <!-- ════ Roční statistiky ══ -->
-    <div class="tab-pane" id="tab-yearstats">
+    <div class="tab-pane" id="tab-yearstats" role="tabpanel" aria-labelledby="dashboardTab-yearstats" tabindex="0">
       <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
         <span>Zobrazit rok:</span>
         <select id="yearStatsFilter" onchange="buildYearlyStats()"
@@ -3242,7 +3255,7 @@
     </div>
 
     <!-- ════ Poznámky ══ -->
-    <div class="tab-pane" id="tab-notes">
+    <div class="tab-pane" id="tab-notes" role="tabpanel" aria-labelledby="dashboardTab-notes" tabindex="0">
       <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
         <span>Filtr roku:</span>
         <select id="notesYearFilter" onchange="buildNotesTable()"
@@ -6239,13 +6252,12 @@
     }
 
     /* Otevří Graf tab s vybranou veličinou, zachová aktuální časový rozsah */
-    function openExplorerWith(metric) {
+    function openExplorerWith(metric, focusTarget = el("tab-explorer")) {
       if (analyticsActive()) showAppPage("main");
       el("expMetric").value = metric;
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === "explorer"));
-      document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab-explorer"));
-      updateChartLibraryStatus("explorer");
+      selectDashboardTab("explorer");
       buildExplorer(true);
+      focusTarget.focus({ preventScroll: true });
       el("tab-explorer").scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
     }
 
@@ -7542,17 +7554,48 @@
       });
     }
 
-    document.querySelectorAll(".tab-btn").forEach(btn => {
+    const dashboardTabs = Array.from(document.querySelectorAll(".tab-btn"));
+    const dashboardHeavyTabs = new Set(["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer", "battery"]);
+
+    function setDashboardTabFocus(target) {
+      for (const button of dashboardTabs) {
+        const tabIndex = button === target ? 0 : -1;
+        if (button.tabIndex !== tabIndex) button.tabIndex = tabIndex;
+      }
+    }
+
+    function selectDashboardTab(tab) {
+      closeInfoPopover();
+      for (const button of dashboardTabs) {
+        const selected = button.dataset.tab === tab;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-selected", String(selected));
+        el("tab-" + button.dataset.tab).classList.toggle("active", selected);
+      }
+      setDashboardTabFocus(el("dashboardTab-" + tab));
+      updateChartLibraryStatus(tab);
+    }
+
+    // Arrow keys explore the list. Native button activation commits the tab.
+    dashboardTabs.forEach((btn, index) => {
+      btn.addEventListener("focus", () => setDashboardTabFocus(btn));
+      btn.addEventListener("keydown", event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        let nextIndex;
+        switch (event.key) {
+          case "ArrowLeft": nextIndex = (index + dashboardTabs.length - 1) % dashboardTabs.length; break;
+          case "ArrowRight": nextIndex = (index + 1) % dashboardTabs.length; break;
+          case "Home": nextIndex = 0; break;
+          case "End": nextIndex = dashboardTabs.length - 1; break;
+          default: return;
+        }
+        event.preventDefault();
+        dashboardTabs[nextIndex].focus();
+      });
       btn.addEventListener("click", () => {
-        closeInfoPopover();
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-        btn.classList.add("active");
-        el("tab-" + btn.dataset.tab).classList.add("active");
         const tab = btn.dataset.tab;
-        updateChartLibraryStatus(tab);
-        const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer", "battery"];
-        if (heavyTabs.includes(tab) && !store.fullLoaded) {
+        selectDashboardTab(tab);
+        if (dashboardHeavyTabs.has(tab) && !store.fullLoaded) {
           el("yearStatsContent") && (el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Načítám celou historii…</p>');
           ensureFullData(() => {
             tabDirtyState[tab] = true;
@@ -7562,6 +7605,11 @@
         }
         refreshTab(tab);
       });
+    });
+    el("dashboardTabList").addEventListener("focusout", event => {
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        setDashboardTabFocus(document.querySelector(".tab-btn.active"));
+      }
     });
 
     /* ══════════════════════════════════════════════
@@ -7810,8 +7858,7 @@
       document.querySelectorAll(".exp-range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === "oneday"));
       el("expCustomWrap").style.display = "none";
       el("expOneDayWrap").style.display = "flex";
-      openExplorerWith("voltage");
-      el("expDateOne").focus();
+      openExplorerWith("voltage", el("expDateOne"));
     }
 
     function buildBatteryAnalysis() {

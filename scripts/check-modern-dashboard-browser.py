@@ -23,7 +23,7 @@ async def main():
     requests=[];errors=[];layouts=[]
     async with async_playwright() as p:
         browser=await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True)
-        page=await browser.new_page(viewport={'width':1440,'height':1050},timezone_id='Europe/Prague',reduced_motion='reduce')
+        page=await browser.new_page(viewport={'width':1440,'height':1050},timezone_id='Europe/Prague',reduced_motion='reduce',has_touch=True)
         await page.clock.set_fixed_time(now)
         page.on('pageerror',lambda e:errors.append(str(e)))
         async def route(r):
@@ -46,15 +46,48 @@ async def main():
         await page.route('**/*',route)
         await page.goto('http://meteo.test/dev/')
         await page.wait_for_function('store.rows.length===400')
-        await page.locator('.tab-btn[data-tab="daily"]').click()
+        await page.wait_for_load_state('networkidle')
+        tablist=page.get_by_role('tablist',name='Grafy a statistiky stanice')
+        tabs=tablist.get_by_role('tab')
+        assert await tabs.count()==12
+        assert await tabs.evaluate_all('tabs=>tabs.every(b=>document.getElementById(b.getAttribute("aria-controls")).getAttribute("aria-labelledby")===b.id)')
+        assert await tabs.evaluate_all('tabs=>tabs.filter(b=>b.tabIndex===0).length')==1
+        before=len(requests)
+        await page.evaluate('globalThis.chartsBeforeKeys=Object.keys(Chart.instances).length')
+        await page.locator('#dashboardTab-now').focus()
+        for key,target in [('ArrowLeft','notes'),('ArrowRight','now'),('End','notes'),('Home','now'),('ArrowRight','daily')]:
+            await page.keyboard.press(key)
+            assert await page.evaluate('document.activeElement.dataset.tab')==target
+        assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='now'
+        assert await page.get_by_role('tabpanel').get_attribute('id')=='tab-now'
+        assert len(requests)==before
+        assert await page.evaluate('Object.keys(Chart.instances).length===chartsBeforeKeys && !store.fullLoaded')
+        await page.keyboard.press('Enter')
         await page.wait_for_function('store.fullLoaded && store.rows.length===2000')
         await page.wait_for_load_state('networkidle')
+        assert requests[before:]==[{'station':0,'quick':False}],requests[before:]
+        assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='daily'
+        await page.keyboard.press('ArrowLeft')
+        assert await page.evaluate('document.activeElement.dataset.tab')=='now'
+        await page.keyboard.press('Tab')
+        assert await page.evaluate('document.activeElement.id')=='tab-daily'
+        await page.keyboard.press('Shift+Tab')
+        assert await page.evaluate('document.activeElement.dataset.tab')=='daily'
+        await page.keyboard.press('End')
+        await page.keyboard.press('Space')
+        assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='notes'
+        await page.keyboard.press('Home')
+        await page.keyboard.press('ArrowRight')
+        await page.keyboard.press('Enter')
+        assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='daily'
+        assert requests[before:]==[{'station':0,'quick':False}],requests[before:]
         await page.evaluate('globalThis.savedRows=store.rows;globalThis.savedChart=chart24')
         count=len(requests)
         await page.locator('[data-page="modern"]').click()
         assert await page.evaluate('currentPage==="modern" && store.rows===savedRows && chart24===savedChart')
         assert await page.locator('#modernIntro').is_visible()
         assert await page.locator('#tab-daily').is_visible()
+        assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='daily'
         assert await page.locator('[data-page="modern"]').get_attribute('aria-current')=='page'
         assert await page.evaluate('location.hash')=='#moderni'
         assert await page.locator('#curTemp').count()==1
@@ -125,6 +158,31 @@ async def main():
                     assert await picker.evaluate('e=>!e.open')
                 else:
                     await page.keyboard.press('Escape')
+        for view,theme,width,height in [
+            ('main','darkblue',320,844),('main','light',667,375),
+            ('modern','darkblue',667,375),('modern','light',320,844),
+        ]:
+            await page.locator(f'[data-page="{view}"]').click()
+            await page.set_viewport_size({'width':width,'height':height})
+            await page.evaluate('(t)=>setTheme(t)',theme)
+            await page.locator('#dashboardTab-now').focus()
+            await page.keyboard.press('End')
+            await page.wait_for_function('el("dashboardTabList").scrollLeft>0')
+            assert await page.evaluate('''()=>{
+                const btn=el("dashboardTab-notes"),b=btn.getBoundingClientRect(),list=el("dashboardTabList").getBoundingClientRect(),style=getComputedStyle(btn);
+                const nav=document.querySelector(".page-navigation"),navBottom=getComputedStyle(nav).position==="sticky" ? nav.getBoundingClientRect().bottom : 0;
+                return document.activeElement===btn && b.left>=list.left-1 && b.right<=list.right+1 &&
+                    b.top>=navBottom-1 && b.bottom<=innerHeight+1 && b.height>=44 &&
+                    style.outlineStyle==="solid" && style.outlineWidth==="2px";
+            }''')
+            await page.locator('#dashboardTab-notes').tap()
+            assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='notes'
+            assert await page.get_by_role('tabpanel').get_attribute('id')=='tab-notes'
+            await page.locator('#sensorCard-pressure').tap()
+            assert await tablist.get_by_role('tab',selected=True).get_attribute('data-tab')=='explorer'
+            assert await page.evaluate('document.activeElement.id==="tab-explorer" && el("expMetric").value==="pressure"')
+            await page.locator('#dashboardTab-now').tap()
+        await page.set_viewport_size({'width':320,'height':844})
         await page.evaluate('setModernCardVisible("tank",false)')
         for index in [1,2,0]:
             await page.locator('#modernStation').select_option(str(index))
@@ -168,6 +226,6 @@ async def main():
         assert not errors,errors
         version=browser.version
         await browser.close()
-    output.write_text(json.dumps({'browser':version,'layouts':layouts,'pageErrors':errors,'checks':['shared data/charts','history Back/Forward','three station configs','zero/missing voltage','subtabs','analytics lifecycle','empty state','direct modern URL','theme switch','card preferences/reload/station isolation','classic view restores cards','empty selection recovery','picker bounds/Escape','help dismissal when hiding source'],'transport':'Controlled CSV/UV, real Chart.js/Paho with SRI'},indent=2)+'\n')
+    output.write_text(json.dumps({'browser':version,'layouts':layouts,'pageErrors':errors,'checks':['shared data/charts','history Back/Forward','three station configs','zero/missing voltage','subtabs','manual tab activation, lazy history, tab order and ARIA','small-screen horizontal keyboard focus, touch and metric shortcut','analytics lifecycle','empty state','direct modern URL','theme switch','card preferences/reload/station isolation','classic view restores cards','empty selection recovery','picker bounds/Escape','help dismissal when hiding source'],'transport':'Controlled CSV/UV, real Chart.js/Paho with SRI'},indent=2)+'\n')
     print(output)
 asyncio.run(main())
