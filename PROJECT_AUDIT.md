@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.15: METEO-055 načítá Paho jen pro živý zdroj s konfigurací brokeru. Po dobu načtení sleduje poslední platný kontext stanice a používá stejné SRI. Při 300 ms prodlevě se teplota ze Sheets zobrazila za 501 → 234 ms, požadavky na Paho 1 → 0. Skutečný Paho se simulovaným WebSocketem přijal vzorek nové stanice, nezávisle na čekající Chart.js. Viz [profil](docs/performance/NACTENI_PAHO_MQTT.md).
 - v0.21.14: METEO-007/055 načítá Chart.js neblokujícím způsobem se stejným SRI. Po dokončení vykreslí aktuální záložku a stanici. Při chybě zůstávají dostupné údaje a stavová zpráva. Při 300 ms řízené prodlevě se teplota v Moderním přehledu 2 zobrazila za 525 → 261 ms, bez prodlevy 296 → 307 ms. Viz [profil](docs/performance/NEBLOKUJICI_CHART_JS.md).
 - v0.21.14 z `a556622` nasadily [GitHub Actions #75](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45959295681). Prošlo 491/491 testů Node a pět kontrol v Chromium. Dále METEO-055, neblokující Paho MQTT s odděleným stavem připravenosti. `main` je na `2405c5d`.
 - v0.21.13: METEO-008 předává změnu zaměřovací čáry Chart.js místo okamžitého `draw()`. Při 12 pohybech mají sloupce i čáry 24 → 12 vykreslení, srážky v mobilní simulaci 770 → 395 ms v součtu `draw()`. Poloha, data detailu a chování při opuštění plátna se shodovaly. Viz [profil](docs/performance/ZAMEROVACI_CARA_GRAFU.md).

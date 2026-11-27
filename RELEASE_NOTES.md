@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.15
+
+- Stanice se zdrojem Google Sheets zobrazují data bez stahování knihovny MQTT. U živého zdroje se knihovna načte při prvním připojení.
+
 ## v0.21.14
 
 - Měření se mohou zobrazit už během načítání knihovny grafů. Při nedostupnosti knihovny se u grafů zobrazí stav načítání nebo chyba.

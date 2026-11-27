@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meteostanice – Dashboard</title>
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" integrity="sha384-Wc5O7PtWSXXJ6LTS7Miij28L1Q3ip54+UlMs+FDhQw+Py1DmDbVCaan/v0WkAwOg" crossorigin="anonymous"></script>
+  <template id="mqttLibrary">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" integrity="sha384-Wc5O7PtWSXXJ6LTS7Miij28L1Q3ip54+UlMs+FDhQw+Py1DmDbVCaan/v0WkAwOg" crossorigin="anonymous"></script>
+  </template>
   <style>
     *,
     *::before,
@@ -2295,8 +2297,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02114"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.14</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02115"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.15</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -7703,10 +7705,32 @@
     ══════════════════════════════════════════════ */
     let mqttClient = null;
     let mqttReconnectTimer = null;
+    let mqttLibraryPhase = "idle";
+    let mqttLibraryContext = null;
+
+    function finishMQTTLibraryLoad() {
+      mqttLibraryPhase = typeof globalThis.Paho?.Client === "function" ? "ready" : "error";
+      const context = mqttLibraryContext;
+      mqttLibraryContext = null;
+      if (context) connectMQTT(context);
+    }
+
+    function loadMQTTLibrary() {
+      mqttLibraryPhase = "loading";
+      const template = el("mqttLibrary").content.querySelector("script");
+      const script = document.createElement("script");
+      script.src = template.src;
+      script.integrity = template.integrity;
+      script.crossOrigin = template.crossOrigin;
+      script.addEventListener("load", finishMQTTLibraryLoad, { once: true });
+      script.addEventListener("error", finishMQTTLibraryLoad, { once: true });
+      document.head.append(script);
+    }
 
     function stopMQTT() {
       if (mqttReconnectTimer !== null) clearTimeout(mqttReconnectTimer);
       mqttReconnectTimer = null;
+      mqttLibraryContext = null;
       const previous = mqttClient;
       mqttClient = null;
       if (previous) { try { previous.disconnect(); } catch (e) { } }
@@ -7717,6 +7741,18 @@
       stopMQTT();
       const config = context.config;
       if (!config.mqttHost || config.source === "sheets") { setDataSourcePhase("mqtt", "inactive", context); setMqttStatus(false, "neaktivní"); return; }
+      if (typeof globalThis.Paho?.Client !== "function") {
+        if (mqttLibraryPhase === "error") {
+          setDataSourcePhase("mqtt", "error", context);
+          setMqttStatus(false, "knihovnu MQTT se nepodařilo načíst; obnovte stránku");
+        } else {
+          mqttLibraryContext = context;
+          setDataSourcePhase("mqtt", "connecting", context);
+          setMqttStatus(false, "načítám knihovnu MQTT…");
+          if (mqttLibraryPhase === "idle") loadMQTTLibrary();
+        }
+        return;
+      }
       setDataSourcePhase("mqtt", "connecting", context);
       setMqttStatus(false, "připojování…");
       const cid = "meteo_" + Math.random().toString(16).slice(2, 8);

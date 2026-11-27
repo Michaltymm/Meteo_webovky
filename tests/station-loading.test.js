@@ -153,6 +153,32 @@ test('MQTT disconnects old clients and ignores their messages, success and retry
   assert.equal(a.run('store.rows[0].temp'), 26);
 });
 
+test('the pending MQTT library connects only the latest station', async () => {
+  const a = app();
+  a.run(`const RealPaho=Paho;Paho=undefined;let libraryLoads=0;
+    loadMQTTLibrary=()=>{libraryLoads++;mqttLibraryPhase="loading"};
+    CFG.source="mqtt";CFG.mqttHost="first.test";connectMQTT();switchStation(1)`);
+  a.respond(0, JSON.stringify({ stationIdx: 1, source: 'both', mqttHost: 'current.test' }));
+  await settle();
+  a.run('connectMQTT();connectMQTT();Paho=RealPaho;finishMQTTLibraryLoad()');
+  assert.equal(a.run('libraryLoads'), 1);
+  assert.equal(a.clients.length, 1);
+  assert.equal(a.clients[0].args[0], 'current.test');
+});
+
+test('failed MQTT library reports its own error and schedules no broker retry', () => {
+  const a = app();
+  a.run(`Paho=undefined;let libraryLoads=0;
+    loadMQTTLibrary=()=>{libraryLoads++;mqttLibraryPhase="loading"};
+    CFG.source="both";CFG.mqttHost="current.test";connectMQTT();finishMQTTLibraryLoad()`);
+  assert.equal(a.run('dataStatus.mqtt.phase'), 'error');
+  assert.match(a.state.mqtt.at(-1).text, /knihovnu MQTT/);
+  a.run('connectMQTT()');
+  assert.equal(a.run('libraryLoads'), 1);
+  assert.equal(a.clients.length, 0);
+  assert.equal(a.timers.size, 0);
+});
+
 test('editing the data source invalidates requests even without switching station', async () => {
   const a = app();
   const old = a.run('fetchSheets(true)');
