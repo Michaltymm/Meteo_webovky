@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.19
+
+- Po uvolnění posuvníku u velmi dlouhých výřezů zůstává web během přípravy grafu ovladatelný. Graf a přesné statistiky se zobrazí společně.
+
 ## v0.21.18
 
 - Průzkumník zpracuje dlouhý výřez rychleji. Výběr bodů grafu a statistiky sdílejí jeden průchod původními měřeními.

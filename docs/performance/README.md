@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Dávky posuvníku Průzkumníku](DAVKY_POSUVNIKU_PRUZKUMNIKU.md) porovnávají
+bloky hlavního vlákna a celé dokončení potvrzených výřezů (METEO-008).
+
 [Výběr bodů a statistiky Průzkumníku](VYBER_A_STATISTIKY_PRUZKUMNIKU.md)
 měří sdílený průchod při potvrzení výřezu s 1k–250k měřeními (METEO-008).
 

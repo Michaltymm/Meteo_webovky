@@ -2297,8 +2297,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02118"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.18</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02119"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.19</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5120,7 +5120,11 @@
     }
 
     function refreshTab(tab) {
-      if (analyticsActive() || currentPage === "modern2" || !tabDirtyState[tab]) return;
+      if (analyticsActive() || currentPage === "modern2") return;
+      if (!tabDirtyState[tab]) {
+        if (tab === "explorer") scheduleExplorerSliderJob();
+        return;
+      }
       if (tab === "now" && !currentChartCanRender()) { hideCurrentChart(); return; }
       const weatherChart = tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain";
       const waitingForChart = !chartLibraryReady() && chartTabs.has(tab);
@@ -5911,8 +5915,10 @@
     let expRange = "24h";
     let expAllPts = [];   // plný filtrovaný soubor bodů pro posuvník
     let expSliderPreview = false;
+    let explorerSliderJob = null;
     let explorerRangeCache = null;
     const EXPLORER_POINT_LIMIT = 800;
+    const EXPLORER_SLICED_RANGE = 75000;
 
     function invalidateDerivedData({ keepDataDiagnostics = false } = {}) {
       hideCurrentChart();
@@ -5937,6 +5943,7 @@
       el("batteryRecords").hidden = true;
       explorerRangeCache = null;
       expAllPts = [];
+      cancelExplorerSliderJob();
       setExplorerSliderPreview(false);
       el("expInterval").hidden = true;
       el("expInterval").textContent = "";
@@ -6012,6 +6019,10 @@
     }
 
     function explorerSeries(rows, metrics) {
+      return finishSteps(explorerSeriesSteps(rows, metrics));
+    }
+
+    function* explorerSeriesSteps(rows, metrics) {
       if (rows.length <= EXPLORER_POINT_LIMIT) {
         return { points: rows, summaries: metrics.map(({ fn }) => numericSummary(rows, fn)) };
       }
@@ -6031,7 +6042,7 @@
       });
       // Each metric visits every original point in order, even when the
       // sampler only retains a few of those points for the chart.
-      const points = sampleExtrema(rows, getters, EXPLORER_POINT_LIMIT);
+      const points = yield* sampleExtremaSteps(rows, getters, EXPLORER_POINT_LIMIT);
       return { points, summaries: summaries.map(({ min, max, sum, count }) => ({
         min: count ? min : null, max: count ? max : null, avg: count ? sum / count : null, count
       })) };
@@ -6057,6 +6068,8 @@
     }
 
     function setExpRange(r) {
+      cancelExplorerSliderJob();
+      setExplorerSliderPreview(false);
       expRange = r;
       document.querySelectorAll(".exp-range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === r));
       el("expCustomWrap").style.display = (r === "custom") ? "flex" : "none";
@@ -6140,6 +6153,8 @@
     }
 
     function buildExplorer() {
+      cancelExplorerSliderJob();
+      setExplorerSliderPreview(false);
       if (!store.rows.length || !chartLibraryReady()) return;
       const metric = el("expMetric").value;
 
@@ -6169,7 +6184,6 @@
 
       // --- Filtrování a řazení ---
       const rows = explorerRows(cutFrom, cutTo);
-      setExplorerSliderPreview(false);
 
       // Pro srážky denní – agregace max na den
       if (metric === "rain") {
@@ -6194,7 +6208,24 @@
       _drawExplorerPts(rows);
     }
 
-    function _drawExplorerPts(rows) {
+    const EXPLORER_METRICS = {
+      temp: { label: "Teplota", color: "#e74c3c", fn: r => r.temp, unit: "°C" },
+      hum: { label: "Vlhkost", color: "#2980b9", fn: r => r.hum, unit: "%" },
+      pressure: { label: "Tlak", color: "#27ae60", fn: r => r.pressure, unit: "hPa" },
+      dew: { label: "Rosný bod", color: "#16a085", fn: r => dewPoint(r.temp, r.hum), unit: "°C" },
+      absHum: { label: "Absolutní vlhkost (vypočteno)", color: "#16a085", fn: r => absoluteHumidity(r.temp, r.hum), unit: "g/m³" },
+      vpd: { label: "VPD vzduchu (vypočteno)", color: "#b9770e", fn: r => vaporPressureDeficit(r.temp, r.hum), unit: "kPa" },
+      rainInc: { label: "Přírůstek", color: "#2980b9", fn: r => r.rainInc, unit: "mm" },
+      voltage: { label: "Napětí", color: "#8e44ad", fn: r => r.voltage, unit: "V" },
+    };
+
+    function explorerMetricGroups(metric) {
+      const { temp, hum } = EXPLORER_METRICS;
+      return metric === "temp_hum" ? [{ ...temp, label: "🌡 Teplota" }, { ...hum, label: "💧 Vlhkost" }]
+        : [EXPLORER_METRICS[metric]];
+    }
+
+    function _drawExplorerPts(rows, prepared) {
       if (!chartLibraryReady()) return;
       renderIntervalComparison(rows);
       explorerRainRendered = false;
@@ -6211,22 +6242,8 @@
       }
       const metric = el("expMetric").value;
       chartExplorer.config.type = "line";
-
-      const METRICS = {
-        temp: { label: "Teplota", color: "#e74c3c", fn: r => r.temp, unit: "°C" },
-        hum: { label: "Vlhkost", color: "#2980b9", fn: r => r.hum, unit: "%" },
-        pressure: { label: "Tlak", color: "#27ae60", fn: r => r.pressure, unit: "hPa" },
-        dew: { label: "Rosný bod", color: "#16a085", fn: r => dewPoint(r.temp, r.hum), unit: "°C" },
-        absHum: { label: "Absolutní vlhkost (vypočteno)", color: "#16a085", fn: r => absoluteHumidity(r.temp, r.hum), unit: "g/m³" },
-        vpd: { label: "VPD vzduchu (vypočteno)", color: "#b9770e", fn: r => vaporPressureDeficit(r.temp, r.hum), unit: "kPa" },
-        rainInc: { label: "Přírůstek", color: "#2980b9", fn: r => r.rainInc, unit: "mm" },
-        voltage: { label: "Napětí", color: "#8e44ad", fn: r => r.voltage, unit: "V" },
-      };
-
-      const groups = metric === "temp_hum"
-        ? [{ ...METRICS.temp, label: "🌡 Teplota" }, { ...METRICS.hum, label: "💧 Vlhkost" }]
-        : [METRICS[metric]];
-      const { points: pts, summaries } = explorerSeries(rows, groups);
+      const groups = explorerMetricGroups(metric);
+      const { points: pts, summaries } = prepared ?? explorerSeries(rows, groups);
       const labels = pts.map(r => expRange === "24h" ? fmtTime(r.ts) : fmtDT(r.ts));
 
       if (metric === "temp_hum") {
@@ -6242,7 +6259,7 @@
         chartExplorer.options.scales.ySec.max = 100;
         el("expChartTitle").textContent = "Teplota & Vlhkost – " + expLabelFor(expRange);
       } else {
-        const m = METRICS[metric];
+        const m = groups[0];
         if (metric === "voltage") {
           const voltage = voltageSeries(pts, Infinity, rows);
           chartExplorer.data.labels = voltage.labels;
@@ -6415,16 +6432,61 @@
     }
 
     function setExplorerSliderPreview(pending) {
-      if (expSliderPreview === pending) return;
       expSliderPreview = pending;
-      setNodeText(el("expSliderHint"), pending ? "Uvolněte pro přepočet" : "Výřez grafu");
+      setNodeText(el("expSliderHint"), pending ? "Uvolněte pro přepočet" :
+        explorerSliderJob ? "Počítám výřez…" : "Výřez grafu");
+    }
+
+    function cancelExplorerSliderJob() {
+      if (!explorerSliderJob) return;
+      clearTimeout(explorerSliderJob.timer);
+      explorerSliderJob.steps.return();
+      explorerSliderJob = null;
+      setExplorerSliderPreview(false);
+    }
+
+    function explorerSliderVisible() {
+      return !document.hidden && (currentPage === "main" || currentPage === "modern") &&
+        document.querySelector(".tab-btn.active")?.dataset.tab === "explorer";
+    }
+
+    function scheduleExplorerSliderJob() {
+      const job = explorerSliderJob;
+      if (!job || job.timer !== null || !explorerSliderVisible()) return;
+      job.timer = setTimeout(() => runExplorerSliderJob(job), 0);
+    }
+
+    function runExplorerSliderJob(job) {
+      if (explorerSliderJob !== job) return;
+      job.timer = null;
+      if (!isCurrentStation(job.context) || job.source !== store.rows || job.length !== store.rows.length ||
+          job.selection !== expAllPts || job.metric !== el("expMetric").value || job.range !== expRange) {
+        cancelExplorerSliderJob();
+        return;
+      }
+      if (!explorerSliderVisible()) return;
+      try {
+        if (job.prepared) {
+          cancelExplorerSliderJob();
+          _drawExplorerPts(job.rows, job.prepared);
+          return;
+        }
+        const step = analyticsWorkSlice(job.steps);
+        // Give rendering its own task so it does not extend the last data slice.
+        if (step) job.prepared = step.value;
+        scheduleExplorerSliderJob();
+      } catch {
+        cancelExplorerSliderJob();
+        setNodeText(el("expSliderHint"), "Výřez se nepodařilo přepočítat.");
+      }
     }
 
     function expSliderCommit() {
-      if (expSliderPreview) expSliderUpdate();
+      if (expSliderPreview) expSliderUpdate(false, true);
     }
 
-    function expSliderUpdate(preview = false) {
+    function expSliderUpdate(preview = false, confirmed = false) {
+      cancelExplorerSliderJob();
       expSliderUpdateFill();
       if (!expAllPts.length) return;
       let l = parseFloat(el("expSliderL").value);
@@ -6441,7 +6503,18 @@
       }
       const pending = preview && to - from + 1 > 10000;
       setExplorerSliderPreview(pending);
-      if (!pending) _drawExplorerPts(expAllPts.slice(from, to + 1));
+      if (pending) return;
+      const rows = expAllPts.slice(from, to + 1);
+      if (confirmed && rows.length >= EXPLORER_SLICED_RANGE) {
+        const metric = el("expMetric").value;
+        explorerSliderJob = { context: stationContext(), source: store.rows, length: store.rows.length,
+          selection: expAllPts, metric, range: expRange, rows,
+          steps: explorerSeriesSteps(rows, explorerMetricGroups(metric)), timer: null, prepared: null };
+        setExplorerSliderPreview(false);
+        scheduleExplorerSliderJob();
+      } else {
+        _drawExplorerPts(rows);
+      }
     }
 
     /* ══════════════════════════════════════════════
@@ -8018,6 +8091,7 @@
       periodicRefresh("uv", uvStore.date === day || uvAttemptToday ? 3600000 : 0, fetchUVData, context);
       periodicRefresh("overview", 300000, fetchAllOv, context);
       refreshVisibleCurrentChart();
+      scheduleExplorerSliderJob();
     }
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
