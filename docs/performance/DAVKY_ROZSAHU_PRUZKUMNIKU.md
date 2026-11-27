@@ -45,7 +45,18 @@ třemi konfiguracemi. Prohlížeč nezaznamenal chyby stránky.
 
 ## Další krok
 
-Regrese napětí se dál počítá v závěrečném vykreslení. Z předchozího profilu
-je prioritou prověřit výběr posledních tří dnů pro regresi nad chronologicky
-ověřenou historií. Hustá data uvnitř okna musí dál vstupovat do predikce
-úplná a ve stejném pořadí.
+Regrese napětí se dál počítá v závěrečném vykreslení. Doplňkový offline
+pilot v mobilním profilu porovnal samotné sestavení řad napětí v osmi
+střídavých opakováních. Binární mez třídenního okna nad chronologickými
+daty zkrátila model z 17 na 4,5 ms při 250 000 pětiminutových měřeních.
+U 250 000 sekundových měření ležela celá historie v okně. Výpočet ve dvou
+průchodech se stejným pořadím součtů zkrátil model ze 74,5 na 27,5 ms.
+Všechny vykreslené řady a predikce se v pilotu přesně shodovaly.
+Před nasazením je třeba ověřit shody času, nulu a chybějící napětí,
+neuspořádané vstupy MQTT a cenu obou variant v běžném zobrazení.
+
+## Publikace
+
+Sestavení a nasazení `440823c` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #81](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46043976267)
