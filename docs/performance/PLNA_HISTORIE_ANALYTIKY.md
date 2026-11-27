@@ -29,6 +29,11 @@ u 100 000 přibylo 23,36 MiB a u 250 000 přibylo 58,19 MiB. Uvolnění
 jediné reference snížilo přírůstek pod 0,2 MiB ve všech měřených případech.
 Měření nezahrnuje celou RAM procesu.
 
+V dalším testu dvou plných 12 000řádkových exportů a třetí aktivní
+stanice v Moderním přehledu 2 klesla po vyprázdnění mezipaměti a GC
+JS halda o 4,47 MiB (medián tří běhů). Tento scénář měl krátké poznámky
+a slouží jako měření této konkrétní historie.
+
 Návrat A → B → A proběhl offline v Chromium při 390 px a CPU ×4
 s původními konfiguracemi, 12 000 pětiminutovými měřeními a prodlevou
 300 ms na každou odpověď historie. Tři střídavé měřené páry po zahřátí.
@@ -41,8 +46,18 @@ Výsledná kompletní historie se ve všech bězích shodovala.
 
 ## Ověření
 
-Prošlo 511/511 testů Node.js. Regrese ověřily HIT s jedinou kontrolou,
+Prošlo 511/511 testů Node.js. Regrese ověřily obnovení uložené historie s jedinou kontrolou,
 opravu i smazání staršího řádku, selhání přenosu, vypršení platnosti,
 změnu listu, zdroje či časové zóny, rozpočet a původní chování přehledů.
 Offline Chromium ověřil návrat v Analytice, její mřížku a Moderní
 přehled 2. Scénáře použily původní konfigurace a simulované CSV.
+
+Další krok METEO-004 je prověřit otevření Analytiky až po přechodu na
+stanici v běžném přehledu. Je potřeba zachovat novější rychlá data,
+ověřit shodu jejich měření s plnou kopií a změřit cenu této kontroly.
+
+## Publikace
+
+Sestavení a nasazení `a47cc5f` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #86](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46078863497)
