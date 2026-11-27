@@ -13,14 +13,47 @@ async def main():
   async def route(r):
    u=r.request.url;name=urlparse(u).path.split('/')[-1]
    if r.request.method!='GET':writes.append(u)
-   if u=='http://meteo.test/dev/':return await r.fulfill(body=Path('index.html').read_bytes(),content_type='text/html')
+   if u=='https://meteo.test/dev/':return await r.fulfill(body=Path('index.html').read_bytes(),content_type='text/html')
    if 'chart.js' in u:return await r.fulfill(body=Path(args.chartjs).read_bytes(),content_type='application/javascript',headers={'Access-Control-Allow-Origin':'*'})
    if 'paho-mqtt' in u:return await r.fulfill(body=Path(args.paho).read_bytes(),content_type='application/javascript',headers={'Access-Control-Allow-Origin':'*'})
    if name in configs:return await r.fulfill(json=configs[name])
    if 'docs.google.com' in u:return await r.fulfill(body='Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti\n05.11.2026,10:00:00,20,1010,50,0,0,,4.1',content_type='text/csv')
    if 'api.open-meteo.com' in u:return await r.fulfill(json={'hourly':{'uv_index':[0]*24}})
    return await r.abort()
-  await page.route('**/*',route);await page.goto('http://meteo.test/dev/');await page.wait_for_function('store.rows.length===1')
+  await page.route('**/*',route);await page.goto('https://meteo.test/dev/');await page.wait_for_function('store.rows.length===1')
+  source=page.locator('.status-bar button[title="Nastavení zdroje dat"]')
+  gear=page.locator('#gearMenuButton')
+  dialog=page.get_by_role('dialog',name='🔒 Nastavení – zadání hesla')
+  password=dialog.get_by_label('Heslo',exact=True)
+  await source.click()
+  assert await password.evaluate('e=>document.activeElement===e')
+  assert await dialog.evaluate('e=>e.matches(":modal")')
+  for _ in range(8):
+   await page.keyboard.press('Tab')
+   assert await page.evaluate('document.activeElement===document.body || el("pwOverlay").contains(document.activeElement)')
+  await dialog.get_by_role('button',name='Zrušit').focus()
+  await page.keyboard.press('Escape')
+  await dialog.wait_for(state='hidden')
+  await page.wait_for_function('document.activeElement.title==="Nastavení zdroje dat"')
+  await gear.focus();await page.keyboard.press('Enter')
+  assert await gear.get_attribute('aria-expanded')=='true'
+  await page.get_by_role('button',name='📋 Zdroj dat & nastavení…').click()
+  await password.fill('synthetic-invalid-password')
+  await password.press('Enter')
+  await dialog.get_by_role('status').get_by_text('Nesprávné heslo',exact=False).wait_for()
+  for width,height in [(320,640),(667,375),(1440,900)]:
+   await page.set_viewport_size({'width':width,'height':height})
+   bounds=await dialog.bounding_box()
+   assert bounds['x']>=0 and bounds['x']+bounds['width']<=width
+   assert bounds['y']>=0 and bounds['y']+bounds['height']<=height
+   assert (await dialog.get_by_role('button',name='Zrušit').bounding_box())['height']>=44
+  await dialog.get_by_role('button',name='Zrušit').tap()
+  await dialog.wait_for(state='hidden')
+  await page.wait_for_function('document.activeElement===el("gearMenuButton") && el("pwInput").value===""')
+  assert await gear.get_attribute('aria-expanded')=='false'
+  await source.click();await page.mouse.click(1,1);await dialog.wait_for(state='hidden')
+  await page.set_viewport_size({'width':375,'height':812})
+  checks.append('source settings: focus containment and restoration, Escape, bad entry, backdrop, mobile layout')
   await page.locator('.pill[title="Nastavení"]').click();await page.get_by_role('button',name='🔧 Nastavení meteostanice',exact=True).click()
   await page.wait_for_function('el("deviceSettings").open')
   for i in range(3):

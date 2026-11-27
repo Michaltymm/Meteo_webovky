@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.23.1
+
+- Dialog nastavení zdroje drží fokus uvnitř a zavře se klávesou Escape. Po zrušení vrací fokus k ovládacímu prvku, ze kterého byl otevřený.
+
 ## v0.23.0
 
 - V hlavním i moderním přehledu lze mezi záložkami grafů a statistik přecházet šipkami. Záložku otevře Enter nebo mezerník. Na telefonu mají záložky větší dotykovou plochu.

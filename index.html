@@ -486,7 +486,7 @@
       outline-offset: -3px;
     }
 
-    #dashboardTabList, .tab-pane {
+    #dashboardTabList, .tab-pane, #cfgDetails {
       scroll-margin-block-start: 112px;
     }
 
@@ -1947,31 +1947,23 @@
     }
 
     /* ── Password modal ── */
-    .pw-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
+    .pw-box::backdrop {
       background: rgba(0, 0, 0, .65);
       backdrop-filter: blur(3px);
-      align-items: center;
-      justify-content: center;
-    }
-
-    .pw-overlay.open {
-      display: flex;
     }
 
     .pw-box {
+      margin: auto;
       background: var(--bg3);
+      color: var(--text);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1.6rem 1.8rem;
-      min-width: 280px;
-      max-width: 340px;
-      width: 90%;
+      width: min(340px, calc(100% - 24px));
+      max-height: calc(100% - 24px);
       box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
     }
+    .pw-box form { padding: 1.2rem clamp(1rem, 5vw, 1.8rem); }
+    .pw-box label { display: block; font-size: .85rem; margin-bottom: .35rem; }
 
     .pw-title {
       font-size: .95rem;
@@ -1988,8 +1980,8 @@
       border-radius: 6px;
       padding: .5rem .8rem;
       font-size: .95rem;
+      min-height: 44px;
       margin-bottom: .75rem;
-      outline: none;
     }
 
     .pw-box input[type=password]:focus {
@@ -2010,6 +2002,7 @@
 
     .pw-btns button {
       flex: 1;
+      min-height: 44px;
       padding: .45rem;
       border-radius: 6px;
       border: none;
@@ -2207,7 +2200,7 @@
       .dd-item { white-space:normal; }
       .page-navigation { top:56px; height:104px; }
       #dashboardTabList .tab-btn { min-height:44px; }
-      #dashboardTabList, .tab-pane { scroll-margin-block-start:168px; }
+      #dashboardTabList, .tab-pane, #cfgDetails { scroll-margin-block-start:168px; }
       .page-navigation-inner { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); padding:5px .65rem; gap:.35rem; }
       .page-link { min-width:0; padding:.3rem; font-size:.78rem; line-height:1.25; text-align:center; border-radius:10px; }
       .sticky-bars { position:relative; top:auto; }
@@ -2234,7 +2227,7 @@
       .modern-intro { flex-direction:column; align-items:stretch; gap:.75rem; }
       @media(orientation:landscape) and (max-height:500px) {
         body>header, .page-navigation { position:relative; top:auto; }
-        #dashboardTabList, .tab-pane { scroll-margin-block-start:8px; }
+        #dashboardTabList, .tab-pane, #cfgDetails { scroll-margin-block-start:8px; }
       }
     }
   </style>
@@ -2315,8 +2308,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0230"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.23.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0231"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.23.1</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2338,7 +2331,8 @@
 
       <!-- ▸ Ozubené kolečko – rychlé nastavení -->
       <div class="dd-wrap">
-        <div class="pill" onclick="toggleDD('ddGear')" title="Nastavení">⚙</div>
+        <button type="button" class="pill" id="gearMenuButton" onclick="toggleDD('ddGear')" title="Nastavení"
+          aria-label="Nastavení" aria-controls="ddGear" aria-expanded="false">⚙</button>
         <div class="dd-menu" id="ddGear" style="min-width:230px">
           <div class="dd-label">Zdroj dat</div>
           <div class="gear-section" style="padding-top:.25rem">
@@ -2359,7 +2353,7 @@
           </div>
           <hr class="dd-sep">
           <button class="cfg-full-btn" style="min-height:44px" onclick="openDeviceSettings()">🔧 Nastavení meteostanice</button>
-          <button class="cfg-full-btn" onclick="toggleFullCfg()">📋 Zdroj dat &amp; nastavení…</button>
+          <button class="cfg-full-btn" type="button" onclick="toggleFullCfg(this)">📋 Zdroj dat &amp; nastavení…</button>
         </div>
       </div>
 
@@ -2507,19 +2501,18 @@
   <div id="ddOverlay" onclick="closeAllDD()" style="display:none;position:fixed;inset:0;z-index:99"></div>
 
   <!-- ── Password modal ── -->
-  <div class="pw-overlay" id="pwOverlay" onclick="_pwBgClick(event)">
-    <div class="pw-box">
-      <div class="pw-title">🔒 Nastavení – zadání hesla</div>
-      <input type="password" id="pwInput" placeholder="Heslo…"
-        onkeydown="if(event.key==='Enter')_pwConfirm();if(event.key==='Escape')_pwClose();"
-        autocomplete="current-password">
-      <div class="pw-err" id="pwErr"></div>
+  <dialog class="pw-box" id="pwOverlay" aria-labelledby="pwTitle" onclick="if(event.target===this)this.close()">
+    <form onsubmit="event.preventDefault();_pwConfirm()">
+      <h2 class="pw-title" id="pwTitle">🔒 Nastavení – zadání hesla</h2>
+      <label for="pwInput">Heslo</label>
+      <input type="password" id="pwInput" autocomplete="current-password" autofocus>
+      <div class="pw-err" id="pwErr" role="status"></div>
       <div class="pw-btns">
-        <button class="pw-ok" onclick="_pwConfirm()">Otevřít</button>
-        <button class="pw-cancel pw-btns" onclick="_pwClose()">Zrušit</button>
+        <button type="submit" class="pw-ok">Otevřít</button>
+        <button type="button" class="pw-cancel" onclick="el('pwOverlay').close()">Zrušit</button>
       </div>
-    </div>
-  </div>
+    </form>
+  </dialog>
 
   <div class="page-wrapper">
 
@@ -2528,7 +2521,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
         <span style="font-weight:700;font-size:.88rem;color:var(--accent)">⚙ Nastavení zdroje dat – <span
             id="cfgPanelStName"></span></span>
-        <button onclick="toggleFullCfg()"
+        <button type="button" onclick="closeSourceConfig()"
           style="background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1"
           title="Zavřít">×</button>
       </div>
@@ -2604,7 +2597,7 @@
           class="refresh-icon" aria-hidden="true">↻</span> Obnovit</button>
       <button class="partial-badge" id="partialBadge" onclick="fetchSheets(true)" style="display:none"
         title="Zobrazena jen poslední data – kliknutím načíst celou historii">⚡ Částečná historie · Načíst vše</button>
-      <button onclick="toggleFullCfg()"
+      <button type="button" onclick="toggleFullCfg(this)"
         style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:.2rem .7rem;font-size:.75rem;cursor:pointer"
         title="Nastavení zdroje dat">⚙ Nastavení</button>
     </div>
@@ -3758,53 +3751,80 @@
     function toggleDD(id) {
       const m = el(id), wasOpen = m.classList.contains("open");
       closeAllDD();
-      if (!wasOpen) { m.classList.add("open"); el("ddOverlay").style.display = "block"; }
+      if (!wasOpen) {
+        m.classList.add("open");
+        el("ddOverlay").style.display = "block";
+        if (id === "ddGear") el("gearMenuButton").setAttribute("aria-expanded", "true");
+      }
     }
     function closeAllDD() {
       document.querySelectorAll(".dd-menu").forEach(m => m.classList.remove("open"));
       el("ddOverlay").style.display = "none";
+      el("gearMenuButton").setAttribute?.("aria-expanded", "false");
     }
-    function toggleFullCfg() {
+    let sourceConfigTrigger = null;
+    let passwordAttempt = 0;
+    function restoreSourceConfigFocus() {
+      const trigger = sourceConfigTrigger;
+      sourceConfigTrigger = null;
+      if (trigger) (trigger.getClientRects().length ? trigger : el("gearMenuButton")).focus();
+    }
+    function closeSourceConfig() {
+      el("cfgDetails").style.display = "none";
+      restoreSourceConfigFocus();
+    }
+    function toggleFullCfg(trigger) {
+      const dialog = el("pwOverlay");
+      if (dialog.open) return;
       closeAllDD();
       const d = el("cfgDetails");
-      if (d.style.display === "none" || d.style.display === "") {
-        // Vyžaduj heslo před otevřením
-        el("pwInput").value = "";
-        el("pwErr").textContent = "";
-        el("pwOverlay").classList.add("open");
-        setTimeout(() => el("pwInput").focus(), 80);
-      } else {
-        d.style.display = "none";
-      }
+      if (d.style.display === "block") { closeSourceConfig(); return; }
+      closeInfoPopover();
+      sourceConfigTrigger = trigger && !el("ddGear").contains(trigger) ? trigger : el("gearMenuButton");
+      passwordAttempt++;
+      dialog.returnValue = "";
+      el("pwInput").value = "";
+      el("pwErr").textContent = "";
+      dialog.showModal();
     }
 
     const _CFG_HASH = "23c6f2640a9605f290255b4bc43d25d3e5afeedc60734067d8964dea5b4fff6b";
 
     async function _pwConfirm() {
-      const val = el("pwInput").value;
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(val));
+      const dialog = el("pwOverlay"), input = el("pwInput");
+      if (!dialog.open) return;
+      const attempt = ++passwordAttempt, value = input.value;
+      const stillCurrent = () => dialog.open && attempt === passwordAttempt && input.value === value;
+      let buf;
+      try {
+        buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+      } catch {
+        if (stillCurrent()) el("pwErr").textContent = "Ověření hesla se nepodařilo.";
+        return;
+      }
+      if (!stillCurrent()) return;
       const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
       if (hex === _CFG_HASH) {
-        _pwClose();
+        dialog.close("configuration");
         const d = el("cfgDetails");
         d.style.display = "block";
         el("cfgPanelStName").textContent = stations[activeIdx].name;
+        el("cfgStationName").focus({ preventScroll: true });
         d.scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
       } else {
         el("pwErr").textContent = "❌ Nesprávné heslo";
-        el("pwInput").select();
+        input.focus();
+        input.select();
       }
     }
 
-    function _pwClose() {
-      el("pwOverlay").classList.remove("open");
+    el("pwOverlay").addEventListener("close", event => {
+      const dialog = event.currentTarget;
+      if (dialog.open) return;
       el("pwInput").value = "";
       el("pwErr").textContent = "";
-    }
-
-    function _pwBgClick(e) {
-      if (e.target === el("pwOverlay")) _pwClose();
-    }
+      if (dialog.returnValue !== "configuration") restoreSourceConfigFocus();
+    });
 
     /* ── Rychlá změna zdroje z gear popup ── */
     function applyGearSource() {
@@ -3912,7 +3932,7 @@
       };
       try {
         _applyCfgObject(obj, "formulář", true);
-        document.getElementById("cfgDetails").style.display = "none";
+        closeSourceConfig();
       } catch (error) { configError(error.message); }
     }
 
