@@ -39,6 +39,11 @@ zmenšil z 12 na jednu. V obou verzích se při samotném pohybu fokusu
 neodeslal žádný požadavek. Po potvrzení Denních statistik Enterem před
 načtením plné historie následoval právě jeden plný požadavek Sheets.
 
+Prošlo 517 testů Node. Offline Chromium s původními třemi konfiguracemi
+ověřil všechny čtyři pohledy, nativní potvrzení Enterem i mezerníkem, návrat
+Shift+Tab, dotyk, viditelnost fokusu v obou tématech a na mobilu na výšku
+i na šířku. Použity byly simulované odpovědi. [Nasazení #89](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46080751183)
+
 ## Výběr karet podle stanice
 
 Od v0.14.0 otevřete „Upravit karty“ vedle výběru stanice. Zaškrtnutím vybíráte
