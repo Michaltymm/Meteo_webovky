@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.23
+
+- Velké exporty historie s několika záznamy mimo pořadí se řadí rychleji. Měření se stejným časem zachovávají pořadí z exportu.
+
 ## v0.21.22
 
 - Průzkumník u husté historie připravuje predikci napětí po dávkách, aby web během výpočtu dál reagoval. Vykreslí ji společně s naměřenými hodnotami.

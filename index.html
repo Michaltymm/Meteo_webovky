@@ -2301,8 +2301,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02122"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.22</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02123"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.23</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4917,17 +4917,25 @@
     }
 
     function* stableHistorySortSteps(rows) {
-      // A common descending export needs no merge buffer or reordering.
-      let ordered = true;
+      // A few out-of-order readings can leave long descending runs intact.
+      // Cap the scan's run metadata and use fixed-width merges on mixed input.
+      const maxRuns = 32;
+      let runs = [0];
       for (let i = 1; i < rows.length; i++) {
         if ((i & 1023) === 0) yield;
-        if (rows[i - 1].ts.getTime() < rows[i].ts.getTime()) { ordered = false; break; }
+        if (rows[i - 1].ts.getTime() >= rows[i].ts.getTime()) continue;
+        if (runs.length === maxRuns) { runs = null; break; }
+        runs.push(i);
       }
-      if (ordered) return rows;
+      if (runs?.length === 1) return rows;
+      if (runs) runs.push(rows.length);
+
       let source = rows, target = new Array(rows.length), work = 0;
-      for (let width = 1; width < rows.length; width *= 2) {
-        for (let start = 0; start < rows.length; start += 2 * width) {
-          const middle = Math.min(start + width, rows.length), end = Math.min(start + 2 * width, rows.length);
+      for (let width = 1; runs ? runs.length > 2 : width < rows.length; width *= 2) {
+        let nextBoundary = 1;
+        for (let start = 0, boundary = 1; start < rows.length; boundary += 2) {
+          const middle = runs ? runs[boundary] : Math.min(start + width, rows.length);
+          const end = runs ? runs[boundary + 1] ?? rows.length : Math.min(start + 2 * width, rows.length);
           let left = start, right = middle;
           for (let out = start; out < end; out++) {
             if ((++work & 1023) === 0) yield;
@@ -4935,7 +4943,11 @@
             target[out] = right >= end || (left < middle && source[left].ts.getTime() >= source[right].ts.getTime())
               ? source[left++] : source[right++];
           }
+          // Merged boundaries overwrite only the already consumed entries.
+          if (runs) runs[nextBoundary++] = end;
+          start = end;
         }
+        if (runs) runs.length = nextBoundary;
         const swap = source; source = target; target = swap;
       }
       return source;

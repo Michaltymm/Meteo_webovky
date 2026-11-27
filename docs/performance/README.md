@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Řazení sestupných úseků CSV](CSV_SERAZENE_USEKY.md) měří stabilní
+slučování a celý příjem téměř seřazené historie (METEO-008).
+
 [Dávky regrese napětí](DAVKY_REGRESE_NAPETI.md) měří zkrácení souvislé práce
 u hustého třídenního okna při zachování predikce (METEO-008/046).
 

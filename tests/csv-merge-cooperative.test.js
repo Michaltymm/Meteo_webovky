@@ -21,6 +21,32 @@ test('already descending and all-equal exports keep their original array without
  assert.equal(a.run('out===rows'),true);assert.ok(a.run('yields')>90);
  }
 });
+test('natural runs merge stably with odd counts and on both sides of the run limit', () => {
+ const a = app();
+ assert.equal(a.run(`[2, 3, 5, 31, 32, 33].every(count => {
+   const rows = Array.from({length: count}, (_, run) =>
+     Array.from({length: 269 + (run % 3)}, (_, i) =>
+       Object.freeze({ts: new Date((400 - Math.floor(i / 3)) * 1000), run, i}))).flat();
+   const expected = rows.slice().sort((a, b) => b.ts.getTime() - a.ts.getTime());
+   const sorted = finishSteps(stableHistorySortSteps(rows));
+   return sorted.length === expected.length && sorted.every((row, i) => row === expected[i]);
+ })`), true);
+});
+test('a nearly sorted large export keeps ties and skips unnecessary merge passes', () => {
+ const a = app();
+ assert.equal(a.run(`(() => {
+   const rows = Array.from({length: 100000}, (_, i) => ({
+     ts: new Date(1700000000000 - Math.floor(i / 3) * 1000), note: String(i)
+   }));
+   [rows[99893], rows[99961]] = [rows[99961], rows[99893]];
+   const expected = rows.slice().sort((a, b) => b.ts.getTime() - a.ts.getTime());
+   const steps = stableHistorySortSteps(rows);
+   let yields = 0, result;
+   do { result = steps.next(); if (!result.done) yields++; } while (!result.done);
+   return yields > 90 && yields < 400 && result.value.length === expected.length &&
+     result.value.every((row, i) => row === expected[i]);
+ })()`), true);
+});
 test('250k shuffled timestamps preserve every duplicate and yield during all merge passes',()=>{
  const a=app();assert.equal(a.run(`(()=>{
  const rows=Array.from({length:250000},(_,i)=>({ts:new Date((i*7919%86400)*1000),temp:i}));
