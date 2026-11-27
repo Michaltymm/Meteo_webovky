@@ -39,8 +39,16 @@ historie. Počet dočasných polí u srážek zůstal stejný.
 
 ## Ověření
 
-Prošlo 494/494 testů Node. Tři offline kontroly v Chromium prošly s
-původními konfiguracemi stanic a
-bez chyb stránky. Pokryly přepínání pohledů, oba moderní přehledy, podklady
-baterie a výběr posuvníkem v Průzkumníku. Test korelace má pevný výchozí čas,
-aby sousední dvojice měly skutečně shodné časové značky i při pomalém běhu.
+Prošlo 494/494 testů Node. Tři offline kontroly v Chromium prošly s původními
+konfiguracemi stanic a bez chyb stránky. Pokryly přepínání pohledů, oba moderní
+přehledy, podklady baterie a výběr posuvníkem v Průzkumníku. Test korelace má
+pevný výchozí čas, aby dvojice měly shodné časové značky i při pomalém běhu.
+
+Další měření v METEO-008 má rozlišit výběr vykreslovaných bodů a práci Chart.js
+při posunu výřezu. Opakované zobrazení u 250 000 měření stále trvalo 95 ms.
+
+## Publikace
+
+Sestavení a publikace `879d55d` z `codex-dev` proběhly úspěšně.
+Produkční `main` zůstala na `2405c5d`.
+[GitHub Actions #77](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45962107921)

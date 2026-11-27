@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.16 z `879d55d` nasadily [GitHub Actions #77](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45962107921). Prošlo 494/494 testů Node a tři kontroly v Chromium. `main` je na `2405c5d`. Dále METEO-008, oddělit cenu výběru bodů a vykreslení při posunu výřezu Průzkumníku.
 - v0.21.16 v METEO-008 počítá statistiky Průzkumníku přímo z původních řádků výřezu. U 250k měření (390 px, CPU ×4) statistiky teploty a vlhkosti 100,5 → 33,25 ms a dočasná pole 500 000 → 0 položek. Shoda řad a souhrnů u všech 12 scénářů. [Profil](docs/performance/STATISTIKY_PRUZKUMNIKU.md)
 - METEO-007: ověřena cena plošného uvolnění deseti grafů při odchodu na Moderní přehled 2. U 250k v mobilní simulaci 2,65 MiB JS heap úspory, opětovné otevření Průzkumníku 1 → 231,5 ms. Chování v0.21.15 zachováno. Dále METEO-008, dočasné řady statistik Průzkumníku. [Profil](docs/performance/PAMET_GRAFU.md)
 - METEO-056: obnoveny dvě offline regrese analytiky v Chromium 154, včetně devíti karet, tří konfigurací, ovládání nápovědy, uvolnění grafů a původních podkladů baterie. Obě prošly bez chyb stránky, Node 493/493. Aplikace je na v0.21.15. [Spuštění](docs/performance/README.md#prohlížečová-regrese-analytiky-meteo-056)
