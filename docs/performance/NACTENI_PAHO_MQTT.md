@@ -38,3 +38,16 @@ tématu a přijetí vzorku včetně nuly ještě před dostupností Chart.js. P�
 chybě knihovny se spojení k brokeru nevytvořilo a hodnota ze Sheets zůstala
 viditelná. Kontrolovalo se také ověření integrity CDN a fungování odložené
 Chart.js. Zkouška neprobíhala na živém brokeru.
+
+## Další krok
+
+METEO-056 má srovnat starší prohlížečové scénáře s aktuální navigací,
+nápovědou a odloženou konstrukcí grafů. Dvě dříve zaznamenané odchylky
+se týkají vstupu do bateriových podkladů a textu nápovědy.
+Viz [ověření po změně konstrukce grafu 24 h](KONSTRUKCE_GRAFU_24H.md#regrese).
+
+## Publikace
+
+[GitHub Actions #76](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45960076493)
+potvrdily sestavení a publikaci `8ce330d` z `codex-dev` za 55 s.
+Větev `main` při kontrole zůstala na revizi `2405c5d`.
