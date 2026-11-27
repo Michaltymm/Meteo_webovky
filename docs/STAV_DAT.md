@@ -26,6 +26,11 @@ pod 0,1 ms v obou verzích (31 vzorků po zahřátí). Měření zahrnuje obsluh
 stavu před vykreslením prohlížečem. Regresní test kontroluje limit 400
 řádků a znovupoužití souhrnu.
 
+Prošlo 517 testů Node. Chromium se třemi původními konfiguracemi a
+simulovanými zdroji ověřil klávesnici, dotyk, šířky 320–1440 px, čisté
+i smíšené zdroje a samostatně Moderní přehled 2. Nasazení verze v0.22.0
+z commitu `6fa356f` potvrdily [GitHub Actions #88](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46080013782).
+
 ## Kompaktní zobrazení od v0.18.9
 
 Panel je ve všech třech pohledech při načtení zavřený. Celý řádek **Stav dat**

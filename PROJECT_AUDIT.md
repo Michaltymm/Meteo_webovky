@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.22.0 z `6fa356f` nasadily [GitHub Actions #88](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46080013782). Prošlo 517/517 testů Node a offline Chromium se všemi čtyřmi pohledy a třemi konfiguracemi. První výpočet rozbaleného stavu 0,4 ms v mobilní simulaci, zavřený stav pod 0,1 ms v obou verzích. `main` je na `2405c5d`. Další krok METEO-010, klávesnicová navigace mezi statistikami a grafy v hlavním a moderním přehledu se zachovaným líným načítáním po potvrzení volby.
 - v0.22.0 v METEO-027 přidává v rozbaleném Stavu dat medián a nejdelší mezeru mezi různými časy z nejvýše 400 nedávných záznamů Sheets. Zahájení výpočtu je odložené do rozbalení. METEO-045 čeká na ověřený měřicí plán. [Metodika](docs/STAV_DAT.md#odstup-mezi-měřeními-od-v0220)
 - v0.21.26 z `fc3f415` nasadily [GitHub Actions #87](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46079444340). Prošlo 514/514 testů Node a tři offline kontroly Chromium. `main` je na `2405c5d`.
 - v0.21.26 v METEO-004 využívá plnou kopii po otevření Analytiky z běžného přehledu, pokud odpovídá všem ověřeným rychlým řádkům. V mobilním Chromium při 300ms prodlevě a 12k řádcích plná historie 730 → 42 ms, jeden plný požadavek a stejné přenesené bajty. Kontrola 400 řádků trvala v mediánu 1 ms. [Profil](docs/performance/OTEVRENI_ANALYTIKY_Z_CACHE.md)
