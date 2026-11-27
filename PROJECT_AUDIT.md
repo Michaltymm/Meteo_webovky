@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.26 z `fc3f415` nasadily [GitHub Actions #87](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46079444340). Prošlo 514/514 testů Node a tři offline kontroly Chromium. `main` je na `2405c5d`.
 - v0.21.26 v METEO-004 využívá plnou kopii po otevření Analytiky z běžného přehledu, pokud odpovídá všem ověřeným rychlým řádkům. V mobilním Chromium při 300ms prodlevě a 12k řádcích plná historie 730 → 42 ms, jeden plný požadavek a stejné přenesené bajty. Kontrola 400 řádků trvala v mediánu 1 ms. [Profil](docs/performance/OTEVRENI_ANALYTIKY_Z_CACHE.md)
 - v0.21.25 z `a47cc5f` nasadily [GitHub Actions #86](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46078863497). Prošlo 511/511 testů Node a tři offline kontroly Chromium. Dvě zkušební 12k historie držely 4,47 MiB JS haldy. Další METEO-004 ověří využití plné kopie při otevření Analytiky ze stejné stanice bez přepsání novější rychlé historie. `main` je na `2405c5d`.
 - v0.21.25 v METEO-004 vrací v Analytice ověřenou plnou historii Sheets do 12k řádků. Dvě položky, platnost 2 minuty, okamžitě označené uložené údaje a jediná plná kontrola. Mobilní Chromium při prodlevě 300 ms na odpověď naměřil zobrazení plného rozsahu 1 017 → 52 ms, požadavky na historii 2 → 1. Jedna 12k historie měla 2,91 MiB JS haldy. [Profil](docs/performance/PLNA_HISTORIE_ANALYTIKY.md)

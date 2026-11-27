@@ -44,3 +44,9 @@ hodnoty nebo poznámky mimo nejnovější řádek, kratší export a otevření
 Analytiky při rychlé obnově. Chromium ověřil otevření Analytiky po
 ověření rychlé historie, její mřížku a Moderní přehled 2. Prohlížeč
 použil původní konfigurace stanic a simulovaná data.
+
+## Publikace
+
+[GitHub Actions #87](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46079444340)
+úspěšně sestavily a nasadily změnu z commitu `fc3f415` z větve
+`codex-dev`. Produkční větev byla ověřena na `2405c5d`.
