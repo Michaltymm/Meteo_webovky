@@ -18,6 +18,10 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Paměť uložených grafů](PAMET_GRAFU.md) měří METEO-007 po přechodu z hlavního
+přehledu na Moderní přehled 2. Porovnává uvolněnou JS paměť a cenu nové
+konstrukce se stávajícím rychlým návratem.
+
 [Min/max vykreslení 24h](24H_MINMAX.md): METEO-033, nejvýše800 původních
 vzorků, společné T/RH/Td extrémy, per-metric mezery a přesné plné statistiky.
 

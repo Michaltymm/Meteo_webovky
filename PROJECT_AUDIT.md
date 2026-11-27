@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- METEO-007: ověřena cena plošného uvolnění deseti grafů při odchodu na Moderní přehled 2. U 250k v mobilní simulaci 2,65 MiB JS heap úspory, opětovné otevření Průzkumníku 1 → 231,5 ms. Chování v0.21.15 zachováno. Dále METEO-008, dočasné řady statistik Průzkumníku. [Profil](docs/performance/PAMET_GRAFU.md)
 - METEO-056: obnoveny dvě offline regrese analytiky v Chromium 154, včetně devíti karet, tří konfigurací, ovládání nápovědy, uvolnění grafů a původních podkladů baterie. Obě prošly bez chyb stránky, Node 493/493. Aplikace je na v0.21.15. [Spuštění](docs/performance/README.md#prohlížečová-regrese-analytiky-meteo-056)
 - v0.21.15: METEO-055 načítá Paho jen pro živý zdroj s konfigurací brokeru. Po dobu načtení sleduje poslední platný kontext stanice a používá stejné SRI. Při 300 ms prodlevě se teplota ze Sheets zobrazila za 501 → 234 ms, požadavky na Paho 1 → 0. Skutečný Paho se simulovaným WebSocketem přijal vzorek nové stanice, nezávisle na čekající Chart.js. Viz [profil](docs/performance/NACTENI_PAHO_MQTT.md).
 - v0.21.15 z `8ce330d` nasadily [GitHub Actions #76](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45960076493). Prošlo 493/493 testů Node a čtyři kontroly v Chromium. `main` je na `2405c5d`.
