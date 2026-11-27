@@ -38,3 +38,23 @@ nulu a rozlišení prázdných a neplatných buněk. Stávající sada prošla
 včetně hranic místního dne a letního času ve třech časových pásmech.
 Dvě offline kontroly Chromium ověřily výměnu velkého CSV, rušení
 načítání a Moderní přehled 2 se třemi původními konfiguracemi.
+
+## Ověření dalšího zrychlení lexeru
+
+Izolovaný prototyp četl neuzavřené textové úseky pomocí `slice`. V mobilním
+Chromium s CPU ×4 klesl čas samotného lexeru pro 250 000 směsných záznamů
+z 1 030 na 767 ms. Pole i pozice řádků se shodovaly. Samostatná kontrola
+100 000 řádků s jednou dlouhou poznámkou po GC naměřila 17,29 → 21,41 MiB.
+Podřetězec poznámky v tomto scénáři držel původní text.
+
+Varianta omezená na číselná pole měla 17,31 MiB a u směsného profilu
+250 000 řádků trvala 1 024 ms oproti 998 ms. Oba prototypy zůstaly v měření.
+Další kontrolní bod METEO-004 se vrací k plné historii stanice. Má změřit
+velikost zadržených dat, rychlost návratu a podmínky opětovného ověření
+zdroje v rámci rozpočtu paměti a platnosti mezipaměti.
+
+## Publikace
+
+Sestavení a nasazení `c0c98d2` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #85](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46077875285)
