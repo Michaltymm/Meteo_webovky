@@ -426,6 +426,59 @@ test('explorer voltage keeps cutoff ties and the complete interval for unsorted 
   })()`), true);
 });
 
+test('a prepared dense voltage chart keeps the regression cutoff through publication', () => {
+  const a = app();
+  a.run(`globalThis.regressionTime = Date.UTC(2026, 10, 24, 10);
+    Date.now = () => regressionTime;
+    globalThis.initialCutoff = regressionTime - 3 * 86400000;
+    store.rows = Array.from({ length: 90000 }, (_, i) => ({
+      ts: new Date(initialCutoff + (89999 - i) * 1000), voltage: i < 40000 ? 4 : 3.7
+    }));
+    store.fullLoaded = true;
+    el("expMetric").value = "voltage";
+    document.querySelector = () => ({ dataset: { tab: "explorer" } });
+    setExpRange("all");`);
+  for (let i = 0; i < 60 && !a.run('explorerRenderJob?.prepared'); i++) a.tick(0);
+  assert.equal(a.run('chartExplorer'), null);
+  assert.equal(a.run('explorerRenderJob?.prepared.voltage.cutoff'), a.run('initialCutoff'));
+  a.run(`const { points } = explorerRenderJob.prepared;
+    globalThis.expected = JSON.stringify(explorerVoltageSeries(points, expAllPts, initialCutoff).predicted);
+    regressionTime += 12 * 3600000;
+    globalThis.shifted = JSON.stringify(explorerVoltageSeries(points, expAllPts).predicted);`);
+  assert.notEqual(a.run('expected'), a.run('shifted'));
+  a.tick(0);
+  assert.equal(a.run('JSON.stringify(chartExplorer.data.datasets[1].data)'), a.run('expected'));
+  assert.match(a.nodes.get('expStats').innerHTML, /90000&nbsp;měření/);
+  assert.equal(a.run('explorerRenderJob'), null);
+});
+
+test('changing station during the voltage regression discards its unpublished result', () => {
+  const a = app(); fixture(a, 85000);
+  a.run(`const now = Date.now();
+    store.rows.forEach((row, i) => { row.ts = new Date(now - i * 1000); });
+    el("expMetric").value = "voltage";
+    document.querySelector = () => ({ dataset: { tab: "explorer" } });
+    const slopeSteps = voltageSlopeSteps;
+    globalThis.fitting = false;
+    voltageSlopeSteps = function* (rows, cutoff) {
+      fitting = true;
+      yield;
+      return yield* slopeSteps(rows, cutoff);
+    };
+    analyticsWorkSlice = steps => {
+      const result = steps.next();
+      return result.done ? result : null;
+    };
+    setExpRange("all");`);
+  for (let i = 0; i < 100 && !a.run('fitting'); i++) a.tick(0);
+  assert.equal(a.run('fitting && !explorerRenderJob.prepared'), true);
+  a.run('activeIdx = 1');
+  a.tick(0);
+  assert.equal(a.run('explorerRenderJob'), null);
+  assert.equal(a.run('chartExplorer'), null);
+  assert.equal(a.nodes.get('expRangeStatus').hidden, true);
+});
+
 test('rain tab fits all valid recent voltages and keeps the 500 measured display samples', () => {
   const a = app();
   a.run(`const end=Date.parse('2026-11-24T10:00:00Z');Date.now=()=>end;

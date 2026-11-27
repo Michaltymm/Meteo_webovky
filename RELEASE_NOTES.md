@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.22
+
+- Průzkumník u husté historie připravuje predikci napětí po dávkách, aby web během výpočtu dál reagoval. Vykreslí ji společně s naměřenými hodnotami.
+
 ## v0.21.21
 
 - Graf napětí v Průzkumníku rychleji připravuje predikci z dlouhé historie. Výpočet používá všechna platná měření napětí z posledních tří dnů, která spadají do zvoleného rozsahu.

@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Dávky regrese napětí](DAVKY_REGRESE_NAPETI.md) měří zkrácení souvislé práce
+u hustého třídenního okna při zachování predikce (METEO-008/046).
+
 [Regrese napětí Průzkumníku](REGRESE_NAPETI_PRUZKUMNIKU.md) měří
 zrychlené sestavení stejných řad a predikce na 1k–250k řádcích (METEO-008/046).
 

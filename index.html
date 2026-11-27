@@ -2301,8 +2301,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02121"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.21</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02122"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.22</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -5409,8 +5409,14 @@
     let chartMonthly = null, chartYearly = null;
 
     function voltageSlope(rows, cutoff) {
+      return finishSteps(voltageSlopeSteps(rows, cutoff));
+    }
+
+    function* voltageSlopeSteps(rows, cutoff) {
       let tSum = 0, vSum = 0, count = 0;
+      let work = 0;
       for (const row of rows) {
+        if ((++work & 1023) === 0) yield;
         const voltage = row?.voltage;
         if (!Number.isFinite(voltage)) continue;
         const time = row.ts.getTime();
@@ -5424,6 +5430,7 @@
       let denominator = 0, numerator = 0;
       // Keep the former order of each sum, including equal-time observations.
       for (const row of rows) {
+        if ((++work & 1023) === 0) yield;
         const voltage = row?.voltage;
         if (!Number.isFinite(voltage)) continue;
         const time = row.ts.getTime();
@@ -5435,10 +5442,10 @@
       return denominator > 0 ? numerator / denominator : null;
     }
 
-    function voltageSeries(rows, limit = Infinity, regressionRows = null, cutoff = Date.now() - 3 * 86400000) {
+    function voltageSeries(rows, limit = Infinity, regressionRows = null, cutoff = Date.now() - 3 * 86400000, preparedSlope) {
       const samples = rows.filter(r => Number.isFinite(r.voltage) && Number.isFinite(r.ts.getTime()))
         .sort((a, b) => a.ts - b.ts).slice(-limit);
-      const slope = voltageSlope(regressionRows || samples, cutoff);
+      const slope = preparedSlope === undefined ? voltageSlope(regressionRows || samples, cutoff) : preparedSlope;
       // No made-up prediction from a missing sensor or a single timestamp.
       const steps = slope === null || !samples.length ? 0 : Math.max(12, Math.round(samples.length / 4));
       const last = samples.at(-1);
@@ -5471,8 +5478,8 @@
       return voltageSeries(displayRows, limit, regressionRows, cutoff);
     }
 
-    function explorerVoltageSeries(points, rows, cutoff = Date.now() - 3 * 86400000) {
-      if (CFG.source !== "sheets") return voltageSeries(points, Infinity, rows, cutoff);
+    function explorerVoltageRows(rows, cutoff) {
+      if (CFG.source !== "sheets") return rows;
 
       // The Explorer reverses the descending Sheets range. Include every
       // observation at the boundary in the original ascending view order.
@@ -5482,8 +5489,12 @@
         if (rows[mid].ts.getTime() < cutoff) start = mid + 1;
         else end = mid;
       }
-      const recent = start ? rows.slice(start) : rows;
-      return voltageSeries(points, Infinity, recent, cutoff);
+      return start ? rows.slice(start) : rows;
+    }
+
+    function explorerVoltageSeries(points, rows, cutoff = Date.now() - 3 * 86400000, preparedSlope) {
+      const regressionRows = preparedSlope === undefined ? explorerVoltageRows(rows, cutoff) : null;
+      return voltageSeries(points, Infinity, regressionRows, cutoff, preparedSlope);
     }
 
     function selectCurrentChartRows(rows) {
@@ -6284,7 +6295,8 @@
       chartExplorer.config.type = "line";
       const groups = explorerMetricGroups(metric);
       const { points: pts, summaries } = prepared ?? explorerSeries(rows, groups);
-      const labels = pts.map(r => expRange === "24h" ? fmtTime(r.ts) : fmtDT(r.ts));
+      const formatTime = expRange === "24h" ? fmtTime : fmtDT;
+      const labels = metric === "voltage" ? null : pts.map(r => formatTime(r.ts));
 
       if (metric === "temp_hum") {
         chartExplorer.data.labels = labels;
@@ -6301,7 +6313,7 @@
       } else {
         const m = groups[0];
         if (metric === "voltage") {
-          const voltage = explorerVoltageSeries(pts, rows);
+          const voltage = explorerVoltageSeries(pts, rows, prepared?.voltage?.cutoff, prepared?.voltage?.slope);
           chartExplorer.data.labels = voltage.labels;
           chartExplorer.data.datasets = [
             { label: "Napětí [V]", borderColor: m.color, backgroundColor: m.color + "26", tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [], yAxisID: "yMain", data: voltage.actual },
@@ -6495,11 +6507,24 @@
       setExplorerSliderPreview(false);
     }
 
+    function* explorerRenderSteps(rows, metric) {
+      const result = yield* explorerSeriesSteps(rows, explorerMetricGroups(metric));
+      if (metric === "voltage") {
+        const cutoff = Date.now() - 3 * 86400000;
+        const recent = explorerVoltageRows(rows, cutoff);
+        if (recent.length >= EXPLORER_SLICED_RANGE) {
+          // Both passes use one cutoff even when the browser pauses the job.
+          result.voltage = { cutoff, slope: yield* voltageSlopeSteps(recent, cutoff) };
+        }
+      }
+      return result;
+    }
+
     function queueExplorerRender(rows, openingRange = false) {
       const metric = el("expMetric").value;
       explorerRenderJob = { context: stationContext(), source: store.rows, length: store.rows.length,
         selection: expAllPts, metric, range: expRange, rows, openingRange,
-        steps: explorerSeriesSteps(rows, explorerMetricGroups(metric)), timer: null, prepared: null };
+        steps: explorerRenderSteps(rows, metric), timer: null, prepared: null };
       if (openingRange) {
         if (activeInfo?.owner === el("expHumidityChange")) closeInfoPopover();
         setExplorerRangeStatus("Připravuji graf a statistiky…");
