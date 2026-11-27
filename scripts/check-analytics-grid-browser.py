@@ -81,8 +81,7 @@ async def main():
         await page.route('**/*', route)
         await page.goto('http://meteo.test/dev/')
         await page.wait_for_function('store.rows.length===400')
-        baseline = await page.evaluate('Object.keys(Chart.instances).length')
-        assert baseline == 8
+        assert await page.evaluate('Object.keys(Chart.instances).length === Number(chart24 !== null)')
         assert await page.evaluate('analyticsCharts.size') == 0
         await page.evaluate('''()=>{const original=analyticsSummarize;globalThis.gridSummaryCalls=0;
           analyticsSummarize=(...args)=>{gridSummaryCalls++;return original(...args)};}''')
@@ -93,6 +92,7 @@ async def main():
         # Preserve the dashboard's selected subtab across full-page navigation.
         await page.locator('.tab-btn[data-tab="daily"]').click()
         await page.wait_for_function('store.fullLoaded')
+        baseline = await page.evaluate('Object.keys(Chart.instances).length')
         before = len(requests)
         await page.locator('.page-link[data-page="analytics"]').click()
         await page.wait_for_function('(n)=>store.fullLoaded && store.rows.length===n', arg=row_count)
@@ -128,12 +128,13 @@ async def main():
             assert await page.evaluate('Object.keys(Chart.instances).length') == baseline+8
         await visit_cards()
         # Descriptive text is optional, never an always-visible paragraph or a
-        # hidden graph. Native details provide pointer and keyboard disclosure.
+        # hidden graph. The help trigger opens the shared panel.
         assert await page.locator('#anaGrid details.ana-info').count() == 9
         for card in range(9):
             info = page.locator(f'#anaCard{card} details.ana-info')
             assert not await info.evaluate('e=>e.open')
-            assert await info.locator('summary').inner_text() == 'Podrobnosti grafu'
+            assert await info.locator('summary').get_attribute('aria-label') == 'Podrobnosti grafu'
+            assert await info.locator('summary').get_attribute('aria-expanded') == 'false'
             assert await info.locator('.ana-description').count() == 1
             assert await info.locator(f'#anaNote{card}').count() == 1
             assert await info.locator('.ana-description').is_hidden()
@@ -145,18 +146,25 @@ async def main():
         await page.evaluate('globalThis.detailChart=analyticsCharts.get(0)')
         info = page.locator('#anaCard0 details.ana-info')
         summary = info.locator('summary')
-        await summary.click()
-        assert await info.evaluate('e=>e.open')
-        assert await info.locator('.ana-description').is_visible()
-        assert await info.locator('#anaNote0').is_visible()
-        await summary.focus()
-        await page.keyboard.press('Enter')
-        assert not await info.evaluate('e=>e.open')
+        popup = page.locator('#infoPopover')
+        await summary.scroll_into_view_if_needed()
+        await summary.hover()
+        await popup.wait_for(state='visible')
+        assert await popup.locator('.ana-description').is_visible()
+        assert await popup.locator('#anaNote0').is_visible()
+        await page.keyboard.press('Escape')
+        await popup.wait_for(state='hidden')
         assert await info.locator('#anaNote0').is_hidden()
-        await page.keyboard.press('Space')
-        assert await info.evaluate('e=>e.open')
-        await page.keyboard.press('Space')
-        assert not await info.evaluate('e=>e.open')
+        for key in ['Enter', 'Space']:
+            await summary.evaluate('node=>node.focus({preventScroll:true})')
+            await page.keyboard.press(key)
+            await popup.wait_for(state='visible')
+            assert await popup.locator('#anaNote0').is_visible()
+            await page.keyboard.press('Tab')
+            assert await popup.locator('.info-close').evaluate('node=>node===document.activeElement')
+            await page.keyboard.press('Escape')
+            await popup.wait_for(state='hidden')
+            assert await summary.evaluate('node=>node===document.activeElement')
         assert await page.evaluate('analyticsCharts.get(0)===detailChart')
         assert len(requests) == detail_requests
         # Graph controls and heatmap context remain separately reachable.
@@ -369,10 +377,11 @@ async def main():
         await page.wait_for_function('analyticsCharts.has(0)')
         assert await page.evaluate('analyticsCharts.size') < 8
         mobile_info = page.locator('#anaCard0 details.ana-info')
+        mobile_popup = page.locator('#infoPopover')
         assert not await mobile_info.evaluate('e=>e.open')
         await mobile_info.locator('summary').tap()
-        assert await mobile_info.locator('.ana-description').is_visible()
-        assert await mobile_info.locator('#anaNote0').is_visible()
+        assert await mobile_popup.locator('.ana-description').is_visible()
+        assert await mobile_popup.locator('#anaNote0').is_visible()
         await mobile_info.locator('summary').tap()
         assert await mobile_info.locator('#anaNote0').is_hidden()
         await page.locator('#anaCanvas0').evaluate("e=>e.scrollIntoView({block:'center'})")

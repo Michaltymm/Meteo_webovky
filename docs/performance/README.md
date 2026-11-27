@@ -1,5 +1,23 @@
 # Reprodukce měření výkonu
 
+## Prohlížečová regrese analytiky (METEO-056)
+
+Spusť z kořene projektu s Playwrightem, Chromium v `/usr/bin/chromium`
+a lokálními kopiemi Chart.js a Paho ve verzích z `index.html`.
+
+```sh
+python scripts/check-analytics-browser.py --chartjs "$chartjs" --output /tmp/meteo-battery.json
+python scripts/check-analytics-grid-browser.py --chartjs "$chartjs" --paho "$paho" --output /tmp/meteo-grid.json
+```
+
+Syntetická CSV a odpovědi služeb pokrývají všechny tři konfigurace. První
+scénář ověřuje výpočty baterie a vlhkosti, zdrojové řádky a stránkování.
+Druhý ověřuje devět karet, nápovědu myší, klávesnicí a dotykem, opakované
+uvolnění grafů a práci s chybějícími daty. Výsledky a snímky se uloží vedle
+zadaného výstupu. Pro měření latence a paměti slouží samostatné profily níže.
+
+## Výkonnostní profily
+
 [Min/max vykreslení 24h](24H_MINMAX.md): METEO-033, nejvýše800 původních
 vzorků, společné T/RH/Td extrémy, per-metric mezery a přesné plné statistiky.
 

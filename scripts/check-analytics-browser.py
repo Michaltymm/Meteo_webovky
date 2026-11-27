@@ -57,6 +57,24 @@ async def main():
                 await r.abort()
         await page.route('**/*',route)
         await page.goto('http://meteo.test/dev/')
+        popup = page.locator('#infoPopover')
+
+        async def open_info(owner):
+            trigger = page.locator(f'{owner} > summary')
+            if await trigger.get_attribute('aria-expanded') != 'true':
+                await trigger.evaluate('node=>node.focus({preventScroll:true})')
+                await page.keyboard.press('Enter')
+            await popup.wait_for(state='visible')
+            assert await trigger.get_attribute('aria-expanded') == 'true'
+
+        async def open_battery_records():
+            await open_info('#batterySensitivity')
+            records = popup.locator('#batteryRecords')
+            if not await records.evaluate('node=>node.open'):
+                await records.locator('summary').evaluate('node=>node.focus({preventScroll:true})')
+                await page.keyboard.press('Enter')
+            await page.wait_for_function('batteryRecordView!==null')
+
         for station in range(3):
             if station:
                 await page.locator('.tab-btn[data-tab="now"]').click()
@@ -65,14 +83,14 @@ async def main():
             if station == 0:
                 assert await page.locator('#curAbsHum').inner_text() == '8.62'
                 assert await page.locator('#curVPD').inner_text() == '1.166'
-                assert await page.evaluate('Object.keys(Chart.instances).length') == 8
+                assert await page.evaluate('Object.keys(Chart.instances).length===Number(chart24!==null)')
             before = len(requests)
             await page.locator('.tab-btn[data-tab="battery"]').click()
             if station == 0:
                 # Finish the full load in another tab: no hidden analysis charts.
                 await page.locator('.tab-btn[data-tab="now"]').click()
                 await page.wait_for_function('store.fullLoaded && store.rows.length===1000')
-                assert await page.evaluate('chartBatteryTime===null && Object.keys(Chart.instances).length===8')
+                assert await page.evaluate('chartBatteryTime===null && chartBatteryXY===null && Object.keys(Chart.instances).length===Number(chart24!==null)')
                 await page.locator('.tab-btn[data-tab="battery"]').click()
             await page.wait_for_function('store.fullLoaded && store.rows.length===1000 && el("batterySummary").textContent.startsWith("Celá dostupná")')
             assert len(requests)-before == 1
@@ -81,16 +99,15 @@ async def main():
             expected_count = 0 if station == 1 else sum(i%13 != 12 for i in range(1000))
             assert result['count'] == expected_count
             assert result['r'] is None if station else abs(result['r']-1)<1e-9
-            assert await page.evaluate('Object.keys(Chart.instances).length') == 10
+            assert await page.evaluate('chartBatteryTime && chartBatteryXY && Chart.getChart("chartBatteryXY")===chartBatteryXY')
             if station == 1:
                 assert await page.evaluate('chartBatteryXY.data.datasets[0].data.length') == 0
             if station == 2:
                 assert result['minV'] == 0
             sensitivity = result['sensitivity']
             assert sensitivity['status'] == ('ok' if station == 0 else 'days' if station == 1 else 'relationship')
-            if not await page.locator('#batterySensitivity').evaluate('(node)=>node.open'):
-                await page.locator('#batterySensitivity > summary').click()
             if station == 0:
+                await open_info('#batterySensitivity')
                 assert sensitivity['validDays'] == result['days']
                 expected_day = sensitivity['byR']['day']
                 before_day = len(requests)
@@ -102,13 +119,12 @@ async def main():
                 assert await page.evaluate('expAllPts.every(row=>localDateKey(row.ts)===el("expDateOne").value)')
                 await page.select_option('#expMetric','temp')
                 assert len(requests) == before_day
-                assert await page.evaluate('Object.keys(Chart.instances).length') == 10
+                assert await page.evaluate('Chart.getChart("chartExplorer")===chartExplorer')
                 await page.locator('.tab-btn[data-tab="battery"]').click()
                 assert await page.locator('#batteryRecordsBody tr').count() == 0
                 before_records = len(requests)
-                await page.locator('#batteryRecords summary').focus()
-                await page.keyboard.press('Enter')
-                await page.wait_for_function('batteryRecordView!==null')
+                records_charts = await page.evaluate('Object.keys(Chart.instances).length')
+                await open_battery_records()
                 assert await page.locator('#batteryRecordsBody tr').count() == 50
                 assert await page.locator('#appVersion').inner_text() in await page.locator('#batteryRecordsFormula').inner_text()
                 assert 'nikoli pouze tuto stránku' in await page.locator('#batteryRecordsFormula').inner_text()
@@ -128,13 +144,15 @@ async def main():
                     for theme in ['darkblue','light']:
                         await page.evaluate('(theme)=>setTheme(theme)',theme)
                         assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
-                    region = page.locator('.battery-record-scroll')
+                    await open_battery_records()
+                    region = popup.locator('.battery-record-scroll')
                     assert await region.evaluate('(node)=>node.scrollWidth>node.clientWidth')
                     await region.focus()
                     await page.keyboard.press('ArrowRight')
-                await page.locator('#batteryRecords').screenshot(path=str(output.with_name(output.stem+'-records.png')))
+                await popup.screenshot(path=str(output.with_name(output.stem+'-records.png')))
                 assert len(requests) == before_records
-                assert await page.evaluate('Object.keys(Chart.instances).length') == 10
+                assert await page.evaluate('Object.keys(Chart.instances).length') == records_charts
+                await page.keyboard.press('Escape')
                 await page.select_option('#batteryRange','7')
                 assert await page.evaluate('batteryRecordView===null && !el("batteryRecords").open')
                 assert await page.locator('#batteryRecordsBody tr').count() == 0
@@ -149,14 +167,14 @@ async def main():
             for range_value in ['7','30','all']:
                 await page.select_option('#batteryRange',range_value)
             assert len(requests) == network_before
-            await page.locator('#batteryMethod summary').click()
-            assert 'SOC, kapacita ani energie' in await page.locator('#batteryMethod').inner_text()
+            await open_info('#batteryMethod')
+            assert 'SOC, kapacita ani energie' in await popup.inner_text()
             for theme in ['darkblue','light']:
                 await page.evaluate('(theme)=>setTheme(theme)',theme)
                 assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
             if station == 0:
                 await page.locator('#tab-battery').screenshot(path=str(output.with_suffix('.png')))
-            await page.locator('#batteryMethod summary').click()
+            await page.keyboard.press('Escape')
             await page.locator('.tab-btn[data-tab="explorer"]').click()
             for metric in ['absHum','vpd']:
                 await page.select_option('#expMetric',metric)
@@ -168,11 +186,11 @@ async def main():
             await page.evaluate('setExpRange("all")')
             humidity_panel = page.locator('#expHumidityChange')
             assert await humidity_panel.is_visible()
-            await humidity_panel.locator('summary').click()
+            await open_info('#expHumidityChange')
             initial_text = await page.locator('#expHumidityChangeValue').inner_text()
             assert 'Výsledný poměr RH: ×1.0000' in initial_text
             assert 'UTC+02:00' in initial_text
-            assert 'kalibrace čidla mezi body nejsou ověřeny' in await humidity_panel.inner_text()
+            assert 'kalibrace čidla mezi body nejsou ověřeny' in await popup.inner_text()
             before_slider = len(requests)
             await page.evaluate('el("expSliderL").value="20";el("expSliderR").value="80";expSliderUpdate()')
             assert initial_text != await page.locator('#expHumidityChangeValue').inner_text()
@@ -187,10 +205,14 @@ async def main():
                       .filter(node=>node.getBoundingClientRect().right>innerWidth+1)
                       .map(node=>({id:node.id,cls:node.className,right:node.getBoundingClientRect().right})).slice(0,20)''')
             if station == 0:
-                await humidity_panel.screenshot(path=str(output.with_name(output.stem+'-humidity.png')))
-            await humidity_panel.locator('summary').click()
+                await open_info('#expHumidityChange')
+                await popup.screenshot(path=str(output.with_name(output.stem+'-humidity.png')))
+            await page.keyboard.press('Escape')
             results.append({'station':station,'pairs':result['count'],'r':result['r'],
                 'fullRequestsOnOpen':len(requests)-before,'rangeAddsRequests':0,'checks':'passed'})
+        await page.locator('.tab-btn[data-tab="now"]').click()
+        await page.locator('#chart24h').scroll_into_view_if_needed()
+        await page.wait_for_function('chart24!==null')
         assert await page.evaluate('chart24.options.animation===false && chartExplorer.options.animation===false')
         css = await page.evaluate('el("refreshBtn").classList.add("spinning");getComputedStyle(el("refreshBtn")).animationName')
         assert css == 'none'
@@ -210,8 +232,7 @@ async def main():
         await page.select_option('#batteryRange','all')
         assert await page.evaluate('batteryAnalysis("all").maxV') == .02
         assert await page.evaluate('store.rows.length') == 1000
-        await page.locator('#batteryRecords summary').click()
-        await page.wait_for_function('batteryRecordView!==null')
+        await open_battery_records()
         assert await page.evaluate('batteryRecordsPage().rows.some(r=>r.voltage==="0" && r.reason==="Použitý pár T/V")')
         await page.locator('#batteryRecords summary').click()
         await page.wait_for_function('batteryRecordView===null')
@@ -244,8 +265,10 @@ async def main():
           document.querySelector('.tab-btn[data-tab="battery"]').click();buildBatteryAnalysis();
         }''')
         assert await page.evaluate('batteryAnalysis("all").sensitivity.byR.day') == '2026-10-21'
-        assert 'vynecháno 20, zbývá 60 párů' in await page.locator('#batterySensitivityValue').inner_text()
-        await page.locator('#batterySensitivity').screenshot(path=str(output.with_name(output.stem+'-sensitivity.png')))
+        await open_info('#batterySensitivity')
+        sensitivity_text = await popup.locator('#batterySensitivityValue').inner_text()
+        assert 'vynecháno 20, zbývá 60 párů' in sensitivity_text, sensitivity_text
+        await popup.screenshot(path=str(output.with_name(output.stem+'-sensitivity.png')))
         await page.locator('#batterySlopeDay').click()
         assert await page.locator('#expDateOne').input_value() == '2026-10-21'
         assert await page.evaluate('expAllPts.length') == 20
@@ -253,9 +276,8 @@ async def main():
           store.rows.forEach(row=>{if(row.ts.getDate()!==21){row.temp=20;row.voltage=4;}});
           invalidateDerivedData();document.querySelector('.tab-btn[data-tab="battery"]').click();buildBatteryAnalysis();
         }''')
-        assert '1 nedostupných' in await page.locator('#batterySensitivityValue').inner_text()
-        await page.locator('#batteryRecords summary').click()
-        await page.wait_for_function('batteryRecordView!==null')
+        await open_battery_records()
+        assert '1 nedostupných' in await popup.locator('#batterySensitivityValue').inner_text()
         await page.select_option('#batteryRecordsKind','undefinedDay')
         assert await page.locator('#batteryRecordsBody tr').count() == 20
         assert 'r = –, sklon = –' in await page.locator('#batteryRecordsInfo').inner_text()
