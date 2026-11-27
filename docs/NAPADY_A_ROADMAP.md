@@ -78,7 +78,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 
 | ID / název a přínos | Data | N / P | Dopad na výkon | Závislosti | Stav |
 | --- | --- | --- | --- | --- | --- |
-| METEO-013 Absolutní vlhkost, VPD, rozdíl T−Td: obsah páry a podmínky kondenzace | Současná T + RH ve stejném řádku | N / P1 | v0.4.0 AH/VPD aktuálně i v průzkumníku hotové; T−Td dále, nulové RH neznamená platný Td | Testované jednotky/vzorce a vodní reference, RH 0–100 | Rozpracováno |
+| METEO-013 Absolutní vlhkost, VPD, rozdíl T−Td: obsah páry a podmínky kondenzace | Současná T + RH ve stejném řádku | N / P1 | v0.4.0 AH/VPD, v0.25.0 odstup T−Td v Průzkumníku | Odstup pro 0 < RH ≤ 100 % a T/Td od −40 do 50 °C | Dokončeno |
 | METEO-014 Teplotní amplituda, trendy 1/3/6/24 h a rychlost °C/h | Současná T + skutečné Δt | S / P1 | Agregace O(n), cache po revizi | METEO-048, mezery v měření | Připraveno k realizaci |
 | METEO-015 Mrazové/letní/tropické dny a hodiny pod nulou | Současná historie T | S / P2 | O(n), malé denní agregace | METEO-038,048; interpolace jen přes malé mezery | Nápad |
 | METEO-016 Tlakové trendy hPa/h, 3/6/24 h, rekordní vzestupy/poklesy | Současný tlak | S / P1 | O(n), bez nového fetch | Ověřit absolutní/redukovaný tlak, METEO-048 | Připraveno k realizaci |
@@ -2890,3 +2890,13 @@ Výchozí velikost je 100 řádků a alternativní 500.
 Offline Chromium, šířka 375 px, čtyřnásobné zpomalení CPU. Medián tří měření
 po zahřátí. Stejná syntetická historie a obsluha vykreslení tabulky. Před
 změnou volba Vše, po změně výchozí stránka. Měření nezahrnuje síť ani parser.
+
+
+## METEO-012/013 — odstup od rosného bodu, v0.25.0
+
+Průzkumník počítá z teploty a relativní vlhkosti ve stejném řádku.
+Od teploty odečítá nezaokrouhlený rosný bod z Magnusova vztahu nad
+kapalnou vodou (a = 17,625 a b = 243,04 °C). Při RH 100 % je odstup
+nula. Výpočet vyžaduje 0 < RH ≤ 100 % a T i Td v rozsahu −40 až 50 °C.
+Mimo obor zůstává mezera v datech. Souhrny se počítají z úplného
+výřezu a vzorkování se používá až pro graf.

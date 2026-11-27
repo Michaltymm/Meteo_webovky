@@ -8,10 +8,10 @@ práce potřebné k rozhodnutí o vydání z `codex-dev`.
 | Priorita | Úkol | Podmínka uzavření |
 | --- | --- | --- |
 | P0 | Ověření správnosti a bezpečnosti před vydáním (METEO-056, bezpečnostní roadmapa) | Cílená kontrola změn od posledního auditu, úplná sada regresí, ověření originálů a výsledků na velké historii. Potvrzené závažné nálezy opravit nebo zdůvodnit blokaci. |
-| P1 | Dialog a návrat fokusu v nastavení zdroje (METEO-010) | Ověřit otevření oběma cestami, Escape, fokus a mobilní zobrazení. |
+| P1 | Dialog a návrat fokusu v nastavení zdroje (METEO-010) | Hotovo ve v0.23.1. Ověřeny obě cesty otevření, Escape, návrat fokusu a mobilní zobrazení. |
 | P1 | Stránkování historie bez omezení přístupu k originálům (METEO-040) | Hotovo ve v0.24.0. Vykresluje nejvýše 500 měření a zpřístupňuje libovolnou stránku včetně nejstarší. |
 | P1 | Závěrečný profil načítání, CSV, historie a grafů (METEO-007/008/056) | Srovnat v0.23.0 s výsledkem na stejných vstupech, včetně největšího reprodukovatelného scénáře. Řešit jen doloženou regresi nebo významnou překážku. Ověřit čtyři pohledy i chybové stavy. |
-| P2 | Odstup od rosného bodu (METEO-012/013) | Zpřístupnit rozdíl T−Td a původ hodnot v existujícím přehledu či grafu. Ověřit výpočet, chybějící vstupy a meze vzorce. |
+| P2 | Odstup od rosného bodu (METEO-012/013) | Hotovo ve v0.25.0 v Průzkumníku grafů. Podmínky a výpočet jsou uvedeny u veličiny. |
 
 Externě blokované jsou řízení ESP a ověření živých oprávnění služeb,
 inkrementální historie s opravami a mazáním (METEO-006), dostupnost

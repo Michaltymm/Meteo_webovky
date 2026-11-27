@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.25.0
+
+- Průzkumník grafů nabízí odstup od rosného bodu. Ukazuje, o kolik stupňů by se vzduch musel ochladit k nasycení při stejném tlaku vodní páry.
+
 ## v0.24.0
 
 - Historie má stránky po 100 nebo 500 měřeních a přímý skok na nejnovější či nejstarší záznam. Díky tomu se dlouhá historie otevírá plynuleji.

@@ -38,12 +38,23 @@ test('current derived cards use the same row and clear when either sensor disapp
   assert.equal(a.nodes.get('curAbsHum').textContent, '0.00');
 });
 
+test('dew point spread uses unrounded liquid-water dew point and rejects unsupported pairs', () => {
+  const a = app();
+  close(a.run('dewPointSpread(20,50)'), 10.739, .001);
+  assert.equal(a.run('dewPoint(20,50)'), 9.3);
+  for (const temperature of [-40, 0, 50]) {
+    assert.equal(a.run(`dewPointSpread(${temperature},100)`), 0);
+  }
+  for (const pair of ['20,0','20,101','20,null','null,100','NaN,100','-41,100','51,100','-40,50']) {
+    assert.equal(a.run(`dewPointSpread(${pair})`), null);
+  }
+});
+
 test('derived explorer statistics use full original measurements, not the reduced graph', () => {
   const a = app();
-  for (const metric of ['absHum','vpd']) {
+  for (const [metric, fn] of [['absHum','absoluteHumidity'],['vpd','vaporPressureDeficit'],['dewSpread','dewPointSpread']]) {
     a.run(`store.rows=Array.from({length:10000},(_,i)=>({ts:new Date(Date.now()-i*60000),temp:i===17?50:20,hum:i%13===0?null:50}));
       el('expMetric').value='${metric}';expRange='all';buildExplorer()`);
-    const fn = metric === 'absHum' ? 'absoluteHumidity' : 'vaporPressureDeficit';
     assert.equal(a.run(`chartExplorer.data.datasets[0].data.includes(${fn}(50,50))`), true);
     assert.equal(a.run('expAllPts.length'), 10000);
     assert.ok(a.run('chartExplorer.data.labels.length') <= 800);

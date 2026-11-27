@@ -212,6 +212,16 @@ async def main():
         assert await page.locator('#histTableBody tr').count()==500
         assert (await page.locator('#historyRange').text_content()).startswith('1–500')
         assert len(requests)==before_paging
+        await page.locator('#dashboardTab-explorer').tap()
+        await page.locator('#expMetric').select_option('dewSpread')
+        assert await page.locator('#expDewSpreadNote').is_visible()
+        assert 'vypočteno' in await page.locator('#expChartTitle').inner_text()
+        assert await page.evaluate('chartExplorer.data.datasets[0].data.some(value=>Number.isFinite(value)&&value>0)')
+        assert not await page.evaluate('document.documentElement.scrollWidth>innerWidth')
+        await page.locator('#expMetric').select_option('temp')
+        assert await page.locator('#expDewSpreadNote').is_hidden()
+        assert len(requests)==before_paging
+        await page.locator('#dashboardTab-hist').tap()
         await page.set_viewport_size({'width':1440,'height':1050})
         await page.wait_for_load_state('networkidle')
         await page.evaluate('''()=>{globalThis.savedRows=store.rows;globalThis.navigationFetches=[];
