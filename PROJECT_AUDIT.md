@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.17 z `7ad1b86` nasadily [GitHub Actions #78](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45977524767). Prošlo 495/495 testů Node a prohlížečové zkoušky myši, klávesnice i dotyku. `main` je na `2405c5d`. Dále METEO-008, pilot sdíleného průchodu výběrem vzorků a statistikami po uvolnění posuvníku.
 - v0.21.17 v METEO-008 zobrazuje okamžité hranice výřezu nad 10k a přepočítá jej po uvolnění. Chromium při 250k (390 px, CPU ×4) naměřil deset obsluh `input` 876,5 → 9 ms a kreslení 10 → 1. Konečný výsledek a statistiky shodné v osmi scénářích. [Profil](docs/performance/POSUVNIK_PRUZKUMNIKU.md)
 - v0.21.16 z `879d55d` nasadily [GitHub Actions #77](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45962107921). Prošlo 494/494 testů Node a tři kontroly v Chromium. `main` je na `2405c5d`. Dále METEO-008, oddělit cenu výběru bodů a vykreslení při posunu výřezu Průzkumníku.
 - v0.21.16 v METEO-008 počítá statistiky Průzkumníku přímo z původních řádků výřezu. U 250k měření (390 px, CPU ×4) statistiky teploty a vlhkosti 100,5 → 33,25 ms a dočasná pole 500 000 → 0 položek. Shoda řad a souhrnů u všech 12 scénářů. [Profil](docs/performance/STATISTIKY_PRUZKUMNIKU.md)

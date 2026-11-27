@@ -47,3 +47,9 @@ náhledu po změně dat. Chromium s 12 000 měřeními ověřil tažení myší 
 graf se vykreslil jednou a jeho krajní bod a počet měření odpovídaly výřezu.
 Offline kontrola baterie a vlhkosti prošla se třemi původními konfiguracemi.
 Při kontrolách se neobjevily chyby stránky. Skutečný iOS nebyl součástí měření.
+
+## Publikace
+
+GitHub Actions ověřily sestavení a nasadily `7ad1b86` z `codex-dev`.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #78](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45977524767)
