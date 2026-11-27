@@ -79,6 +79,21 @@ uložená měření parseru a neopakovat hotovou filtraci/validaci/comparator.
 Podle nákladů vybrat další malou úpravu; další dávkování sortu/worker až
 po posouzení reálné potřeby a režie, cizí parsery/streaming samostatně.
 
+## Pilot využití seřazených úseků
+
+V0.21.22 už velké aktivní exporty řadí stabilním dávkovaným slučováním.
+Izolovaný pilot porovnal tuto cestu se slučováním existujících sestupných
+úseků. Prototyp sleduje nejvýše 32 úseků, při častějším porušení pořadí
+přejde ke stávajícímu slučování. Offline Chromium 154, 390 px, CPU ×4,
+šest párů po zahřátí. Test zachoval identitu i pořadí všech záznamů včetně
+duplicit. Časy měří součet práce dávkovaného řazení nad připravenými řádky.
+
+Při 250 000 záznamech se dvěma prohozenými řádky klesl medián z 213,5 na
+34 ms. V sestupně seřazeném scénáři zůstala obsluha kolem 6 ms. U silně
+promíchaných dat byl výsledek smíšený a při 100 000 záznamech pilot
+naměřil 225,5 → 282,5 ms. Případná implementace potřebuje izolované
+ověření ceny záložní cesty a měření celého příjmu CSV.
+
 ## Reprodukce
 
 ```bash

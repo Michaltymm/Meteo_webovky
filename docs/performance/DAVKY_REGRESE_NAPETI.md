@@ -47,3 +47,9 @@ Offline Chromium změnil veličinu během rozpracovaného výpočtu při
 1440 px klávesnicí a při 390 px dotykem. Zobrazil se jen nový výsledek.
 Oba grafy napětí daly se všemi původními konfiguracemi stejné výsledky
 jako v0.21.21. Prošel také Moderní přehled 2.
+
+## Publikace
+
+Sestavení a nasazení `6eefb14` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #83](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46045411462)
