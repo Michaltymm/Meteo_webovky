@@ -2301,8 +2301,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02124"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.24</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02125"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.25</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3867,7 +3867,9 @@
       if (context && !isCurrentStation(context)) return;
       const validated = normalizeStationConfig(obj, activeIdx, stations[activeIdx]);
       const savedHistory = quickStationHistory.get(activeIdx);
-      if (!context || (savedHistory && !quickHistoryMatches(savedHistory, validated))) quickStationHistory.delete(activeIdx);
+      if (!context || (savedHistory && !stationHistoryMatches(savedHistory, validated))) quickStationHistory.delete(activeIdx);
+      const savedFull = fullStationHistory.get(activeIdx);
+      if (!context || (savedFull && !stationHistoryMatches(savedFull, validated))) fullStationHistory.delete(activeIdx);
       if (!context) {
         cancelStationWork();
         resetStationStore();
@@ -4577,17 +4579,25 @@
       finally { finishSheetsStep(timing, "transfer", start); }
     }
 
-    const QUICK_HISTORY_TTL_MS = 120000;
+    const STATION_HISTORY_TTL_MS = 120000;
     const QUICK_HISTORY_MAX_ROWS = 400;
     const QUICK_HISTORY_MAX_TEXT_LENGTH = 65536;
     const quickStationHistory = new Map();
+    const FULL_HISTORY_MAX_ROWS = 12000;
+    const FULL_HISTORY_MAX_TEXT_LENGTH = 768 * 1024;
+    const FULL_HISTORY_MAX_ENTRIES = 2;
+    const fullStationHistory = new Map();
 
-    function quickHistoryMatches(entry, config) {
+    function stationHistoryMatches(entry, config) {
       return config.source === "sheets" && config.sheetId === entry.sheetId && config.sheetName === entry.sheetName;
     }
 
-    function quickHistoryTimeZone() {
+    function stationHistoryTimeZone() {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    }
+
+    function explicitHistoryDates(rows) {
+      return rows.every(row => /^\d{1,2}\.\d{1,2}\.\d{2}(?:\d{2})?\.?$/.test(row.date.replace(/[\s\u200B]/g, "")));
     }
 
     function saveQuickStationHistory(context, text) {
@@ -4597,27 +4607,54 @@
       if (store.fullLoaded || !acceptedValidation?.complete || acceptedValidation.scope !== "partial" ||
           store.rows.length < 1 || store.rows.length > QUICK_HISTORY_MAX_ROWS || text.length > QUICK_HISTORY_MAX_TEXT_LENGTH ||
           // A quick export with inferred years needs parsing against the current clock.
-          acceptedValidation.rejected || store.rows.some(row => !/^\d{1,2}\.\d{1,2}\.\d{2}(?:\d{2})?\.?$/.test(row.date.replace(/[\s\u200B]/g, "")))) {
+          acceptedValidation.rejected || !explicitHistoryDates(store.rows)) {
         quickStationHistory.delete(index);
         return;
       }
       quickStationHistory.set(index, {
         sheetId: config.sheetId, sheetName: config.sheetName, rows: store.rows,
-        text, validation: acceptedValidation, successAt, timeZone: quickHistoryTimeZone(),
+        text, validation: acceptedValidation, successAt, timeZone: stationHistoryTimeZone(),
       });
     }
 
-    function restoreQuickStationHistory(context) {
-      const entry = quickStationHistory.get(context.index);
+    function saveFullStationHistory(context, text) {
+      const { index, config } = context;
+      if (!isCurrentStation(context) || config.source !== "sheets") return;
+      const { acceptedValidation, successAt } = dataStatus.sheets;
+      const previous = fullStationHistory.get(index);
+      fullStationHistory.delete(index);
+      if (!store.fullLoaded || !acceptedValidation?.complete || acceptedValidation.scope !== "full" ||
+          acceptedValidation.rejected || !store.rows.length || store.rows.length > FULL_HISTORY_MAX_ROWS ||
+          text.length > FULL_HISTORY_MAX_TEXT_LENGTH) return;
+      if (previous?.rows !== store.rows && !explicitHistoryDates(store.rows)) return;
+      for (const [key, entry] of fullStationHistory) {
+        if (successAt - entry.successAt >= STATION_HISTORY_TTL_MS) fullStationHistory.delete(key);
+      }
+      fullStationHistory.set(index, {
+        sheetId: config.sheetId, sheetName: config.sheetName, rows: store.rows,
+        text, validation: acceptedValidation, successAt, timeZone: stationHistoryTimeZone(),
+      });
+      if (fullStationHistory.size > FULL_HISTORY_MAX_ENTRIES) {
+        fullStationHistory.delete(fullStationHistory.keys().next().value);
+      }
+    }
+
+    function restoreStationHistory(context, history, full = false) {
+      const entry = history.get(context.index);
       if (!entry || !isCurrentStation(context) || store.rows.length) return false;
       const age = Date.now() - entry.successAt;
-      if (!quickHistoryMatches(entry, context.config) || age < 0 || age >= QUICK_HISTORY_TTL_MS ||
-          entry.timeZone !== quickHistoryTimeZone()) {
-        quickStationHistory.delete(context.index);
+      if (!stationHistoryMatches(entry, context.config) || age < 0 || age >= STATION_HISTORY_TTL_MS ||
+          entry.timeZone !== stationHistoryTimeZone()) {
+        history.delete(context.index);
         return false;
       }
       store.rows = entry.rows;
-      store._lastQuickCsv = entry.text;
+      if (full) {
+        store.fullLoaded = true;
+        store._lastFullCsv = entry.text;
+        history.delete(context.index);
+        history.set(context.index, entry);
+      } else store._lastQuickCsv = entry.text;
       Object.assign(dataStatus.sheets, {
         cached: true, successAt: entry.successAt, validation: entry.validation, acceptedValidation: entry.validation,
       });
@@ -4694,6 +4731,8 @@
             }
             if (!isCurrentStation(context)) return;
             store._lastQuickCsv = text;
+            // A newly accepted partial export cannot confirm the older full copy.
+            fullStationHistory.delete(context.index);
             updatePartialBadge();
             recordSheetsSuccess(context);
             saveQuickStationHistory(context, text);
@@ -4725,6 +4764,7 @@
           if (!forceFullLoad && store.fullLoaded && store._lastFullCsv === text) {
             timing.unchanged = true;
             recordSheetsSuccess(context);
+            saveFullStationHistory(context, text);
             setGsStatus(true, "Google Sheets: beze změn (" + fmtTime(new Date()) + ")");
             return;
           }
@@ -4740,6 +4780,7 @@
           store._fullLoadPending = false;
           updatePartialBadge();
           recordSheetsSuccess(context);
+          saveFullStationHistory(context, text);
           setGsStatus(true, "Google Sheets: OK (" + fmtTime(new Date()) + ")");
           // Spusť čekající callbacky (ensureFullData)
           const cbs = store._onFullLoad.splice(0);
@@ -8063,12 +8104,16 @@
     /* ══════════════════════════════════════════════
        START
     ══════════════════════════════════════════════ */
-    function startAll(restoreQuick = false) {
+    function startAll(restoreHistory = false) {
       cancelStationWork();
       const context = stationContext();
       pollingContext = context;
       if (CFG.source === "sheets" || CFG.source === "both") {
-        const restored = restoreQuick && restoreQuickStationHistory(context);
+        // Analytics already requests full history after the quick response.
+        // Only that view can replace those two requests with one full check.
+        const restored = restoreHistory &&
+          ((analyticsActive() && restoreStationHistory(context, fullStationHistory, true)) ||
+           restoreStationHistory(context, quickStationHistory));
         fetchSheets();
         if (restored) {
           updatePartialBadge();

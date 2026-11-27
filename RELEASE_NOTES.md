@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.25
+
+- Analytika při rychlém návratu na stanici se Sheets může hned zobrazit nedávno uloženou plnou historii. Označí ji jako uložená data a zároveň ověří celý export.
+
 ## v0.21.24
 
 - Převod dlouhé historie z CSV využívá již rozpoznané datum sousedních měření a napětí upravuje jednou na řádek. Uložené časy, hodnoty i diagnostika validace zůstávají stejné.

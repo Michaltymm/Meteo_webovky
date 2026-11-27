@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Plná historie Analytiky](PLNA_HISTORIE_ANALYTIKY.md) měří paměť,
+dobu návratu na stanici a rozpočet plné mezipaměti (METEO-004).
+
 [Převod data a napětí v CSV](CSV_DATUM_A_NAPETI.md) měří příjem celé
 historie při znovupoužití zápisu data a jedné úpravě napětí (METEO-008).
 
