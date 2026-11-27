@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.18 z `3ea9c35` nasadily [GitHub Actions #79](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46042077645). Prošlo 496/496 testů Node a tři kontroly Chromium. Pilot METEO-008 (250k, CPU ×4) naměřil s dávkami nejdelší práci 54,5 → 23,5 ms a celé dokončení 54,5 → 96 ms. Dále bezpečné rušení dávkované práce při změně dat a výřezu. `main` je na `2405c5d`. [Pilot](docs/performance/VYBER_A_STATISTIKY_PRUZKUMNIKU.md#pilot-další-etapy)
 - v0.21.18 v METEO-008 sdílí výběr bodů a statistiky Průzkumníku pro každou veličinu stejný průchod. U 250k měření (390 px, CPU ×4) synchronní obsluha teploty a vlhkosti 95,5 → 69,5 ms, absolutní vlhkosti 94 → 60 ms. Graf a souhrny shodné v osmi profilech. [Měření](docs/performance/VYBER_A_STATISTIKY_PRUZKUMNIKU.md)
 - v0.21.17 z `7ad1b86` nasadily [GitHub Actions #78](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45977524767). Prošlo 495/495 testů Node a prohlížečové zkoušky myši, klávesnice i dotyku. `main` je na `2405c5d`. Dále METEO-008, pilot sdíleného průchodu výběrem vzorků a statistikami po uvolnění posuvníku.
 - v0.21.17 v METEO-008 zobrazuje okamžité hranice výřezu nad 10k a přepočítá jej po uvolnění. Chromium při 250k (390 px, CPU ×4) naměřil deset obsluh `input` 876,5 → 9 ms a kreslení 10 → 1. Konečný výsledek a statistiky shodné v osmi scénářích. [Profil](docs/performance/POSUVNIK_PRUZKUMNIKU.md)

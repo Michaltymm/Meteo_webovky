@@ -40,6 +40,32 @@ Prošlo 496/496 testů Node.js. Tři offline kontroly v Chromium pokryly
 výběr období a změnu vlhkosti, analytickou mřížku a Moderní přehled 2.
 Použily tři původní konfigurace stanic a proběhly bez chyb stránky.
 
-Výběr a souhrn nad velkým výřezem stále běží synchronně. Dalším krokem
-METEO-008 je změřit náklady kopírování výřezu a oddělit trvání finálního
-výpočtu od nejdelšího bloku hlavního vlákna.
+## Pilot další etapy
+
+Na nasazeném kódu v offline simulaci 390 px a CPU ×4 trvala kopie výřezu
+z 250 000 měření přibližně 1 ms (medián osmi výřezů). Synchronní obsluha
+trvala 74,5 ms a Chromium zaznamenal dlouhou úlohu ve všech osmi případech.
+
+Izolovaný prototyp využil stejný generátor výběru po dávkách s rozpočtem
+8 ms, následovaný jedním vykreslením v samostatné úloze. V osmi střídavých
+opakováních každé varianty se výstupy shodovaly. Měřily se synchronní úseky
+kódu a celkový čas od zahájení do vykreslení včetně čekání mezi dávkami.
+Následující časy jsou mediány v mobilní simulaci z výše uvedeného profilu.
+
+| Historie | Metrika | Nejdelší synchronní práce (ms) | Celkem (ms) |
+| ---: | --- | ---: | ---: |
+| 100 000 | Teplota a vlhkost | 40,5 → 26,5 | 40,5 → 57,5 |
+| 100 000 | Absolutní vlhkost | 61 → 20 | 61 → 54,5 |
+| 250 000 | Teplota a vlhkost | 54,5 → 23,5 | 54,5 → 96 |
+| 250 000 | Absolutní vlhkost | 57,5 → 20,5 | 57,5 → 82,5 |
+
+Prototyp kratší souvislou prací uvolňuje hlavní vlákno, u dlouhé historie
+prodlužuje čekání na finální výsledek. Další etapa METEO-008 má prověřit
+omezení dávkování na dlouhé výřezy, zrušení práce při změně stanice, dat
+nebo výřezu a jediný společný zápis grafu i statistik po dokončení.
+
+## Publikace
+
+Sestavení a nasazení `3ea9c35` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #79](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46042077645)
