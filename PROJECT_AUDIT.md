@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.19 z `0246b23` nasadily [GitHub Actions #80](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46043160374). Prošlo 498/498 testů Node a tři offline kontroly Chromium. Pilot v METEO-008 naměřil u synchronní obnovy celého rozsahu 250k 109 ms pro teplotu a vlhkost, u hustých dat 126 ms pro napětí. Následuje dávkovaná příprava při otevření dlouhého rozsahu. `main` je na `2405c5d`.
 - v0.21.19 v METEO-008 dávkuje potvrzené výřezy Průzkumníku od 75k měření. Mobilní Chromium při 250k zkrátil nejdelší obsluhu potvrzení teploty a vlhkosti 67,5 → 27,5 ms a celé zobrazení 67,5 → 102 ms. Graf a souhrny shodné v šesti scénářích. [Profil](docs/performance/DAVKY_POSUVNIKU_PRUZKUMNIKU.md)
 - v0.21.18 z `3ea9c35` nasadily [GitHub Actions #79](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46042077645). Prošlo 496/496 testů Node a tři kontroly Chromium. Pilot METEO-008 (250k, CPU ×4) naměřil s dávkami nejdelší práci 54,5 → 23,5 ms a celé dokončení 54,5 → 96 ms. Dále bezpečné rušení dávkované práce při změně dat a výřezu. `main` je na `2405c5d`. [Pilot](docs/performance/VYBER_A_STATISTIKY_PRUZKUMNIKU.md#pilot-další-etapy)
 - v0.21.18 v METEO-008 sdílí výběr bodů a statistiky Průzkumníku pro každou veličinu stejný průchod. U 250k měření (390 px, CPU ×4) synchronní obsluha teploty a vlhkosti 95,5 → 69,5 ms, absolutní vlhkosti 94 → 60 ms. Graf a souhrny shodné v osmi profilech. [Měření](docs/performance/VYBER_A_STATISTIKY_PRUZKUMNIKU.md)

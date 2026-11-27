@@ -36,8 +36,15 @@ výřezů za cenu delšího čekání na celý výsledek.
 
 První načtení rozsahu dál používá synchronní cestu. Dokončení grafu
 napětí nadále obsahuje samostatnou regresi nad úplným nedávným výřezem.
-METEO-008 může dále změřit obě cesty a volit další zásah podle délky
-největších bloků.
+
+Samostatný pilot nad již vytvořeným grafem obnovil celý rozsah osmkrát
+bez cache výběru. Při 250 000 pětiminutových řádcích trvalo přepočtení grafu
+T/RH 109 ms, z toho příprava bodů a statistik 54 ms a Chart.js 43 ms.
+U napětí při sekundových intervalech trvala obnova 126 ms, z toho
+`voltageSeries` včetně regrese 83 ms. Obojí na stejném mobilním profilu.
+Další vhodné rozšíření je použít dávkovanou přípravu i při prvním otevření
+velkého rozsahu. Napětí s hustou historií má samostatný náklad, který
+vyžaduje vlastní profil a kontrolu shody predikce.
 
 ## Ověření
 
@@ -48,3 +55,9 @@ ověřil potvrzení myší v 1440 px, dotykem v 390 px a klávesnicí, přepnut�
 záložky a zrušení při změně metriky. Prošly také kontroly analytiky
 baterie a vlhkosti a Moderního přehledu se třemi původními konfiguracemi.
 V konzoli se neobjevily chyby stránky.
+
+## Publikace
+
+Sestavení a nasazení `0246b23` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #80](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46043160374)
