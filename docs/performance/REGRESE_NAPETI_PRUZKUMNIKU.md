@@ -46,3 +46,18 @@ hodnoty a neuspořádané MQTT vstupy. Chromium porovnal celé údaje obou graf�
 napětí před a po změně se třemi původními konfiguracemi a řízeným CSV.
 Řady se shodovaly, při přechodu mezi grafy nevznikly další požadavky.
 Prošly také kontroly chodu na pozadí a Moderního přehledu 2.
+
+## Pilot další etapy
+
+Prototyp použil stejný plánovač ke dvěma průchodům regrese u velkého
+třídenního okna. V samostatném srovnání s 250 000 sekundovými záznamy
+klesla nejdelší obsluha ze 75 na 32 ms a celé dokončení vzrostlo ze
+120 na 150 ms. Graf a predikce se shodovaly při pevném čase prohlížeče.
+Pro nasazení zbývá určit, kdy zachytit třídenní mez u živého času,
+a ověřit zrušení při změně dat nebo výběru.
+
+## Publikace
+
+Sestavení a nasazení `22cc6f0` z `codex-dev` proběhly úspěšně.
+Produkční `main` je na `2405c5d`.
+[GitHub Actions #82](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46044662608)
