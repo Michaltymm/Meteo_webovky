@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.24
+
+- Převod dlouhé historie z CSV využívá již rozpoznané datum sousedních měření a napětí upravuje jednou na řádek. Uložené časy, hodnoty i diagnostika validace zůstávají stejné.
+
 ## v0.21.23
 
 - Velké exporty historie s několika záznamy mimo pořadí se řadí rychleji. Měření se stejným časem zachovávají pořadí z exportu.

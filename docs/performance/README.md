@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Převod data a napětí v CSV](CSV_DATUM_A_NAPETI.md) měří příjem celé
+historie při znovupoužití zápisu data a jedné úpravě napětí (METEO-008).
+
 [Řazení sestupných úseků CSV](CSV_SERAZENE_USEKY.md) měří stabilní
 slučování a celý příjem téměř seřazené historie (METEO-008).
 

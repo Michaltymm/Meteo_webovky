@@ -2301,8 +2301,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02123"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.23</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02124"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.24</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4502,8 +4502,20 @@
 
     function parseCSDateTime(dateStr, timeStr, yearState) {
       try {
-        const d = String(dateStr).trim().replace(/[\s\u00A0\u200B]+/g, "");
-        const dp = /^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}|\d{2}))?\.?$/.exec(d);
+        const reusable = yearState && typeof dateStr === "string";
+        let dp;
+        if (reusable && yearState.dateText === dateStr) {
+          dp = yearState.dateParts;
+        } else {
+          const d = String(dateStr).trim().replace(/[\s\u00A0\u200B]+/g, "");
+          dp = /^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}|\d{2}))?\.?$/.exec(d);
+          if (reusable) {
+            // Cache the syntax only. Year inference and calendar validation
+            // still depend on the timestamp and prior accepted row.
+            yearState.dateText = dateStr;
+            yearState.dateParts = dp;
+          }
+        }
         const tp = /^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/.exec(String(timeStr || "00:00").replace(/[\s\u00A0]+/g, ""));
         if (!dp || !tp) return null;
         const day = +dp[1], mon = +dp[2] - 1;
@@ -4872,9 +4884,11 @@
       };
 
       const parsed = [];
-      let yearState = {
+      const yearState = {
         lastDt: new Date(),
-        inferredYear: new Date().getFullYear()
+        inferredYear: new Date().getFullYear(),
+        dateText: null,
+        dateParts: null
       };
 
       for (let i = dataStart; i < lines.length; i++) {
@@ -4885,6 +4899,7 @@
         const ts = parseCSDateTime(ds, ts2, yearState);
         if (!ts || isNaN(ts.getTime())) { rejected(i, "DATETIME_INVALID"); continue; }
         const noteRaw = (c[9] || "").trim();
+        const voltageText = stripQ(c[8] || "").replace(/[Vv]/g, "");
         parsed.push({
           date: ds, time: ts2, ts,
           temp: pf(c[2]),
@@ -4893,7 +4908,7 @@
           rainInc: pf(c[5]),
           rain: pf(c[6]),
           tank: pf(c[7]),
-          voltage: stripQ(c[8] || "").replace(/[Vv]/g, "").trim() !== "" ? pf(stripQ(c[8] || "").replace(/[Vv]/g, "")) : null,
+          voltage: voltageText.trim() ? pf(voltageText) : null,
           note: noteRaw || null
         });
         if (validation) {

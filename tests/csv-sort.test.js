@@ -48,6 +48,37 @@ test('seconds and local midnight boundaries are not rounded; equivalent written 
   assert.equal(a.run('result[0].ts-result[1].ts'),1000);
 });
 
+test('repeated date syntax keeps row-specific time validation and year inference', () => {
+  const a = app();
+  a.run(String.raw`globalThis.NativeDate=Date;
+    globalThis.Date=class extends NativeDate {
+      constructor(...args){super(...(args.length ? args : [2026,0,2,12]));}
+    };
+    const report=newCSVValidation();
+    const result=parseHistoryCSV([
+      "01.01.,12:00,1",
+      "31.12.,12:00:02,2",
+      "31.12.,25:00,3",
+      "31.12.,12:00:01,4",
+      "30.12.25,12:00,5",
+      "29.12.,12:00,6",
+      "29.12.,12:00:01,7"
+    ].join("\n"),report);`);
+  assert.equal(a.run('result.map(row => row.temp).join(",")'), '1,2,4,5,7,6');
+  assert.equal(a.run('result.map(row => row.ts.getFullYear()).join(",")'), '2026,2025,2025,2025,2025,2025');
+  assert.equal(a.run('JSON.stringify(report.samples)'), '[{"record":3,"code":"DATETIME_INVALID"}]');
+});
+
+test('voltage cleanup preserves localized units, zero and the raw validation categories', () => {
+  const a = app();
+  const voltages = ['4,12 V', '4.25v', '0 V', '\u00a0', 'V', 'unknown', "'V 4,3 V'", '4\u202f,2 V'];
+  const csv = voltages.map(value => ['26.10.2026', '12:00', '1', '1010', '50', '0', '0', '', JSON.stringify(value)].join(',')).join('\n');
+  a.run(`const report = newCSVValidation();
+    const result = parseHistoryCSV(${JSON.stringify(csv)}, report);`);
+  assert.equal(a.run('JSON.stringify(result.map(row => row.voltage))'), '[4.12,4.25,0,null,null,null,4.3,4.2]');
+  assert.equal(a.run('JSON.stringify(report.sensors.at(-1))'), '{"valid":5,"empty":1,"invalid":2}');
+});
+
 test('invalid timestamps are rejected before comparison without changing diagnostic counts or sensor validity',()=>{
   const a=fixture();a.run(`globalThis.report=newCSVValidation();globalThis.result=parseHistoryCSV(header+'\\n'+[
     line('31.2.2026','12:00',1),line('26.10.2026','25:00',2),line('missing','12:00',3),

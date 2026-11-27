@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.24 v METEO-008 znovu používá zápis data u sousedních řádků a napětí normalizuje jednou. U 250k sekundových měření v mobilním Chromium práce parseru 3,31 → 2,90 s, celý příjem 6,39 → 5,52 s. Řádky, validace, statistiky a grafy se shodovaly i pro pětiminutová data. [Profil](docs/performance/CSV_DATUM_A_NAPETI.md)
 - v0.21.23 z `f915631` nasadily [GitHub Actions #84](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46071261944). Prošlo 505/505 testů Node a dvě kontroly Chromium. Celý příjem silně promíchaných 250k byl v tomto profilu o 3,3 % delší a výstupy zůstaly shodné. Dále METEO-008, pilot převodu připravených CSV polí při 250k: 2 300 → 1 951 ms po znovupoužití části data a jedné normalizaci napětí. `main` je na `2405c5d`. [Pilot](docs/performance/CSV_SERAZENE_USEKY.md#další-měření-parseru)
 - v0.21.23 v METEO-008 slučuje existující sestupné úseky CSV a drží stabilní pořadí duplicit. Mobilní Chromium u 250k téměř seřazených řádků naměřil samotné řazení 219 → 30 ms a celý příjem 6,32 → 5,93 s. Výstupy jsou shodné. [Profil](docs/performance/CSV_SERAZENE_USEKY.md)
 - v0.21.22 z `6eefb14` nasadily [GitHub Actions #83](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46045411462). Prošlo 503/503 testů Node.js a tři offline kontroly Chromium. Další METEO-008: pilot slučování seřazených úseků CSV při 250k téměř seřazených řádcích 213,5 → 34 ms, promíchaný vstup vyžaduje samostatné ověření. `main` je na `2405c5d`. [Pilot](docs/performance/CSV_RAZENI.md#pilot-využití-seřazených-úseků)
