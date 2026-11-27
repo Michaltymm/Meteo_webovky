@@ -1,6 +1,7 @@
 # Projektová paměť a audit
 
 ## QUICK CONTEXT
+- v0.21.20 v METEO-008 dávkuje také otevření období a změnu veličiny od 75k řádků. Mobilní Chromium při 250k naměřil kliknutí Vše 82 → 5 ms, nejdelší úlohu 82 → 30 ms a celé dokončení 82 → 138 ms. Řady i souhrny shodné v osmi scénářích. [Profil](docs/performance/DAVKY_ROZSAHU_PRUZKUMNIKU.md)
 - v0.21.19 z `0246b23` nasadily [GitHub Actions #80](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46043160374). Prošlo 498/498 testů Node a tři offline kontroly Chromium. Pilot v METEO-008 naměřil u synchronní obnovy celého rozsahu 250k 109 ms pro teplotu a vlhkost, u hustých dat 126 ms pro napětí. Následuje dávkovaná příprava při otevření dlouhého rozsahu. `main` je na `2405c5d`.
 - v0.21.19 v METEO-008 dávkuje potvrzené výřezy Průzkumníku od 75k měření. V mobilním Chromium při 250k klesla nejdelší obsluha potvrzení teploty a vlhkosti z 67,5 na 27,5 ms. Celé dokončení trvalo 102 ms místo 67,5 ms. Graf a souhrny shodné v šesti scénářích. [Profil](docs/performance/DAVKY_POSUVNIKU_PRUZKUMNIKU.md)
 - v0.21.18 z `3ea9c35` nasadily [GitHub Actions #79](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46042077645). Prošlo 496/496 testů Node a tři kontroly Chromium. Pilot METEO-008 (250k, CPU ×4) naměřil s dávkami nejdelší práci 54,5 → 23,5 ms a celé dokončení 54,5 → 96 ms. Dále bezpečné rušení dávkované práce při změně dat a výřezu. `main` je na `2405c5d`. [Pilot](docs/performance/VYBER_A_STATISTIKY_PRUZKUMNIKU.md#pilot-další-etapy)

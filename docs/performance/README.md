@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Dávky při otevření rozsahu Průzkumníku](DAVKY_ROZSAHU_PRUZKUMNIKU.md)
+měří odezvu při změně období a celé dokončení pro 1k–250k řádků (METEO-008).
+
 [Dávky posuvníku Průzkumníku](DAVKY_POSUVNIKU_PRUZKUMNIKU.md) porovnávají
 bloky hlavního vlákna a celé dokončení potvrzených výřezů (METEO-008).
 

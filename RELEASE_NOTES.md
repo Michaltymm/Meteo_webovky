@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.20
+
+- Při otevření dlouhého období v Průzkumníku se graf a statistiky připravují v dávkách. Stav přípravy je vidět u grafu a mezitím lze změnit období nebo veličinu.
+
 ## v0.21.19
 
 - Po uvolnění posuvníku u velmi dlouhých výřezů zůstává web během přípravy grafu ovladatelný. Graf a přesné statistiky se zobrazí společně.

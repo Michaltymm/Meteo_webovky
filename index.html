@@ -546,6 +546,10 @@
     }
     #chart24h, #chartRain, #chartVoltage, #chartMonthly, #chartYearly,
     #chartExplorer, #chartCompare, #chartOverview { display: block; width: 100%; height: 100%; }
+    .exp-range-pending :is(#expStats, #expInterval, #expHumidityChange, #expInfo, #expChartTitle, #expSliderWrap) {
+      display: none;
+    }
+    .exp-range-pending #chartExplorer { visibility: hidden; }
 
     /* stats grid */
     .stats-grid {
@@ -2297,8 +2301,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02119"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.19</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02120"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.20</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2957,7 +2961,7 @@
         <!-- Veličina -->
         <div class="exp-group">
           <label class="exp-label">Veličina</label>
-          <select id="expMetric" onchange="buildExplorer()">
+          <select id="expMetric" onchange="buildExplorer(true)">
             <option value="temp">🌡 Teplota [°C]</option>
             <option value="hum">💧 Vlhkost [%]</option>
             <option value="temp_hum">🌡+💧 Teplota &amp; Vlhkost</option>
@@ -2990,10 +2994,10 @@
         <div class="exp-group" id="expCustomWrap" style="display:none">
           <label class="exp-label">Datum od – do (nebo jeden den)</label>
           <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-            <input type="date" id="expDateFrom" onchange="buildExplorer()"
+            <input type="date" id="expDateFrom" onchange="buildExplorer(true)"
               style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
             <span style="color:var(--muted)">–</span>
-            <input type="date" id="expDateTo" onchange="buildExplorer()"
+            <input type="date" id="expDateTo" onchange="buildExplorer(true)"
               style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .5rem;font-size:.83rem">
             <button onclick="expSetToday()"
               style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:.3rem .6rem;font-size:.8rem;cursor:pointer">Dnes</button>
@@ -3024,6 +3028,7 @@
           Neurčuje množství přidané či odstraněné vody. Umístění a kalibrace čidla mezi body nejsou ověřeny.</p>
       </details>
       <div class="chart-wrapper" style="margin-top:.6rem">
+        <div class="chart-title" id="expRangeStatus" role="status" hidden></div>
         <div class="chart-title" id="expChartTitle">Graf</div>
         <div class="chart-canvas-wrap" style="height:320px;padding-bottom:4px"><canvas id="chartExplorer"></canvas>
         </div>
@@ -5122,7 +5127,7 @@
     function refreshTab(tab) {
       if (analyticsActive() || currentPage === "modern2") return;
       if (!tabDirtyState[tab]) {
-        if (tab === "explorer") scheduleExplorerSliderJob();
+        if (tab === "explorer") scheduleExplorerRenderJob();
         return;
       }
       if (tab === "now" && !currentChartCanRender()) { hideCurrentChart(); return; }
@@ -5135,7 +5140,7 @@
       }
       if (weatherChart) buildCharts(tab);
       if (tab === "daily") buildDailyGrid();
-      if (tab === "explorer") buildExplorer();
+      if (tab === "explorer") buildExplorer(true);
       if (tab === "compare") { initCmpDays(); buildCompare(); }
       if (tab === "overview") buildTempOverview();
       if (tab === "yearstats") buildYearlyStats();
@@ -5915,7 +5920,7 @@
     let expRange = "24h";
     let expAllPts = [];   // plný filtrovaný soubor bodů pro posuvník
     let expSliderPreview = false;
-    let explorerSliderJob = null;
+    let explorerRenderJob = null;
     let explorerRangeCache = null;
     const EXPLORER_POINT_LIMIT = 800;
     const EXPLORER_SLICED_RANGE = 75000;
@@ -5943,7 +5948,8 @@
       el("batteryRecords").hidden = true;
       explorerRangeCache = null;
       expAllPts = [];
-      cancelExplorerSliderJob();
+      cancelExplorerRenderJob();
+      setExplorerRangeStatus("");
       setExplorerSliderPreview(false);
       el("expInterval").hidden = true;
       el("expInterval").textContent = "";
@@ -6068,7 +6074,7 @@
     }
 
     function setExpRange(r) {
-      cancelExplorerSliderJob();
+      cancelExplorerRenderJob();
       setExplorerSliderPreview(false);
       expRange = r;
       document.querySelectorAll(".exp-range-btn").forEach(b => b.classList.toggle("active", b.dataset.range === r));
@@ -6084,23 +6090,23 @@
         });
         return;
       }
-      if (r !== "custom" && r !== "oneday") buildExplorer();
-      if (r === "oneday" && el("expDateOne").value) buildExplorer();
+      if (r !== "custom" && r !== "oneday") buildExplorer(true);
+      if (r === "oneday" && el("expDateOne").value) buildExplorer(true);
     }
 
     function expSetToday() {
       const today = localDateKey();
       el("expDateFrom").value = today;
       el("expDateTo").value = today;
-      buildExplorer();
+      buildExplorer(true);
     }
 
     function expApplyOneDay() {
-      buildExplorer();
+      buildExplorer(true);
     }
     function expOneSetToday() {
       el("expDateOne").value = localDateKey();
-      buildExplorer();
+      buildExplorer(true);
     }
 
     /* Otevří Graf tab s vybranou veličinou, zachová aktuální časový rozsah */
@@ -6110,7 +6116,7 @@
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === "explorer"));
       document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab-explorer"));
       updateChartLibraryStatus("explorer");
-      buildExplorer();
+      buildExplorer(true);
       el("tab-explorer").scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
     }
 
@@ -6152,8 +6158,9 @@
       explorerRainRendered = true;
     }
 
-    function buildExplorer() {
-      cancelExplorerSliderJob();
+    function buildExplorer(deferLarge = false) {
+      cancelExplorerRenderJob();
+      setExplorerRangeStatus("");
       setExplorerSliderPreview(false);
       if (!store.rows.length || !chartLibraryReady()) return;
       const metric = el("expMetric").value;
@@ -6205,7 +6212,9 @@
       el("expSliderL").value = "0";
       el("expSliderR").value = "100";
       expSliderUpdateFill();
-      _drawExplorerPts(rows);
+      setExplorerSliderDates(rows[0], rows.at(-1));
+      if (deferLarge && rows.length >= EXPLORER_SLICED_RANGE) queueExplorerRender(rows, true);
+      else _drawExplorerPts(rows);
     }
 
     const EXPLORER_METRICS = {
@@ -6434,50 +6443,73 @@
     function setExplorerSliderPreview(pending) {
       expSliderPreview = pending;
       setNodeText(el("expSliderHint"), pending ? "Uvolněte pro přepočet" :
-        explorerSliderJob ? "Počítám výřez…" : "Výřez grafu");
+        explorerRenderJob ? "Počítám výřez…" : "Výřez grafu");
     }
 
-    function cancelExplorerSliderJob() {
-      if (!explorerSliderJob) return;
-      clearTimeout(explorerSliderJob.timer);
-      explorerSliderJob.steps.return();
-      explorerSliderJob = null;
+    function setExplorerRangeStatus(message) {
+      const status = el("expRangeStatus");
+      if (status.textContent === message && status.hidden === !message) return;
+      setNodeText(status, message);
+      status.hidden = !message;
+      el("tab-explorer").classList.toggle("exp-range-pending", !!message);
+    }
+
+    function cancelExplorerRenderJob() {
+      if (!explorerRenderJob) return;
+      const job = explorerRenderJob;
+      clearTimeout(job.timer);
+      job.steps.return();
+      explorerRenderJob = null;
+      if (job.openingRange) setExplorerRangeStatus("");
       setExplorerSliderPreview(false);
     }
 
-    function explorerSliderVisible() {
+    function queueExplorerRender(rows, openingRange = false) {
+      const metric = el("expMetric").value;
+      explorerRenderJob = { context: stationContext(), source: store.rows, length: store.rows.length,
+        selection: expAllPts, metric, range: expRange, rows, openingRange,
+        steps: explorerSeriesSteps(rows, explorerMetricGroups(metric)), timer: null, prepared: null };
+      if (openingRange) {
+        if (activeInfo?.owner === el("expHumidityChange")) closeInfoPopover();
+        setExplorerRangeStatus("Připravuji graf a statistiky…");
+      } else setExplorerSliderPreview(false);
+      scheduleExplorerRenderJob();
+    }
+
+    function explorerRenderVisible() {
       return !document.hidden && (currentPage === "main" || currentPage === "modern") &&
         document.querySelector(".tab-btn.active")?.dataset.tab === "explorer";
     }
 
-    function scheduleExplorerSliderJob() {
-      const job = explorerSliderJob;
-      if (!job || job.timer !== null || !explorerSliderVisible()) return;
-      job.timer = setTimeout(() => runExplorerSliderJob(job), 0);
+    function scheduleExplorerRenderJob() {
+      const job = explorerRenderJob;
+      if (!job || job.timer !== null || !explorerRenderVisible()) return;
+      job.timer = setTimeout(() => runExplorerRenderJob(job), 0);
     }
 
-    function runExplorerSliderJob(job) {
-      if (explorerSliderJob !== job) return;
+    function runExplorerRenderJob(job) {
+      if (explorerRenderJob !== job) return;
       job.timer = null;
       if (!isCurrentStation(job.context) || job.source !== store.rows || job.length !== store.rows.length ||
           job.selection !== expAllPts || job.metric !== el("expMetric").value || job.range !== expRange) {
-        cancelExplorerSliderJob();
+        cancelExplorerRenderJob();
         return;
       }
-      if (!explorerSliderVisible()) return;
+      if (!explorerRenderVisible()) return;
       try {
         if (job.prepared) {
-          cancelExplorerSliderJob();
+          cancelExplorerRenderJob();
           _drawExplorerPts(job.rows, job.prepared);
           return;
         }
         const step = analyticsWorkSlice(job.steps);
         // Give rendering its own task so it does not extend the last data slice.
         if (step) job.prepared = step.value;
-        scheduleExplorerSliderJob();
+        scheduleExplorerRenderJob();
       } catch {
-        cancelExplorerSliderJob();
-        setNodeText(el("expSliderHint"), "Výřez se nepodařilo přepočítat.");
+        cancelExplorerRenderJob();
+        if (job.openingRange) setExplorerRangeStatus("Graf se nepodařilo připravit.");
+        else setNodeText(el("expSliderHint"), "Výřez se nepodařilo přepočítat.");
       }
     }
 
@@ -6485,8 +6517,15 @@
       if (expSliderPreview) expSliderUpdate(false, true);
     }
 
+    function setExplorerSliderDates(first, last) {
+      const format = expRange === "24h" ? fmtTime : fmtDT;
+      setNodeText(el("expSliderLbl1"), first ? format(first.ts) : "–");
+      setNodeText(el("expSliderLbl2"), last ? format(last.ts) : "–");
+    }
+
     function expSliderUpdate(preview = false, confirmed = false) {
-      cancelExplorerSliderJob();
+      if (explorerRenderJob?.openingRange) return;
+      cancelExplorerRenderJob();
       expSliderUpdateFill();
       if (!expAllPts.length) return;
       let l = parseFloat(el("expSliderL").value);
@@ -6495,26 +6534,13 @@
       const total = expAllPts.length;
       const from = Math.round(l / 100 * (total - 1));
       const to = Math.max(from, Math.round(r / 100 * (total - 1)));
-      const first = expAllPts[from], last = expAllPts[to];
-      if (first && last) {
-        const fmt = expRange === "24h" ? fmtTime : fmtDT;
-        setNodeText(el("expSliderLbl1"), fmt(first.ts));
-        setNodeText(el("expSliderLbl2"), fmt(last.ts));
-      }
+      setExplorerSliderDates(expAllPts[from], expAllPts[to]);
       const pending = preview && to - from + 1 > 10000;
       setExplorerSliderPreview(pending);
       if (pending) return;
       const rows = expAllPts.slice(from, to + 1);
-      if (confirmed && rows.length >= EXPLORER_SLICED_RANGE) {
-        const metric = el("expMetric").value;
-        explorerSliderJob = { context: stationContext(), source: store.rows, length: store.rows.length,
-          selection: expAllPts, metric, range: expRange, rows,
-          steps: explorerSeriesSteps(rows, explorerMetricGroups(metric)), timer: null, prepared: null };
-        setExplorerSliderPreview(false);
-        scheduleExplorerSliderJob();
-      } else {
-        _drawExplorerPts(rows);
-      }
+      if (confirmed && rows.length >= EXPLORER_SLICED_RANGE) queueExplorerRender(rows);
+      else _drawExplorerPts(rows);
     }
 
     /* ══════════════════════════════════════════════
@@ -8091,7 +8117,7 @@
       periodicRefresh("uv", uvStore.date === day || uvAttemptToday ? 3600000 : 0, fetchUVData, context);
       periodicRefresh("overview", 300000, fetchAllOv, context);
       refreshVisibleCurrentChart();
-      scheduleExplorerSliderJob();
+      scheduleExplorerRenderJob();
     }
     document.addEventListener("visibilitychange", handleVisibilityChange);
 

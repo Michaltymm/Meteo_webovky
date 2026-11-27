@@ -104,15 +104,15 @@ test('long slider commits finish atomically and resume the same interval on retu
   assert.equal(a.nodes.get('expStats').innerHTML, a.run('originalStats'));
   a.run('activeTab="daily"');
   a.tick(0);
-  assert.equal(a.run('explorerSliderJob.timer'), null);
+  assert.equal(a.run('explorerRenderJob.timer'), null);
   assert.equal(a.run('chartExplorer.updates'), a.run('previousDraws'));
   a.run('activeTab="explorer"; refreshTab("explorer")');
   a.visibility(true);
   a.tick(0);
-  assert.equal(a.run('explorerSliderJob.timer'), null);
+  assert.equal(a.run('explorerRenderJob.timer'), null);
   a.visibility(false);
-  for (let i = 0; i < 30 && a.run('explorerSliderJob !== null'); i++) a.tick(0);
-  assert.equal(a.run('explorerSliderJob'), null);
+  for (let i = 0; i < 30 && a.run('explorerRenderJob !== null'); i++) a.tick(0);
+  assert.equal(a.run('explorerRenderJob'), null);
   assert.equal(a.run('chartExplorer.updates - previousDraws'), 1);
   assert.match(a.nodes.get('expStats').innerHTML, /76500&nbsp;měření/);
   assert.equal(a.run('el("expSliderL").value'), '10');
@@ -124,26 +124,48 @@ test('superseded slider work cannot publish after a new selection or a data chan
   a.run(`buildExplorer();
     document.querySelector=()=>({ dataset:{ tab:"explorer" } });
     el("expSliderL").value="2"; expSliderUpdate(true); expSliderCommit();
-    globalThis.firstJob=explorerSliderJob;
+    globalThis.firstJob=explorerRenderJob;
     globalThis.previousDraws=chartExplorer.updates;`);
   a.tick(0);
   a.run(`el("expSliderL").value="4"; expSliderUpdate(true); expSliderCommit();
-    globalThis.secondJob=explorerSliderJob; runExplorerSliderJob(firstJob);`);
-  assert.equal(a.run('explorerSliderJob === secondJob'), true);
+    globalThis.secondJob=explorerRenderJob; runExplorerRenderJob(firstJob);`);
+  assert.equal(a.run('explorerRenderJob === secondJob'), true);
   assert.equal(a.run('chartExplorer.updates'), a.run('previousDraws'));
-  a.run('invalidateDerivedData(); runExplorerSliderJob(secondJob)');
+  a.run('invalidateDerivedData(); runExplorerRenderJob(secondJob)');
   a.tick(0);
-  assert.equal(a.run('explorerSliderJob'), null);
+  assert.equal(a.run('explorerRenderJob'), null);
   assert.equal(a.run('chartExplorer.updates'), a.run('previousDraws'));
   assert.equal(a.nodes.get('expSliderHint').textContent, 'Výřez grafu');
 
   a.run(`buildExplorer(); previousDraws=chartExplorer.updates;
     el("expSliderL").value="2"; expSliderUpdate(true); expSliderCommit();
     activeIdx=1;`);
-  assert.equal(a.run('explorerSliderJob !== null'), true);
+  assert.equal(a.run('explorerRenderJob !== null'), true);
   a.tick(0);
-  assert.equal(a.run('explorerSliderJob'), null);
+  assert.equal(a.run('explorerRenderJob'), null);
   assert.equal(a.run('chartExplorer.updates'), a.run('previousDraws'));
+});
+
+test('opening a long explorer range only shows the latest complete result', () => {
+  const a = app(); fixture(a, 85000);
+  a.run(`expRange="24h"; buildExplorer();
+    document.querySelector=()=>({ dataset:{ tab:"explorer" } });
+    globalThis.previousDraws=chartExplorer.updates;
+    setExpRange("all"); globalThis.staleRange=explorerRenderJob;`);
+  assert.equal(a.nodes.get('expRangeStatus').hidden, false);
+  assert.equal(a.nodes.get('expRangeStatus').textContent, 'Připravuji graf a statistiky…');
+  a.tick(0);
+  assert.equal(a.run('chartExplorer.updates'), a.run('previousDraws'));
+  a.run(`el("expMetric").value="hum"; buildExplorer(true);
+    runExplorerRenderJob(staleRange);`);
+  for (let i = 0; i < 30 && a.run('explorerRenderJob !== null'); i++) a.tick(0);
+  assert.equal(a.run('explorerRenderJob'), null);
+  assert.equal(a.nodes.get('expRangeStatus').hidden, true);
+  assert.equal(a.run('chartExplorer.updates - previousDraws'), 1);
+  assert.equal(a.run('chartExplorer.data.datasets[0].label'), 'Vlhkost [%]');
+  assert.match(a.nodes.get('expStats').innerHTML, /85000&nbsp;měření/);
+  assert.equal(a.run('el("expSliderLbl1").textContent === fmtDT(expAllPts[0].ts)'), true);
+  assert.equal(a.run('el("expSliderLbl2").textContent === fmtDT(expAllPts.at(-1).ts)'), true);
 });
 
 test('min/max sampling preserves endpoints, null gaps, order and does not mutate input', () => {
