@@ -130,7 +130,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-038 Sdílené hodinové/denní/měsíční agregace s pokrytím | Úplná validní historie | S / P1 | v0.3.1 sdílení i s ročními statistikami hotové; pozorované časy/počty hotové v0.3.0, dostupnost čeká na plán senzoru | Invalidace dat/dne, LRU8 dnů, lazy roky aktuálního snapshotu, METEO-048; vzorkové průměry | Rozpracováno |
 | METEO-039 Bezpečné min/max velkých polí bez spread argumentů | Současná historie | N / P0 | O(n), bez pádu na limitu zásobníku | FUT-004 / Opus W07 | Dokončeno |
-| METEO-040 Historie se stránkováním a vyhledáním rekordů | Současná historie / poznámky | S / P1 | Omezený DOM místo 100k řádků „Vše“ | AUD-011 hotové, zachovat export všech dat | Připraveno k realizaci |
+| METEO-040 Historie se stránkováním a vyhledáním rekordů | Současná data | S / P1 | v0.24.0 výchozích 100, volitelných 500 řádků v DOM; všechny originály dostupné | AUD-011 hotové; vyhledávání a export dále | Rozpracováno |
 | METEO-041 Porovnání období např. říjen 2025/2026, absolutně i anomálie | Víceletá historie | S / P2 | Agregované řady | METEO-038/048; neúplné období označit | Nápad |
 
 ## 9. Predikce, detekce anomálií a upozornění
@@ -2874,3 +2874,19 @@ výkonnostních profilů tento krok neopakuje.
 Nasazení v0.21.3 z commitu `ecd1d26` potvrdily GitHub Actions na `codex-dev`.
 Prošlo 478 testů a publikování. Produkční `main` zůstal na `2405c5d`.
 [GitHub Actions #64](https://github.com/Michaltymm/Meteo_webovky/actions/runs/45344756394)
+
+
+## METEO-040 — stránkování historie, v0.24.0
+
+V otevřené historii lze přejít k nejnovějším, sousedním nebo nejstarším
+řádkům. Stránkování čte původní seřazená měření a používá už načtená data.
+Výchozí velikost je 100 řádků a alternativní 500.
+
+| Syntetická historie | Vykreslené řádky před → po | Synchronní obsluha před → po | Do druhého snímku před → po |
+| --- | ---: | ---: | ---: |
+| 1 000 | 1 000 → 100 | 92 → 9,5 ms | 1 192 → 73 ms |
+| 10 000 | 10 000 → 100 | 1 056 → 9,8 ms | 7 924 → 75 ms |
+
+Offline Chromium, šířka 375 px, čtyřnásobné zpomalení CPU. Medián tří měření
+po zahřátí. Stejná syntetická historie a obsluha vykreslení tabulky. Před
+změnou volba Vše, po změně výchozí stránka. Měření nezahrnuje síť ani parser.

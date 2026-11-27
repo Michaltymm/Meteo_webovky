@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.24.0
+
+- Historie má stránky po 100 nebo 500 měřeních a přímý skok na nejnovější či nejstarší záznam. Díky tomu se dlouhá historie otevírá plynuleji.
+
 ## v0.23.1
 
 - Dialog nastavení zdroje drží fokus uvnitř a zavře se klávesou Escape. Po zrušení vrací fokus k ovládacímu prvku, ze kterého byl otevřený.

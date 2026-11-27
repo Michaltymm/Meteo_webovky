@@ -596,8 +596,10 @@
 
     /* history table */
     .history-table-wrap {
-      overflow-x: auto;
+      overflow: auto;
+      max-height: min(60vh, 34rem);
     }
+    #historyPager button[aria-disabled="true"] { opacity: .55; cursor: default; }
 
     .history-table {
       width: 100%;
@@ -606,6 +608,8 @@
     }
 
     .history-table th {
+      position: sticky;
+      top: 0;
       background: var(--bg3);
       padding: .45rem .7rem;
       text-align: left;
@@ -2308,8 +2312,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0231"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.23.1</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0240"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.24.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3200,16 +3204,21 @@
     <!-- ════ Historie ══ -->
     <div class="tab-pane" id="tab-hist" role="tabpanel" aria-labelledby="dashboardTab-hist" tabindex="0">
       <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;font-size:.82rem;color:var(--muted)">
-        <span>Zobrazit:</span>
+        <label for="histLimit">Řádků na stránku</label>
         <select id="histLimit"
           style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:.25rem .5rem;font-size:.82rem">
           <option value="100">100 řádků</option>
-          <option value="500" selected>500 řádků</option>
-          <option value="2000">2 000 řádků</option>
-          <option value="0">Vše</option>
+          <option value="500">500 řádků</option>
         </select>
       </div>
-      <div class="history-table-wrap">
+      <div class="ov-pagination" id="historyPager" role="group" aria-label="Stránkování historie" style="margin:0 0 .6rem">
+        <button class="exp-range-btn" type="button" id="histFirst" onclick="pageHistory('first')" aria-controls="histTableBody">Nejnovější</button>
+        <button class="exp-range-btn" type="button" id="histPrev" onclick="pageHistory('prev')" aria-controls="histTableBody">Předchozí</button>
+        <span id="historyRange" role="status" aria-atomic="true"></span>
+        <button class="exp-range-btn" type="button" id="histNext" onclick="pageHistory('next')" aria-controls="histTableBody">Další</button>
+        <button class="exp-range-btn" type="button" id="histLast" onclick="pageHistory('last')" aria-controls="histTableBody">Nejstarší</button>
+      </div>
+      <div class="history-table-wrap" id="historyTableWrap" tabindex="0" role="region" aria-label="Tabulka měření">
         <table class="history-table">
           <thead>
             <tr>
@@ -3571,6 +3580,8 @@
       explorerRainRendered = false;
       overviewTablePage = 0;
       el("ovTableWrap").scrollTop = 0;
+      historyPage = 0;
+      el("historyTableWrap").scrollTop = 0;
       analyticsStop(true);
       store.rows = [];
       renderDeviceSettings();
@@ -6059,10 +6070,31 @@
     /* ══════════════════════════════════════════════
        HISTORY TABLE
     ══════════════════════════════════════════════ */
+    let historyPage = 0;
+    function historyPageSize() { return el("histLimit").value === "500" ? 500 : 100; }
+    function historyLastPage(size) { return Math.max(0, Math.ceil(store.rows.length / size) - 1); }
+    function pageHistory(action) {
+      const last = historyLastPage(historyPageSize());
+      const target = { first: 0, prev: historyPage - 1, next: historyPage + 1, last }[action];
+      if (!Number.isInteger(target)) return;
+      const next = Math.max(0, Math.min(last, target));
+      if (next === historyPage) return;
+      historyPage = next;
+      el("historyTableWrap").scrollTop = 0;
+      updateHistoryTable();
+    }
     function updateHistoryTable() {
-      const selected = parseInt(el("histLimit").value, 10);
-      const lim = Number.isFinite(selected) && selected >= 0 ? selected : 500;
-      const rows = lim ? store.rows.slice(0, lim) : store.rows;
+      const size = historyPageSize(), last = historyLastPage(size);
+      historyPage = Math.min(historyPage, last);
+      const offset = historyPage * size;
+      const rows = store.rows.slice(offset, offset + size);
+      const count = value => value.toLocaleString("cs-CZ");
+      setNodeText(el("historyRange"), rows.length
+        ? `${count(offset + 1)}–${count(offset + rows.length)} z ${count(store.rows.length)}` : "");
+      for (const [id, disabled] of [["histFirst", historyPage === 0], ["histPrev", historyPage === 0],
+        ["histNext", historyPage === last], ["histLast", historyPage === last]]) {
+        el(id).setAttribute?.("aria-disabled", String(disabled));
+      }
       el("histTableBody").innerHTML = rows.map(r => `<tr>
     <td>${escapeHTML(r.date)}</td><td>${escapeHTML(r.time)}</td>
     <td style="color:#e74c3c">${fmt(r.temp)}</td>
@@ -6074,7 +6106,11 @@
     <td style="color:#8e44ad">${fmt(r.voltage, 2)}</td>
   </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Žádná data.</td></tr>`;
     }
-    el("histLimit").addEventListener("change", updateHistoryTable);
+    el("histLimit").addEventListener("change", () => {
+      historyPage = 0;
+      el("historyTableWrap").scrollTop = 0;
+      updateHistoryTable();
+    });
 
     /* ══════════════════════════════════════════════
        GRAF PRŮZKUMNÍK

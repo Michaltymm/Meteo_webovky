@@ -9,7 +9,7 @@ práce potřebné k rozhodnutí o vydání z `codex-dev`.
 | --- | --- | --- |
 | P0 | Ověření správnosti a bezpečnosti před vydáním (METEO-056, bezpečnostní roadmapa) | Cílená kontrola změn od posledního auditu, úplná sada regresí, ověření originálů a výsledků na velké historii. Potvrzené závažné nálezy opravit nebo zdůvodnit blokaci. |
 | P1 | Dialog a návrat fokusu v nastavení zdroje (METEO-010) | Ověřit otevření oběma cestami, Escape, fokus a mobilní zobrazení. |
-| P1 | Stránkování historie bez omezení přístupu k originálům (METEO-040) | Volba Vše nyní vykresluje celou historii najednou. Omezit DOM, ověřit navigaci k nejstaršímu řádku a srovnat velký výřez před změnou a po ní. |
+| P1 | Stránkování historie bez omezení přístupu k originálům (METEO-040) | Hotovo ve v0.24.0. Vykresluje nejvýše 500 měření a zpřístupňuje libovolnou stránku včetně nejstarší. |
 | P1 | Závěrečný profil načítání, CSV, historie a grafů (METEO-007/008/056) | Srovnat v0.23.0 s výsledkem na stejných vstupech, včetně největšího reprodukovatelného scénáře. Řešit jen doloženou regresi nebo významnou překážku. Ověřit čtyři pohledy i chybové stavy. |
 | P2 | Odstup od rosného bodu (METEO-012/013) | Zpřístupnit rozdíl T−Td a původ hodnot v existujícím přehledu či grafu. Ověřit výpočet, chybějící vstupy a meze vzorce. |
 
@@ -21,6 +21,7 @@ položek, nové funkce a kosmetické úpravy zůstávají v centrální roadmap�
 pro samostatné naplánování. Vydání do produkční větve vyžaduje souhlas.
 
 ## QUICK CONTEXT
+- v0.24.0 v METEO-040 stránkuje původní Historii po 100 nebo 500 řádcích. Přepnutí stanice a velikosti stránky vrátí pohled na začátek. Po zkrácení historie se pozice přizpůsobí poslední dostupné straně. Prošlo 517 testů Node a offline Chromium se třemi konfiguracemi, včetně přímého skoku k nejstaršímu originálu na šířce 320 px a bez nového požadavku. Další úkol je METEO-012/013.
 - v0.23.1 z `09ee238` úspěšně nasadily [GitHub Actions #90](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46081682336). Kladná větev dialogu prošla v lokálním Chromiu se syntetickou ověřovací hodnotou. `main` zůstala na `2405c5d`. Výchozí profil METEO-040 pro volbu Vše v mobilním Chromium ×4 (10 000 syntetických řádků, medián tří měření) vykreslil v DOM všech 10 000 řádků. Samotná synchronní obsluha trvala 1 056 ms, do druhého snímku 7 924 ms. Opakovat stejný scénář po stránkování. Podklady jsou ve `/workspace/validation/source-settings/history-baseline.json`.
 - v0.23.1 v METEO-010 používá nativní dialog nastavení zdroje. Původní v0.23.0 pouštěla Tab do pozadí a Escape z tlačítka Zrušit dialog nezavíral. Po opravě v Chromiu prošly obě cesty otevření, návrat fokusu, odmítnutí neplatného vstupu, dotyk, kliknutí mimo a šířky 320, 667 a 1440 px. Prošlo 517/517 testů Node. Další úkol z konečného rozsahu je METEO-040.
 - v0.23.0 z `50eb2df` nasadily [GitHub Actions #89](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46080751183). Prošlo 517/517 testů Node a tři offline kontroly Chromium všech čtyř pohledů s původními konfiguracemi. `main` je na `2405c5d`. Další díl METEO-010 má ověřený výchozí stav. V dialogu pro otevření nastavení zdroje Tab z tlačítka Zrušit přesune fokus do pozadí a Escape z téhož tlačítka dialog nezavře. Příští etapa řeší modalitu, Escape a návrat fokusu.

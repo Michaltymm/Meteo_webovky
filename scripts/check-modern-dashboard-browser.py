@@ -198,6 +198,21 @@ async def main():
         await page.locator('.tab-btn[data-tab="hist"]').click()
         await page.wait_for_function('store.fullLoaded')
         assert await page.locator('#histTableBody tr').count()>0
+        await page.wait_for_function('el("histTableBody").rows.length===100')
+        oldest=await page.evaluate('store.rows.at(-1).time')
+        await page.set_viewport_size({'width':320,'height':844})
+        before_paging=len(requests)
+        await page.locator('#histLast').tap()
+        assert await page.locator('#histTableBody tr:last-child td:nth-child(2)').text_content()==oldest
+        assert await page.locator('#histLast').get_attribute('aria-disabled')=='true'
+        assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
+        await page.locator('#histPrev').click()
+        assert (await page.locator('#historyRange').text_content()).startswith('1\xa0801–')
+        await page.locator('#histLimit').select_option('500')
+        assert await page.locator('#histTableBody tr').count()==500
+        assert (await page.locator('#historyRange').text_content()).startswith('1–500')
+        assert len(requests)==before_paging
+        await page.set_viewport_size({'width':1440,'height':1050})
         await page.wait_for_load_state('networkidle')
         await page.evaluate('''()=>{globalThis.savedRows=store.rows;globalThis.navigationFetches=[];
             const originalFetch=fetch;globalThis.fetch=(url,options)=>{navigationFetches.push({view:currentPage,url:String(url)});return originalFetch(url,options)};}''')

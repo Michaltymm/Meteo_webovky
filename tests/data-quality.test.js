@@ -34,14 +34,25 @@ test('history and notes render untrusted date/time/note as text, including HTML 
   assert.ok(notes.includes('&amp;lt;b&amp;gt;'));
 });
 
-test('history All means all rows; invalid limits retain the default', () => {
+test('history keeps the oldest row accessible with bounded pages and original row order', () => {
   const a = app();
-  a.run('store.rows = Array.from({length: 501}, () => ({date:"20.10.2026", time:"12:00"}))');
-  for (const [value, expected] of [['0', 501], ['2', 2], ['invalid', 500], ['-1', 500]]) {
+  a.run('store.rows = Array.from({length: 501}, (_, i) => ({date:"20.10.2026", time:"#" + i}))');
+  for (const [value, expected] of [['0', 100], ['500', 500], ['invalid', 100]]) {
     a.nodes.get('histLimit').value = value;
     a.run('updateHistoryTable()');
     assert.equal((a.nodes.get('histTableBody').innerHTML.match(/<tr>/g) || []).length, expected);
   }
+  a.run('pageHistory("next")');
+  assert.match(a.nodes.get('histTableBody').innerHTML, /<td>#100<\/td>/);
+  a.run('pageHistory("last");pageHistory("next")');
+  assert.equal(a.nodes.get('historyRange').textContent, '501–501 z 501');
+  assert.match(a.nodes.get('histTableBody').innerHTML, /<td>#500<\/td>/);
+  assert.equal(a.run('store.rows.length'), 501);
+  a.run('store.rows=store.rows.slice(0, 107);updateHistoryTable()');
+  assert.equal(a.nodes.get('historyRange').textContent, '101–107 z 107');
+  a.run('pageHistory("first")');
+  assert.match(a.nodes.get('histTableBody').innerHTML, /<td>#0<\/td>/);
+  assert.equal(a.requests.length, 0);
 });
 
 test('charts survive a missing voltage sensor and continue rendering other aggregates', () => {
