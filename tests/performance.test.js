@@ -46,6 +46,29 @@ test('slider statistics and endpoints use the complete selected interval', () =>
   assert.match(a.nodes.get('expStats').innerHTML, /1&nbsp;měření/);
 });
 
+test('large slider previews defer drawing, then commit the latest complete interval once', () => {
+  const a = app(); fixture(a, 12000);
+  a.run(`buildExplorer(); globalThis.previousDraws=chartExplorer.updates;
+    el('expSliderL').value='5'; expSliderUpdate(true);
+    el('expSliderL').value='15'; expSliderUpdate(true);`);
+  assert.equal(a.run('chartExplorer.updates'), a.run('previousDraws'));
+  assert.equal(a.run('el("expSliderLbl1").textContent === fmtDT(expAllPts[1800].ts)'), true);
+  assert.equal(a.nodes.get('expSliderHint').textContent, 'Uvolněte pro přepočet');
+  a.run('expSliderCommit(); expSliderCommit()');
+  assert.equal(a.run('chartExplorer.updates - previousDraws'), 1);
+  assert.match(a.nodes.get('expStats').innerHTML, /10200&nbsp;měření/);
+  assert.equal(a.nodes.get('expSliderHint').textContent, 'Výřez grafu');
+
+  a.run(`el('expSliderL').value='90'; expSliderUpdate(true); expSliderCommit()`);
+  assert.equal(a.run('chartExplorer.updates - previousDraws'), 2);
+  assert.match(a.nodes.get('expStats').innerHTML, /1201&nbsp;měření/);
+
+  a.run(`el('expSliderL').value='0'; expSliderUpdate(true);
+    invalidateDerivedData(); expSliderCommit()`);
+  assert.equal(a.run('chartExplorer.updates - previousDraws'), 2);
+  assert.equal(a.nodes.get('expSliderHint').textContent, 'Výřez grafu');
+});
+
 test('min/max sampling preserves endpoints, null gaps, order and does not mutate input', () => {
   const a = app();
   a.run(`globalThis.rows=Array.from({length:10000}, (_,i)=>({i,temp:i===23?null:i===25?100:i===26?-100:0}));

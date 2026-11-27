@@ -1558,7 +1558,7 @@
       flex: 1;
       text-align: center;
       font-size: .67rem;
-      color: var(--border);
+      color: var(--muted);
       letter-spacing: .03em;
     }
 
@@ -2297,8 +2297,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02116"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.16</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02117"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.17</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3035,13 +3035,15 @@
         <div class="exp-slider-track" id="expSliderTrack">
           <div class="exp-slider-track-fill" id="expSliderFill"></div>
           <input type="range" class="exp-slider-input" id="expSliderL" min="0" max="100" value="0"
-            oninput="expSliderUpdate()">
+            aria-label="Začátek výřezu" oninput="expSliderUpdate(true)" onchange="expSliderCommit()"
+            onblur="expSliderCommit()" onpointercancel="expSliderCommit()">
           <input type="range" class="exp-slider-input" id="expSliderR" min="0" max="100" value="100"
-            oninput="expSliderUpdate()">
+            aria-label="Konec výřezu" oninput="expSliderUpdate(true)" onchange="expSliderCommit()"
+            onblur="expSliderCommit()" onpointercancel="expSliderCommit()">
         </div>
         <div class="exp-slider-labels">
           <span class="exp-slider-lbl" id="expSliderLbl1">–</span>
-          <span class="exp-slider-hint">⟵ posuvník zoumu ⟶</span>
+          <span class="exp-slider-hint" id="expSliderHint" aria-live="polite">Výřez grafu</span>
           <span class="exp-slider-lbl" style="text-align:right" id="expSliderLbl2">–</span>
         </div>
       </div>
@@ -5908,6 +5910,7 @@
     ══════════════════════════════════════════════ */
     let expRange = "24h";
     let expAllPts = [];   // plný filtrovaný soubor bodů pro posuvník
+    let expSliderPreview = false;
     let explorerRangeCache = null;
 
     function invalidateDerivedData({ keepDataDiagnostics = false } = {}) {
@@ -5933,6 +5936,7 @@
       el("batteryRecords").hidden = true;
       explorerRangeCache = null;
       expAllPts = [];
+      setExplorerSliderPreview(false);
       el("expInterval").hidden = true;
       el("expInterval").textContent = "";
       el("expHumidityChange").hidden = true;
@@ -6138,6 +6142,7 @@
 
       // --- Filtrování a řazení ---
       const rows = explorerRows(cutFrom, cutTo);
+      setExplorerSliderPreview(false);
 
       // Pro srážky denní – agregace max na den
       if (metric === "rain") {
@@ -6388,7 +6393,17 @@
       fill.style.width = (mx - mn) + "%";
     }
 
-    function expSliderUpdate() {
+    function setExplorerSliderPreview(pending) {
+      if (expSliderPreview === pending) return;
+      expSliderPreview = pending;
+      setNodeText(el("expSliderHint"), pending ? "Uvolněte pro přepočet" : "Výřez grafu");
+    }
+
+    function expSliderCommit() {
+      if (expSliderPreview) expSliderUpdate();
+    }
+
+    function expSliderUpdate(preview = false) {
       expSliderUpdateFill();
       if (!expAllPts.length) return;
       let l = parseFloat(el("expSliderL").value);
@@ -6396,14 +6411,16 @@
       if (l > r) [l, r] = [r, l];
       const total = expAllPts.length;
       const from = Math.round(l / 100 * (total - 1));
-      const to = Math.round(r / 100 * (total - 1));
-      const sliced = expAllPts.slice(from, Math.max(from + 1, to + 1));
-      if (sliced.length) {
+      const to = Math.max(from, Math.round(r / 100 * (total - 1)));
+      const first = expAllPts[from], last = expAllPts[to];
+      if (first && last) {
         const fmt = expRange === "24h" ? fmtTime : fmtDT;
-        el("expSliderLbl1").textContent = fmt(sliced[0].ts);
-        el("expSliderLbl2").textContent = fmt(sliced[sliced.length - 1].ts);
+        setNodeText(el("expSliderLbl1"), fmt(first.ts));
+        setNodeText(el("expSliderLbl2"), fmt(last.ts));
       }
-      _drawExplorerPts(sliced);
+      const pending = preview && to - from + 1 > 10000;
+      setExplorerSliderPreview(pending);
+      if (!pending) _drawExplorerPts(expAllPts.slice(from, to + 1));
     }
 
     /* ══════════════════════════════════════════════

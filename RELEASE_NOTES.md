@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.17
+
+- Posuvník Průzkumníku u dlouhých výřezů reaguje okamžitě. Po uvolnění vykreslí graf a spočítá statistiky ze všech platných měření ve výřezu.
+
 ## v0.21.16
 
 - Průzkumník při výpočtu statistik dlouhé historie potřebuje méně dočasné paměti. Minima, maxima a průměry dál vycházejí ze všech platných měření ve vybraném úseku.

@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Posuvník Průzkumníku](POSUVNIK_PRUZKUMNIKU.md) rozlišuje výběr vzorků,
+souhrny a Chart.js při tažení výřezů s 1k–250k měřeními (METEO-008).
+
 [Statistiky Průzkumníku](STATISTIKY_PRUZKUMNIKU.md) ověřují shodu souhrnů
 a grafů a odstranění dočasných řad pro 1k–250k měření (METEO-008).
 
