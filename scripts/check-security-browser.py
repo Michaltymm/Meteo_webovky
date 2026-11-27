@@ -13,7 +13,7 @@ parser.add_argument('--output', required=True)
 args = parser.parse_args()
 
 async def main():
-    tags = re.findall(r'<script src="https:[^>]+></script>', Path('index.html').read_text())
+    tags = re.findall(r'<script\b[^>]*\bsrc="https:[^>]+></script>', Path('index.html').read_text())
     assert len(tags) == 2 and all('integrity="sha384-' in tag and 'crossorigin="anonymous"' in tag for tag in tags)
     assets = {'chart.js': Path(args.chartjs).read_bytes(), 'paho-mqtt': Path(args.paho).read_bytes()}
     results = []

@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.14
+
+- Měření se mohou zobrazit už během načítání knihovny grafů. Při nedostupnosti knihovny se u grafů zobrazí stav načítání nebo chyba.
+
 ## v0.21.13
 
 - Pohyb ukazatele po grafu nevyvolává dvojí překreslení zaměřovací čáry a detailu měření.

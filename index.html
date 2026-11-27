@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meteostanice – Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" integrity="sha384-Wc5O7PtWSXXJ6LTS7Miij28L1Q3ip54+UlMs+FDhQw+Py1DmDbVCaan/v0WkAwOg" crossorigin="anonymous"></script>
   <style>
     *,
@@ -2295,8 +2295,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02113"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.13</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02114"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.14</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2355,6 +2355,7 @@
       <a class="page-link" href="#analytika" data-page="analytics" aria-controls="tab-analytics">📊 Analytické grafy</a>
     </div>
   </nav>
+  <p id="chartLibraryStatus" role="status" style="padding:.5rem 1rem;color:var(--muted)" hidden></p>
 
   <!-- ── Sun/Moon bar + Overview bar, pouze na hlavní stránce ── -->
   <details class="sticky-bars" id="dashboardBars" open>
@@ -5019,6 +5020,26 @@
        UI REFRESH - Lazy Loading
     ══════════════════════════════════════════════ */
     const tabDirtyState = {};
+    const chartTabs = new Set(["now", "monthly", "yearly", "rain", "explorer", "compare", "overview", "battery"]);
+    let chartLibraryFinished = false;
+    function chartLibraryReady() { return typeof Chart === "function"; }
+
+    function updateChartLibraryStatus(tab = document.querySelector(".tab-btn.active")?.dataset.tab) {
+      const status = el("chartLibraryStatus");
+      status.hidden = chartLibraryReady() || !(analyticsActive() || (currentPage !== "modern2" && chartTabs.has(tab)));
+      if (!status.hidden) setNodeText(status, chartLibraryFinished
+        ? "Knihovnu grafů se nepodařilo načíst. Pro nový pokus obnovte stránku."
+        : "Načítám knihovnu grafů…");
+    }
+
+    function finishChartLibraryLoad() {
+      chartLibraryFinished = true;
+      const tab = document.querySelector(".tab-btn.active")?.dataset.tab;
+      updateChartLibraryStatus(tab);
+      if (!chartLibraryReady() || !store.rows.length) return;
+      if (analyticsActive()) analyticsRedraw();
+      else if (chartTabs.has(tab)) refreshTab(tab);
+    }
     let currentChartObserver = null;
     let currentChartJob = null;
     function cancelCurrentChartJob() {
@@ -5097,13 +5118,14 @@
     function refreshTab(tab) {
       if (analyticsActive() || currentPage === "modern2" || !tabDirtyState[tab]) return;
       if (tab === "now" && !currentChartCanRender()) { hideCurrentChart(); return; }
+      const weatherChart = tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain";
+      const waitingForChart = !chartLibraryReady() && chartTabs.has(tab);
+      if (weatherChart && waitingForChart) return;
       // Small histories and explicit buildCharts calls retain their synchronous API.
       if (tab === "now" && currentChartObserver && store.rows.length > 10000) {
         prepareCurrentChart(); return;
       }
-      if (tab === "now" || tab === "monthly" || tab === "yearly" || tab === "rain") {
-        buildCharts(tab);
-      }
+      if (weatherChart) buildCharts(tab);
       if (tab === "daily") buildDailyGrid();
       if (tab === "explorer") buildExplorer();
       if (tab === "compare") { initCmpDays(); buildCompare(); }
@@ -5112,7 +5134,7 @@
       if (tab === "battery") buildBatteryAnalysis();
       if (tab === "hist") updateHistoryTable();
       if (tab === "notes") buildNotesTable();
-      
+      if (waitingForChart) return;
       tabDirtyState[tab] = false;
       setTimeout(() => resizeChartsInTab(tab), 50);
     }
@@ -6040,6 +6062,7 @@
       el("expMetric").value = metric;
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === "explorer"));
       document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "tab-explorer"));
+      updateChartLibraryStatus("explorer");
       buildExplorer();
       el("tab-explorer").scrollIntoView({ behavior: motionPreference?.matches ? "auto" : "smooth", block: "start" });
     }
@@ -6083,7 +6106,7 @@
     }
 
     function buildExplorer() {
-      if (!store.rows.length) return;
+      if (!store.rows.length || !chartLibraryReady()) return;
       const metric = el("expMetric").value;
 
       // --- Určení časového rozsahu ---
@@ -6137,6 +6160,7 @@
     }
 
     function _drawExplorerPts(rows) {
+      if (!chartLibraryReady()) return;
       renderIntervalComparison(rows);
       explorerRainRendered = false;
       ensureExplorerChart();
@@ -6430,6 +6454,7 @@
     }
 
     function buildCompare() {
+      if (!chartLibraryReady()) return;
       chartCompare ??= mkChart("chartCompare", "line", [], {
         x: { ticks: { color: "#95a5a6", maxRotation: 0, autoSkip: true, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: "#34495e" } },
         yMain: { position: "left", ticks: { color: "#e74c3c", font: { size: 10 } }, grid: { color: "#34495e" } },
@@ -6689,6 +6714,7 @@
     }
 
     function renderOverviewChart(metric, labels, maxs, mins, avgs) {
+      if (!chartLibraryReady()) return;
       chartOverview ??= mkChart("chartOverview", "line", [], {
         x: { ticks: { color: "#95a5a6", font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 20 }, grid: { color: "#34495e" } },
         y: { ticks: { color: "#e74c3c", font: { size: 10 } }, grid: { color: "#34495e" }, title: { display: false, text: "°C", color: "#e74c3c" } }
@@ -7130,6 +7156,7 @@
       syncModernStation();
       el("tab-analytics").hidden = page !== "analytics";
       el("page-modern2").hidden = page !== "modern2";
+      updateChartLibraryStatus();
       if (page === "modern2") renderDataStatus();
       document.querySelectorAll(".page-link").forEach(link => {
         if (link.dataset.page === page) link.setAttribute("aria-current", "page");
@@ -7178,6 +7205,7 @@
         btn.classList.add("active");
         el("tab-" + btn.dataset.tab).classList.add("active");
         const tab = btn.dataset.tab;
+        updateChartLibraryStatus(tab);
         const heavyTabs = ["compare", "overview", "monthly", "yearly", "yearstats", "hist", "rain", "daily", "explorer", "battery"];
         if (heavyTabs.includes(tab) && !store.fullLoaded) {
           el("yearStatsContent") && (el("yearStatsContent").innerHTML = '<p style="color:var(--muted);padding:1rem">Načítám celou historii…</p>');
@@ -7452,6 +7480,7 @@
         `Pearson r (popisný): ${fmt(s.r, 3)} • Lineární sklon (popisný): ${slope}\n` +
         `Grafy: ${s.timeTemp.length} časových a ${s.xy.length} XY reprezentantů; výpočty ze všech ${s.count} párů. ` +
         `Zóna: ${Intl.DateTimeFormat().resolvedOptions().timeZone}.`);
+      if (!chartLibraryReady()) return;
       if (!chartBatteryTime && s.count) {
         const axis = title => ({ type: "linear", ticks: { color: "#7f8c8d", maxTicksLimit: 7 }, title: { display: true, text: title, color: "#7f8c8d" } });
         chartBatteryTime = new Chart(el("chartBatteryTime").getContext("2d"), {
@@ -8242,6 +8271,7 @@
     function analyticsDrawCard(id) {
       if(!analyticsActive()||!analyticsState.visible.has(id))return;
       if(id===8){analyticsHeatmap();return;}
+      if(!chartLibraryReady()){el('anaExport'+id).disabled=true;return;}
       const m=analyticsModel(id,true);if(!m)return;
       const comparison=id===7?analyticsComparison(analyticsDomain(id),m,true):null;
       if(id===7&&!comparison)return;
@@ -8771,6 +8801,7 @@
     }
 
     // Init: téma, stanice, config
+    document.addEventListener("DOMContentLoaded", finishChartLibraryLoad, { once: true });
     initCurrentChartVisibility();
     const mobileLayout = window.matchMedia("(max-width:767px)");
     const syncMobileLayout = () => {

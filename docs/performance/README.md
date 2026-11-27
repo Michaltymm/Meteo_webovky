@@ -191,3 +191,5 @@ limity na sdíleném CI stroji.
 - [Vykreslení srážkových sloupců v0.21.12](VYKRESLENI_SRAZKOVYCH_SLOUPCU.md) ověřuje přeskočení shodné obnovy a cenu oprav.
 
 - [Překreslení zaměřovací čáry v0.21.13](ZAMEROVACI_CARA_GRAFU.md) měří sloupcový i čárový graf při pohybu ukazatele.
+
+- [Neblokující načítání Chart.js v0.21.14](NEBLOKUJICI_CHART_JS.md) měří čas zobrazení měření při prodlevě CDN.

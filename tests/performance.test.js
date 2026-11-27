@@ -198,6 +198,34 @@ test('crosshair requests a chart render only when its position changes', () => {
   assert.equal(a.run('moveCrosshair("mouseleave",0)'), '[null,true]');
 });
 
+test('chart library completion renders the current data and tab after a station change', () => {
+  const a = app();
+  a.run(`const RealChart=Chart;Chart=undefined;
+    let activeTab="now";document.querySelector=()=>({dataset:{tab:activeTab}});
+    store.rows=[{ts:new Date(),temp:18,rain:1}];tabDirtyState.now=true;refreshTab("now");
+    updateChartLibraryStatus();`);
+  assert.equal(a.run('chart24===null && tabDirtyState.now'), true);
+  assert.match(a.nodes.get('chartLibraryStatus').textContent, /Načítám/);
+  a.run(`activeTab="rain";store.rows=[{ts:new Date(),temp:24,rain:7}];tabDirtyState.rain=true;refreshTab("rain");
+    Chart=RealChart;finishChartLibraryLoad();`);
+  assert.equal(a.run('chart24===null && chartRain.data.datasets[0].data[0]===7'), true);
+  assert.equal(a.nodes.get('chartLibraryStatus').hidden, true);
+});
+
+test('chart library failure leaves the overview table and simple view usable', () => {
+  const a = app();
+  a.run(`Chart=undefined;document.querySelector=()=>({dataset:{tab:"overview"}});
+    store.rows=[{ts:new Date(),temp:24}];el("ovMetric").value="temp";
+    finishChartLibraryLoad();buildTempOverview();`);
+  assert.equal(a.run('chartOverview'), null);
+  assert.match(a.nodes.get('ovTableBody').innerHTML, /24\.0/);
+  assert.match(a.nodes.get('chartLibraryStatus').textContent, /nepodařilo/);
+  a.run('updateChartLibraryStatus("daily")');
+  assert.equal(a.nodes.get('chartLibraryStatus').hidden, true);
+  a.run('currentPage="modern2";updateChartLibraryStatus("overview")');
+  assert.equal(a.nodes.get('chartLibraryStatus').hidden, true);
+});
+
 test('large histories and statistics do not exceed the function argument limit', () => {
   const a = app({ realRefresh: true }); fixture(a, 250000);
   a.run('refreshUI(); buildExplorer()');
