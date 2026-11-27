@@ -217,3 +217,70 @@ test('an expired, different-source, implicit-year, or over-budget full export is
     assert.match(a.requests.at(-1).url, /LIMIT%20400/, variant);
   }
 });
+
+function historyFixture(count) {
+  return Array.from({length: count}, (_, i) => {
+    const hour = String(23 - Math.floor(i / 60)).padStart(2, '0');
+    const minute = String(59 - i % 60).padStart(2, '0');
+    return `24.11.2026,${hour}:${minute},18,1010,50,0,0,,4,id${i}\n`;
+  });
+}
+
+async function returnToOverview(a, full) {
+  a.run('globalThis.IntersectionObserver=class{observe(){} disconnect(){}}');
+  await visitFull(a, 1, csv(25));
+  await visitFull(a, 0, full);
+  await switchTo(a, 1);
+  await respondQuick(a, csv(25));
+  a.run('globalThis.savedFull=fullStationHistory.get(0)');
+  await switchTo(a, 0);
+}
+
+test('opening analytics after a verified matching quick response restores and checks the full export', async () => {
+  const a = stationApp();
+  const rows = historyFixture(450);
+  await returnToOverview(a, rows.join(''));
+  await respondQuick(a, rows.slice(0, 400).join(''));
+  assert.equal(a.run('fullStationHistory.get(0)===savedFull && store.rows.length===400'), true);
+  const before = a.requests.length;
+  a.run('showAppPage("analytics")');
+  assert.equal(a.requests.length, before + 1);
+  assert.doesNotMatch(a.requests.at(-1).url, /LIMIT%20400/);
+  assert.equal(a.run('store.fullLoaded && store.rows===savedFull.rows && dataStatus.sheets.cached'), true);
+  await respondQuick(a, rows.join(''));
+  assert.equal(a.run('dataStatus.sheets.timing.parse.runs===0 && !dataStatus.sheets.cached'), true);
+});
+
+test('a corrected sensor, changed note, or shorter full result prevents replacement of quick rows', async () => {
+  for (const difference of ['sensor', 'note', 'deletion']) {
+    const a = stationApp();
+    const full = historyFixture(450);
+    const quick = full.slice(0, difference === 'deletion' ? 399 : 400);
+    if (difference === 'sensor') quick[399] = quick[399].replace(',18,', ',0,');
+    if (difference === 'note') quick[399] = quick[399].replace('id399', 'oprava');
+    await returnToOverview(a, full.join(''));
+    await respondQuick(a, quick.join(''));
+    assert.equal(a.run('fullStationHistory.has(0)'), false, difference);
+    a.run('globalThis.verifiedQuick=store.rows;showAppPage("analytics")');
+    assert.equal(a.run('store.rows===verifiedQuick && !store.fullLoaded && !dataStatus.sheets.cached'), true, difference);
+    assert.doesNotMatch(a.requests.at(-1).url, /LIMIT%20400/, difference);
+  }
+});
+
+test('an in-flight quick refresh is completed before analytics requests full history', async () => {
+  const a = stationApp();
+  const rows = historyFixture(450);
+  await returnToOverview(a, rows.join(''));
+  await respondQuick(a, rows.slice(0, 400).join(''));
+  const load = a.run('fetchSheets()');
+  const before = a.requests.length;
+  a.run('showAppPage("analytics")');
+  assert.equal(a.requests.length, before);
+  assert.equal(a.run('!store.fullLoaded && store.rows.length===400'), true);
+  const latest = rows[0].replace(',18,', ',27,') + rows.slice(1, 400).join('');
+  await respondQuick(a, latest);
+  await load;
+  await settle();
+  assert.equal(a.requests.length, before + 1);
+  assert.equal(a.run('store.rows[0].temp===27 && !fullStationHistory.has(0) && !store.fullLoaded'), true);
+});

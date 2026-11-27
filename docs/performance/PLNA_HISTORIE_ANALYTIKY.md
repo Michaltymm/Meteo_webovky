@@ -52,9 +52,8 @@ změnu listu, zdroje či časové zóny, rozpočet a původní chování přehle
 Offline Chromium ověřil návrat v Analytice, její mřížku a Moderní
 přehled 2. Scénáře použily původní konfigurace a simulované CSV.
 
-Další krok METEO-004 je prověřit otevření Analytiky až po přechodu na
-stanici v běžném přehledu. Je potřeba zachovat novější rychlá data,
-ověřit shodu jejich měření s plnou kopií a změřit cenu této kontroly.
+Otevření Analytiky až po přechodu na stanici v běžném přehledu bylo
+změřeno v [profilu v0.21.26](OTEVRENI_ANALYTIKY_Z_CACHE.md).
 
 ## Publikace
 

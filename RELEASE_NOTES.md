@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.21.26
+
+- Analytika může využít uloženou plnou historii i po otevření z jiného přehledu. Použije ji při shodě s právě ověřenými měřeními a plný export znovu zkontroluje.
+
 ## v0.21.25
 
 - Analytika při rychlém návratu na stanici se Sheets může hned zobrazit nedávno uloženou plnou historii. Označí ji jako uložená data a zároveň ověří celý export.

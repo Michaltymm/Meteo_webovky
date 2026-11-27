@@ -2301,8 +2301,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02125"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.25</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02126"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.26</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -4639,9 +4639,27 @@
       }
     }
 
+    function fullHistoryMatchesQuick(entry) {
+      const { acceptedValidation } = dataStatus.sheets;
+      const count = store.rows.length;
+      if (!acceptedValidation?.complete || acceptedValidation.scope !== "partial" || acceptedValidation.rejected ||
+          !count || count > QUICK_HISTORY_MAX_ROWS || count > entry.rows.length) return false;
+      // A short response can represent the whole source and reveal deletions.
+      if (count < QUICK_HISTORY_MAX_ROWS && count !== entry.rows.length) return false;
+      return store.rows.every((row, i) => {
+        const stored = entry.rows[i];
+        return row.ts.getTime() === stored.ts.getTime() && row.date === stored.date && row.time === stored.time &&
+          row.note === stored.note && CSV_SENSOR_FIELDS.every(key => Object.is(row[key], stored[key]));
+      });
+    }
+
     function restoreStationHistory(context, history, full = false) {
       const entry = history.get(context.index);
-      if (!entry || !isCurrentStation(context) || store.rows.length) return false;
+      if (!entry || !isCurrentStation(context)) return false;
+      if (store.rows.length) {
+        const { phase, cached } = dataStatus.sheets;
+        if (!full || store.fullLoaded || sheetsLoad || phase !== "ok" || cached || !fullHistoryMatchesQuick(entry)) return false;
+      }
       const age = Date.now() - entry.successAt;
       if (!stationHistoryMatches(entry, context.config) || age < 0 || age >= STATION_HISTORY_TTL_MS ||
           entry.timeZone !== stationHistoryTimeZone()) {
@@ -4731,8 +4749,8 @@
             }
             if (!isCurrentStation(context)) return;
             store._lastQuickCsv = text;
-            // A newly accepted partial export cannot confirm the older full copy.
-            fullStationHistory.delete(context.index);
+            const storedFull = fullStationHistory.get(context.index);
+            if (storedFull && !fullHistoryMatchesQuick(storedFull)) fullStationHistory.delete(context.index);
             updatePartialBadge();
             recordSheetsSuccess(context);
             saveQuickStationHistory(context, text);
@@ -7427,7 +7445,15 @@
       if (updateHistory && location.hash !== hash) window.history?.pushState(null, "", hash);
       if (changed && scroll) window.scrollTo?.({ top: 0, behavior: "auto" });
       if (!changed) return;
-      if (page === "analytics") buildAnalytics();
+      if (page === "analytics") {
+        const context = stationContext();
+        if (store.rows.length && restoreStationHistory(context, fullStationHistory, true)) {
+          invalidateDerivedData();
+          fetchSheets();
+          updatePartialBadge();
+          refreshUI();
+        } else buildAnalytics();
+      }
       else if (dashboard && store.rows.length) {
         const tab = document.querySelector(".tab-btn.active")?.dataset.tab;
         if (tab) { refreshTab(tab); setTimeout(() => resizeChartsInTab(tab), 50); }
@@ -8108,6 +8134,7 @@
       cancelStationWork();
       const context = stationContext();
       pollingContext = context;
+      if (!restoreHistory) fullStationHistory.delete(context.index);
       if (CFG.source === "sheets" || CFG.source === "both") {
         // Analytics already requests full history after the quick response.
         // Only that view can replace those two requests with one full check.

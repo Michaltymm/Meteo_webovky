@@ -18,6 +18,9 @@ zadaného výstupu. Pro měření latence a paměti slouží samostatné profily
 
 ## Výkonnostní profily
 
+[Otevření Analytiky z mezipaměti](OTEVRENI_ANALYTIKY_Z_CACHE.md) ověřuje
+shodu rychlých měření a čas do zobrazení dostupné plné historie (METEO-004).
+
 [Plná historie Analytiky](PLNA_HISTORIE_ANALYTIKY.md) měří paměť,
 dobu návratu na stanici a rozpočet plné mezipaměti (METEO-004).
 
