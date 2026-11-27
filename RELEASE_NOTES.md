@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.22.0
+
+- Rozbalený **Stav dat** ukazuje u stanic se Sheets typický odstup mezi nedávnými záznamy a nejdelší mezeru v zobrazeném výřezu.
+
 ## v0.21.26
 
 - Analytika může využít uloženou plnou historii i po otevření z jiného přehledu. Použije ji při shodě s právě ověřenými měřeními a plný export znovu zkontroluje.

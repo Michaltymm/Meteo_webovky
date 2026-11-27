@@ -102,7 +102,7 @@ Historické nálezy se nemažou; současný stav se zaznamenává zde a v pamět
 | --- | --- | --- | --- | --- | --- |
 | METEO-025 Tři stanice v jednom grafu T/RH/V; přehled rozdílů | Současné exporty, různé senzory/intervaly | V / P1 | v0.10.0 skutečné časové T všech3stanic, lazy exporty/kompaktní cache; RH/V srovnání dále | METEO-004/029/048; návrh níže | Rozpracováno |
 | METEO-026 Srovnání denních minim/maxim a počtu měření | Současná data všech stanic | S / P1 | Sdílené denní agregace | METEO-025/038 | Nápad |
-| METEO-027 Dostupnost, typický interval a nejdelší výpadek | Timestampy + očekávaný měřicí plán | S / P1 | O(n), malý výsledný souhrn | METEO-045; interval fetch není interval senzoru | K posouzení |
+| METEO-027 Dostupnost, typický interval a nejdelší výpadek | Časy Sheets, pro dostupnost očekávaný měřicí plán | S / P1 | Do 400 záznamů na vyžádání pro typický odstup a mezeru | METEO-045; interval přenosu je oddělený | Rozpracováno |
 | METEO-028 Teplotní rozdíl lokalit po párování, kalibrační bias | T, umístění/kalibrace stanic | S / P2 | v0.10.0 popisné ΔT z časových párů s počty/odchylkami; kalibrační bias bez metadata071 se neodhaduje | METEO-025/029; lokalita není senzorová chyba | Rozpracováno |
 
 ## 6. Analýza závislostí mezi veličinami
@@ -2190,6 +2190,16 @@ skutečný browser profil commitu/refreshUI velké historie (DOM/agregace/Chart)
 protože VMprofil UI nahrazuje. Neopakovat hotový parser/comparator/grafové
 etapy; podle nákladů zvolit další malou změnu. Celé008 Rozpracováno.
 
+
+## METEO-027/045 — odstup mezi měřeními, v0.22.0
+
+Výpočet mediánu a nejdelší mezery v rozbaleném **Stavu dat** využívá
+nejvýše 400 nejnovějších řádků Sheets. Sousední duplicity mají společný čas.
+Panel uvádí oba počty a využívá souhrn v paměti, dokud zůstává stejné pole
+měření. Tento krok METEO-027 pokrývá popis nedávných časů všech tří stanic.
+METEO-045 čeká na ověřený plán stanice pro interpretaci delších mezer
+a odlišení výpadku měření od nedostupnosti zdroje. Základní údaje o přenosu
+poskytuje samostatná část **Přenos dat**. [Metodika](STAV_DAT.md#odstup-mezi-měřeními-od-v0220)
 
 ## METEO-009/010 — přehledný stav dat pod šipkou, v0.18.9 (2026-10-28)
 

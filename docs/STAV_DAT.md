@@ -1,5 +1,31 @@
 # Stav a stáří dat — METEO-009, v0.15.0
 
+## Odstup mezi měřeními od v0.22.0
+
+Rozbalený **Stav dat → Načtená historie** u čistého zdroje Sheets ukazuje
+typický odstup (medián) a nejdelší mezeru mezi sousedními různými časy.
+Výřez tvoří nejnovějších až 400 přijatých záznamů. Panel ukazuje počet
+záznamů ve výřezu a počet různých platných časů. Duplicitní záznamy mají
+při výpočtu odstupu jeden společný čas a zůstávají v historii.
+
+S méně než dvěma různými časy vysvětlí panel, co je k výpočtu potřeba.
+Budoucí čas nejnovějšího záznamu se zobrazuje jako upozornění. Výsledek je
+popis načteného výřezu. Dostupnost stanice a příčina mezery vyžadují ověřený
+plán měření a další údaje. U MQTT je dostupný čas příjmu zprávy, proto se
+statistika v čistém MQTT ani kombinovaném zdroji nepoužívá.
+
+Výpočet běží až po rozbalení a opakovaně využívá společný souhrn pro stejné
+pole řádků. Nepřidává požadavky ani nevytváří graf. Příslušnost k výřezu
+závisí na čase v přijaté historii, nezávisle na filtru jednotlivých grafů.
+
+V offline mobilní simulaci Chromium (390 px, čtyřnásobné zpomalení CPU,
+250 000 syntetických časů) trvalo první sestavení rozbaleného stavu
+0,4 ms v mediánu. Předchozí verze byla u jednotlivého volání pod rozlišením
+časovače. Zavřený stav a opakovaná aktualizace otevřeného stavu měly medián
+pod 0,1 ms v obou verzích (31 vzorků po zahřátí). Měření zahrnuje obsluhu
+stavu před vykreslením prohlížečem. Regresní test kontroluje limit 400
+řádků a znovupoužití souhrnu.
+
 ## Kompaktní zobrazení od v0.18.9
 
 Panel je ve všech třech pohledech při načtení zavřený. Celý řádek **Stav dat**

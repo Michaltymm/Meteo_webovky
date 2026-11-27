@@ -85,6 +85,7 @@ async def main():
         summary = details.locator(':scope > summary')
         assert await details.evaluate('e=>!e.open')
         assert await page.locator('#dataRecordTime').is_hidden()
+        assert await page.locator('#dataMeasurementCadence').is_hidden()
         assert await page.locator('#gsStatusText').is_hidden()
         assert await page.locator('#partialBadge').is_visible()
         assert 'Měření: Před 1 d' in await page.locator('#dataStatusSummary').inner_text()
@@ -95,6 +96,9 @@ async def main():
         await summary.focus()
         await summary.press('Enter')
         assert await details.evaluate('e=>e.open')
+        cadence = page.locator('#dataMeasurementCadence')
+        await cadence.wait_for(state='visible')
+        assert await cadence.inner_text() == 'Typický odstup 10 min · nejdelší mezera 10 min\nZáznamy ve výřezu 4 · různé časy 4'
         assert await page.locator('#dataRecordTime').is_visible()
         assert await page.locator('#sheetsTransport').is_visible()
         await summary.press('Space')
@@ -137,6 +141,7 @@ async def main():
         await page.locator('#partialBadge').click()
         await page.wait_for_function('store.fullLoaded && dataStatus.sheets.phase==="ok"')
         assert await page.locator('#dataHistoryScope').inner_text() == 'Celý export zdroje'
+        assert 'Záznamy ve výřezu 8 · různé časy 8' in await cadence.inner_text()
         await page.evaluate('globalThis.originalRows=store.rows;globalThis.lastSuccess=dataStatus.sheets.successAt')
         await page.locator('#dataValidationTrigger').click()
         failed = True
@@ -170,6 +175,7 @@ async def main():
         await page.evaluate('switchStation(1)')
         await page.wait_for_function('activeIdx===1 && dataStatus.sheets.phase==="loading"')
         assert await page.locator('#dataRecordTime').inner_text() == 'Zatím bez dat'
+        assert await cadence.is_hidden()
         assert await page.locator('#dataLastSync').inner_text() == 'Úspěšná kontrola: dosud žádná'
         assert await page.evaluate('dataStatus.sheets.validation===null')
         assert await page.evaluate('dataStatus.sheets.timing===null')
@@ -199,6 +205,7 @@ async def main():
                     compact_box = await details.bounding_box()
                     assert compact_box['height'] <= 112, (view, theme, width, compact_box)
                     assert await page.locator('#dataHistoryCount').is_hidden()
+                    assert await cadence.is_hidden()
                     assert await page.locator('#dataRecordTime').is_hidden()
                     assert await page.locator('#gsStatusText').is_hidden()
                     assert await page.locator('#mqttTransport').is_hidden()
@@ -209,6 +216,7 @@ async def main():
                     expanded_box = await details.bounding_box()
                     assert expanded_box['height'] > compact_box['height']+80, (view, theme, width)
                     assert await page.locator('#dataHistoryCount').is_visible()
+                    assert await cadence.is_visible()
                     overflow = await page.evaluate('document.documentElement.scrollWidth>innerWidth+1')
                     if overflow:
                         await page.screenshot(path=str(output.with_name('overflow.png')))
@@ -241,6 +249,7 @@ async def main():
         future = True
         await page.evaluate('fetchSheets(true)')
         assert 'budoucnosti' in await page.locator('#dataRecordAge').inner_text()
+        assert 'budoucnosti' in await cadence.inner_text()
         assert await page.locator('#dataRecordTime').get_attribute('class') == 'data-state-warning'
         await summary.click()
         assert await details.evaluate('e=>!e.open')
@@ -262,6 +271,8 @@ async def main():
         await page.evaluate('fetchSheets(true)')
         await page.locator('[data-page="main"]').click()
         await page.wait_for_load_state('networkidle')
+        await page.evaluate('loadMQTTLibrary()')
+        await page.wait_for_function('mqttLibraryPhase === "ready"')
         await page.evaluate('''()=>{
           cancelStationWork();globalThis.realPahoClient=Paho.Client;
           globalThis.mqttTestClients=[];
@@ -282,6 +293,7 @@ async def main():
           deliver('{"temp":0,"voltage":"4,2"}');
         }''')
         assert await page.evaluate('dataStatus.mqtt.diagnostics.received===5 && dataStatus.mqtt.diagnostics.accepted===1 && dataStatus.mqtt.diagnostics.rejected===4')
+        assert await cadence.is_hidden()
         await page.locator('#dataValidationTrigger').click()
         await page.locator('#mqttDiagnostics summary').click()
         assert await page.locator('#mqttDiagAccepted').inner_text() == '1'
@@ -368,6 +380,7 @@ async def main():
                    'controlled 60ms transport and separate parser/UI timings', 'no stale costs for unchanged exports', 'failure/recovery timings',
                    'collapsed timing explanation', 'expanded short error report stays in viewport',
                    'native disclosure closed on load, Enter/Space/touch, no fetch/Chart/row replacement',
+                   'Sheets cadence reflects quick/full export, hides during station change and ignores MQTT receipt',
                    'closing disclosure dismisses help; inactive sources hidden', 'compact/expanded heights in 24 layouts',
                    'future and simultaneous transfer error visible with details closed',
                    'MQTT counts/reasons/private content excluded', 'live popup survives accepted MQTT with stable counter nodes',

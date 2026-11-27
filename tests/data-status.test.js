@@ -5,6 +5,7 @@ const settle=()=>new Promise(setImmediate);
 const csv='Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti\n22.10.2026,12:00,0,1010,50,0,0,,4';
 function fixture(){const a=app();a.run(`globalThis.NativeDate=Date;globalThis.clock=+new Date(2026,9,23,12);
  globalThis.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:[clock]))}static now(){return clock}};
+ el("dataMeasurementCadence");
  // Align the application's day snapshot with the fixture clock; this test
  // checks minute updates, not a rollover from the machine's current date.
  visibleDay=localDateKey();renderDataStatus()`);return a;}
@@ -105,6 +106,60 @@ test('compact status keeps record age distinct from transport and never toggles 
  a.nodes.get('dataStatusDetails').open=true;a.run('clock+=60000;renderDataStatus()');
  assert.equal(a.nodes.get('dataStatusDetails').open,true);
  assert.equal(a.nodes.get('dataStatusSummary').textContent,'Měření: Před 1 d 0 h');
+});
+
+test('Sheets interval uses distinct original timestamps, with no extra fetch or chart render',async()=>{
+ const a=fixture();
+ const body=[csv,
+  '22.10.2026,12:00,20,1010,50',
+  '22.10.2026,11:59:58,17,1010,50',
+  '22.10.2026,11:59:55,18,1010,50'].join('\n');
+ await accept(a,true,body);
+ const details=a.nodes.get('dataStatusDetails'),cadence=a.nodes.get('dataMeasurementCadence');
+ assert.equal(cadence.textContent,'');
+ const requests=a.requests.length,renders=a.state.renders;
+ details.open=true;
+ a.run('renderMeasurementCadence()');
+ assert.equal(cadence.textContent,'Typický odstup 2,5 s · nejdelší mezera 3 s\nZáznamy ve výřezu 4 · různé časy 3');
+ assert.equal(a.requests.length,requests);
+ assert.equal(a.state.renders,renders);
+ assert.equal(a.run('store.rows.length'),4);
+});
+
+test('Sheets interval reads only 400 recent rows and reuses the result until the rows change',()=>{
+ const a=fixture();
+ a.run(`globalThis.cadenceReads=0;
+  store.rows=new Proxy(Array.from({length:250000},(_,i)=>({ts:new Date(clock-i*60000)})),{
+   get(target,key){if(typeof key==="string" && /^\\d+$/.test(key)){
+    if(+key>=400) throw new Error("read beyond the recent window");
+    cadenceReads++;
+   }return target[key]}
+  });renderMeasurementCadence()`);
+ assert.equal(a.run('cadenceReads'),0);
+ const cadence=a.nodes.get('dataMeasurementCadence');
+ a.nodes.get('dataStatusDetails').open=true;
+ a.run('renderMeasurementCadence()');
+ assert.equal(a.run('cadenceReads'),401);
+ assert.match(cadence.textContent,/Typický odstup 1 min · nejdelší mezera 1 min\nZáznamy ve výřezu 400 · různé časy 400/);
+ a.run('renderMeasurementCadence()');
+ assert.equal(a.run('cadenceReads'),402);
+ a.run('store.rows=[{ts:new Date(clock)}];renderMeasurementCadence()');
+ assert.match(cadence.textContent,/potřeba dva různé časy/);
+});
+
+test('future timestamps and live receive times are distinct from observed Sheets cadence',()=>{
+ const a=fixture(),cadence=a.nodes.get('dataMeasurementCadence');
+ a.nodes.get('dataStatusDetails').open=true;
+ a.run('store.rows=[{ts:new Date(clock+60000)},{ts:new Date(clock)}];renderMeasurementCadence()');
+ assert.match(cadence.textContent,/budoucnosti/);
+ a.run('clock+=60000;renderMeasurementCadence()');
+ assert.match(cadence.textContent,/Typický odstup 1 min/);
+ for(const source of ['mqtt','both']){
+  a.run(`CFG.source="${source}";renderMeasurementCadence()`);
+  assert.equal(cadence.textContent,'');
+ }
+ a.run('CFG.source="sheets";store.rows=[];renderMeasurementCadence()');
+ assert.equal(cadence.textContent,'');
 });
 
 test('compact status exposes loading, failed transfer and recovery while retaining original records',async()=>{

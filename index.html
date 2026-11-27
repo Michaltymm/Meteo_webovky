@@ -2158,6 +2158,7 @@
     .data-state dt { color:var(--muted); font-size:.69rem; margin-bottom:.35rem; }
     .data-state dd { margin:0; line-height:1.5; overflow-wrap:anywhere; }
     .data-state-detail { display:block; color:var(--muted); white-space:pre-line; font-size:.72rem; margin-top:.25rem; }
+    #dataMeasurementCadence:empty { display:none; }
     .data-state-error { color:var(--red); }
     .data-state-warning { color:var(--yellow); }
     .data-transport { display:flex; flex-wrap:wrap; gap:.5rem 1rem; padding:0 1rem .8rem; color:var(--muted); font-size:.72rem; }
@@ -2301,8 +2302,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v02126"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.21.26</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0220"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.22.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2600,7 +2601,7 @@
       <dl class="data-state-grid" aria-label="Stáří a rozsah dat">
       <div><dt id="dataRecordLabel">Poslední záznam</dt><dd><span id="dataRecordTime">Zatím bez dat</span><span id="dataRecordAge" class="data-state-detail"></span></dd></div>
       <div><dt>Přenos dat <button type="button" class="info-trigger" data-info-text="Úspěšná kontrola Sheets potvrzuje přenos a zpracování exportu, nikoli nové měření. Čas CSV je vyložen v zóně prohlížeče. MQTT uvádí čas přijetí platné zprávy, nikoli čas měření čidla. Samotné stáří záznamu bez známého měřicího plánu neprokazuje výpadek stanice." aria-label="Jak rozlišit měření a synchronizaci"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataTransferState" role="status">Čeká na ověření</span><span id="dataLastSync" class="data-state-detail">Dosud bez úspěšného přenosu</span></dd></div>
-      <div><dt>Načtená historie <button type="button" id="dataValidationTrigger" class="info-trigger" aria-label="Podrobnosti validace dat"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataHistoryScope">Bez načtených dat</span><span id="dataHistoryCount" class="data-state-detail">Počet záznamů: 0</span></dd></div>
+      <div><dt>Načtená historie <button type="button" id="dataValidationTrigger" class="info-trigger" aria-label="Podrobnosti validace dat"><span class="info-glyph" aria-hidden="true">i</span></button></dt><dd><span id="dataHistoryScope">Bez načtených dat</span><span id="dataHistoryCount" class="data-state-detail">Počet záznamů: 0</span><span id="dataMeasurementCadence" class="data-state-detail"></span></dd></div>
       </dl>
       <div class="data-transport">
         <span id="sheetsTransport" class="data-source"><span class="dot" id="gsDot" aria-hidden="true"></span><span id="gsStatusText">Google Sheets: nezadáno</span></span>
@@ -7118,6 +7119,61 @@
       if (hours < 24) return "Před " + hours + " h " + minutes % 60 + " min";
       return "Před " + Math.floor(hours / 24) + " d " + hours % 24 + " h";
     }
+    const measurementCadenceCache = new WeakMap();
+    function measurementGapLabel(ms) {
+      const seconds = ms / 1000;
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor(seconds / 3600) % 24;
+      const minutes = Math.floor(seconds / 60) % 60;
+      const remainder = seconds % 60;
+      const parts = [];
+      if (days) parts.push(days + " d");
+      if (hours) parts.push(hours + " h");
+      if (minutes) parts.push(minutes + " min");
+      if (remainder || !parts.length) parts.push(remainder.toLocaleString("cs-CZ", { maximumFractionDigits: 3 }) + " s");
+      return parts.join(" ");
+    }
+    function measurementCadenceText(rows) {
+      const cached = measurementCadenceCache.get(rows);
+      if (cached !== undefined) return cached;
+      // Sheets history is ordered newest first. Only positive gaps between
+      // distinct timestamps in the recent diagnostic window are meaningful.
+      const windowSize = Math.min(rows.length, QUICK_HISTORY_MAX_ROWS);
+      const gaps = [];
+      let previous = null;
+      let largest = 0;
+      for (let i = 0; i < windowSize; i++) {
+        const time = rows[i].ts?.getTime?.();
+        if (!Number.isFinite(time) || time === previous) continue;
+        if (previous !== null) {
+          const gap = previous - time;
+          gaps.push(gap);
+          largest = Math.max(largest, gap);
+        }
+        previous = time;
+      }
+      let summary = "Pro výpočet odstupu jsou potřeba dva různé časy.";
+      if (gaps.length) {
+        gaps.sort((a, b) => a - b);
+        const upper = Math.floor(gaps.length / 2);
+        const lower = Math.floor((gaps.length - 1) / 2);
+        const median = (gaps[lower] + gaps[upper]) / 2;
+        summary = "Typický odstup " + measurementGapLabel(median) + " · nejdelší mezera " + measurementGapLabel(largest);
+      }
+      summary += "\nZáznamy ve výřezu " + windowSize + " · různé časy " + (previous === null ? 0 : gaps.length + 1);
+      measurementCadenceCache.set(rows, summary);
+      return summary;
+    }
+    function renderMeasurementCadence(now = Date.now()) {
+      if (!el("dataStatusDetails").open || currentPage === "modern2") return;
+      let text = "";
+      if (CFG.source === "sheets" && store.rows.length) {
+        const time = store.rows[0].ts?.getTime?.();
+        text = time > now ? "Záznam má čas v budoucnosti. Zkontrolujte časové údaje." : measurementCadenceText(store.rows);
+      }
+      setNodeText(el("dataMeasurementCadence"), text);
+    }
+    el("dataStatusDetails").addEventListener("toggle", () => renderMeasurementCadence());
     function setDataSourcePhase(kind, phase, context = stationContext()) {
       if (!isCurrentStation(context)) return;
       dataStatus[kind].phase = phase;
@@ -7264,6 +7320,7 @@
       const cached = sheets && dataStatus.sheets.cached;
       setNodeText(el("dataHistoryScope"), scope + (cached ? " · z mezipaměti" : ""));
       setNodeText(el("dataHistoryCount"), "Počet záznamů: " + store.rows.length.toLocaleString("cs-CZ"));
+      renderMeasurementCadence(now);
       // Keep actionable problems visible even when technical details are closed.
       const invalidTime = row && !Number.isFinite(timestamp), futureTime = Number.isFinite(timestamp) && timestamp > now;
       const recordSummary = futureTime ? "Čas záznamu je v budoucnosti" : invalidTime ? "Čas záznamu není dostupný"
@@ -7437,6 +7494,7 @@
       el("page-modern2").hidden = page !== "modern2";
       updateChartLibraryStatus();
       if (page === "modern2") renderDataStatus();
+      else renderMeasurementCadence();
       document.querySelectorAll(".page-link").forEach(link => {
         if (link.dataset.page === page) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
