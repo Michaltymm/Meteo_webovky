@@ -44,7 +44,9 @@ současnými konfiguracemi. Fyzický iPhone, živá oprávnění služeb a ESP
 zůstávají neověřené. Vydání v0.25.0 je na `codex-dev`. [GitHub Actions #92](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46082490820)
 
 ## QUICK CONTEXT
+- v0.27.0 z `f836715` nasadily [GitHub Actions #94](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46162990429). Produkční větev byla ověřena na `2405c5d`.
 - v0.27.0 zpřehledňuje dočasný Design Lab. A zvýrazňuje vlhkost, tlak a rosný bod a skrývá ostatní veličiny pod rozbalení. B přidává skutečné časy extrémů a rozsah platné historie před vzorkováním grafu. C uvádí čas záznamu každé stanice pro srovnání různě čerstvých teplot.
+- V offline Chromiu se při šířce 390 px výška celé stránky varianty A s výchozím rozložením snížila z 1 306 na 900 px. Ověřeny všechny tři stanice, šířky 320–1440 px, oba motivy, původní Moderní přehled a 518 testů Node. Nové testovací snímky jsou v `/workspace/validation/design-lab-refined/`.
 - Design Lab v0.26.0 z `b317d07` nasadily [GitHub Actions #93](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46122016570). Prošlo 518 testů Node, Design Lab i regresní kontroly původních přehledů v Chromiu. Šest snímků s testovacími měřeními je v `/workspace/validation/design-lab/`. `main` je na `2405c5d`. Čeká se na výběr varianty.
 - v0.26.0 přidává dočasný Design Lab na výslovné zadání k porovnání. Tři varianty sdílí historii, stav i konfiguraci stanic. Design Lab čeká na výběr uživatele, rozsah ukončeného cíle končí v0.25.0.
 - v0.24.0 z `31b05d7` nasadily [GitHub Actions #91](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46082066744). U 10 000 syntetických měření klesla doba do druhého snímku z 7 924 na 75 ms (99,1 %) a synchronní obsluha z 1 056 na 9,8 ms. Kontrola s 250 000 záznamy na vstupu ověřila nejnovější i nejstarší originál a 100 řádků v DOM. `main` je na `2405c5d`. [Měření a podmínky](docs/NAPADY_A_ROADMAP.md#meteo-040--stránkování-historie-v0240)
