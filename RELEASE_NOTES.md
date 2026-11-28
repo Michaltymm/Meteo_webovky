@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.26.0
+
+- Vývojová záložka **Design Lab** nabízí tři způsoby zobrazení stejných dat. Přepíná mezi aktuálním počasím, grafem historie a mřížkou stanic. Má vlastní světlý a tmavý režim.
+
 ## v0.25.0
 
 - Průzkumník grafů nabízí odstup od rosného bodu. Ukazuje, o kolik stupňů by se vzduch musel ochladit k nasycení při stejném tlaku vodní páry.

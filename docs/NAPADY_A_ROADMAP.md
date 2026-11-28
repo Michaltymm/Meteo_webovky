@@ -2900,3 +2900,18 @@ kapalnou vodou (a = 17,625 a b = 243,04 °C). Při RH 100 % je odstup
 nula. Výpočet vyžaduje 0 < RH ≤ 100 % a T i Td v rozsahu −40 až 50 °C.
 Mimo obor zůstává mezera v datech. Souhrny se počítají z úplného
 výřezu a vzorkování se používá až pro graf.
+
+## Design Lab — dočasný experiment, v0.26.0
+
+Samostatný pohled `#design-lab` nad daty aplikace. **Aktuální počasí**
+upřednostňuje velkou aktuální teplotu a karty metrik. **Historie a grafy**
+upřednostňuje graf, období a souhrny z úplného vybraného rozsahu.
+**Stanice v kostce** nabízí mřížku se stanicemi přepínatelnými jedním
+klepnutím. Všechny varianty sdílí aktivní stanici a původní data a používají
+stejný seznam veličin. Světlý a tmavý režim platí pro Design Lab.
+
+Delší export se stahuje po volbě delšího období, když načtená data
+celé požadované období nepokrývají. Graf při přechodu z analytické varianty
+uvolní instanci. Prohlížečovou kontrolu a šest snímků vytváří
+`scripts/check-design-lab-browser.py` s testovacími odpověďmi.
+Další změny závisí na výběru varianty uživatelem.

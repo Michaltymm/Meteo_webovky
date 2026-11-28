@@ -7,10 +7,10 @@ práce potřebné k rozhodnutí o vydání z `codex-dev`.
 
 | Priorita | Úkol | Podmínka uzavření |
 | --- | --- | --- |
-| P0 | Ověření správnosti a bezpečnosti před vydáním (METEO-056, bezpečnostní roadmapa) | Cílená kontrola změn od posledního auditu, úplná sada regresí, ověření originálů a výsledků na velké historii. Potvrzené závažné nálezy opravit nebo zdůvodnit blokaci. |
+| P0 | Ověření správnosti a bezpečnosti před vydáním (METEO-056, bezpečnostní roadmapa) | Hotovo pro v0.25.0. Kontrola změněných cest, kompletní regresní sada a porovnání kontrolních součtů. Externí ověření níže zůstávají blokovaná. |
 | P1 | Dialog a návrat fokusu v nastavení zdroje (METEO-010) | Hotovo ve v0.23.1. Ověřeny obě cesty otevření, Escape, návrat fokusu a mobilní zobrazení. |
 | P1 | Stránkování historie bez omezení přístupu k originálům (METEO-040) | Hotovo ve v0.24.0. Vykresluje nejvýše 500 měření a zpřístupňuje libovolnou stránku včetně nejstarší. |
-| P1 | Závěrečný profil načítání, CSV, historie a grafů (METEO-007/008/056) | Srovnat v0.23.0 s výsledkem na stejných vstupech, včetně největšího reprodukovatelného scénáře. Řešit jen doloženou regresi nebo významnou překážku. Ověřit čtyři pohledy i chybové stavy. |
+| P1 | Závěrečný profil načítání, CSV, historie a grafů (METEO-007/008/056) | Hotovo. Srovnání v0.23.0 a v0.25.0 je v závěrečné kontrole níže. |
 | P2 | Odstup od rosného bodu (METEO-012/013) | Hotovo ve v0.25.0 v Průzkumníku grafů. Podmínky a výpočet jsou uvedeny u veličiny. |
 
 Externě blokované jsou řízení ESP a ověření živých oprávnění služeb,
@@ -20,7 +20,31 @@ interpretace čítače (METEO-017/049). Zbývající rozšíření stávajícíc
 položek, nové funkce a kosmetické úpravy zůstávají v centrální roadmapě
 pro samostatné naplánování. Vydání do produkční větve vyžaduje souhlas.
 
+### Závěrečná kontrola v0.23.0 → v0.25.0
+
+Dokončeno ovládání dialogu nastavení klávesnicí, stránkování Historie
+a odstup od rosného bodu v Průzkumníku. Prošlo 518 testů Node a kontroly
+čtyř pohledů, lokální kontroly SRI, chyby při obnově, odolnost při
+zpracování CSV a kontrola konfigurace v Chromiu. Cílená kontrola změn
+nezjistila nový kritický problém. Všechny výsledky níže jsou offline.
+
+| Scénář | Před | Po | Změna doby |
+| --- | ---: | ---: | ---: |
+| Načtení CSV a vykreslení, 1 000 měření | 89,2 ms | 85,2 ms | −4,5 % |
+| Načtení CSV a vykreslení, 10 000 měření | 270,2 ms | 266,9 ms | −1,2 % |
+| Načtení CSV a vykreslení, 100 000 měření | 2 375,5 ms | 2 374,7 ms | −0,03 % |
+| Načtení CSV a vykreslení, 250 000 měření | 6 110,2 ms | 6 155,9 ms | +0,7 % |
+| Otevření Historie, 10 000 měření, do druhého snímku | 7 924 ms | 75 ms | −99,1 % |
+
+CSV profil použil 390 px, zpomalení CPU ×4 a medián tří zahřátých běhů.
+Kontrolní součty původních řádků, agregací a vykreslených měření se
+shodovaly ve všech čtyřech velikostech. Drobné rozdíly v časech CSV jsou
+popisné. Produkční doporučení platí pro ověřenou statickou aplikaci se
+současnými konfiguracemi. Fyzický iPhone, živá oprávnění služeb a ESP
+zůstávají neověřené. Vydání v0.25.0 je na `codex-dev`. [GitHub Actions #92](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46082490820)
+
 ## QUICK CONTEXT
+- v0.26.0 přidává dočasný Design Lab na výslovné zadání k porovnání. Tři varianty sdílí historii, stav i konfiguraci stanic. Design Lab čeká na výběr uživatele, rozsah ukončeného cíle končí v0.25.0.
 - v0.24.0 z `31b05d7` nasadily [GitHub Actions #91](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46082066744). U 10 000 syntetických měření klesla doba do druhého snímku z 7 924 na 75 ms (99,1 %) a synchronní obsluha z 1 056 na 9,8 ms. Kontrola s 250 000 záznamy na vstupu ověřila nejnovější i nejstarší originál a 100 řádků v DOM. `main` je na `2405c5d`. [Měření a podmínky](docs/NAPADY_A_ROADMAP.md#meteo-040--stránkování-historie-v0240)
 - v0.24.0 v METEO-040 stránkuje původní Historii po 100 nebo 500 řádcích. Přepnutí stanice a velikosti stránky vrátí pohled na začátek. Po zkrácení historie se pozice přizpůsobí poslední dostupné straně. Prošlo 517 testů Node a offline Chromium se třemi konfiguracemi, včetně přímého skoku k nejstaršímu originálu na šířce 320 px a bez nového požadavku. Další úkol je METEO-012/013.
 - v0.23.1 z `09ee238` úspěšně nasadily [GitHub Actions #90](https://github.com/Michaltymm/Meteo_webovky/actions/runs/46081682336). Kladná větev dialogu prošla v lokálním Chromiu se syntetickou ověřovací hodnotou. `main` zůstala na `2405c5d`. Výchozí profil METEO-040 pro volbu Vše v mobilním Chromium ×4 (10 000 syntetických řádků, medián tří měření) vykreslil v DOM všech 10 000 řádků. Samotná synchronní obsluha trvala 1 056 ms, do druhého snímku 7 924 ms. Opakovat stejný scénář po stránkování. Podklady jsou ve `/workspace/validation/source-settings/history-baseline.json`.

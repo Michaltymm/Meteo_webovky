@@ -2234,6 +2234,94 @@
         #dashboardTabList, .tab-pane, #cfgDetails { scroll-margin-block-start:8px; }
       }
     }
+    /* Design Lab has its own palette and components. */
+    body[data-view="lab"] :is(.status-bar,#dataStatusDetails) { display:none; }
+    .page-link[data-page="lab"][aria-current="page"] { background:#2451a2; color:#fff; border-color:#a5c3ff; }
+    .lab {
+      --lab-bg:#f4f5f9; --lab-card:#fff; --lab-soft:#eceff6; --lab-ink:#172033;
+      --lab-muted:#4c5974; --lab-line:#dce1ec; --lab-accent:#2451a2; --lab-chip:#e7efff;
+      max-width:1200px; margin:auto; padding:clamp(.9rem,3vw,2.4rem);
+      background:var(--lab-bg); color:var(--lab-ink); border:1px solid var(--lab-line); border-radius:24px;
+      font-variant-numeric:tabular-nums;
+    }
+    .lab[data-theme="dark"] {
+      --lab-bg:#111827; --lab-card:#1b2639; --lab-soft:#202e45; --lab-ink:#f0f4ff;
+      --lab-muted:#b4c1d8; --lab-line:#344560; --lab-accent:#a5c3ff; --lab-chip:#253c65;
+      color-scheme:dark;
+    }
+    .lab h1 { font-size:clamp(1.65rem,4vw,2.4rem); letter-spacing:-.04em; line-height:1.12; }
+    .lab h2 { font-size:clamp(1.3rem,3vw,1.8rem); letter-spacing:-.027em; }
+    .lab h3 { font-size:1rem; }
+    .lab [hidden] { display:none !important; }
+    .lab :is(button,select,a):focus-visible { outline:2px solid var(--lab-accent); outline-offset:2px; }
+    .lab button,.lab select,.lab .lab-link {
+      min-height:44px; font:inherit; padding:.4rem .7rem; border-radius:11px;
+      border:1px solid var(--lab-line); background:var(--lab-card); color:var(--lab-ink);
+    }
+    .lab button { cursor:pointer; }
+    .lab button[aria-pressed="true"],.lab button[aria-current="true"] {
+      background:var(--lab-chip); color:var(--lab-accent); border-color:var(--lab-accent);
+    }
+    .lab button:disabled { opacity:.6; cursor:default; }
+    .lab-heading,.lab-toolbar,.lab-graph-controls,.lab-actions {
+      display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.65rem;
+    }
+    .lab-toolbar { margin:1rem 0 .65rem; }
+    .lab-toolbar label,.lab-graph-controls label { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; min-width:0; max-width:100%; }
+    .lab-toggle,.lab-actions { justify-content:flex-start; gap:.4rem; }
+    .lab-toggle { display:flex; flex-wrap:wrap; }
+    .lab-status { min-height:1.25em; margin-bottom:.9rem; font-size:.84rem; color:var(--lab-muted); }
+    .lab-hero {
+      min-height:265px; color:#fff; padding:clamp(1.3rem,4vw,3rem);
+      border-radius:22px; background:linear-gradient(155deg,#174468,#24548a 55%,#48376d);
+      display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+    }
+    .lab-hero[data-band="warm"] { background:linear-gradient(145deg,#663a45,#7d4644 54%,#423d77); }
+    .lab-hero[data-band="cold"] { background:linear-gradient(145deg,#15385e,#265274 56%,#1b5266); }
+    .lab-hero-value { display:block; font-size:clamp(3.8rem,10vw,6.6rem); line-height:1.12; font-weight:550; letter-spacing:-.068em; }
+    .lab-hero-value small { font-size:.44em; letter-spacing:-.02em; }
+    .lab-caption { margin-top:.35rem; font-size:.83rem; }
+    .lab .lab-card {
+      background:var(--lab-card); border:1px solid var(--lab-line); border-radius:16px;
+      padding:.95rem; min-width:0;
+    }
+    .lab-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.6rem; margin:.75rem 0 0; }
+    .lab-metrics dt,.lab-figures dt,.lab-description,.lab-subtitle { font-size:.82rem; color:var(--lab-muted); }
+    .lab-metrics dd,.lab-figures dd { margin:.24rem 0 0; font-size:clamp(1.15rem,2.8vw,1.6rem); font-weight:650; }
+    .lab-unit { color:var(--lab-muted); font-size:.58em; font-weight:500; white-space:nowrap; }
+    .lab-graph .lab-card { border-radius:12px; }
+    .lab-graph-controls { margin:.75rem 0; justify-content:flex-start; }
+    .lab-figures { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.65rem; margin:.7rem 0; }
+    .lab-figures > div { border-left:2px solid var(--lab-line); padding-left:.65rem; overflow-wrap:anywhere; }
+    .lab-plot { height:clamp(195px,42vw,310px); position:relative; }
+    .lab-plot canvas { max-width:100%; max-height:100%; }
+    .lab-series-status { min-height:1.1em; color:var(--lab-muted); font-size:.82rem; }
+    .lab-graph .lab-metrics { gap:0 .65rem; }
+    .lab-graph .lab-metrics > div { padding:.6rem .15rem; border-bottom:1px solid var(--lab-line); }
+    .lab-bento { display:grid; gap:.65rem; grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .lab-bento .lab-stations { grid-column:span 2; }
+    .lab-stations h2 { margin-bottom:.6rem; }
+    .lab-stations button { display:flex; align-items:center; justify-content:space-between; gap:.5rem; text-align:left; width:100%; margin-top:.35rem; }
+    .lab-stations button span:last-child { color:var(--lab-muted); flex:none; font-size:.88rem; }
+    .lab-bento .lab-current { grid-column:span 2; display:flex; flex-direction:column; justify-content:center; background:var(--lab-chip); }
+    .lab-bento .lab-current strong { font-size:clamp(2.2rem,6vw,4.3rem); font-weight:620; letter-spacing:-.055em; }
+    .lab-bento .lab-metrics { display:contents; }
+    .lab-bento .lab-metrics > div:nth-child(5n + 1) { grid-column:span 2; }
+    .lab-actions { margin-top:1rem; }
+    .lab .lab-link { display:inline-flex; align-items:center; text-decoration:none; }
+    @supports(backdrop-filter:blur(6px)) {
+      .lab[data-variant="c"] .lab-toggle button { background:color-mix(in srgb,var(--lab-card) 78%,transparent); backdrop-filter:blur(6px); }
+      .lab[data-variant="c"] .lab-toggle button[aria-pressed="true"] { background:var(--lab-chip); }
+    }
+    @media(max-width:767px) {
+      .page-navigation-inner { grid-template-columns:repeat(3,minmax(0,1fr)); }
+      .page-navigation-inner .page-link[data-page="lab"] { grid-column:span 2; }
+      .lab-metrics,.lab-bento { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .lab .lab-toggle button { font-size:.82rem; }
+      .lab-hero { min-height:215px; }
+      .lab-graph-controls { gap:.5rem; }
+      .lab select { max-width:100%; }
+    }
   </style>
 </head>
 
@@ -2312,8 +2400,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0250"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.25.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0260"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.26.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -2371,6 +2459,7 @@
       <a class="page-link" href="#moderni" data-page="modern" aria-controls="page-main">Moderní přehled</a>
       <a class="page-link" href="#moderni2" data-page="modern2" aria-controls="page-modern2">Moderní přehled 2</a>
       <a class="page-link" href="#analytika" data-page="analytics" aria-controls="tab-analytics">📊 Analytické grafy</a>
+      <a class="page-link" href="#design-lab" data-page="lab" aria-controls="page-lab">Design Lab</a>
     </div>
   </nav>
   <p id="chartLibraryStatus" role="status" style="padding:.5rem 1rem;color:var(--muted)" hidden></p>
@@ -3467,6 +3556,65 @@
       </div>
       <p id="simpleStatus" class="simple-status" role="status" aria-atomic="true">Zatím bez dat</p>
       <a class="simple-more" href="#moderni">Podrobný přehled →</a>
+    </main>
+    <main id="page-lab" class="app-page lab" data-theme="dark" data-variant="a" aria-labelledby="labTitle" hidden>
+      <div class="lab-heading">
+        <h1 id="labTitle">Design Lab</h1>
+        <button id="labTheme" type="button" onclick="designLab.toggleTheme()" aria-pressed="true">Tmavý režim</button>
+      </div>
+      <div class="lab-toolbar">
+        <div class="lab-toggle" role="group" aria-label="Varianta rozhraní">
+          <button type="button" data-lab-choice="a" onclick="designLab.choose('a')" aria-controls="labVariantA" aria-pressed="true">Aktuální počasí</button>
+          <button type="button" data-lab-choice="b" onclick="designLab.choose('b')" aria-controls="labVariantB" aria-pressed="false">Historie a grafy</button>
+          <button type="button" data-lab-choice="c" onclick="designLab.choose('c')" aria-controls="labVariantC" aria-pressed="false">Stanice v kostce</button>
+        </div>
+        <label id="labStationControl" for="labStation">Meteostanice <select id="labStation" onchange="switchStation(Number(this.value))"></select></label>
+      </div>
+      <p class="lab-status" id="labStatus" role="status"></p>
+      <section id="labVariantA" aria-labelledby="labWeatherStation">
+        <div class="lab-hero" id="labHero">
+          <h2 id="labWeatherStation">Meteostanice</h2>
+          <div class="lab-hero-value"><span id="labHeroTemp">–</span><small> °C</small></div>
+          <p class="lab-caption" id="labWeatherTime"></p>
+        </div>
+        <dl id="labWeatherMetrics" class="lab-metrics"></dl>
+      </section>
+      <section id="labVariantB" class="lab-graph" aria-labelledby="labGraphTitle" hidden>
+        <article class="lab-card">
+          <h2 id="labGraphTitle">Vývoj měření</h2>
+          <div class="lab-graph-controls">
+            <label for="labMetric">Veličina <select id="labMetric" onchange="designLab.chartChoice()"></select></label>
+            <div class="lab-toggle" role="group" aria-label="Období">
+              <button type="button" data-lab-days="1" onclick="designLab.setPeriod(1)" aria-pressed="true">24 h</button>
+              <button type="button" data-lab-days="7" onclick="designLab.setPeriod(7)" aria-pressed="false">7 dní</button>
+              <button type="button" data-lab-days="30" onclick="designLab.setPeriod(30)" aria-pressed="false">30 dní</button>
+            </div>
+          </div>
+          <dl class="lab-figures">
+            <div><dt>Minimum</dt><dd id="labSeriesMin">–</dd></div>
+            <div><dt>Průměr</dt><dd id="labSeriesAvg">–</dd></div>
+            <div><dt>Maximum</dt><dd id="labSeriesMax">–</dd></div>
+          </dl>
+          <div class="lab-plot" id="labPlot" hidden><canvas id="labCanvas" role="img" aria-label="Časový graf měření" aria-describedby="labSeriesStatus"></canvas></div>
+          <p class="lab-series-status" id="labSeriesStatus" role="status"></p>
+        </article>
+        <h3 style="margin-top:.9rem">Poslední měření</h3>
+        <dl id="labGraphMetrics" class="lab-metrics"></dl>
+      </section>
+      <section id="labVariantC" class="lab-bento" aria-labelledby="labStationsTitle" hidden>
+        <article class="lab-card lab-stations"><h2 id="labStationsTitle">Meteostanice</h2><div id="labStationCards"></div></article>
+        <article class="lab-card lab-current">
+          <h3 id="labBentoStation">Meteostanice</h3>
+          <div><strong id="labBentoTemp">–</strong> °C</div>
+          <p class="lab-subtitle" id="labBentoTime"></p>
+        </article>
+        <dl id="labBentoMetrics" class="lab-metrics"></dl>
+      </section>
+      <div class="lab-actions">
+        <button type="button" onclick="manualRefresh()">Obnovit data</button>
+        <button type="button" onclick="showAppPage('main');el('dashboardTab-hist').click()">Otevřít historii</button>
+        <a class="lab-link" href="#analytika">Analytické grafy</a>
+      </div>
     </main>
   </div><!-- /page-wrapper -->
 
@@ -5179,7 +5327,7 @@
 
     function updateChartLibraryStatus(tab = document.querySelector(".tab-btn.active")?.dataset.tab) {
       const status = el("chartLibraryStatus");
-      status.hidden = chartLibraryReady() || !(analyticsActive() || (currentPage !== "modern2" && chartTabs.has(tab)));
+      status.hidden = chartLibraryReady() || !(analyticsActive() || (!["modern2","lab"].includes(currentPage) && chartTabs.has(tab)));
       if (!status.hidden) setNodeText(status, chartLibraryFinished
         ? "Knihovnu grafů se nepodařilo načíst. Pro nový pokus obnovte stránku."
         : "Načítám knihovnu grafů…");
@@ -5187,6 +5335,7 @@
 
     function finishChartLibraryLoad() {
       chartLibraryFinished = true;
+      designLab.chartReady();
       const tab = document.querySelector(".tab-btn.active")?.dataset.tab;
       updateChartLibraryStatus(tab);
       if (!chartLibraryReady() || !store.rows.length) return;
@@ -5269,7 +5418,7 @@
     }
 
     function refreshTab(tab) {
-      if (analyticsActive() || currentPage === "modern2") return;
+      if (analyticsActive() || currentPage === "modern2" || currentPage === "lab") return;
       if (!tabDirtyState[tab]) {
         if (tab === "explorer") scheduleExplorerRenderJob();
         return;
@@ -7415,6 +7564,7 @@
       el("sheetsTransport").hidden = !sheets;
       el("mqttTransport").hidden = !mqtt;
       renderSimpleOverview();
+      if (currentPage === "lab") designLab.render();
     }
 
     // A compact projection of the same latest row/status, without a second
@@ -7477,8 +7627,206 @@
     ══════════════════════════════════════════════ */
     let currentPage = "main";
     function appPageFromHash() {
+      if (location.hash === "#design-lab") return "lab";
       return location.hash === "#analytika" ? "analytics" : location.hash === "#moderni2" ? "modern2" : location.hash === "#moderni" ? "modern" : "main";
     }
+    const designLab = (() => {
+      const fields = [
+        ["temp", "Teplota", "°C", 1], ["hum", "Relativní vlhkost", "%", 1],
+        ["pressure", "Tlak", "hPa", 1], ["voltage", "Napětí baterie", "V", 2],
+        ["rainInc", "Přírůstek srážek", "mm", 1], ["rain", "Srážkový čítač", "mm", 1],
+        ["tank", "Hladina nádrže", "mm", 1], ["dew", "Rosný bod", "°C", 1, r => dewPointEstimate(r.temp, r.hum)],
+        ["absHum", "Absolutní vlhkost", "g/m³", 2, r => absoluteHumidity(r.temp, r.hum)],
+        ["vpd", "Deficit tlaku vodní páry", "kPa", 2, r => vaporPressureDeficit(r.temp, r.hum)],
+        ["dewSpread", "Odstup od rosného bodu", "°C", 1, r => dewPointSpread(r.temp, r.hum)]
+      ].map(([key, name, unit, precision, compute]) => ({ key, name, unit, precision, compute, read: compute || (row => row[key]) }));
+      const format = (value, decimals) => Number.isFinite(value)
+        ? value.toLocaleString("cs-CZ", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : "–";
+      const markup = new Map();
+      let variant = "a", days = 1, chart = null, frame = null, model = null;
+
+      function updateMarkup(id, value) {
+        if (markup.get(id) === value) return;
+        el(id).innerHTML = value;
+        markup.set(id, value);
+      }
+
+      function renderStations() {
+        if (currentPage !== "lab" || variant !== "c") return;
+        const list = el("labStationCards");
+        if (!list.firstElementChild) {
+          list.replaceChildren(...stations.map((station, index) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.append(document.createElement("span"), document.createElement("span"));
+            button.addEventListener("click", () => { if (index !== activeIdx) switchStation(index); });
+            return button;
+          }));
+        }
+        stations.forEach((station, index) => {
+          const button = list.children[index];
+          const snapshot = index === activeIdx ? store.rows[0] : ovStores[index];
+          setNodeText(button.firstElementChild, station.name);
+          setNodeText(button.lastElementChild, Number.isFinite(snapshot?.temp) ? format(snapshot.temp,1) + " °C" : "–");
+          button.setAttribute("aria-current", String(index === activeIdx));
+        });
+      }
+
+      function render() {
+        if (currentPage !== "lab") return;
+        const row = store.rows[0], name = CFG.name || stations[activeIdx].name;
+        updateMarkup("labStation", stations.map((station, index) => `<option value="${index}">${escapeHTML(station.name)}</option>`).join(""));
+        const select = el("labStation");
+        if (select.value !== String(activeIdx)) select.value = String(activeIdx);
+        setNodeText(el("labStatus"), el("dataStatusSummary").textContent || "Zatím bez dat");
+        const time = row && Number.isFinite(row.ts?.getTime()) ? fmtDT(row.ts) : "Čas nedostupný";
+        const tiles = (extraClass, hideTemperature) => fields.filter(field => !hideTemperature || field.key !== "temp").map(field => {
+          const value = row ? field.read(row) : null;
+          return `<div${extraClass}><dt>${field.name}${field.compute ? " · výpočet" : ""}</dt><dd>${format(value,field.precision)} ${Number.isFinite(value) ? `<span class="lab-unit">${field.unit}</span>` : ""}</dd></div>`;
+        }).join("");
+        if (variant === "a") {
+          setNodeText(el("labWeatherStation"), name);
+          setNodeText(el("labHeroTemp"), format(row?.temp,1));
+          setNodeText(el("labWeatherTime"), row ? time : "Čeká na první měření");
+          el("labHero").dataset.band = row?.temp >= 24 ? "warm" : row?.temp < 8 && Number.isFinite(row?.temp) ? "cold" : "mild";
+          updateMarkup("labWeatherMetrics", tiles(' class="lab-card"', true));
+        } else if (variant === "b") {
+          updateMarkup("labGraphMetrics", tiles("", false));
+          updateMarkup("labMetric", fields.map(field => `<option value="${field.key}">${field.name}${field.compute ? " · výpočet" : ""}</option>`).join(""));
+          renderSeries();
+        } else {
+          setNodeText(el("labBentoStation"), name);
+          setNodeText(el("labBentoTemp"), format(row?.temp,1));
+          setNodeText(el("labBentoTime"), row ? time : "Čeká na první měření");
+          updateMarkup("labBentoMetrics", tiles(' class="lab-card"', true));
+          renderStations();
+        }
+      }
+
+      function cleanup() {
+        if (frame !== null) cancelAnimationFrame(frame);
+        frame = null;
+        model = null;
+        if (chart) chart.destroy();
+        chart = null;
+      }
+
+      function drawSeries(job) {
+        if (job !== model || !job.points) return;
+        const { stats, field, from, to, points } = job;
+        for (const [id, value] of [["labSeriesMin", stats.min], ["labSeriesAvg", stats.sum / stats.valid], ["labSeriesMax", stats.max]]) {
+          setNodeText(el(id), stats.valid ? format(value,field.precision) + " " + field.unit : "–");
+        }
+        setNodeText(el("labSeriesStatus"), stats.valid
+          ? `${stats.valid.toLocaleString("cs-CZ")} platných hodnot z ${stats.total.toLocaleString("cs-CZ")} záznamů${store.fullLoaded ? "" : " · dostupná historie"}${chartLibraryReady() ? "" : " · graf nedostupný"}`
+          : "Pro vybrané období nejsou dostupné hodnoty.");
+        const visible = !!stats.valid && chartLibraryReady();
+        if (el("labPlot").hidden !== !visible) el("labPlot").hidden = !visible;
+        if (!visible) return;
+        const palette = getComputedStyle(el("page-lab"));
+        const color = palette.getPropertyValue("--lab-accent").trim(), muted = palette.getPropertyValue("--lab-muted").trim();
+        const grid = palette.getPropertyValue("--lab-line").trim();
+        const timeLabel = x => new Date(x).toLocaleString("cs-CZ", days === 1
+          ? { hour:"2-digit",minute:"2-digit" } : { day:"numeric",month:"numeric" });
+        const config = {
+          type:"line", data:{ datasets:[{ label:field.name, data:points, borderColor:color, backgroundColor:color,
+            pointRadius:stats.valid === 1 ? 3 : 0, borderWidth:2, spanGaps:false }] },
+          options:{ animation:false, parsing:false, responsive:true, maintainAspectRatio:false,
+            interaction:{ intersect:false, mode:"nearest" }, plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+              title: items => items.length ? fmtDT(new Date(items[0].parsed.x)) : "",
+              label: item => format(item.parsed.y,field.precision) + " " + field.unit
+            }}}, scales:{ x:{type:"linear",min:from,max:to,ticks:{color:muted,maxTicksLimit:5,callback:timeLabel},grid:{color:grid}},
+              y:{ticks:{color:muted,maxTicksLimit:5},grid:{color:grid},title:{display:true,text:field.unit,color:muted}} }}
+        };
+        if (!chart) chart = new Chart(el("labCanvas"), config);
+        else {
+          chart.data = config.data;
+          chart.options = config.options;
+          chart.update("none");
+        }
+      }
+
+      function renderSeries(repaint = false) {
+        const rows = store.rows;
+        const field = fields.find(item => item.key === el("labMetric").value) || fields[0];
+        if (model && model.rows === rows && model.length === rows.length && model.field === field && model.days === days) {
+          if (repaint) drawSeries(model);
+          return;
+        }
+        if (frame !== null) cancelAnimationFrame(frame);
+        frame = null;
+        const to = rows[0]?.ts?.getTime() ?? Date.now(), from = to - days * 86400000;
+        const { start, end } = CFG.source === "sheets" ? historyRangeBounds(rows, from, to) : { start:0, end:rows.length };
+        const count = 150, buckets = new Array(count), stats = { valid:0,total:0,min:Infinity,max:-Infinity,sum:0 };
+        const job = model = { rows,length:rows.length,field,days,from,to,stats,points:null };
+        let index = start;
+        function step() {
+          frame = null;
+          if (model !== job) return;
+          const limit = Math.min(end, index + 6000);
+          for (; index < limit; index++) {
+            const row = rows[index], x = row.ts.getTime();
+            if (x < from || x > to) continue;
+            stats.total++;
+            const y = field.read(row);
+            const slot = Math.min(count - 1, Math.floor((x - from) / (to - from) * count));
+            const bucket = buckets[slot] ||= {};
+            if (!Number.isFinite(y)) { bucket.gap ||= { x,y:null }; continue; }
+            stats.valid++;
+            stats.sum += y;
+            stats.min = Math.min(stats.min,y);
+            stats.max = Math.max(stats.max,y);
+            const point = { x,y };
+            bucket.newest ||= point;
+            bucket.oldest = point;
+            if (!bucket.min || y < bucket.min.y) bucket.min = point;
+            if (!bucket.max || y > bucket.max.y) bucket.max = point;
+          }
+          if (index < end) {
+            frame = requestAnimationFrame(step);
+            return;
+          }
+          job.points = buckets.flatMap(bucket => [...new Set(Object.values(bucket))].sort((a,b) => a.x - b.x));
+          drawSeries(job);
+        }
+        if (end - start > 6000) {
+          el("labPlot").hidden = true;
+          for (const id of ["labSeriesMin","labSeriesAvg","labSeriesMax"]) setNodeText(el(id), "–");
+          setNodeText(el("labSeriesStatus"), "Počítám souhrn měření…");
+        }
+        step();
+      }
+
+      function choose(next) {
+        if (!["a","b","c"].includes(next) || next === variant) return;
+        cleanup();
+        variant = next;
+        el("page-lab").dataset.variant = next;
+        for (const key of ["a","b","c"]) el("labVariant" + key.toUpperCase()).hidden = key !== next;
+        el("labStationControl").hidden = next === "c";
+        document.querySelectorAll("[data-lab-choice]").forEach(button => button.setAttribute("aria-pressed",String(button.dataset.labChoice === next)));
+        render();
+      }
+      function setPeriod(next) {
+        days = next;
+        document.querySelectorAll("[data-lab-days]").forEach(button => button.setAttribute("aria-pressed",String(Number(button.dataset.labDays) === days)));
+        renderSeries();
+        const rows = store.rows, coversPeriod = rows.length && rows.at(-1).ts.getTime() <= rows[0].ts.getTime() - days * 86400000;
+        if (next > 1 && !coversPeriod && !store.fullLoaded && !store._fullLoadPending && (CFG.source === "sheets" || CFG.source === "both")) {
+          fetchSheets(true);
+        }
+      }
+      function toggleTheme() {
+        const lab = el("page-lab");
+        const dark = lab.dataset.theme !== "dark";
+        lab.dataset.theme = dark ? "dark" : "light";
+        el("labTheme").setAttribute("aria-pressed",String(dark));
+        if (variant === "b") renderSeries(true);
+      }
+      return { render, renderStations, choose, setPeriod, toggleTheme, leave:cleanup,
+        chartChoice:renderSeries, chartReady:() => { if (currentPage === "lab" && variant === "b") renderSeries(true); } };
+    })();
+
     const MODERN_CARD_KEYS = ["pressure", "rainInc", "rain", "tank", "voltage", "absHum", "vpd"];
     function normalizeModernCards(input) {
       const defaults = () => STATION_DEFAULTS.map(() => [...MODERN_CARD_KEYS]);
@@ -7561,10 +7909,11 @@
       select.value = String(activeIdx);
     }
     function showAppPage(page, { updateHistory = true, scroll = true } = {}) {
-      if (!["main", "modern", "modern2", "analytics"].includes(page)) return;
+      if (!["main", "modern", "modern2", "analytics", "lab"].includes(page)) return;
       const changed = currentPage !== page;
       if (changed) closeInfoPopover();
       if (changed && currentPage === "analytics") analyticsStop();
+      if (changed && currentPage === "lab") designLab.leave();
       currentPage = page;
       const dashboard = page === "main" || page === "modern";
       document.body.setAttribute?.("data-view", page);
@@ -7575,14 +7924,15 @@
       syncModernStation();
       el("tab-analytics").hidden = page !== "analytics";
       el("page-modern2").hidden = page !== "modern2";
+      el("page-lab").hidden = page !== "lab";
       updateChartLibraryStatus();
-      if (page === "modern2") renderDataStatus();
+      if (page === "modern2" || page === "lab") renderDataStatus();
       else renderMeasurementCadence();
       document.querySelectorAll(".page-link").forEach(link => {
         if (link.dataset.page === page) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
-      const hash = page === "analytics" ? "#analytika" : page === "modern2" ? "#moderni2" : page === "modern" ? "#moderni" : "#prehled";
+      const hash = page === "lab" ? "#design-lab" : page === "analytics" ? "#analytika" : page === "modern2" ? "#moderni2" : page === "modern" ? "#moderni" : "#prehled";
       if (updateHistory && location.hash !== hash) window.history?.pushState(null, "", hash);
       if (changed && scroll) window.scrollTo?.({ top: 0, behavior: "auto" });
       if (!changed) return;
@@ -8378,6 +8728,7 @@
     }
 
     function updateOvBar() {
+      if (currentPage === "lab") designLab.renderStations();
       const now = Date.now();
       for (let i = 0; i < 3; i++) {
         const ov = ovStores[i];
