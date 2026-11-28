@@ -2915,3 +2915,8 @@ celé požadované období nepokrývají. Graf při přechodu z analytické vari
 uvolní instanci. Prohlížečovou kontrolu a šest snímků vytváří
 `scripts/check-design-lab-browser.py` s testovacími odpověďmi.
 Další změny závisí na výběru varianty uživatelem.
+
+Ve v0.27.0 dává varianta A základní veličiny přímo pod teplotu. Další údaje
+jsou v rozbalovací části. B uvádí časy krajních platných hodnot a obou
+extrémů z úplného výřezu. Při shodné hodnotě ukazuje nejnovější výskyt.
+C uvádí u každé stanice čas záznamu vedle aktuálně dostupné teploty.

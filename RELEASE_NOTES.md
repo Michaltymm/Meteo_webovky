@@ -1,5 +1,9 @@
 # Přehled změn
 
+## v0.27.0
+
+- Design Lab ukazuje v Aktuálním počasí vlhkost, tlak a rosný bod hned pod teplotou. Grafy doplňují časy minim, maxim a rozsah platných hodnot. Přehled stanic uvádí čas každého záznamu.
+
 ## v0.26.0
 
 - Vývojová záložka **Design Lab** nabízí tři způsoby zobrazení stejných dat. Přepíná mezi aktuálním počasím, grafem historie a mřížkou stanic. Má vlastní světlý a tmavý režim.

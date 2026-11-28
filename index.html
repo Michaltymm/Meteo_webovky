@@ -2272,7 +2272,7 @@
     .lab-toggle { display:flex; flex-wrap:wrap; }
     .lab-status { min-height:1.25em; margin-bottom:.9rem; font-size:.84rem; color:var(--lab-muted); }
     .lab-hero {
-      min-height:265px; color:#fff; padding:clamp(1.3rem,4vw,3rem);
+      color:#fff; padding:clamp(1.05rem,3vw,2.35rem);
       border-radius:22px; background:linear-gradient(155deg,#174468,#24548a 55%,#48376d);
       display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
     }
@@ -2281,6 +2281,14 @@
     .lab-hero-value { display:block; font-size:clamp(3.8rem,10vw,6.6rem); line-height:1.12; font-weight:550; letter-spacing:-.068em; }
     .lab-hero-value small { font-size:.44em; letter-spacing:-.02em; }
     .lab-caption { margin-top:.35rem; font-size:.83rem; }
+    .lab-hero-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:min(100%,32rem); margin-top:1rem; padding-top:.8rem; border-top:1px solid #ffffff55; }
+    .lab-hero-metrics > div { padding:0 .25rem; }
+    .lab-hero-metrics > div + div { border-left:1px solid #ffffff55; }
+    .lab-hero-metrics dt { font-size:.76rem; color:#edf4ff; }
+    .lab-hero-metrics dd { margin-top:.22rem; font-size:clamp(.85rem,2.3vw,1.18rem); font-weight:650; }
+    .lab-more { margin-top:.75rem; }
+    .lab-more > summary { min-height:44px; padding:.7rem .9rem; cursor:pointer; border:1px solid var(--lab-line); border-radius:12px; background:var(--lab-card); }
+    .lab-more > summary:focus-visible { outline:2px solid var(--lab-accent); outline-offset:2px; }
     .lab .lab-card {
       background:var(--lab-card); border:1px solid var(--lab-line); border-radius:16px;
       padding:.95rem; min-width:0;
@@ -2293,20 +2301,24 @@
     .lab-graph-controls { margin:.75rem 0; justify-content:flex-start; }
     .lab-figures { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.65rem; margin:.7rem 0; }
     .lab-figures > div { border-left:2px solid var(--lab-line); padding-left:.65rem; overflow-wrap:anywhere; }
+    .lab-stat-time { display:block; color:var(--lab-muted); font-size:.76rem; font-weight:400; margin-top:.2rem; }
     .lab-plot { height:clamp(195px,42vw,310px); position:relative; }
     .lab-plot canvas { max-width:100%; max-height:100%; }
     .lab-series-status { min-height:1.1em; color:var(--lab-muted); font-size:.82rem; }
+    .lab-series-range { color:var(--lab-muted); font-size:.82rem; margin:.3rem 0 .55rem; }
     .lab-graph .lab-metrics { gap:0 .65rem; }
     .lab-graph .lab-metrics > div { padding:.6rem .15rem; border-bottom:1px solid var(--lab-line); }
     .lab-bento { display:grid; gap:.65rem; grid-template-columns:repeat(4,minmax(0,1fr)); }
     .lab-bento .lab-stations { grid-column:span 2; }
     .lab-stations h2 { margin-bottom:.6rem; }
     .lab-stations button { display:flex; align-items:center; justify-content:space-between; gap:.5rem; text-align:left; width:100%; margin-top:.35rem; }
-    .lab-stations button span:last-child { color:var(--lab-muted); flex:none; font-size:.88rem; }
+    .lab-station-label { min-width:0; overflow-wrap:anywhere; }
+    .lab-station-meta { display:block; margin-top:.15rem; color:var(--lab-muted); font-size:.75rem; }
+    .lab-station-temp { flex:none; font-weight:650; font-size:.9rem; }
     .lab-bento .lab-current { grid-column:span 2; display:flex; flex-direction:column; justify-content:center; background:var(--lab-chip); }
     .lab-bento .lab-current strong { font-size:clamp(2.2rem,6vw,4.3rem); font-weight:620; letter-spacing:-.055em; }
     .lab-bento .lab-metrics { display:contents; }
-    .lab-bento .lab-metrics > div:nth-child(5n + 1) { grid-column:span 2; }
+    .lab-bento .lab-metrics > div[data-lab-field="voltage"] { grid-column:span 2; }
     .lab-actions { margin-top:1rem; }
     .lab .lab-link { display:inline-flex; align-items:center; text-decoration:none; }
     @supports(backdrop-filter:blur(6px)) {
@@ -2318,7 +2330,8 @@
       .page-navigation-inner .page-link[data-page="lab"] { grid-column:span 2; }
       .lab-metrics,.lab-bento { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .lab .lab-toggle button { font-size:.82rem; }
-      .lab-hero { min-height:215px; }
+      .lab-hero-value { font-size:clamp(3rem,14vw,4.4rem); }
+      .lab-hero-metrics dt { font-size:.71rem; }
       .lab-graph-controls { gap:.5rem; }
       .lab select { max-width:100%; }
     }
@@ -2400,8 +2413,8 @@
   <header>
     <span class="site-title" style="min-width:140px">🌤 Meteostanice
       <a id="appVersion" class="app-version"
-        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0260"
-        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.26.0</a>
+        href="https://github.com/Michaltymm/Meteo_webovky/blob/codex-dev/RELEASE_NOTES.md#v0270"
+        target="_blank" rel="noopener noreferrer" title="Zobrazit přehled změn této verze">Verze 0.27.0</a>
     </span>
     <span id="headerStationName"
       style="position:absolute;left:50%;transform:translateX(-50%);font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:.02em;pointer-events:none;white-space:nowrap;max-width:60%">–</span>
@@ -3576,8 +3589,13 @@
           <h2 id="labWeatherStation">Meteostanice</h2>
           <div class="lab-hero-value"><span id="labHeroTemp">–</span><small> °C</small></div>
           <p class="lab-caption" id="labWeatherTime"></p>
+          <dl class="lab-hero-metrics">
+            <div><dt>Vlhkost</dt><dd id="labHeroHum">–</dd></div>
+            <div><dt>Tlak</dt><dd id="labHeroPressure">–</dd></div>
+            <div><dt>Rosný bod</dt><dd id="labHeroDew">–</dd></div>
+          </dl>
         </div>
-        <dl id="labWeatherMetrics" class="lab-metrics"></dl>
+        <details class="lab-more"><summary>Další veličiny</summary><dl id="labWeatherMetrics" class="lab-metrics"></dl></details>
       </section>
       <section id="labVariantB" class="lab-graph" aria-labelledby="labGraphTitle" hidden>
         <article class="lab-card">
@@ -3591,12 +3609,13 @@
             </div>
           </div>
           <dl class="lab-figures">
-            <div><dt>Minimum</dt><dd id="labSeriesMin">–</dd></div>
+            <div><dt>Minimum</dt><dd><span id="labSeriesMin">–</span><span class="lab-stat-time" id="labSeriesMinTime"></span></dd></div>
             <div><dt>Průměr</dt><dd id="labSeriesAvg">–</dd></div>
-            <div><dt>Maximum</dt><dd id="labSeriesMax">–</dd></div>
+            <div><dt>Maximum</dt><dd><span id="labSeriesMax">–</span><span class="lab-stat-time" id="labSeriesMaxTime"></span></dd></div>
           </dl>
           <div class="lab-plot" id="labPlot" hidden><canvas id="labCanvas" role="img" aria-label="Časový graf měření" aria-describedby="labSeriesStatus"></canvas></div>
           <p class="lab-series-status" id="labSeriesStatus" role="status"></p>
+          <p class="lab-series-range" id="labSeriesRange" hidden></p>
         </article>
         <h3 style="margin-top:.9rem">Poslední měření</h3>
         <dl id="labGraphMetrics" class="lab-metrics"></dl>
@@ -7640,8 +7659,10 @@
         ["vpd", "Deficit tlaku vodní páry", "kPa", 2, r => vaporPressureDeficit(r.temp, r.hum)],
         ["dewSpread", "Odstup od rosného bodu", "°C", 1, r => dewPointSpread(r.temp, r.hum)]
       ].map(([key, name, unit, precision, compute]) => ({ key, name, unit, precision, compute, read: compute || (row => row[key]) }));
+      const weatherHighlights = new Set(["temp","hum","pressure","dew"]);
       const format = (value, decimals) => Number.isFinite(value)
         ? value.toLocaleString("cs-CZ", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : "–";
+      const withUnit = (value, decimals, unit) => Number.isFinite(value) ? format(value, decimals) + " " + unit : "–";
       const markup = new Map();
       let variant = "a", days = 1, chart = null, frame = null, model = null;
 
@@ -7655,10 +7676,16 @@
         if (currentPage !== "lab" || variant !== "c") return;
         const list = el("labStationCards");
         if (!list.firstElementChild) {
-          list.replaceChildren(...stations.map((station, index) => {
+          list.replaceChildren(...stations.map((_, index) => {
             const button = document.createElement("button");
             button.type = "button";
-            button.append(document.createElement("span"), document.createElement("span"));
+            const label = document.createElement("span"), name = document.createElement("span");
+            const meta = document.createElement("span"), temperature = document.createElement("span");
+            label.className = "lab-station-label";
+            meta.className = "lab-station-meta";
+            temperature.className = "lab-station-temp";
+            label.append(name, meta);
+            button.append(label, temperature);
             button.addEventListener("click", () => { if (index !== activeIdx) switchStation(index); });
             return button;
           }));
@@ -7666,8 +7693,10 @@
         stations.forEach((station, index) => {
           const button = list.children[index];
           const snapshot = index === activeIdx ? store.rows[0] : ovStores[index];
-          setNodeText(button.firstElementChild, station.name);
-          setNodeText(button.lastElementChild, Number.isFinite(snapshot?.temp) ? format(snapshot.temp,1) + " °C" : "–");
+          const label = button.firstElementChild;
+          setNodeText(label.firstElementChild, station.name);
+          setNodeText(label.lastElementChild, snapshot?.ts ? fmtDT(snapshot.ts) : "Bez záznamu");
+          setNodeText(button.lastElementChild, withUnit(snapshot?.temp,1,"°C"));
           button.setAttribute("aria-current", String(index === activeIdx));
         });
       }
@@ -7680,25 +7709,28 @@
         if (select.value !== String(activeIdx)) select.value = String(activeIdx);
         setNodeText(el("labStatus"), el("dataStatusSummary").textContent || "Zatím bez dat");
         const time = row && Number.isFinite(row.ts?.getTime()) ? fmtDT(row.ts) : "Čas nedostupný";
-        const tiles = (extraClass, hideTemperature) => fields.filter(field => !hideTemperature || field.key !== "temp").map(field => {
+        const tiles = (card, include) => fields.filter(include).map(field => {
           const value = row ? field.read(row) : null;
-          return `<div${extraClass}><dt>${field.name}${field.compute ? " · výpočet" : ""}</dt><dd>${format(value,field.precision)} ${Number.isFinite(value) ? `<span class="lab-unit">${field.unit}</span>` : ""}</dd></div>`;
+          return `<div data-lab-field="${field.key}"${card ? ' class="lab-card"' : ""}><dt>${field.name}${field.compute ? " · výpočet" : ""}</dt><dd>${format(value,field.precision)} ${Number.isFinite(value) ? `<span class="lab-unit">${field.unit}</span>` : ""}</dd></div>`;
         }).join("");
         if (variant === "a") {
           setNodeText(el("labWeatherStation"), name);
           setNodeText(el("labHeroTemp"), format(row?.temp,1));
           setNodeText(el("labWeatherTime"), row ? time : "Čeká na první měření");
           el("labHero").dataset.band = row?.temp >= 24 ? "warm" : row?.temp < 8 && Number.isFinite(row?.temp) ? "cold" : "mild";
-          updateMarkup("labWeatherMetrics", tiles(' class="lab-card"', true));
+          setNodeText(el("labHeroHum"), withUnit(row?.hum,1,"%"));
+          setNodeText(el("labHeroPressure"), withUnit(row?.pressure,1,"hPa"));
+          setNodeText(el("labHeroDew"), withUnit(row ? dewPointEstimate(row.temp,row.hum) : null,1,"°C"));
+          updateMarkup("labWeatherMetrics", tiles(true, field => !weatherHighlights.has(field.key)));
         } else if (variant === "b") {
-          updateMarkup("labGraphMetrics", tiles("", false));
+          updateMarkup("labGraphMetrics", tiles(false, () => true));
           updateMarkup("labMetric", fields.map(field => `<option value="${field.key}">${field.name}${field.compute ? " · výpočet" : ""}</option>`).join(""));
           renderSeries();
         } else {
           setNodeText(el("labBentoStation"), name);
           setNodeText(el("labBentoTemp"), format(row?.temp,1));
           setNodeText(el("labBentoTime"), row ? time : "Čeká na první měření");
-          updateMarkup("labBentoMetrics", tiles(' class="lab-card"', true));
+          updateMarkup("labBentoMetrics", tiles(true, field => field.key !== "temp"));
           renderStations();
         }
       }
@@ -7716,6 +7748,14 @@
         const { stats, field, from, to, points } = job;
         for (const [id, value] of [["labSeriesMin", stats.min], ["labSeriesAvg", stats.sum / stats.valid], ["labSeriesMax", stats.max]]) {
           setNodeText(el(id), stats.valid ? format(value,field.precision) + " " + field.unit : "–");
+        }
+        setNodeText(el("labSeriesMinTime"), stats.valid ? fmtDT(new Date(stats.minTime)) : "");
+        setNodeText(el("labSeriesMaxTime"), stats.valid ? fmtDT(new Date(stats.maxTime)) : "");
+        const range = el("labSeriesRange");
+        range.hidden = !stats.valid;
+        if (stats.valid) {
+          const first = fmtDT(new Date(stats.first)), last = fmtDT(new Date(stats.last));
+          setNodeText(range, first === last ? "Platná hodnota · " + first : "Platné hodnoty od " + first + " do " + last);
         }
         setNodeText(el("labSeriesStatus"), stats.valid
           ? `${stats.valid.toLocaleString("cs-CZ")} platných hodnot z ${stats.total.toLocaleString("cs-CZ")} záznamů${store.fullLoaded ? "" : " · dostupná historie"}${chartLibraryReady() ? "" : " · graf nedostupný"}`
@@ -7757,7 +7797,8 @@
         frame = null;
         const to = rows[0]?.ts?.getTime() ?? Date.now(), from = to - days * 86400000;
         const { start, end } = CFG.source === "sheets" ? historyRangeBounds(rows, from, to) : { start:0, end:rows.length };
-        const count = 150, buckets = new Array(count), stats = { valid:0,total:0,min:Infinity,max:-Infinity,sum:0 };
+        const count = 150, buckets = new Array(count), stats = { valid:0,total:0,min:Infinity,max:-Infinity,sum:0,
+          first:Infinity,last:-Infinity,minTime:0,maxTime:0 };
         const job = model = { rows,length:rows.length,field,days,from,to,stats,points:null };
         let index = start;
         function step() {
@@ -7774,8 +7815,10 @@
             if (!Number.isFinite(y)) { bucket.gap ||= { x,y:null }; continue; }
             stats.valid++;
             stats.sum += y;
-            stats.min = Math.min(stats.min,y);
-            stats.max = Math.max(stats.max,y);
+            stats.first = Math.min(stats.first,x);
+            stats.last = Math.max(stats.last,x);
+            if (y < stats.min || (y === stats.min && x > stats.minTime)) { stats.min = y; stats.minTime = x; }
+            if (y > stats.max || (y === stats.max && x > stats.maxTime)) { stats.max = y; stats.maxTime = x; }
             const point = { x,y };
             bucket.newest ||= point;
             bucket.oldest = point;
@@ -7791,7 +7834,9 @@
         }
         if (end - start > 6000) {
           el("labPlot").hidden = true;
+          el("labSeriesRange").hidden = true;
           for (const id of ["labSeriesMin","labSeriesAvg","labSeriesMax"]) setNodeText(el(id), "–");
+          for (const id of ["labSeriesMinTime","labSeriesMaxTime"]) setNodeText(el(id), "");
           setNodeText(el("labSeriesStatus"), "Počítám souhrn měření…");
         }
         step();

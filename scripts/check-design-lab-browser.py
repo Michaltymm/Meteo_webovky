@@ -25,7 +25,7 @@ async def main():
     for station in range(3):
         lines = ['Datum,Cas,Teplota,Tlak,Vlhkost,Prirustek,Dest,Nadrz,Napeti']
         for i in range(672):
-            dt = now - timedelta(minutes=30*i)
+            dt = now - timedelta(minutes=30*i + 5*station)
             temp = 19.4 + station * 3 - (i % 48) / 8
             hum = 63 + i % 19
             voltage = '4.12' if station == 0 else '0' if station == 1 else ''
@@ -65,15 +65,26 @@ async def main():
         lab = page.locator('#page-lab')
         assert await lab.is_visible() and await page.locator('#page-main').is_hidden()
         assert await page.locator('#labHeroTemp').inner_text() == '19,4'
-        assert await page.locator('#labWeatherMetrics dd').count() == 10
+        assert await page.locator('#labHeroHum').inner_text() == '63,0 %'
+        assert '1 015,3 hPa' in await page.locator('#labHeroPressure').inner_text()
+        assert await page.locator('#labHeroDew').inner_text() == '12,2 °C'
+        assert await page.locator('#labWeatherMetrics').is_hidden()
+        await page.locator('#labVariantA summary').tap()
+        assert await page.locator('#labWeatherMetrics').is_visible()
+        assert await page.locator('#labWeatherMetrics dd').count() == 7
+        await page.locator('#labVariantA summary').tap()
         before = len(requests)
         await page.locator('[data-lab-choice="c"]').click()
         assert await page.locator('#labBentoTemp').inner_text() == '19,4'
         assert await page.locator('#labStationCards button').count() == 3
+        assert (await page.locator('#labStationCards .lab-station-meta').nth(1).inner_text()).endswith('11:55')
         await page.locator('[data-lab-choice="b"]').click()
         await page.locator('#labPlot').wait_for(state='visible')
         assert '49 platných' in await page.locator('#labSeriesStatus').inner_text()
         assert '19,4 °C' in await page.locator('#labSeriesMax').inner_text()
+        assert (await page.locator('#labSeriesMaxTime').inner_text()).endswith('12:00')
+        assert (await page.locator('#labSeriesMinTime').inner_text()).endswith('12:30')
+        assert '27. 11. 2026 12:00' in await page.locator('#labSeriesRange').inner_text()
         assert len(requests) == before
         await page.locator('[data-lab-days="30"]').click()
         await page.wait_for_function('store.fullLoaded && el("labSeriesStatus").textContent.includes("672 platných")')
@@ -86,6 +97,7 @@ async def main():
             await page.locator('#labStationCards button').nth(station).tap()
             await page.wait_for_function('(i)=>activeIdx===i && store.rows.length===400', arg=station)
             assert await page.locator('#labBentoTemp').inner_text() == expected
+            assert await page.locator('#labStationCards button').nth(station).get_attribute('aria-current') == 'true'
             voltage_tile = page.locator('#labBentoMetrics > div').filter(has_text='Napětí baterie')
             assert (await voltage_tile.locator('dd').inner_text()).startswith(['4,12','0,00','–'][station])
         await page.locator('[data-lab-choice="b"]').click()
